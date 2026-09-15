@@ -1,0 +1,46 @@
+# Shared data processing bounds.
+#
+# model_area is the canonical Seascape Toolkit modeling area.
+# extended_area is the broader download/processing area used when upstream
+# products need context beyond the model extent.
+
+areas:
+  model_area:
+    description: Canonical Seascape Toolkit model area.
+    bbox_wgs84:
+      min_lon: -125.80
+      min_lat: 46.85
+      max_lon: -121.60
+      max_lat: 50.00
+
+  extended_area:
+    description: Broader download and processing area.
+    bbox_wgs84:
+      min_lon: -132.00
+      min_lat: 44.00
+      max_lon: -121.00
+      max_lat: 52.00
+
+  full_area:
+    description: Full sightings ingest area from Southern California to Alaska.
+    bbox_wgs84:
+      min_lon: -180.00
+      min_lat: 32.00
+      max_lon: -109.00
+      max_lat: 72.00
+
+  srkw_range:
+    description: Southern Resident killer whale area of interest.
+    bbox_wgs84:
+      min_lon: -132.00
+      min_lat: 44.00
+      max_lon: -121.00
+      max_lat: 54.00
+
+  transient_range:
+    description: Transient/Bigg's killer whale area of interest.
+    bbox_wgs84:
+      min_lon: -150.00
+      min_lat: 40.00
+      max_lon: -120.00
+      max_lat: 62.00

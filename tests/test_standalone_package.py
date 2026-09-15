@@ -1,0 +1,82 @@
+"""Regression checks for extraction, workspace ownership and installed entry points."""
+from __future__ import annotations
+
+import ast
+from importlib.resources import files
+from pathlib import Path
+
+import pytest
+
+from seascape.cli import DOWNLOAD_FAMILIES, FAMILIES, initialize_workspace, main
+from seascape.core.config.paths import project_root, resolve_config_path
+from seascape.core.data.registry import DATASETS
+from seascape.workflow import selected_stages
+
+
+def test_source_has_no_application_imports():
+    source = Path(__file__).parents[1] / "src/seascape"
+    for path in source.rglob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text())):
+            modules = []
+            if isinstance(node, ast.Import):
+                modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                modules = [node.module]
+            assert not any(m == "orcacast" or m.startswith("orcacast.") for m in modules), path
+
+
+def test_dataset_dependencies_are_owned_by_toolkit():
+    specs = tuple(DATASETS)
+    assert specs
+    assert all(str(spec.dataset_id).startswith("environment.seascape.") for spec in specs)
+    for spec in specs:
+        for dependency in spec.dependencies:
+            DATASETS.get(dependency)
+    for resolution in (4, 5, 6):
+        DATASETS.get(f"environment.seascape.h3_full_counting_universe_r{resolution}")
+
+
+def test_workspace_init_is_portable_and_preserves_edits(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    initialize_workspace(workspace)
+    config = workspace / "config/data/project.yaml"
+    assert config.is_file()
+    config.write_text(config.read_text() + "# user edit\n")
+    initialize_workspace(workspace)
+    assert config.read_text().endswith("# user edit\n")
+    monkeypatch.setenv("SEASCAPE_WORKSPACE", str(workspace))
+    monkeypatch.chdir(tmp_path)
+    assert project_root() == workspace
+    assert resolve_config_path("config/data/project.yaml") == config
+    from seascape.seafloor_physiography.bathymetry.pipeline import load_bathymetry_config
+    assert load_bathymetry_config(config).raw_path.is_relative_to(workspace)
+
+
+def test_packaged_templates_match_editable_checkout():
+    root = Path(__file__).parents[1]
+    for path in (root / "config").rglob("*.yaml"):
+        assert files("seascape").joinpath("resources", str(path.relative_to(root))).read_bytes() == path.read_bytes()
+    assert files("seascape").joinpath("resources/docs/products.md").read_bytes() == (root / "docs/products.md").read_bytes()
+
+
+def test_release_plan_is_seascape_only():
+    stages = selected_stages(only=["seascape-release"])
+    assert len(stages) == 26
+    assert stages[-1].name == "seascape-release"
+    assert not any("meteorological" in output for stage in stages for output in stage.declared_outputs)
+
+
+@pytest.mark.parametrize("family", DOWNLOAD_FAMILIES)
+def test_download_command_help_is_available(family, capsys):
+    with pytest.raises(SystemExit) as exc:
+        main(["download", family, "--help"])
+    assert exc.value.code == 0
+    assert "--config" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("family", FAMILIES)
+def test_inspection_command_help_is_available(family, capsys):
+    with pytest.raises(SystemExit) as exc:
+        main(["inspect", family, "--help"])
+    assert exc.value.code == 0
+    assert "--config" in capsys.readouterr().out

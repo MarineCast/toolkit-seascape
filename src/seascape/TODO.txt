@@ -1,0 +1,51 @@
+SEASCAPE ROADMAP
+=================
+
+This is the canonical seascape roadmap. Family READMEs link here so feature
+status, product contracts, and modeling policy cannot drift apart.
+
+
+Completed engineering remediation
+---------------------------------
+
+[x] Dependency-aware candidate-first environment orchestration with resume,
+    force, dry-run actions, blocked descendants, and terminal release stages.
+[x] Journaled family and full-release publication with rollback, recovery,
+    manifest-last promotion, global release locking, and snapshot readers.
+[x] Manifest schema v3 semantic contracts and independent release checksum audit.
+[x] Canonical R8 5 km radius-sum operator and reachable-water-area derivative.
+[x] Water-geometry, freshwater-source, and habitat-surface ownership splits;
+    compatibility-only wrappers removed and scoped Pyflakes enforced.
+[x] All-null, unavailable, and unresolved-scale candidates excluded by policy.
+
+
+Release gates still required after source or producer changes
+-------------------------------------------------------------
+
+[ ] Rebuild the complete family in a disposable output root without downloads or inspectors.
+[ ] Compare staged versus current cell hashes, schemas, nulls, QC states,
+    categorical counts, distributions, and numeric values; publish the artifact
+    release if its audit passes. Unresolved scale groups do not block artifact
+    publication while every candidate remains excluded.
+[ ] Freeze the 12 unresolved multiscale groups when complete inner rolling-origin
+    scores become available, then run matched model evaluation for the resulting
+    model-feature hash. Until then `model_policy_complete` remains false. No
+    compatible inner-fold score artifact exists yet; three prior comparison
+    manifests are stale against current inputs.
+
+Deferred candidates
+-------------------
+
+[ ] Shoreline length density and multiscale sinuosity (research-only; non-default).
+[ ] Island count, island area, archipelago density, land-water boundary density,
+    coastal orientation, and orientation variability.
+
+These stay out of the default model matrix until the scale/collinearity policy is
+frozen. Protected areas, critical habitat, and shipping lanes belong in a separate
+roadmap rather than this remediation.
+
+Blocked
+-------
+
+[ ] Estuarine polygon membership and class: BLOCKED until a defensible cross-border
+    polygon ontology supports a consistent ecological definition and provenance.
