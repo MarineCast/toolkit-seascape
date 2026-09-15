@@ -12,3 +12,6 @@ outputs/
 .staging/
 *.lock
 .DS_Store
+
+# Graphify generated code graph and local caches
+/graphify-out/

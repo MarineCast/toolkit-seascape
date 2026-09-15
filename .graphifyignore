@@ -1,0 +1,5 @@
+# Additional navigation noise; .gitignore already excludes data/build outputs.
+.ruff_cache/
+.ipynb_checkpoints/
+htmlcov/
+coverage/
