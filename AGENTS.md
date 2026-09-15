@@ -12,7 +12,9 @@ Preserve unrelated changes and read deeper instructions before editing a subdire
 
 Before changing repository boundaries, dependencies, shared schemas, provenance, or application
 integration, read the MarineCast [infrastructure guide](https://github.com/MarineCast/.github/blob/HEAD/INFRASTRUCTURE.md).
-In the multi-repository workspace, the local copy is `../../.github/INFRASTRUCTURE.md`.
+Resolve local paths from this toolkit's checkout root, not the agent's working directory.
+For `MarineCast/Toolkits/toolkit-*`, use `../../.github/INFRASTRUCTURE.md`;
+for a flat `MarineCast/toolkit-*` layout, use `../.github/INFRASTRUCTURE.md`.
 Prefer that local copy when present; in an independent checkout, read the linked document. If it
 cannot be retrieved, report that limitation and use the local contracts below; do not invent a
 shared standard. These instructions explicitly request that reading; a sibling repository's
@@ -77,10 +79,18 @@ refresh. The graph and caches live in ignored `graphify-out/`; never commit them
 and `.graphifyignore` both apply. This local AST-only setup does not semantically index prose or
 produce clustered architecture reports; read docs/configuration directly when needed.
 
-Codex uses this section plus the CLI; no skill or MCP registration is required. From a parent
+Codex can use the global Graphify skill (`graphify install --platform codex`) or this section
+plus the CLI. The MarineCast workspace documents the machine-local skill installation. From a parent
 workspace, change into this checkout before building; queries may instead use
 `--graph <checkout>/graphify-out/graph.json`. Keep each repository's graph independent.
-The upstream `graphify codex install` can add its own AGENTS section, but is unnecessary here.
+The distinct `graphify codex install` command adds repo instructions/hooks; do not run it
+over this maintained section. Global skill defaults do not override this repository's scope
+or its code-only extraction commands.
 Optional `graphify hook install` adds post-commit/post-checkout hooks **and** a merge driver with
 `.gitattributes` changes; it is not enabled or recommended by default for these untracked graphs.
 See the [upstream CLI reference](https://graphify.com/docs/cli) and `graphify --help` on upgrades.
+
+Graph ownership policy: `graphify-out/` is a disposable, local-only cache per checkout, with no
+planned automatic sharing or publication. Share source, navigation configuration and commands;
+rebuild the graph locally. Sharing a graph later requires an explicit repository policy change
+covering its destination, source revision, generation version, freshness and content review.
