@@ -5,24 +5,18 @@
 Bathymetry, marine geomorphology, coastal geometry, and derived features.
 
 This repository contains the installable `seascape` package extracted from OrcaCast on 2026-09-15.
-Read README.md and docs/MIGRATION.md for ownership and validation boundaries.
+Read `docs/ARCHITECTURE.md` for ownership/import changes; `docs/CONTRACTS.md` for scientific
+or product changes; README.md and docs/MIGRATION.md for setup or extraction-history questions.
 Preserve unrelated changes and read deeper instructions before editing a subdirectory.
 
 ## Shared MarineCast context
 
-Before changing repository boundaries, dependencies, shared schemas, provenance, or application
-integration, read the MarineCast [infrastructure guide](https://github.com/MarineCast/.github/blob/HEAD/INFRASTRUCTURE.md).
-Resolve local paths from this toolkit's checkout root, not the agent's working directory.
-For `MarineCast/Toolkits/toolkit-*`, use `../../.github/INFRASTRUCTURE.md`;
-for a flat `MarineCast/toolkit-*` layout, use `../.github/INFRASTRUCTURE.md`.
-Prefer that local copy when present; in an independent checkout, read the linked document. If it
-cannot be retrieved, report that limitation and use the local contracts below; do not invent a
-shared standard. These instructions explicitly request that reading; a sibling repository's
-`AGENTS.md` is not automatically inherited.
-
-The infrastructure guide owns cross-repository context. This repository owns its implementation
-and scientific contracts. Surface conflicts before changing an interface; do not silently replace
-an existing local contract with a proposed ecosystem convention.
+For boundary, dependency, shared schema/provenance, or application-integration changes, read
+[INFRASTRUCTURE.md](https://github.com/MarineCast/.github/blob/HEAD/INFRASTRUCTURE.md).
+In the grouped workspace use `../../.github/INFRASTRUCTURE.md`; in a flat clone layout use
+`../.github/INFRASTRUCTURE.md`, resolving from this checkout. Otherwise use the linked copy;
+if unavailable, report the limitation without inventing a shared standard. Sibling instructions
+are not inherited. Local implementation contracts remain authoritative; surface conflicts.
 
 ## Domain contracts
 
@@ -46,6 +40,12 @@ features; species habitat suitability belongs in a downstream application.
 
 ## Validation and completion
 
+Use isolated Python 3.11+: `python -m pip install -e '.[test]'`.
+Start behavior validation with `python -m pytest -q tests/<relevant_test>.py`, then the required
+suite below. Documentation-only edits need reference checks and `git diff --check`, not Python tests.
+No local skills are needed yet; load only the task-specific documents routed above.
+
+
 For documentation-only work, inspect `git status --short` and the diff, verify references, and run
 `git diff --check` from this repository. Run `python -m pytest -q` from this checkout after installing `.[test]`.
 Use `seascape build --dry-run` to inspect stage dependencies. Real acquisition and regional builds
@@ -55,42 +55,38 @@ Report tests actually run, unverified source acquisition, and any unrun integrat
 
 ## Codebase navigation
 
-Use this repository's local Graphify graph for structural implementation, debugging, and
-architecture questions before broad searches. Skip graph queries for obvious, single-file edits.
-Narrow modules, symbols, callers and dependencies with `query`, `explain`, or `affected`, then
-read the relevant source and tests. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design intent.
-Source and tests are authoritative; explicit schemas/contracts and architecture docs take
-precedence over the graph. Static edges can miss dynamic dispatch or resolve names ambiguously;
-fall back to targeted `rg` searches whenever coverage or freshness is insufficient.
+Use the existing local `graphify-out/graph.json` for structural questions; skip graph work for
+obvious targeted edits. Prefer the smallest useful retrieval:
 
-Run from this checkout (Graphify CLI package `graphifyy==0.9.62`, Python 3.10+):
+1. Known symbol: `explain` first, then follow only relevant callers/callees/imports/dependencies.
+2. Use direct relationships before deeper traversal; broad `query` is for unknown ownership.
+3. If results are large or truncated, narrow the symbol or relationship before increasing budget.
+   `--budget` is not a guaranteed cap. Avoid unnecessary depth-2 neighborhoods.
+4. Read the identified source/tests. They outrank schemas/contracts, architecture docs, then the
+   graph. Use targeted `rg` when graph coverage or freshness is insufficient.
 
 ```bash
-# Install once in an isolated developer environment: python -m pip install graphifyy==0.9.62
-graphify extract . --code-only --no-cluster
-graphify query "DomainBuildStage" --budget 1500
 graphify explain "DomainBuildStage"
-graphify affected "<symbol>" --relation calls --depth 2
+graphify affected "DomainBuildStage" --relation calls --depth 1
+graphify query "<topic>" --context call --budget 1500
 ```
 
-Repeat the extraction command after structural edits: it incrementally detects changed files.
-Use `--force` for a full rescan after checking intentional removals if shrink protection blocks
-refresh. The graph and caches live in ignored `graphify-out/`; never commit them. `.gitignore`
-and `.graphifyignore` both apply. This local AST-only setup does not semantically index prose or
-produce clustered architecture reports; read docs/configuration directly when needed.
+`affected` follows reverse edges (callers); `explain` shows immediate connections. Use ast-grep
+for syntax patterns and `rg` for literal/config/prose/filename searches. Read architecture for
+ownership/import changes, not every typo. Optional shared setup/examples:
+[code navigation](https://github.com/MarineCast/.github/blob/HEAD/docs/code-navigation.md)
+(local grouped workspace: `../../.github/docs/code-navigation.md`). No sibling checkout is required.
 
-Codex can use the global Graphify skill (`graphify install --platform codex`) or this section
-plus the CLI. The MarineCast workspace documents the machine-local skill installation. From a parent
-workspace, change into this checkout before building; queries may instead use
-`--graph <checkout>/graphify-out/graph.json`. Keep each repository's graph independent.
-The distinct `graphify codex install` command adds repo instructions/hooks; do not run it
-over this maintained section. Global skill defaults do not override this repository's scope
-or its code-only extraction commands.
-Optional `graphify hook install` adds post-commit/post-checkout hooks **and** a merge driver with
-`.gitattributes` changes; it is not enabled or recommended by default for these untracked graphs.
-See the [upstream CLI reference](https://graphify.com/docs/cli) and `graphify --help` on upgrades.
+Graphify is optional developer tooling (`graphifyy==0.9.62`, isolated Python 3.10+), not a runtime
+dependency. Create a missing graph or refresh after structural edits, from this checkout only:
 
-Graph ownership policy: `graphify-out/` is a disposable, local-only cache per checkout, with no
-planned automatic sharing or publication. Share source, navigation configuration and commands;
-rebuild the graph locally. Sharing a graph later requires an explicit repository policy change
-covering its destination, source revision, generation version, freshness and content review.
+```bash
+graphify extract . --code-only --no-cluster
+```
+
+Do not rebuild merely for a question. Check intentional deletions before using `--force` to bypass
+shrink protection. `.gitignore` and `.graphifyignore` apply; AST-only extraction does not index
+prose semantically. Graphs/caches are disposable local-only files: never commit or publish them.
+Any future sharing requires an explicit policy covering destination, revision, freshness and review.
+Global skill defaults do not override repository scope or code-only extraction. Do not run
+`graphify codex install` over maintained instructions or enable hooks/merge drivers implicitly.
