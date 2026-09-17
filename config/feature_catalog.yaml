@@ -28,17 +28,11 @@ catalog_contract:
     evidence: Confidence, provenance, or survey evidence.
     support_or_qc: Spatial-support, connector, lineage, or QC field.
     identifier: Foreign key or source identity; not a numeric predictor.
-    physical_metric: Measured or physically derived atmospheric metric.
-    astronomical_metric: Deterministic solar or lunar metric.
-    storm_metric: Operational storm metric, not an authoritative classification.
-    categorical_metric: Substantive categorical environmental value.
-    provenance_or_qc: Source lineage, availability, support, or QC metadata.
-    bookkeeping: Calendar, coordinate, distance, or deterministic bookkeeping metadata.
   variable_kinds:
-    feature_variable: A substantive metric, category, or state that may be considered for a model after
-      policy and leakage review.
+    feature_variable: A substantive physical metric, category, or state eligible for downstream
+      consideration after static governance review.
     metadata: Coverage, survey or evidence quality, provenance, identifiers, support, bookkeeping, and
-      QC; never a default model feature.
+      QC; not an eligible physical feature.
   materialization_policy: Generate and verify this catalog from materialized seascape candidate products
     before release.
 product_count: 27

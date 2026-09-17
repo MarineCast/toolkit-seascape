@@ -17,7 +17,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from seascape.core.config.paths import project_root
-from seascape.modeling.feature_policy import (
+from seascape.governance.feature_eligibility import (
     infer_scale_group,
     infer_topology,
 )
@@ -757,11 +757,7 @@ def build_catalog(root: Path) -> dict[str, Any]:
                 "metric_family is the cross-domain family (seascape here); metric_subfamily "
                 "groups related seascape mechanisms such as anthropogenic or benthic."
             ),
-            "metric_family_vocabulary": [
-                "seascape",
-                "meteorological",
-                "oceanographic",
-            ],
+            "metric_family_vocabulary": ["seascape"],
             "metric_subfamily_vocabulary": [
                 "spatial_support",
                 "seafloor_physiography",
@@ -782,12 +778,12 @@ def build_catalog(root: Path) -> dict[str, Any]:
             },
             "variable_kinds": {
                 "feature_variable": (
-                    "A substantive metric, category, or state that may be considered for a "
-                    "model after policy and leakage review."
+                    "A substantive physical metric, category, or state eligible for downstream "
+                    "consideration after static governance review."
                 ),
                 "metadata": (
                     "Coverage, survey or evidence quality, provenance, identifiers, support, "
-                    "bookkeeping, and QC; never a default model feature."
+                    "bookkeeping, and QC; not an eligible physical feature."
                 ),
             },
         },

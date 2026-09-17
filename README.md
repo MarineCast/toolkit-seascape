@@ -73,8 +73,26 @@ run_pipeline(config_path="config/data/project.yaml", skip_download=True, skip_ma
 ```
 
 Set `SEASCAPE_WORKSPACE` when calling Python APIs from a different working directory. Catalog,
-policy, documentation and rebuild comparison tools are installed under `seascape.maintenance` and
-`seascape.modeling.feature_policy`; each accepts `--help` through `python -m`.
+species-neutral feature eligibility, documentation and rebuild comparison tools are installed
+under `seascape.maintenance` and `seascape.governance`; each accepts `--help` through `python -m`.
+
+Applications should resolve immutable canonical products through the public API rather than
+encoding toolkit-internal paths:
+
+```python
+from seascape.products import resolve_product
+
+artifact = resolve_product(
+    workspace="/path/to/seascape-workspace",
+    product="bathymetry",
+    resolution=6,
+)
+print(artifact.release_id, artifact.path, artifact.checksum)
+```
+
+`list_products` and `list_resolutions` provide discovery. Resolution is exact and every returned
+artifact is checked against the completed canonical release. Applications such as OrcaCast own
+target definition, temporal validation, feature/scale selection, model fitting and evaluation.
 
 ## Products and contracts
 
@@ -84,7 +102,8 @@ policy, documentation and rebuild comparison tools are installed under `seascape
   exposure/enclosure and waterbody shape.
 - Hydrology: freshwater sources, fluvial connectivity/barriers and estuarine connectivity.
 - Substrate and habitat structure: classification, hardness, seagrass, kelp, reefs and composites.
-- Anthropogenic structures, source inventories, quality flags and artifact lineage.
+- Physical built-environment structures, source inventories, quality flags and artifact lineage;
+  this is not vessel, access, observer, recreation or effort modeling.
 
 See [scientific and source contracts](docs/CONTRACTS.md), the [product index](docs/products.md),
 and the [migration report](docs/MIGRATION.md). Existing formulas and product columns were retained;

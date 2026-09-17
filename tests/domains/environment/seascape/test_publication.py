@@ -78,16 +78,14 @@ def test_repeated_release_does_not_self_catalog_prior_release_manifest(tmp_path:
     (processed / "seascape_release_manifest.json").write_text('{"generation": "prior"}')
     audit = candidate / "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"
     audit.parent.mkdir(parents=True)
-    audit.write_text('{"artifact_release_passed": true, "model_policy_complete": false}')
+    audit.write_text(
+        '{"artifact_release_passed": true, "feature_eligibility_complete": true}'
+    )
     governed = (
         "config/feature_catalog.yaml",
-        "config/model_feature_policy.yaml",
-        "src/orcacast/domains/environment/meteorological/model_feature_policy.yaml",
+        "config/feature_eligibility.yaml",
         "docs/products.md",
         "config/data/environment_seascape.yaml",
-        "config/data/environment_meteorological.yaml",
-        "data/raw/environment/meteorological/surface_weather/hrrr/HRRR_R5_SOURCE_INVENTORY.parquet",
-        "data/raw/environment/meteorological/surface_weather/hrrr/R5_DOWNLOAD_MANIFEST.json",
     )
     for relative in governed:
         path = candidate / relative

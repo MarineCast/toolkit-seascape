@@ -108,6 +108,27 @@ Publication promotes files to canonical workspace paths and writes the seascape 
 It is local artifact publication, not a Git push or a public dataset upload. Direct family APIs
 can also publish their own outputs; the candidate workflow's release gate is a separate operation.
 
+## 7. Resolve a published product
+
+Consumers should use the canonical release API instead of copying internal paths:
+
+```python
+from seascape.products import list_products, list_resolutions, resolve_product
+
+print(list_products(workspace="/path/to/seascape-workspace"))
+print(list_resolutions("bathymetry", workspace="/path/to/seascape-workspace"))
+artifact = resolve_product(
+    workspace="/path/to/seascape-workspace",
+    product="bathymetry",
+    resolution=6,
+)
+```
+
+The resolver holds a consistent snapshot, requires a completed canonical release, validates
+governed and family manifests, verifies the selected artifact checksum, and returns immutable
+identity/provenance. It never falls back to another resolution. Applications choose predictive
+features and scales after freezing these physical products.
+
 ## Common problems
 
 | Symptom | Next check |

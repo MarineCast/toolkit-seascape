@@ -26,6 +26,7 @@ from seascape.core.config.paths import (
     resolve_config_path,
 )
 from seascape.core.artifacts.checksums import checksum_path
+from seascape.core.code_identity import package_code_identity
 
 StageRunner = Callable[["DomainBuildContext"], Any]
 
@@ -279,13 +280,13 @@ def _run_environment_feature_catalog(ctx: DomainBuildContext) -> None:
         namespace["main"]()
 
 
-def _run_seascape_model_policy(ctx: DomainBuildContext) -> None:
-    from seascape.modeling.feature_policy import main
+def _run_seascape_feature_eligibility(ctx: DomainBuildContext) -> None:
+    from seascape.governance.feature_eligibility import main
 
     catalog = ctx.candidate_root / "config/feature_catalog.yaml"
-    output = ctx.candidate_root / "config/model_feature_policy.yaml"
+    output = ctx.candidate_root / "config/feature_eligibility.yaml"
     with _patched_argv(
-        "feature_policy.py",
+        "feature_eligibility.py",
         [
             "--catalog",
             str(catalog),
@@ -642,11 +643,11 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         declared_outputs=("config/feature_catalog.yaml",),
     ),
     DomainBuildStage(
-        "seascape-model-policy",
-        "Regenerate the materialization- and scale-gated seascape model policy.",
-        _run_seascape_model_policy,
+        "seascape-feature-eligibility",
+        "Regenerate species-neutral materialization and feature eligibility metadata.",
+        _run_seascape_feature_eligibility,
         dependencies=("environment-feature-catalog",),
-        declared_outputs=("config/model_feature_policy.yaml",),
+        declared_outputs=("config/feature_eligibility.yaml",),
     ),
     DomainBuildStage(
         "seascape-documentation",
@@ -657,9 +658,9 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
     ),
     DomainBuildStage(
         "seascape-release-audit",
-        "Audit candidate artifacts, manifests, catalog, policy, and documentation.",
+        "Audit candidate artifacts, manifests, catalog, eligibility, and documentation.",
         _run_seascape_release_audit,
-        dependencies=("seascape-model-policy", "seascape-documentation"),
+        dependencies=("seascape-feature-eligibility", "seascape-documentation"),
         declared_outputs=(
             "outputs/domains/environmental_layer/seascape/seascape_release_audit.json",
         ),
@@ -756,7 +757,7 @@ _CANDIDATE_PATH_PREFIXES = (
     "data/processed/domain/environmental_layer/seascape",
     "outputs/domains/environmental_layer/seascape",
     "config/feature_catalog.yaml",
-    "config/model_feature_policy.yaml",
+    "config/feature_eligibility.yaml",
     "docs/products.md",
 )
 
@@ -874,6 +875,30 @@ def _dependency_state_checksums(
     return checksums
 
 
+def _stage_input_identities(
+    candidate_root: Path,
+    stage: DomainBuildStage,
+) -> dict[str, str]:
+    """Bind reusable state to file-backed sources and declared upstream artifacts."""
+
+    identities: dict[str, str] = {}
+    for relative in stage.declared_manifests:
+        manifest_path = candidate_root / relative
+        if not manifest_path.is_file():
+            continue
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for section in ("sources", "upstream_artifacts"):
+            for record in payload.get(section, []):
+                raw_path = record.get("path") if isinstance(record, dict) else None
+                if not raw_path or "://" in str(raw_path):
+                    continue
+                path = Path(str(raw_path))
+                resolved = path if path.is_absolute() else candidate_root / path
+                if resolved.exists():
+                    identities[f"{section}:{raw_path}"] = checksum_path(resolved)
+    return dict(sorted(identities.items()))
+
+
 def _stage_is_reusable(
     stage: DomainBuildStage,
     *,
@@ -888,6 +913,8 @@ def _stage_is_reusable(
         state = json.loads(state_path.read_text(encoding="utf-8"))
         if state.get("config_checksum") != _configuration_checksum(source_config):
             return False
+        if state.get("code_identity") != package_code_identity(project_root()):
+            return False
         if state.get("upstream_state_checksums") != _dependency_state_checksums(
             candidate_root, stage, registry
         ):
@@ -897,7 +924,12 @@ def _stage_is_reusable(
             for path in _declared_paths(candidate_root, stage)
             if path.exists()
         }
-        return bool(observed) and observed == state.get("declared_path_checksums")
+        return (
+            bool(observed)
+            and observed == state.get("declared_path_checksums")
+            and state.get("input_identities", {})
+            == _stage_input_identities(candidate_root, stage)
+        )
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
         return False
 
@@ -999,9 +1031,11 @@ def _record_stage_state(
     state_path = _stage_state_path(candidate_root, stage)
     state_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "stage": stage.name,
         "config_checksum": _configuration_checksum(source_config),
+        "code_identity": package_code_identity(project_root()),
+        "input_identities": _stage_input_identities(candidate_root, stage),
         "upstream_state_checksums": _dependency_state_checksums(
             candidate_root, stage, registry
         ),

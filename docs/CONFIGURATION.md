@@ -30,8 +30,8 @@ Those arguments are not uniformly rebased against the workspace by every command
 | [config/data/environment_seascape.yaml](../config/data/environment_seascape.yaml) | Source paths, provider settings, processing parameters, resolutions and family outputs |
 | [config/common.yaml](../config/common.yaml) | Named WGS84 bounding boxes used by family loaders |
 | [config/data/presentation_settings.yaml](../config/data/presentation_settings.yaml) | Inspection-map output root, basemap and visual settings |
-| [config/feature_catalog.yaml](../config/feature_catalog.yaml) | Reference/generated product and field metadata |
-| [config/model_feature_policy.yaml](../config/model_feature_policy.yaml) | Reference/generated materialization and scale eligibility policy |
+| [config/feature_catalog.yaml](../config/feature_catalog.yaml) | Checked-in reference catalog; candidates regenerate the authoritative release copy |
+| `config/feature_eligibility.yaml` | Candidate-generated static eligibility metadata; not an editable input or packaged template |
 
 The shipped project entry point is intentionally small:
 
@@ -53,10 +53,10 @@ or interpolated configurations are fully resolved before candidate paths are rew
 
 ## Geographic and scientific settings
 
-The defaults describe an inherited Northeast Pacific case study. Named areas include `model_area`,
-`extended_area` and a much larger `full_area`; inspect their bounds before acquisition or processing.
-Some inherited names refer to species ranges, but names alone do not impose ecological meaning on
-toolkit outputs. Editing one bounding box does not automatically update every source-specific
+The defaults describe an inherited Northeast Pacific case study. Named areas are `model_area`,
+`extended_area` and the much larger `regional_source_area`; inspect their bounds before acquisition
+or processing. The regional source extent preserves the prior physical bounds under a
+species-neutral name. Editing one bounding box does not automatically update every source-specific
 coverage constraint, expected cell count or resolution-dependent parameter.
 
 When adapting a region, review source coverage, water-polygon inputs, H3 resolutions, graph radius,
@@ -72,7 +72,7 @@ The workflow rewrites relative values beneath these prefixes into the candidate:
 - `data/processed/domain/environmental_layer/seascape`
 - `outputs/domains/environmental_layer/seascape`
 - `config/feature_catalog.yaml`
-- `config/model_feature_policy.yaml`
+- `config/feature_eligibility.yaml`
 - `docs/products.md`
 
 Relative `data/raw` paths continue to use the canonical workspace. Absolute paths are preserved,
@@ -82,13 +82,16 @@ owning workflow has been adapted for another layout.
 
 Rendered files live under `<candidate>/.seascape/config/`; stage state lives under
 `<candidate>/.seascape/stages/`. Reuse checks hash the entry-point YAML and direct domain include,
-upstream stage state and declared outputs. They do not automatically hash every referenced source,
-`common.yaml`, presentation file or code change. After such changes, use a fresh candidate or force
-the relevant stages to rebuild with `--overwrite` instead of trusting `--resume` alone.
+package commit/dirty source identity, upstream stage state, declared outputs, and file-backed
+source/upstream records found in family manifests. They do not automatically hash `common.yaml`,
+the presentation file, or remote sources without a local immutable identity. After those changes,
+use a fresh candidate or force the relevant stages to rebuild with `--overwrite`.
 
 ## Packaged templates
 
-`seascape init` copies packaged resources into a workspace without overwriting existing files.
+`seascape init` copies editable producer configuration into a workspace without overwriting existing
+files. It deliberately does not copy checked-in/generated feature catalogs, eligibility metadata,
+or product indexes; those are release-derived artifacts.
 It does not migrate an older workspace's configuration or replace locally edited templates.
 Maintainers must synchronize changed configuration templates with
 [src/seascape/resources](../src/seascape/resources); see [development](DEVELOPMENT.md).

@@ -1,0 +1,18 @@
+# Shared presentation defaults for HTML map exporters.
+
+# Exporters append their domain-specific directory beneath this project-relative root.
+base_export_directory: outputs
+
+color_maps:
+  # Seascape Toolkit Public "Forecast Lab" palette, copied from the bathymetry export.
+  default: ["#E8F4F1", "#B9E4DF", "#76CFCA", "#38A9AA", "#176F7D", "#0C1C3A"]
+  # Distinct semantic colors for categorical seafloor units.
+  geomorphic_units: ["#B9E4DF", "#38A9AA", "#176F7D", "#F2D06B", "#0C1C3A", "#355C9A", "#6388C5", "#A57449", "#7868A6", "#E59F49", "#9B5F54", "#78A86B", "#6C4C87"]
+
+basemap:
+  tile_layer: CartoDB positron
+
+default_zoom: 4
+
+# Used when a layer displays one categorical/static value rather than a varying measure.
+static_color: "#38A9AA"

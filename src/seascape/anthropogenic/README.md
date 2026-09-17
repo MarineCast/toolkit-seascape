@@ -2,9 +2,11 @@
 
 ## Purpose and non-goals
 
-This family measures mapped shoreline modification, overwater structures, dredging, disposal,
-artificial reef, and aquaculture context. It is an ecological covariate layer, not a navigation,
-regulatory, or inventory-completeness product.
+This family measures the physical built environment: mapped shoreline modification, overwater
+structures, dredging, disposal, artificial reef, and aquaculture footprint. It is not a human
+activity, vessel traffic, observer-effort, recreation-intensity, navigation, regulatory, or
+inventory-completeness product. Ferry terminals and marinas are represented only as mapped
+structures; their presence is not evidence of traffic, access, or observation effort.
 
 ## Sources, dependencies, and resolutions
 

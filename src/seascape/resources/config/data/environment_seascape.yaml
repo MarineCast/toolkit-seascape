@@ -1,0 +1,871 @@
+# SEASCAPE DATA PARAMETERS
+
+# SEASCAPE - SPATIAL SUPPORT: WATER GEOMETRY
+water_geometry:
+  processed_out_dir: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry
+
+  download:
+    sources:
+      ca_regions_path: data/raw/gis/marine/FederalMarineBioregions_SHP/FederalMarineBioregions.shp
+      wsdot_shorelines_path: data/raw/gis/marine/WSDOT_-_Major_Shorelines/WSDOT_-_Major_Shorelines.shp
+      ws_marine_shoreline_type_path: data/raw/gis/marine/shstmp-ps-marine-shorelines-2018-nwfsc/SHSTMP_PS_Marine_Shorelines_2018.shp
+      us_coastline_path: data/raw/gis/marine/tl_2022_us_coastline/tl_2022_us_coastline.shp
+      tz_file_path: data/raw/gis/marine/World_12NM_v4_20231025/eez_12nm_v4.shp
+      us_waters_path: data/raw/gis/marine/USMaritimeLimitsAndBoundariesSHP/USMaritimeLimitsNBoundaries.shp
+
+  build:
+    area: regional_source_area
+    output_filename: TERRITORIAL_WATER_POLYGON.parquet
+    # Endpoint clustering tolerance for the deterministic southern-Alaska boundary cycle.
+    alaska_boundary_snap_tolerance_m: 75000
+
+# SEASCAPE - SPATIAL SUPPORT: H3 GEOMETRY OVER WATER
+h3_geometry:
+  area: regional_source_area
+  resolutions: [4, 5, 6, 7, 8]
+  output_dir: data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry
+  source_water_filename: TERRITORIAL_WATER_POLYGON.parquet
+  output_grid_filename_template: H3_GRIDS_{res}.parquet
+  output_clipped_grid_filename_template: H3_GRIDS_CLIPPED_{res}.parquet
+  buffer_m: 2000
+  fill_simplify_tolerance: 0.0
+  clip_simplify_tolerance: 0.003
+  max_workers: 8
+
+# SEASCAPE - SPATIAL SUPPORT: CANONICAL MARINE SUPPORT AND WATER NETWORK
+water_network:
+  area: regional_source_area
+  model_area: model_area
+  resolutions: [6, 8]
+  water_mask_version: territorial_water_v1
+  spatial_support_version: marine_spatial_support_v1
+  h3_geometry_output_dir: data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry
+  output_dir: data/processed/domain/environmental_layer/seascape/spatial_support/water_network
+  water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+  support_filename_template: H3_MARINE_SUPPORT_RES_{res}.parquet
+  model_support_filename_template: H3_MODEL_AREA_SUPPORT_RES_{res}.parquet
+  full_geometry_filename_template: H3_MARINE_FULL_CELL_GEOMETRY_RES_{res}.parquet
+  clipped_geometry_filename_template: H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_{res}.parquet
+  edge_filename_template: H3_WATER_PASSABLE_EDGES_RES_{res}.parquet
+  connector_filename_template: H3_WATER_CONNECTORS_RES_{res}.parquet
+  neighborhood_filename_template: H3_WATER_NEIGHBORHOODS_RES_{res}.parquet
+  radius_sum_operator_filename: H3_WATER_RADIUS_OPERATOR_RES_8_5000M.npz
+  reachable_water_area_filename: H3_REACHABLE_WATER_AREA_RES_8_5000M.parquet
+  canonical_radius_m: 5000.0
+  parent_child_filename: H3_PARENT_CHILD_RES_8_TO_RES_6.parquet
+  maximum_neighborhood_hops: 4
+  minimum_water_fraction: 0.01
+  minimum_water_area_m2: 1.0
+  area_tolerance_m2: 1.0
+  passability_tolerance_m: 1.0
+  geodesic_segment_max_m: 100.0
+  connector_max_distance_m:
+    6: 7500.0
+    8: 1000.0
+  connector_candidate_limit: 16
+  edge_chunk_size: 50000
+  max_workers: 8
+
+# SEASCAPE - BATHYMETRY
+bathymetry:
+  # The canonical Seascape Toolkit model area from config/common.yaml.
+  area: model_area
+
+  source:
+    provider: GEBCO
+    release: "2026"
+    native_resolution_arc_seconds: 15
+    grid_name: gebco_2026_global
+    data_source_name: gebco_2026
+    format_name: geotiff
+    api_base_url: https://download.gebco.net/api
+    raw_dir: data/raw/bathymetry
+    raw_filename: GEBCO_2026_MODEL_AREA.tif
+    request_timeout_seconds: 120
+    poll_interval_seconds: 5
+    poll_timeout_seconds: 1800
+    overwrite: false
+
+  processing:
+    h3_resolution: 8
+    h3_grid_path_template: data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_{res}.parquet
+    water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+    processed_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY.parquet
+    bathymetry_sign: positive_down
+    # Direct within-H3 depth distribution summaries. The median is always exported.
+    depth_quantiles: [0.10, 0.25, 0.75, 0.90]
+    local_depth_anomaly:
+      # Compare each cell with valid water cells up to this many water-graph hops away,
+      # excluding the focal cell. With positive_down, positive values are locally deeper.
+      neighborhood_rings: 2
+    isobaths:
+      # 6.1–200 m bounds NOAA SRKW coastal critical habitat; 50 m separates
+      # modeled inshore/offshore habitat and 100 m captures a shallower prey-use band.
+      levels_m: [6.1, 50, 100, 200]
+      distance_projected_crs: EPSG:32610
+    additional_exports:
+      - h3_resolution: 6
+        processed_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY_RES_6.parquet
+
+  map:
+    smoothing_projected_crs: EPSG:32610
+    smoothing_output_crs: EPSG:3857
+    smoothing_analysis_pixel_size_m: 250
+    smoothing_output_pixel_size_m: 100
+    smoothing_gaussian_sigma_km: 1.5
+    smoothing_fill_opacity: 0.82
+
+# SEASCAPE - SEAFLOOR GEOMORPHOMETRY
+geomorphometry:
+  processing:
+    h3_resolution: 8
+    processed_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/geomorphometry/GEOMORPHOMETRY_RES_8.parquet
+    projected_crs: EPSG:32610
+    # Native slope summaries are calculated from the GEBCO raster before H3
+    # aggregation. All other scale-specific outputs use the named H3 rings.
+    native_raster_path: data/raw/bathymetry/GEBCO_2026_MODEL_AREA.tif
+    native_resolution_arc_seconds: 15
+    neighbor_ring: 1
+    neighborhood_rings: [1, 2, 4]
+    minimum_neighbors: 3
+    ruggedness_algorithm: wilson
+    slope_upper_quantile: 0.90
+    openness_radius_rings: 4
+    openness_bearing_sectors: 12
+    # General/profile/plan curvature use positive values for convex forms.
+    # This scale maps curvature magnitude to the 0–1 convexity/concavity indices.
+    curvature_index_scale_per_m: 0.0002
+
+# SEASCAPE - SEAFLOOR GEOMORPHIC UNITS
+# Modeling-scale terrain units derived from multi-scale bathymetric position,
+# slope, relief, directional shape, and existing waterbody constriction context.
+geomorphic_units:
+  processing:
+    h3_resolution: 8
+    bathymetry_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY.parquet
+    geomorphometry_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/geomorphometry/GEOMORPHOMETRY_RES_8.parquet
+    waterbody_morphometry_path: data/processed/domain/environmental_layer/seascape/coastal_configuration/waterbody_morphometry/WATERBODY_MORPHOMETRY_RES_8.parquet
+    processed_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/geomorphic_units/GEOMORPHIC_UNITS_RES_8.parquet
+    projected_crs: EPSG:32610
+
+  classification:
+    # Broad BPI context is roughly a 3–4 km neighborhood at H3 resolution 8.
+    broad_neighborhood_rings: 4
+    proportion_neighborhood_rings: 3
+    canyon_density_rings: 4
+    minimum_mapping_unit_cells: 3
+    shelf_max_depth_m: 200
+    flat_slope_degrees: 5
+    steep_slope_degrees: 15
+    shelf_break_distance_m: 2500
+    tpi_standard_deviation_break: 1.0
+    prominence_min_m: 10
+    canyon_relief_min_m: 20
+    bank_max_depth_m: 150
+    seamount_min_depth_m: 200
+    channel_max_width_m: 6000
+    sill_max_width_m: 15000
+    sill_min_constriction: 0.05
+
+# SEASCAPE - COASTAL CONFIGURATION: SHORELINE PROXIMITY
+shoreline_proximity:
+  area: model_area
+  processing:
+    h3_resolution: 8
+    water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+    land_polygon_path: data/raw/gis/land/ne_10m_land.shp
+    processed_path: data/processed/domain/environmental_layer/seascape/coastal_configuration/shoreline_proximity/SHORELINE_PROXIMITY_RES_8.parquet
+    projected_crs: EPSG:32610
+    network_context_buffer_km: 35
+    shoreline_seed_distance_m: 650
+    open_ocean_radius_km: 25
+    open_ocean_bearings: 16
+
+# SEASCAPE - COASTAL CONFIGURATION: EXPOSURE AND ENCLOSURE
+exposure_and_enclosure:
+  area: model_area
+  processing:
+    h3_resolution: 8
+    water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+    land_polygon_path: data/raw/gis/land/ne_10m_land.shp
+    processed_path: data/processed/domain/environmental_layer/seascape/coastal_configuration/exposure_and_enclosure/EXPOSURE_AND_ENCLOSURE_RES_8.parquet
+    projected_crs: EPSG:32610
+    maximum_fetch_km: 50
+    bearing_count: 16
+    network_context_buffer_km: 60
+    # At least 60% of the 50 km directional-fetch maximum across 16 bearings.
+    # This selects broad, exposed graph cells without requiring impossible 75% mean fetch
+    # in the island- and coastline-bounded Salish Sea model context.
+    open_water_openness_threshold: 0.60
+    open_bearing_fetch_fraction: 0.90
+
+# SEASCAPE - COASTAL CONFIGURATION: WATERBODY MORPHOMETRY
+waterbody_morphometry:
+  area: model_area
+  processing:
+    h3_resolution: 8
+    water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+    land_polygon_path: data/raw/gis/land/ne_10m_land.shp
+    bathymetry_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY.parquet
+    processed_path: data/processed/domain/environmental_layer/seascape/coastal_configuration/waterbody_morphometry/WATERBODY_MORPHOMETRY_RES_8.parquet
+    projected_crs: EPSG:32610
+    maximum_shore_search_km: 50
+    bearing_count: 16
+    network_context_buffer_km: 60
+    constriction_neighborhood_rings: 5
+    narrows_max_width_km: 5
+    narrows_constriction_threshold: 0.25
+    local_water_space_radius_rings: 8
+    sill_neighborhood_rings: 4
+    sill_minimum_neighbors: 6
+    sill_min_relief_m: 10
+    sill_max_width_km: 15
+    sill_min_constriction: 0.05
+
+# SEASCAPE - COASTAL CONFIGURATION: PHYSICAL SHORELINE CHARACTERIZATION
+shoreline_characterization:
+  area: model_area
+  download:
+    raw_dir: data/raw/environment/seascape/coastal_configuration/shoreline_characterization
+    request_timeout_seconds: 180
+    page_size: 2000
+    overwrite: false
+    sources:
+      wa_nwfsc_shoreline_typology:
+        kind: http_archive
+        url: https://media.fisheries.noaa.gov/2020-04/shstmp-ps-marine-shorelines-2018-nwfsc.zip
+        dataset_version: "2018"
+        raw_filename: shstmp-ps-marine-shorelines-2018-nwfsc.zip
+        extract: true
+        extract_directory: wa_shoreline
+        license: United States Government work
+        attribution: NOAA Northwest Fisheries Science Center
+      bc_shorezone_shore_units: ${anthropogenic_seascape.download.sources.bc_shorezone_shore_units}
+  sources:
+    wa_nwfsc_shoreline_typology:
+      path: data/raw/gis/marine/shstmp-ps-marine-shorelines-2018-nwfsc/SHSTMP_PS_Marine_Shorelines_2018.shp
+      normalizer: wa_physical
+      observation_date: "2018"
+      license: United States Government work
+      attribution: NOAA Northwest Fisheries Science Center
+      source_completeness_warning: Puget Sound marine shoreline typology; not a complete cross-border survey.
+      redistribution_restrictions: Retain source attribution and original metadata.
+    bc_shorezone_shore_units:
+      path: data/raw/environment/seascape/anthropogenic/BC_SHOREZONE_SHORE_UNIT_CLASS_LINES.geojson
+      normalizer: bc_shorezone
+      observation_date: null
+      license: Open Government Licence - British Columbia
+      attribution: Province of British Columbia ShoreZone
+      source_completeness_warning: Observation dates vary by source survey and are not exposed by this snapshot.
+      redistribution_restrictions: Redistribution is subject to the Open Government Licence - British Columbia.
+  processing:
+    resolutions: [6, 8]
+    projected_crs: EPSG:32610
+    output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/shoreline_characterization
+    inventory_filename: SHORELINE_SEGMENTS.parquet
+    feature_filename_template: SHORELINE_CHARACTERIZATION_RES_{res}.parquet
+    full_geometry_path_template: data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_FULL_CELL_GEOMETRY_RES_{res}.parquet
+
+# SEASCAPE - HYDROLOGIC CONNECTIVITY: FRESHWATER SOURCES
+freshwater_sources:
+  area: model_area
+
+  download:
+    raw_dir: data/raw/environment/seascape/hydrologic_connectivity/freshwater_sources
+    context_buffer_km: 250
+    arcgis_query_tile_degrees: 1
+    request_timeout_seconds: 180
+    overwrite: false
+    sources:
+      hydrorivers:
+        url: https://data.hydrosheds.org/file/HydroRIVERS/HydroRIVERS_v10_na_shp.zip
+        archive_filename: HydroRIVERS_v10_na_shp.zip
+        extracted_directory: HydroRIVERS_v10_na_shp
+      bc_stream_network:
+        layer_url: https://delivery.maps.gov.bc.ca/arcgis/rest/services/whse/bcgw_pub_whse_basemapping/MapServer/34
+        where: STREAM_ORDER >= 3 OR DOWNSTREAM_ROUTE_MEASURE = 0
+        context_buffer_km: 50
+        raw_filename: BC_FWA_STREAM_NETWORK.geojson
+      bc_river_polygons:
+        layer_url: https://delivery.maps.gov.bc.ca/arcgis/rest/services/whse/bcgw_pub_whse_basemapping/MapServer/17
+        context_buffer_km: 50
+        query_tile_degrees: 0.5
+        raw_filename: BC_FWA_RIVER_POLYGONS.geojson
+      us_network_flowlines:
+        layer_url: https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer/4
+        where: terminalfl = 1
+        context_buffer_km: 25
+        query_tile_degrees: 0.5
+        raw_filename: US_NHD_SMALL_SCALE_TERMINAL_FLOWLINES.geojson
+      us_river_polygons:
+        layer_url: https://hydro.nationalmap.gov/arcgis/rest/services/NHDPlus_HR/MapServer/8
+        where: ftype = 460
+        context_buffer_km: 25
+        query_tile_degrees: 0.25
+        raw_filename: US_NHDPLUS_HR_RIVER_POLYGONS.geojson
+
+  processing:
+    h3_resolution: 8
+    projected_crs: EPSG:32610
+    water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+    processed_directory: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/freshwater_sources
+    river_mouths_filename: RIVER_MOUTHS.parquet
+    river_systems_filename: RIVER_SYSTEMS.parquet
+    feature_filename: RIVER_MOUTH_FEATURES_RES_8.parquet
+    mouth_coast_tolerance_m: 1500
+    hydrorivers_match_distance_m: 5000
+    mouth_width_sample_distances_m: [75, 150, 300]
+    mouth_width_cross_section_length_m: 5000
+    mouth_width_polygon_match_distance_m: 300
+    default_stream_mouth_width_m: 2
+    river_mouth_pressure_decay_km: 5
+
+  inspect:
+    river_simplify_tolerance_m: 75
+
+# SEASCAPE - HYDROLOGIC CONNECTIVITY: FLUVIAL CONNECTIVITY
+fluvial_connectivity:
+  area: model_area
+
+  processing:
+    h3_resolution: 8
+    projected_crs: EPSG:32610
+    water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+    land_polygon_path: data/raw/gis/land/ne_10m_land.shp
+    hydrorivers_path: data/raw/environment/seascape/hydrologic_connectivity/freshwater_sources/HydroRIVERS_v10_na_shp/HydroRIVERS_v10_na_shp/HydroRIVERS_v10_na.shp
+    processed_directory: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity
+    feature_filename: FLUVIAL_CONNECTIVITY_RES_8.parquet
+    crosswalk_filename: WATERSHED_MARINE_CROSSWALK_RES_8.parquet
+    network_segments_filename: FLUVIAL_NETWORK_SEGMENTS.parquet
+    network_mouths_filename: FLUVIAL_NETWORK_MOUTHS.parquet
+    network_context_buffer_km: 60
+    mouth_coast_tolerance_m: 5000
+    mouth_graph_snap_max_km: 5
+
+  inspect:
+    river_simplify_tolerance_m: 75
+
+# SEASCAPE - HYDROLOGIC CONNECTIVITY: FLUVIAL-MARINE STRUCTURAL BARRIERS
+fluvial_barriers:
+  area: model_area
+
+  download:
+    raw_dir: data/raw/environment/seascape/hydrologic_connectivity/fluvial_barriers
+    request_timeout_seconds: 300
+    page_size: 2000
+    overwrite: false
+    sources:
+      bc_pscis_assessments:
+        kind: wfs
+        url: https://openmaps.gov.bc.ca/geo/pub/WHSE_FISH.PSCIS_ASSESSMENT_SVW/ows
+        type_name: pub:WHSE_FISH.PSCIS_ASSESSMENT_SVW
+        bbox_axis_order: lon_lat
+        srs_name: CRS:84
+        sort_by: STREAM_CROSSING_ID
+        raw_filename: BC_PSCIS_ASSESSMENTS.geojson
+        evidence_class: assessed_crossing
+        license: Access Only - verify redistribution terms before publishing raw records
+        attribution: Province of British Columbia Provincial Stream Crossing Inventory System
+      bc_provincial_obstacles:
+        kind: wfs
+        url: https://openmaps.gov.bc.ca/geo/pub/WHSE_FISH.FISS_OBSTACLES_PNT_SP/ows
+        type_name: pub:WHSE_FISH.FISS_OBSTACLES_PNT_SP
+        bbox_axis_order: lon_lat
+        srs_name: CRS:84
+        sort_by: FISH_OBSTACLE_POINT_ID
+        raw_filename: BC_PROVINCIAL_FISH_OBSTACLES.geojson
+        evidence_class: authoritative_physical_inventory
+        license: Open Government Licence - British Columbia
+        attribution: Province of British Columbia Fisheries Information Summary System
+      bc_dams:
+        kind: wfs
+        url: https://openmaps.gov.bc.ca/geo/pub/WHSE_WATER_MANAGEMENT.WRIS_DAMS_PUBLIC_SVW/ows
+        type_name: pub:WHSE_WATER_MANAGEMENT.WRIS_DAMS_PUBLIC_SVW
+        bbox_axis_order: lon_lat
+        srs_name: CRS:84
+        sort_by: WRIS_DP_SYSID
+        raw_filename: BC_DAMS_PUBLIC.geojson
+        evidence_class: authoritative_physical_inventory
+        license: Open Government Licence - British Columbia
+        attribution: Province of British Columbia Dam Safety Program
+      bc_flood_appurtenances:
+        kind: wfs
+        url: https://openmaps.gov.bc.ca/geo/pub/WHSE_WATER_MANAGEMENT.FPW_APPURTENANT_STRUCTURE_SVW/ows
+        type_name: pub:WHSE_WATER_MANAGEMENT.FPW_APPURTENANT_STRUCTURE_SVW
+        bbox_axis_order: lon_lat
+        srs_name: CRS:84
+        sort_by: FPW_AS_SYSID
+        raw_filename: BC_FLOOD_PROTECTION_APPURTENANCES.geojson
+        evidence_class: authoritative_physical_inventory
+        license: Open Government Licence - British Columbia
+        attribution: Province of British Columbia Flood Protection Works
+      wa_wdfw_fish_passage_sites:
+        kind: arcgis
+        layer_url: https://geodataservices.wdfw.wa.gov/arcgis/rest/services/ApplicationServices/FP_SearchSiteId/MapServer/0
+        fields: [OBJECTID, SiteRecordID, SiteId, FeatureType, FishPassageBarrierStatusCode, PercentFishPassableCode, FishPassageBarrierReasonCode, SurveyDate, BarrierCorrectionYearsText, PotentialSpecies, DataSource]
+        raw_filename: WA_WDFW_FISH_PASSAGE_SITES.geojson
+        evidence_class: assessed_crossing
+        license: Washington State agency open data terms
+        attribution: Washington Department of Fish and Wildlife Fish Passage and Diversion Screening Inventory
+      wa_wdfw_tidal_restrictions:
+        kind: arcgis
+        layer_url: https://geodataservices.wdfw.wa.gov/arcgis/rest/services/HP_Projects/CFS_Tidal_Restrictions_2025/MapServer/1
+        fields: '*'
+        raw_filename: WA_WDFW_TIDAL_RESTRICTIONS.geojson
+        evidence_class: assessed_tidal_restriction
+        license: Washington State agency open data terms
+        attribution: Washington Department of Fish and Wildlife Coastal Tidal Restrictions 2025
+      usgs_waterfalls:
+        kind: http_file
+        url: "https://www.sciencebase.gov/catalog/file/get/5e8d2b5982cee42d13466001?f=__disk__86%2Ff1%2Fc5%2F86f1c5a4ab96d77b04d827a87b0e85570b97d25e"
+        raw_filename: USGS_NHD_WATERFALLS_RAPIDS.geojson
+        evidence_class: authoritative_physical_inventory
+        license: CC0 1.0 Universal
+        attribution: U.S. Geological Survey national waterfalls and rapids linked to NHD
+
+  processing:
+    native_h3_resolution: 8
+    model_h3_resolution: 6
+    equal_area_crs: EPSG:6933
+    projected_crs: EPSG:32610
+    reference_year: 2026
+    marine_buffer_m: 5000
+    deduplication_tolerance_m: 100
+    river_network_snap_max_m: 5000
+    source_water_max_distance_m: 5000
+    graph_connector_max_distance_m: 5000
+    graph_connector_candidate_limit: 16
+    water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+    fluvial_segments_path: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/FLUVIAL_NETWORK_SEGMENTS.parquet
+    fluvial_mouths_path: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/FLUVIAL_NETWORK_MOUTHS.parquet
+    watershed_crosswalk_path: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/WATERSHED_MARINE_CROSSWALK_RES_8.parquet
+    processed_directory: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_barriers
+    inventory_filename: FLUVIAL_BARRIER_SOURCE_INVENTORY.parquet
+    lineage_filename: FLUVIAL_BARRIER_LINEAGE.parquet
+    barriers_filename: MAPPED_FLUVIAL_BARRIERS.parquet
+    mouth_summary_filename: FLUVIAL_MOUTH_BARRIER_SUMMARY.parquet
+    feature_filename_template: FLUVIAL_BARRIERS_RES_{res}.parquet
+    confidence_filename_template: FLUVIAL_BARRIERS_CONFIDENCE_RES_{res}.parquet
+    manifest_filename: fluvial_barriers_manifest.json
+
+# SEASCAPE - HYDROLOGIC CONNECTIVITY: ESTUARINE CONNECTIVITY
+estuarine_connectivity:
+  area: model_area
+
+  download:
+    raw_dir: data/raw/environment/seascape/hydrologic_connectivity/estuarine_connectivity
+    context_buffer_km: 75
+    request_timeout_seconds: 180
+    service_poll_seconds: 2
+    service_poll_timeout_seconds: 120
+    overwrite: false
+    sources:
+      bc_pecp:
+        # Public PECP-derived subset exposed by Data Basin. The downloader uses
+        # Data Basin's public short-lived ArcGIS proxy rather than storing a token.
+        dataset_id: bb12b20098cc47959e428e7408a03824
+        raw_filename: BC_PECP_ESTUARIES.geojson
+      us_pmep:
+        # PMEP's public point inventory represents individual U.S. West Coast
+        # estuaries and avoids treating all of Puget Sound as one estuary polygon.
+        layer_url: https://gis.psmfc.org/server/rest/services/PMEP/PMEP_Estuary_Points/MapServer/0
+        raw_filename: US_PMEP_ESTUARY_POINTS.geojson
+
+  processing:
+    h3_resolution: 8
+    projected_crs: EPSG:32610
+    water_polygon_path: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet
+    land_polygon_path: data/raw/gis/land/ne_10m_land.shp
+    bc_estuaries_path: data/raw/environment/seascape/hydrologic_connectivity/estuarine_connectivity/BC_PECP_ESTUARIES.geojson
+    us_estuary_points_path: data/raw/environment/seascape/hydrologic_connectivity/estuarine_connectivity/US_PMEP_ESTUARY_POINTS.geojson
+    processed_directory: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/estuarine_connectivity
+    estuary_filename: MAPPED_ESTUARIES.parquet
+    feature_filename: ESTUARINE_CONNECTIVITY_RES_8.parquet
+    estuary_graph_snap_max_km: 10
+
+# SEASCAPE - BENTHIC SUBSTRATE: CROSS-BORDER dbSEABED INTERPOLATION
+benthic_substrate_classification:
+  area: model_area
+  download:
+    raw_dir: data/raw/environment/seascape/benthic_substrate/classification
+    request_timeout_seconds: 180
+    page_size: 2000
+    overwrite: false
+    sources:
+      # December-2025 dbSEABED global 0.1-degree products published through the
+      # free Ocean Data Platform catalog. These are one consistent cross-border
+      # interpolation; do not substitute the Gulf-only bmi-dbseabed examples.
+      dbseabed_rock:
+        kind: http_file
+        http_method: POST
+        url: "https://api.hubocean.earth/api/table/v2/raw/download?table_id=e36187d8-c249-45ed-af53-47a06f52cf5d&raw_id=00b96e00-1b5"
+        raw_filename: DBSEABED_ROCK_PERCENT.tif
+        expected_bytes: 25931296
+        variable: rock
+        units: percent
+        dataset_url: https://app.hubocean.earth/catalog/dataset/e36187d8-c249-45ed-af53-47a06f52cf5d
+        dataset_version: ver202512
+        evidence_class: interpolated_model
+        license: Not specified in the public Ocean Data Platform catalog metadata
+        attribution: dbSEABED via HUB Ocean, Global seafloor rock presence mapping, ver202512
+      dbseabed_gravel:
+        kind: http_file
+        http_method: POST
+        url: "https://api.hubocean.earth/api/table/v2/raw/download?table_id=5065080c-b9e7-4e08-b1f5-3a757007cade&raw_id=43bb37e3-a2f"
+        raw_filename: DBSEABED_GRAVEL_PERCENT.tif
+        expected_bytes: 25931296
+        variable: gravel
+        units: percent
+        dataset_url: https://app.hubocean.earth/catalog/dataset/5065080c-b9e7-4e08-b1f5-3a757007cade
+        dataset_version: ver202512
+        evidence_class: interpolated_model
+        license: Not specified in the public Ocean Data Platform catalog metadata
+        attribution: dbSEABED via HUB Ocean, Global seafloor sediment texture mappings, ver202512
+      dbseabed_sand:
+        kind: http_file
+        http_method: POST
+        url: "https://api.hubocean.earth/api/table/v2/raw/download?table_id=5065080c-b9e7-4e08-b1f5-3a757007cade&raw_id=c6e23264-ac2"
+        raw_filename: DBSEABED_SAND_PERCENT.tif
+        expected_bytes: 25931296
+        variable: sand
+        units: percent
+        dataset_url: https://app.hubocean.earth/catalog/dataset/5065080c-b9e7-4e08-b1f5-3a757007cade
+        dataset_version: ver202512
+        evidence_class: interpolated_model
+        license: Not specified in the public Ocean Data Platform catalog metadata
+        attribution: dbSEABED via HUB Ocean, Global seafloor sediment texture mappings, ver202512
+      dbseabed_mud:
+        kind: http_file
+        http_method: POST
+        url: "https://api.hubocean.earth/api/table/v2/raw/download?table_id=5065080c-b9e7-4e08-b1f5-3a757007cade&raw_id=13b201b8-e1b"
+        raw_filename: DBSEABED_MUD_PERCENT.tif
+        expected_bytes: 25931296
+        variable: mud
+        units: percent
+        dataset_url: https://app.hubocean.earth/catalog/dataset/5065080c-b9e7-4e08-b1f5-3a757007cade
+        dataset_version: ver202512
+        evidence_class: interpolated_model
+        license: Not specified in the public Ocean Data Platform catalog metadata
+        attribution: dbSEABED via HUB Ocean, Global seafloor sediment texture mappings, ver202512
+  processing:
+    native_h3_resolution: 8
+    model_h3_resolution: 6
+    equal_area_crs: EPSG:6933
+    reference_year: 2026
+    marine_buffer_m: 5000
+    raster_resampling: bilinear
+    hard_substrate_seed_min_fraction: 0.5
+    processed_directory: data/processed/domain/environmental_layer/seascape/benthic_substrate/classification
+    inventory_filename: SUBSTRATE_SOURCE_INVENTORY.parquet
+    feature_filename_template: BENTHIC_SUBSTRATE_CLASSIFICATION_RES_{res}.parquet
+    confidence_filename_template: BENTHIC_SUBSTRATE_CONFIDENCE_RES_{res}.parquet
+    manifest_filename: benthic_substrate_classification_manifest.json
+
+# SEASCAPE - BENTHIC SUBSTRATE: DERIVED BOTTOM HARDNESS
+bottom_hardness:
+  area: model_area
+  processing:
+    native_h3_resolution: 8
+    model_h3_resolution: 6
+    equal_area_crs: EPSG:6933
+    reference_year: 2026
+    marine_buffer_m: 5000
+    processed_directory: data/processed/domain/environmental_layer/seascape/benthic_substrate/bottom_hardness
+    inventory_filename: BOTTOM_HARDNESS_INPUT_LINEAGE.parquet
+    feature_filename_template: BOTTOM_HARDNESS_RES_{res}.parquet
+    confidence_filename_template: BOTTOM_HARDNESS_CONFIDENCE_RES_{res}.parquet
+    manifest_filename: bottom_hardness_manifest.json
+
+# SEASCAPE - BIOGENIC HABITAT: SATELLITE-DERIVED SEAGRASS
+seagrass_habitat:
+  area: model_area
+  download:
+    raw_dir: data/raw/environment/seascape/biogenic_habitat/seagrass
+    request_timeout_seconds: 300
+    page_size: 2000
+    overwrite: false
+    sources:
+      global_sentinel2_seagrass_2023_2024:
+        kind: http_archive
+        url: https://zenodo.org/api/records/18612240/files/GlobalSeagrass2023_2024.zip/content
+        raw_filename: GlobalSeagrass2023_2024.zip
+        # Keep the highly compressed tiled archive intact (about 449 MB versus
+        # 11.9 GB extracted); rasterio reads only intersecting tiles via VSI ZIP.
+        extract: false
+        expected_bytes: 448760997
+        md5: d371628f0e343244eb47f188f0a89726
+        evidence_class: satellite_model
+        license: CC BY 4.0
+        attribution: Peng et al. (2026), Global 10-meter seagrass maps, Zenodo 10.5281/zenodo.18612240
+  processing:
+    native_h3_resolution: 8
+    model_h3_resolution: 6
+    equal_area_crs: EPSG:6933
+    reference_year: 2026
+    marine_buffer_m: 5000
+    observation_period: 2023-2024
+    # The distributed extent tiles are binary: 1 = mapped seagrass and
+    # 0 = background/nodata. Dense/sparse model classes are not retained.
+    positive_values: [1]
+    processed_directory: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass
+    inventory_filename: SEAGRASS_SOURCE_INVENTORY.parquet
+    feature_filename_template: SEAGRASS_RES_{res}.parquet
+    confidence_filename_template: SEAGRASS_CONFIDENCE_RES_{res}.parquet
+    manifest_filename: seagrass_habitat_manifest.json
+
+# SEASCAPE - BIOGENIC HABITAT: KELP
+kelp_habitat:
+  area: model_area
+  download:
+    raw_dir: data/raw/environment/seascape/biogenic_habitat/kelp
+    request_timeout_seconds: 300
+    page_size: 2000
+    overwrite: false
+    sources:
+      wa_dnr_annual_floating_kelp:
+        kind: http_archive
+        url: https://fortress.wa.gov/dnr/adminsa/gisdata/datadownload/WA_floating_kelp_coast_strait_reserves.zip
+        raw_filename: WA_floating_kelp_coast_strait_reserves.zip
+        extract: true
+        extract_directory: WA_floating_kelp
+        large: true
+        evidence_class: direct_observation
+        license: Washington State agency open data terms
+        attribution: Washington State Department of Natural Resources, Nearshore Habitat Program
+      wa_dnr_kelp_persistence:
+        kind: arcgis
+        layer_url: https://gis.dnr.wa.gov/site3/rest/services/Aquatics/AQ_Environment/MapServer/1
+        fields: [OBJECTID, MAP_INDEX, PROP_CATEGORY]
+        raw_filename: WA_DNR_FLOATING_KELP_PERSISTENCE.geojson
+        evidence_class: generalized_mapping
+        license: Washington State agency open data terms
+        attribution: Washington State Department of Natural Resources, Nearshore Habitat Program
+      wa_dnr_shorezone_floating_kelp:
+        kind: arcgis
+        layer_url: https://gis.dnr.wa.gov/site3/rest/services/Aquatics/AQ_Environment/MapServer/40
+        fields: [OBJECTID, UNIT_ID, FLOATKELP, GIANTKELP, BULLKELP]
+        raw_filename: WA_DNR_SHOREZONE_FLOATING_KELP.geojson
+        evidence_class: generalized_mapping
+        license: Washington State agency open data terms
+        attribution: Washington State Department of Natural Resources, Nearshore Habitat Program
+      bc_crims_kelp:
+        kind: wfs
+        url: https://openmaps.gov.bc.ca/geo/pub/WHSE_WILDLIFE_MANAGEMENT.CRIMS_KELP_BEDS/ows
+        type_name: pub:WHSE_WILDLIFE_MANAGEMENT.CRIMS_KELP_BEDS
+        raw_filename: BC_CRIMS_KELP_BEDS.geojson
+        evidence_class: generalized_mapping
+        license: Open Government Licence - British Columbia
+        attribution: Province of British Columbia
+  processing:
+    native_h3_resolution: 8
+    model_h3_resolution: 6
+    equal_area_crs: EPSG:6933
+    reference_year: 2026
+    marine_buffer_m: 5000
+    processed_directory: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp
+    inventory_filename: KELP_SOURCE_INVENTORY.parquet
+    feature_filename_template: KELP_RES_{res}.parquet
+    confidence_filename_template: KELP_CONFIDENCE_RES_{res}.parquet
+    manifest_filename: kelp_habitat_manifest.json
+
+# SEASCAPE - BIOGENIC HABITAT: DISTINCT REEF FAMILIES
+reef_habitat:
+  area: model_area
+  download:
+    raw_dir: data/raw/environment/seascape/biogenic_habitat/reef
+    request_timeout_seconds: 180
+    page_size: 2000
+    overwrite: false
+    sources:
+      wa_wdfw_shellfish:
+        kind: arcgis
+        layer_url: https://geodataservices.wdfw.wa.gov/arcgis/rest/services/ApplicationServices/HPWAPHSListedSpeciesAndHabitats/MapServer/45
+        where: shellfish_description IN ('Native Oyster','Oyster Beds','Pacific Oyster')
+        fields: [OBJECTID, shellfish_description, presence, source_layer]
+        raw_filename: WA_WDFW_MAPPED_OYSTER_BEDS.geojson
+        evidence_class: generalized_mapping
+        license: Washington State agency open data terms
+        attribution: Washington Department of Fish and Wildlife
+      bc_shorezone_bivalves:
+        kind: wfs
+        url: https://openmaps.gov.bc.ca/geo/pub/WHSE_ENVIRONMENTAL_MONITORING.SHZN_HAB_OBS_POLYS_SV/ows
+        type_name: pub:WHSE_ENVIRONMENTAL_MONITORING.SHZN_HAB_OBS_POLYS_SV
+        raw_filename: BC_SHOREZONE_OBSERVED_BIVALVES.geojson
+        evidence_class: generalized_mapping
+        license: Open Government Licence - British Columbia
+        attribution: Province of British Columbia
+      bc_sponge_reef_access_only:
+        enabled: false
+        kind: wfs
+        dataset_url: https://catalogue.data.gov.bc.ca/dataset/sponge-reef
+        evidence_class: unavailable_access_only
+        license: Access Only
+        attribution: Province of British Columbia
+  processing:
+    native_h3_resolution: 8
+    model_h3_resolution: 6
+    equal_area_crs: EPSG:6933
+    reference_year: 2026
+    marine_buffer_m: 5000
+    processed_directory: data/processed/domain/environmental_layer/seascape/biogenic_habitat/reef
+    inventory_filename: REEF_SOURCE_INVENTORY.parquet
+    feature_filename_template: REEF_HABITAT_RES_{res}.parquet
+    confidence_filename_template: REEF_HABITAT_CONFIDENCE_RES_{res}.parquet
+    manifest_filename: reef_habitat_manifest.json
+    geomorphometry_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/geomorphometry/GEOMORPHOMETRY_RES_8.parquet
+    bathymetry_path: data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY.parquet
+    slope_full_score_degrees: 20
+    relief_full_score_m: 40
+    ruggedness_full_score: 0.15
+    depth_full_score_max_m: 200
+    depth_zero_score_m: 500
+    potential_weights:
+      hardness: 0.40
+      slope: 0.20
+      relief: 0.15
+      ruggedness: 0.15
+      depth: 0.10
+
+# SEASCAPE - BIOGENIC HABITAT: MODEL-READY COMPOSITE PANEL
+benthic_habitat_composite:
+  area: model_area
+  processing:
+    native_h3_resolution: 8
+    model_h3_resolution: 6
+    equal_area_crs: EPSG:6933
+    reference_year: 2026
+    marine_buffer_m: 5000
+    processed_directory: data/processed/domain/environmental_layer/seascape/biogenic_habitat/composite
+    inventory_filename: BENTHIC_HABITAT_INPUT_LINEAGE.parquet
+    feature_filename_template: BENTHIC_HABITAT_RES_{res}.parquet
+    confidence_filename_template: BENTHIC_HABITAT_CONFIDENCE_RES_{res}.parquet
+    manifest_filename: benthic_habitat_composite_manifest.json
+
+# SEASCAPE - CROSS-BORDER ANTHROPOGENIC STRUCTURES
+anthropogenic_seascape:
+  area: model_area
+  download:
+    raw_dir: data/raw/environment/seascape/anthropogenic
+    request_timeout_seconds: 300
+    page_size: 2000
+    overwrite: false
+    sources:
+      osm_cross_border_anthropogenic:
+        kind: overpass
+        endpoints:
+          - https://overpass-api.de/api/interpreter
+          - https://overpass.kumi.systems/api/interpreter
+          - https://overpass.private.coffee/api/interpreter
+        attempts_per_endpoint: 2
+        retry_backoff_seconds: 2
+        request_delay_seconds: 1
+        query_timeout_seconds: 120
+        tile_degrees: 1.5
+        # OSM is the common coverage backbone, not the exact-area authority.
+        # Centers retain every tagged feature with far lower public-server load;
+        # government polygons/lines provide defensible fractions where available.
+        geometry_mode: center
+        query_filters:
+          - '["man_made"~"^(seawall|breakwater|groyne|jetty|pier|causeway|quay)$"]'
+          - '["amenity"="ferry_terminal"]'
+          - '["leisure"="marina"]'
+          - '["industrial"="port"]'
+          - '["harbour"="yes"]'
+          - '["seamark:type"~"^(causeway|dredged_area|dumping_ground|artificial_reef|shoreline_construction|marine_farm|harbour)$"]'
+          - '["landuse"="aquaculture"]'
+          - '["aquaculture"]'
+        raw_filename: OSM_ANTHROPOGENIC_FEATURES.json
+        normalizer: osm
+        evidence_class: volunteered_mapping
+        license: Open Database License 1.0
+        attribution: OpenStreetMap contributors and OpenSeaMap
+        dataset_url: https://www.openstreetmap.org/copyright
+      wa_dnr_shoreline_modification:
+        kind: arcgis
+        layer_url: https://gis.dnr.wa.gov/site3/rest/services/Aquatics/AQ_Environment/MapServer/51
+        fields: [OBJECTID, UNIT_ID, SM_TOT_PCT, SM1_TYPE, SM1_PCT, SM1_FT, SM2_TYPE, SM2_PCT, SM2_FT, SM3_TYPE, SM3_PCT, SM3_FT, PIERDOCK, SLIP_SMALL, SLIP_LARGE]
+        raw_filename: WA_DNR_SHORELINE_MODIFICATION.geojson
+        normalizer: wa_shorezone
+        evidence_class: systematic_shoreline_mapping
+        license: Washington State agency open data terms
+        attribution: Washington State Department of Natural Resources ShoreZone
+      bc_shorezone_shore_units:
+        kind: wfs
+        url: https://openmaps.gov.bc.ca/geo/pub/WHSE_ENVIRONMENTAL_MONITORING.SHZN_SHORE_UNIT_CLASS_LINES_SV/ows
+        type_name: pub:WHSE_ENVIRONMENTAL_MONITORING.SHZN_SHORE_UNIT_CLASS_LINES_SV
+        bbox_axis_order: lon_lat
+        raw_filename: BC_SHOREZONE_SHORE_UNIT_CLASS_LINES.geojson
+        normalizer: bc_shorezone
+        evidence_class: systematic_shoreline_mapping
+        license: Open Government Licence - British Columbia
+        attribution: Province of British Columbia ShoreZone
+      noaa_coastal_maintained_channels:
+        kind: arcgis
+        layer_url: https://encdirect.noaa.gov/arcgis/rest/services/NavigationChartData/MarineTransportation/FeatureServer/1
+        fields: '*'
+        raw_filename: NOAA_COASTAL_MAINTAINED_CHANNELS.geojson
+        normalizer: dredged_channel
+        evidence_class: authoritative_navigation_mapping
+        license: United States Government public domain
+        attribution: NOAA Office of Coast Survey and US Army Corps of Engineers
+      wa_ecology_disposal_sites:
+        kind: arcgis
+        layer_url: https://gis.ecology.wa.gov/serverext/rest/services/GIS/CoastalAtlas/MapServer/1116
+        fields: '*'
+        raw_filename: WA_ECOLOGY_OCEAN_DISPOSAL_SITES.geojson
+        normalizer: disposal_site
+        evidence_class: authoritative_inventory
+        license: Washington State agency open data terms
+        attribution: Washington State Department of Ecology Coastal Atlas
+      ca_active_disposal_sites:
+        kind: arcgis
+        layer_url: https://maps-cartes.ec.gc.ca/arcgis/rest/services/DMS/ActiveDisposalSites_SitesImmersionActifs/MapServer/0
+        fields: '*'
+        raw_filename: CANADA_ACTIVE_DISPOSAL_AT_SEA_SITES.geojson
+        normalizer: disposal_site
+        evidence_class: authoritative_inventory
+        license: Open Government Licence - Canada
+        attribution: Environment and Climate Change Canada
+      wa_ecology_commercial_shellfish:
+        kind: arcgis
+        layer_url: https://gis.ecology.wa.gov/serverext/rest/services/GIS/CoastalAtlas/MapServer/314
+        fields: '*'
+        raw_filename: WA_ECOLOGY_COMMERCIAL_SHELLFISH.geojson
+        normalizer: aquaculture
+        evidence_class: authoritative_inventory
+        license: Washington State agency open data terms
+        attribution: Washington State Department of Ecology Coastal Atlas
+      bc_dfo_shellfish_licences:
+        kind: http_file
+        url: https://api-proxy.edh-cde.dfo-mpo.gc.ca/catalogue/records/522d1b67-30d8-4a34-9b62-5da99b1035e6/attachments/licence-permis-shell-conch-rpt-pac-dfo-mpo-aquaculture-eng.csv
+        raw_filename: BC_DFO_SHELLFISH_AQUACULTURE_LICENCES.csv
+        normalizer: aquaculture_csv
+        evidence_class: authoritative_inventory
+        license: Open Government Licence - Canada
+        attribution: Fisheries and Oceans Canada
+      bc_dfo_marine_finfish_licences:
+        kind: http_file
+        url: https://api-proxy.edh-cde.dfo-mpo.gc.ca/catalogue/records/522d1b67-30d8-4a34-9b62-5da99b1035e6/attachments/license-permis-mer-mar-rpt-pac-dfo-mpo-aquaculture-eng.csv
+        raw_filename: BC_DFO_MARINE_FINFISH_AQUACULTURE_LICENCES.csv
+        normalizer: aquaculture_csv
+        evidence_class: authoritative_inventory
+        license: Open Government Licence - Canada
+        attribution: Fisheries and Oceans Canada
+  processing:
+    native_h3_resolution: 8
+    model_h3_resolution: 6
+    equal_area_crs: EPSG:6933
+    reference_year: 2026
+    marine_buffer_m: 5000
+    deduplication_tolerance_m: 100
+    source_water_max_distance_m: 2500
+    graph_connector_max_distance_m: 1500
+    graph_connector_candidate_limit: 16
+    processed_directory: data/processed/domain/environmental_layer/seascape/anthropogenic
+    inventory_filename: ANTHROPOGENIC_SOURCE_INVENTORY.parquet
+    feature_filename_template: ANTHROPOGENIC_RES_{res}.parquet
+    confidence_filename_template: ANTHROPOGENIC_CONFIDENCE_RES_{res}.parquet
+    manifest_filename: anthropogenic_manifest.json
+
+# Protected areas, critical habitat, and shipping governance are tracked in
+# src/orcacast/domains/governance/TODO.txt rather than duplicated here.

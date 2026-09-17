@@ -19,6 +19,7 @@ and command: `seascape`.
 | [Scientific and source contracts](CONTRACTS.md) | Grain, units, support, missingness, provenance and source rights |
 | [Product index](products.md) | Family guides, cataloged fields, collection paths and inspection guidance |
 | [Migration report](MIGRATION.md) | Extraction scope, executed checks and deferred OrcaCast integration |
+| [Hardening review](hardening-review.md) | Clean-checkout repairs, architecture decisions, validation and remaining blockers |
 | [Transfer inventory](migration-inventory.json) | Original file hashes and transferred destinations |
 
 Source-specific `DATA_SOURCES.md` files remain beside their producers. The product index links

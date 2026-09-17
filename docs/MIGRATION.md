@@ -1,5 +1,9 @@
 # OrcaCast seascape extraction — 2026-09-15
 
+> This is the dated extraction record. Subsequent clean-checkout repairs, static feature-eligibility
+> ownership, immutable product resolution and validation are recorded in
+> [hardening-review.md](hardening-review.md).
+
 ## Result
 
 `toolkit-seascape` owns seascape acquisition, processing, inspection, product metadata and release

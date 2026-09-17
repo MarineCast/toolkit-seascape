@@ -4,6 +4,10 @@
 
 Bathymetry, marine geomorphology, coastal geometry, and derived features.
 
+The toolkit owns species-neutral product schemas, static feature eligibility and immutable release
+resolution. Applications own prediction targets, temporal validation, predictive feature/scale
+selection, model fitting and evaluation.
+
 This repository contains the installable `seascape` package extracted from OrcaCast on 2026-09-15.
 Read `docs/ARCHITECTURE.md` for ownership/import changes; `docs/CONTRACTS.md` for scientific
 or product changes; README.md and docs/MIGRATION.md for setup or extraction-history questions.

@@ -15,13 +15,13 @@ The dependency direction is intentionally one way:
    physical mechanisms from that support.
 3. `benthic_substrate`, `biogenic_habitat`, and `anthropogenic` overlay mapped inventories and
    retain their evidence, coverage, and QC states.
-4. The unified feature catalog records every materialized table and field. The model policy
-   separately decides which catalog fields may enter modeling.
+4. The feature catalog records every materialized table and field. Static eligibility metadata
+   classifies roles, materialization, QC/provenance fields, physical redundancy, and alternate scales.
 
-Policy generation inspects every cataloged collection path. A feature variable is eligible for
-default modeling only when at least one materialized resolution contains a non-null value.
-All-null or unavailable variables remain cataloged with their provenance and missingness
-semantics, but stay excluded until a source or valid derivation is materialized.
+Eligibility generation inspects every cataloged collection path. A physical feature is eligible
+only when at least one materialized resolution contains a non-null value. All-null or unavailable
+variables remain cataloged with their provenance and missingness semantics. Alternate scales remain
+eligible candidates; downstream applications own predictive feature and scale selection.
 
 Family builders remain orchestration facades. Generic spatial, acquisition, publication, and
 inspector primitives live in [`utils`](../src/seascape/utils/README.md); family-specific source normalization,
@@ -697,15 +697,15 @@ each materialized resolution.
 | Anthropogenic evidence (`anthropogenic_confidence`) | Overwater unmapped area | Confidence, provenance, or survey evidence; unit: boolean. | R6: `data/processed/domain/environmental_layer/seascape/anthropogenic/ANTHROPOGENIC_CONFIDENCE_RES_6.parquet`<br>R8: `data/processed/domain/environmental_layer/seascape/anthropogenic/ANTHROPOGENIC_CONFIDENCE_RES_8.parquet` | `OVERWATER_UNMAPPED_AREA` |
 <!-- END GENERATED SEASCAPE PRODUCT INDEX -->
 
-Regenerate or verify the catalog, policy, documentation, and release gate with:
+Regenerate or verify the catalog, eligibility metadata, documentation, and release gate with:
 
 ```bash
 python -m seascape.maintenance.update_seascape_feature_catalog
-python -m seascape.modeling.feature_policy
+python -m seascape.governance.feature_eligibility
 python -m seascape.maintenance.update_seascape_docs
 
 python -m seascape.maintenance.update_seascape_feature_catalog --check
-python -m seascape.modeling.feature_policy --check
+python -m seascape.governance.feature_eligibility --check
 python -m seascape.maintenance.update_seascape_docs --check
 python -m seascape.release --output /tmp/seascape_release.json
 ```

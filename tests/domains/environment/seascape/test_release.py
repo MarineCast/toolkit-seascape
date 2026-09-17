@@ -72,7 +72,7 @@ def test_release_counts_only_seascape_catalog_entries(monkeypatch, tmp_path) -> 
     monkeypatch.setattr(
         release,
         "_governance_audit",
-        lambda *_args: {"model_policy_complete": False},
+        lambda *_args: {"feature_eligibility_complete": True},
     )
     monkeypatch.setattr(release, "_radius_operator_audit", lambda *_args: {})
 
@@ -80,3 +80,4 @@ def test_release_counts_only_seascape_catalog_entries(monkeypatch, tmp_path) -> 
 
     assert audit["catalog_product_count"] == 2
     assert audit["catalog_feature_entry_count"] == 5
+    assert audit["feature_eligibility_complete"] is True

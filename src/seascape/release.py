@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import runpy
-import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -17,7 +18,9 @@ import yaml
 from seascape.core.artifacts import atomic_write_json
 from seascape.core.config.paths import project_root
 from seascape.core.artifacts.checksums import checksum_path
-from seascape.modeling.feature_policy import (
+from seascape.core.code_identity import package_code_identity
+from seascape.core.data.registry import DATASETS
+from seascape.governance.feature_eligibility import (
     seascape_catalog_subset,
 )
 from seascape.publication import (
@@ -250,39 +253,29 @@ def _manifest_audit(root: Path) -> dict[str, Any]:
 
 
 def _governance_audit(root: Path, catalog: dict[str, Any]) -> dict[str, Any]:
-    policy_path = root / "config/model_feature_policy.yaml"
+    eligibility_path = root / "config/feature_eligibility.yaml"
     readme_path = root / "docs/products.md"
-    if not policy_path.exists() or not readme_path.exists():
+    if not eligibility_path.exists() or not readme_path.exists():
         raise FileNotFoundError(
-            "Candidate seascape policy and README are required release artifacts."
+            "Candidate seascape eligibility metadata and README are required release artifacts."
         )
-    policy = yaml.safe_load(policy_path.read_text(encoding="utf-8"))
+    eligibility = yaml.safe_load(eligibility_path.read_text(encoding="utf-8"))
     _subset, expected_catalog_checksum = seascape_catalog_subset(catalog)
-    if policy.get("feature_catalog_checksum") != expected_catalog_checksum:
-        raise ValueError("Seascape catalog and model-policy checksums disagree.")
+    if eligibility.get("feature_catalog_checksum") != expected_catalog_checksum:
+        raise ValueError("Seascape catalog and feature-eligibility checksums disagree.")
     included_invalid = [
         f"{record['product']}.{record['column']}"
-        for record in policy.get("features", [])
-        if record.get("included_by_default")
+        for record in eligibility.get("features", [])
+        if record.get("eligible")
         and record.get("materialization_status")
         in {"all_null", "unavailable", "all_null_or_unavailable"}
     ]
     if included_invalid:
         raise ValueError(
-            "All-null or unavailable features are included by default: "
+            "All-null or unavailable features are marked eligible: "
             + ", ".join(included_invalid[:10])
         )
-    unresolved = policy.get("unresolved_scale_groups", {})
-    unresolved_included = [
-        f"{record['product']}.{record['column']}"
-        for record in policy.get("features", [])
-        if record.get("scale_group") in unresolved and record.get("included_by_default")
-    ]
-    if unresolved_included:
-        raise ValueError(
-            "Unresolved scale candidates are included by default: "
-            + ", ".join(unresolved_included[:10])
-        )
+    alternatives = eligibility.get("alternate_scale_groups", {})
     docs_namespace = runpy.run_module("seascape.maintenance.update_seascape_docs")
     current_readme = readme_path.read_text(encoding="utf-8")
     expected_readme = docs_namespace["update_readme"](
@@ -293,11 +286,11 @@ def _governance_audit(root: Path, catalog: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("Candidate seascape README product index is stale.")
     return {
         "catalog_checksum": checksum_path(root / DEFAULT_CATALOG_PATH),
-        "policy_checksum": checksum_path(policy_path),
+        "feature_eligibility_checksum": checksum_path(eligibility_path),
         "readme_checksum": checksum_path(readme_path),
         "included_invalid_features": included_invalid,
-        "unresolved_scale_groups": unresolved,
-        "model_policy_complete": not bool(unresolved),
+        "alternate_scale_groups": alternatives,
+        "feature_eligibility_complete": True,
     }
 
 
@@ -451,25 +444,89 @@ def build_release_audit(root: Path, catalog_path: Path) -> dict[str, Any]:
         "radius_operator": _radius_operator_audit(root),
         "governance": governance,
         "artifact_release_passed": True,
-        "model_policy_complete": governance["model_policy_complete"],
+        "feature_eligibility_complete": governance["feature_eligibility_complete"],
         "release_gate_passed": True,
     }
 
 
-def _git_revision(root: Path) -> str | None:
-    try:
-        return (
-            subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                cwd=root,
-                check=True,
-                capture_output=True,
-                text=True,
-            ).stdout.strip()
-            or None
+def _product_release_records(
+    candidate: Path,
+    *,
+    artifact_checksums: dict[str, str],
+    code_identity: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Describe every registry product materialized into the candidate release."""
+
+    manifest_metadata: dict[str, dict[str, Any]] = {}
+    for manifest_path in sorted((candidate / PROCESSED_ROOT).rglob("*manifest*.json")):
+        if manifest_path.name == SEASCAPE_RELEASE_MANIFEST:
+            continue
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_relative = str(manifest_path.relative_to(candidate))
+        for artifact in payload.get("artifacts", []):
+            relative = str(artifact.get("path", ""))
+            if not relative:
+                continue
+            manifest_metadata[relative] = {
+                "manifest_path": manifest_relative,
+                "source_completeness": payload.get("source_completeness"),
+                "coverage": {
+                    "h3_resolutions": payload.get("h3_resolutions", []),
+                    "spatial_bounds_wgs84": payload.get("spatial_bounds_wgs84"),
+                },
+                "source_vintage": [
+                    {
+                        "name": source.get("name"),
+                        "version": source.get("version"),
+                        "observation_period": source.get("observation_period"),
+                        "retrieved_at_utc": source.get("retrieved_at_utc"),
+                    }
+                    for source in payload.get("sources", [])
+                ],
+                "rights": {
+                    "licensing": payload.get("licensing", []),
+                    "attribution": payload.get("attribution", []),
+                },
+            }
+
+    records: dict[str, dict[str, Any]] = {}
+    for spec in DATASETS:
+        path = spec.path(
+            data_root=candidate / "data",
+            artifact_root=candidate / "artifacts",
+            output_root=candidate / "outputs",
         )
-    except (OSError, subprocess.SubprocessError):
-        return None
+        if not path.is_file():
+            continue
+        relative = str(path.relative_to(candidate))
+        checksum = artifact_checksums.get(relative)
+        if checksum is None:
+            continue
+        dataset_id = str(spec.dataset_id)
+        suffix = dataset_id.removeprefix("environment.seascape.")
+        match = re.fullmatch(r"(?P<product>.+)_r(?P<resolution>\d+)", suffix)
+        product_id = match.group("product") if match else suffix
+        resolution = int(match.group("resolution")) if match else None
+        metadata = manifest_metadata.get(relative, {})
+        records[dataset_id] = {
+            "product_id": product_id,
+            "dataset_id": dataset_id,
+            "path": relative,
+            "checksum": checksum,
+            "checksum_algorithm": "sha256",
+            "schema_version": spec.schema_version,
+            "producer": spec.producer,
+            "producer_code_identity": code_identity,
+            "resolution": resolution,
+            "grain": list(spec.primary_key),
+            "spatial_support": (
+                {"kind": "h3", "resolution": resolution}
+                if resolution is not None
+                else {"kind": "native_or_non_h3"}
+            ),
+            **metadata,
+        }
+    return records
 
 
 def publish_candidate_release(
@@ -497,7 +554,7 @@ def publish_candidate_release(
     }
     governed = {
         "catalog": "config/feature_catalog.yaml",
-        "policy": "config/model_feature_policy.yaml",
+        "feature_eligibility": "config/feature_eligibility.yaml",
         "readme": "docs/products.md",
         "release_audit": str(audit_path.relative_to(candidate)),
         "seascape_config": "config/data/environment_seascape.yaml",
@@ -513,22 +570,51 @@ def publish_candidate_release(
         }
         for name, path in governed.items()
     }
+    artifact_checksums = {
+        str(path.relative_to(candidate)): checksum_path(path)
+        for path in sorted(processed.rglob("*"))
+        if path.is_file() and path.name != SEASCAPE_RELEASE_MANIFEST
+    }
+    code_identity = package_code_identity(canonical)
+    products = _product_release_records(
+        candidate,
+        artifact_checksums=artifact_checksums,
+        code_identity=code_identity,
+    )
+    release_identity_payload = {
+        "artifact_checksums": artifact_checksums,
+        "governed_artifacts": governed_checksums,
+        "code_identity": code_identity,
+    }
+    release_id = hashlib.sha256(
+        json.dumps(
+            release_identity_payload,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
     release_relative = PROCESSED_ROOT / SEASCAPE_RELEASE_MANIFEST
     release_path = candidate / release_relative
     release_payload = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "release_id": release_id,
         "built_at_utc": datetime.now(UTC).isoformat(),
         "artifact_release_passed": True,
-        "model_policy_complete": bool(audit.get("model_policy_complete")),
+        "feature_eligibility_complete": bool(
+            audit.get("feature_eligibility_complete")
+        ),
         "family_manifest_checksums": family_manifests,
         "governed_artifacts": governed_checksums,
-        "code_revision": _git_revision(canonical),
+        "artifact_checksums": artifact_checksums,
+        "products": products,
+        "code_identity": code_identity,
+        "code_revision": code_identity.get("git_revision"),
     }
     atomic_write_json(release_path, release_payload, overwrite=True)
     roots = (
         PROCESSED_ROOT,
         Path("config/feature_catalog.yaml"),
-        Path("config/model_feature_policy.yaml"),
+        Path("config/feature_eligibility.yaml"),
         Path("docs/products.md"),
         Path(
             "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"

@@ -1,0 +1,3 @@
+base_directory: .
+water_polygon_processed_out_dir: data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry
+SEASCAPE_LAYER: config/data/environment_seascape.yaml

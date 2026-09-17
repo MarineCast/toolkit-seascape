@@ -53,12 +53,12 @@ with provenance and configuration differences before concluding that two regiona
 
 ## Generated metadata and documentation
 
-The workflow runs catalog, policy and documentation stages after product construction. Maintainers
+The workflow runs catalog, static eligibility and documentation stages after product construction. Maintainers
 can also inspect their interfaces directly:
 
 ```sh
 python -m seascape.maintenance.update_seascape_feature_catalog --help
-python -m seascape.modeling.feature_policy --help
+python -m seascape.governance.feature_eligibility --help
 python -m seascape.maintenance.update_seascape_docs --help
 ```
 
@@ -66,10 +66,10 @@ Catalog generation requires materialized products. Do not regenerate it against 
 workspace and describe the result as a validated release. The product index contains a generated
 block; update that block through the generator rather than editing field rows by hand.
 
-After changing editable configuration templates, copy the corresponding files into
-`src/seascape/resources/config/`. If `docs/products.md` changes, synchronize
-`src/seascape/resources/docs/products.md`. The standalone-package tests check these copies.
-The other repository guides in `docs/` are not currently copied by `seascape init`.
+After changing editable configuration templates, copy `config/common.yaml` and `config/data/*.yaml`
+into `src/seascape/resources/config/`. Generated catalog, eligibility, and product-index artifacts
+are intentionally absent from packaged init resources. The standalone-package tests check the
+editable copies. Repository guides in `docs/` are not copied by `seascape init`.
 
 ## Adding a family or product
 

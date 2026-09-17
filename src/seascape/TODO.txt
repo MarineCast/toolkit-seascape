@@ -2,7 +2,7 @@ SEASCAPE ROADMAP
 =================
 
 This is the canonical seascape roadmap. Family READMEs link here so feature
-status, product contracts, and modeling policy cannot drift apart.
+status, product contracts, and feature eligibility cannot drift apart.
 
 
 Completed engineering remediation
@@ -16,7 +16,8 @@ Completed engineering remediation
 [x] Canonical R8 5 km radius-sum operator and reachable-water-area derivative.
 [x] Water-geometry, freshwater-source, and habitat-surface ownership splits;
     compatibility-only wrappers removed and scoped Pyflakes enforced.
-[x] All-null, unavailable, and unresolved-scale candidates excluded by policy.
+[x] All-null and unavailable fields excluded by static feature eligibility;
+    alternate physical scales remain discoverable for application selection.
 
 
 Release gates still required after source or producer changes
@@ -25,13 +26,8 @@ Release gates still required after source or producer changes
 [ ] Rebuild the complete family in a disposable output root without downloads or inspectors.
 [ ] Compare staged versus current cell hashes, schemas, nulls, QC states,
     categorical counts, distributions, and numeric values; publish the artifact
-    release if its audit passes. Unresolved scale groups do not block artifact
-    publication while every candidate remains excluded.
-[ ] Freeze the 12 unresolved multiscale groups when complete inner rolling-origin
-    scores become available, then run matched model evaluation for the resulting
-    model-feature hash. Until then `model_policy_complete` remains false. No
-    compatible inner-fold score artifact exists yet; three prior comparison
-    manifests are stale against current inputs.
+    release if its audit passes. Alternate scale groups do not block physical
+    publication; consumers select scales under their own validation contracts.
 
 Deferred candidates
 -------------------
@@ -40,9 +36,9 @@ Deferred candidates
 [ ] Island count, island area, archipelago density, land-water boundary density,
     coastal orientation, and orientation variability.
 
-These stay out of the default model matrix until the scale/collinearity policy is
-frozen. Protected areas, critical habitat, and shipping lanes belong in a separate
-roadmap rather than this remediation.
+These remain research-only physical candidates pending explicit product contracts.
+Protected areas, critical habitat, and shipping lanes belong in separate owning
+roadmaps rather than this remediation.
 
 Blocked
 -------

@@ -3,8 +3,9 @@
 ## Ownership and inputs
 
 The toolkit owns source acquisition and normalization, physical calculations, validation, product
-catalogs and transactional releases. Applications own ecological interpretations, observation
-processes and modeling. The checked-in configuration defines a regional case study; it is not a
+catalogs, static feature eligibility and transactional releases. Applications own ecological
+interpretations, observation processes, predictive feature/scale selection, temporal validation,
+model fitting and evaluation. The checked-in configuration defines a regional case study; it is not a
 claim of worldwide input coverage. Source-specific acquisition and licensing notes remain beside
 each producer in `src/seascape/**/DATA_SOURCES.md`. Retain required source attribution and verify
 redistribution rights before distributing any downloaded data. Software retains its originating
@@ -35,13 +36,17 @@ connectivity and duplicate-key checks. Manifest schema and release checks are re
 originating implementation. Source metadata's legacy `_orcacast` JSON key is retained for cache
 compatibility; it does not import or depend on OrcaCast.
 
-Builds write to isolated candidates. Resume verifies configuration, upstream state and output
-checksums. Release audit checks required family manifests, product schemas, policy and documentation
-consistency, and water-network radius operators. Promotion uses atomic replacement and POSIX locks.
+Builds write to isolated candidates. Resume verifies configuration, package code identity,
+file-backed source/upstream identities, upstream state and output checksums. A changed commit or
+dirty source-tree hash invalidates reuse. Release audit checks required family manifests, product
+schemas, species-neutral feature eligibility, documentation consistency, and water-network radius
+operators. Alternate physical scale groups are documented without blocking the physical release;
+applications choose among them. Promotion uses atomic replacement and POSIX locks.
 Weather products and weather policy are no longer part of a seascape release.
 
-Reference catalog/policy files migrated from the original checkout describe earlier materialized
-products; they are not a verified release of this new package. Regenerate these from the candidate
-artifacts before promotion. Source geometry paths and formulas were not silently changed during
+The checked-in feature catalog is reference metadata from an earlier materialization, not a
+certified release. `seascape init` copies only editable producer configuration; candidate catalog,
+feature eligibility and product documentation are regenerated from materialized candidate artifacts
+before promotion. Source geometry paths and formulas were not silently changed during
 extraction. Full regional equality requires the retained rebuild comparison tool and source data;
 that expensive acquisition/rebuild was not run during this migration.

@@ -21,26 +21,10 @@ areas:
       max_lon: -121.00
       max_lat: 52.00
 
-  full_area:
-    description: Full sightings ingest area from Southern California to Alaska.
+  regional_source_area:
+    description: Broad Northeast Pacific source-acquisition extent.
     bbox_wgs84:
       min_lon: -180.00
       min_lat: 32.00
       max_lon: -109.00
       max_lat: 72.00
-
-  srkw_range:
-    description: Southern Resident killer whale area of interest.
-    bbox_wgs84:
-      min_lon: -132.00
-      min_lat: 44.00
-      max_lon: -121.00
-      max_lat: 54.00
-
-  transient_range:
-    description: Transient/Bigg's killer whale area of interest.
-    bbox_wgs84:
-      min_lon: -150.00
-      min_lat: 40.00
-      max_lon: -120.00
-      max_lat: 62.00

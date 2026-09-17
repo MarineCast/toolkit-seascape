@@ -4,6 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python: ['3.11', '3.14']
     steps:
@@ -12,6 +13,53 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install '.[test]'
+      - run: python -m pip check
+      - run: python -m pytest --collect-only -q
       - run: python -m pytest -q
+      - run: seascape --help
+      - run: |
+          workspace="$(mktemp -d)/seascape-workspace"
+          seascape --workspace "$workspace" init
+          test -f "$workspace/config/data/project.yaml"
+          test -f "$workspace/config/data/environment_seascape.yaml"
+          test -f "$workspace/config/data/presentation_settings.yaml"
+          seascape --workspace "$workspace" build --dry-run
       - run: seascape build --dry-run
       - run: python -m pip wheel . --no-deps --wheel-dir dist
+      - run: |
+          wheel_env="$(mktemp -d)/wheel-env"
+          python -m venv --system-site-packages "$wheel_env"
+          "$wheel_env/bin/python" -m pip install --no-deps dist/*.whl
+          outside="$(mktemp -d)"
+          workspace="$(mktemp -d)/seascape-workspace"
+          cd "$outside"
+          "$wheel_env/bin/seascape" --help
+          "$wheel_env/bin/seascape" --workspace "$workspace" init
+          test -f "$workspace/config/data/project.yaml"
+          test -f "$workspace/config/data/environment_seascape.yaml"
+          test -f "$workspace/config/data/presentation_settings.yaml"
+          "$wheel_env/bin/seascape" --workspace "$workspace" build --dry-run
+          "$wheel_env/bin/python" - <<'PY'
+          from importlib.resources import files
+
+          from seascape.core.data import catalog  # noqa: F401
+          from seascape.core.data.registry import DATASETS
+
+          root = files("seascape")
+          required = (
+              "products.py",
+              "core/data/catalog.py",
+              "core/data/contracts.py",
+              "core/data/registry.py",
+              "core/data/validation.py",
+              "resources/config/common.yaml",
+              "resources/config/data/project.yaml",
+              "resources/config/data/environment_seascape.yaml",
+              "resources/config/data/presentation_settings.yaml",
+          )
+          assert len(tuple(DATASETS)) == 75
+          assert all(root.joinpath(*path.split("/")).is_file() for path in required)
+          assert not root.joinpath("resources/config/feature_catalog.yaml").is_file()
+          assert not root.joinpath("resources/config/model_feature_policy.yaml").is_file()
+          PY
+      - run: git diff --check

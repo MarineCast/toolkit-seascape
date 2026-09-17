@@ -5,8 +5,9 @@
 ## Responsibilities
 
 The toolkit owns source acquisition and normalization, physical seascape calculations, product
-validation, inspection and release publication. Species-specific observation interpretation,
-habitat preference, model fitting and forecasting belong to applications. Weather and oceanographic
+validation, static feature eligibility, inspection and release publication. Species-specific
+observation interpretation, habitat preference, predictive feature/scale selection, temporal
+validation, model fitting and forecasting belong to applications. Weather and oceanographic
 processing are outside this package's workflow.
 
 ```mermaid
@@ -16,10 +17,11 @@ flowchart TD
     C --> D[Physical seascape families]
     A --> D
     D --> E[Candidate products and manifests]
-    E --> F[Catalog, feature policy and product index]
+    E --> F[Catalog, static feature eligibility and product index]
     F --> G[Release audit]
     G --> H[Explicit publication]
-    H --> I[Application and research consumers]
+    H --> I[Immutable product resolver]
+    I --> J[Application and research consumers]
 ```
 
 This diagram summarizes ownership. The actual dependency graph, including cross-family inputs,
@@ -43,7 +45,8 @@ is declared in [workflow.py](../src/seascape/workflow.py); `seascape build --dry
 | [src/seascape/release.py](../src/seascape/release.py) | Scientific and metadata release checks and candidate promotion |
 | [src/seascape/publication.py](../src/seascape/publication.py) | Seascape publication locks and consistent read snapshots |
 | [src/seascape/maintenance](../src/seascape/maintenance) | Catalog/docs generation and rebuild comparison |
-| [src/seascape/modeling/feature_policy.py](../src/seascape/modeling/feature_policy.py) | Availability and scale gates for cataloged features; no species model fitting |
+| [src/seascape/governance/feature_eligibility.py](../src/seascape/governance/feature_eligibility.py) | Static roles, availability, physical redundancy and alternate-scale metadata |
+| [src/seascape/products.py](../src/seascape/products.py) | Public discovery and checksum-verified immutable product resolution |
 | [config](../config) | Editable regional and presentation configuration plus reference metadata |
 | [src/seascape/resources](../src/seascape/resources) | Packaged templates used by workspace initialization |
 | [tests](../tests) | Offline contracts, calculations, publication and standalone-package checks |
@@ -61,6 +64,13 @@ not Python import paths. The [dataset registry](../src/seascape/core/data/catalo
 product identities and dependencies; the [feature catalog](../config/feature_catalog.yaml)
 describes table fields, units, roles and collection paths. Family manifests supply artifact lineage
 and checksums. Keep these three kinds of metadata distinct.
+
+The canonical release manifest freezes product paths, checksums, schema versions, producer code
+identity, resolution, grain, spatial support, family manifest, coverage/source-vintage metadata,
+and rights/attribution where supplied. `seascape.products` verifies the release and artifact before
+returning a frozen `ProductArtifact`. It never selects a different resolution or reads an
+unpublished candidate. Applications freeze these physical inputs and then own predictive feature
+and scale selection.
 
 The package uses toolkit-owned helpers and has no required OrcaCast import. It retains some legacy
 metadata names, such as the `_orcacast` acquisition-cache key, to preserve existing cache identity.

@@ -1,4 +1,4 @@
-"""Seascape model-matrix governance and diagnostic policies."""
+"""Compatibility namespace for retired application-model policy imports."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ __all__ = ["apply_feature_policy", "build_feature_policy"]
 
 
 def __getattr__(name: str) -> Any:
-    """Load policy helpers lazily so the feature-policy module remains CLI-safe."""
+    """Load static eligibility aliases lazily for older consumers."""
 
     if name not in __all__:
         raise AttributeError(name)

@@ -154,6 +154,95 @@ def test_resume_invalidates_when_included_domain_config_changes(tmp_path: Path) 
     assert calls == ["artifact.txt", "artifact.txt"]
 
 
+def test_resume_invalidates_when_package_code_identity_changes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = tmp_path / "config.yaml"
+    config.write_text("base_directory: .\n", encoding="utf-8")
+    candidate = tmp_path / "candidate"
+    calls: list[str] = []
+    identities = [{"git_revision": "one", "dirty": False, "source_tree_sha256": "a"}]
+    monkeypatch.setattr(
+        "seascape.workflow.package_code_identity", lambda _root: identities[-1]
+    )
+    stage = DomainBuildStage(
+        "fixture",
+        "fixture",
+        _write_runner("artifact.txt", calls),
+        declared_outputs=("artifact.txt",),
+    )
+    run_domain_layer_build(
+        config_path=config,
+        candidate_root=candidate,
+        publish=False,
+        stage_definitions=(stage,),
+    )
+    identities.append(
+        {"git_revision": "two", "dirty": False, "source_tree_sha256": "b"}
+    )
+    resumed = run_domain_layer_build(
+        config_path=config,
+        candidate_root=candidate,
+        publish=False,
+        resume=True,
+        stage_definitions=(stage,),
+    )
+
+    assert resumed[0].status == "complete"
+    assert calls == ["artifact.txt", "artifact.txt"]
+
+
+def test_resume_invalidates_when_file_backed_source_changes(tmp_path: Path) -> None:
+    config = tmp_path / "config.yaml"
+    config.write_text("base_directory: .\n", encoding="utf-8")
+    candidate = tmp_path / "candidate"
+    calls: list[str] = []
+
+    def runner(context) -> None:
+        calls.append("run")
+        source = context.candidate_root / "raw-source.txt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        if not source.exists():
+            source.write_text("source-v1", encoding="utf-8")
+        artifact = context.candidate_root / "artifact.txt"
+        artifact.write_text("artifact", encoding="utf-8")
+        manifest = context.candidate_root / "fixture_manifest.json"
+        manifest.write_text(
+            json.dumps(
+                {
+                    "sources": [{"path": "raw-source.txt"}],
+                    "upstream_artifacts": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    stage = DomainBuildStage(
+        "fixture",
+        "fixture",
+        runner,
+        declared_outputs=("artifact.txt",),
+        declared_manifests=("fixture_manifest.json",),
+    )
+    run_domain_layer_build(
+        config_path=config,
+        candidate_root=candidate,
+        publish=False,
+        stage_definitions=(stage,),
+    )
+    (candidate / "raw-source.txt").write_text("source-v2", encoding="utf-8")
+    resumed = run_domain_layer_build(
+        config_path=config,
+        candidate_root=candidate,
+        publish=False,
+        resume=True,
+        stage_definitions=(stage,),
+    )
+
+    assert resumed[0].status == "complete"
+    assert calls == ["run", "run"]
+
+
 def test_resume_grants_overwrite_only_to_invalidated_candidate_stage(
     tmp_path: Path,
 ) -> None:

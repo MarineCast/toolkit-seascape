@@ -54,15 +54,34 @@ def test_workspace_init_is_portable_and_preserves_edits(tmp_path, monkeypatch):
 
 def test_packaged_templates_match_editable_checkout():
     root = Path(__file__).parents[1]
-    for path in (root / "config").rglob("*.yaml"):
+    editable_templates = [root / "config/common.yaml", *(root / "config/data").glob("*.yaml")]
+    for path in editable_templates:
         assert files("seascape").joinpath("resources", str(path.relative_to(root))).read_bytes() == path.read_bytes()
-    assert files("seascape").joinpath("resources/docs/products.md").read_bytes() == (root / "docs/products.md").read_bytes()
+    assert not files("seascape").joinpath("resources/config/feature_catalog.yaml").is_file()
+    assert not files("seascape").joinpath("resources/config/model_feature_policy.yaml").is_file()
+
+
+def test_required_modules_and_editable_templates_are_in_installed_package():
+    from seascape.core.data import catalog, registry, validation
+
+    assert catalog.register_builtin_datasets
+    assert registry.DATASETS
+    assert validation.validate_path
+    resources = files("seascape").joinpath("resources/config/data")
+    for name in (
+        "project.yaml",
+        "environment_seascape.yaml",
+        "presentation_settings.yaml",
+    ):
+        assert resources.joinpath(name).is_file(), name
 
 
 def test_release_plan_is_seascape_only():
     stages = selected_stages(only=["seascape-release"])
     assert len(stages) == 26
     assert stages[-1].name == "seascape-release"
+    assert any(stage.name == "seascape-feature-eligibility" for stage in stages)
+    assert not any(stage.name == "seascape-model-policy" for stage in stages)
     assert not any("meteorological" in output for stage in stages for output in stage.declared_outputs)
 
 
