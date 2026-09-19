@@ -38,7 +38,7 @@ from seascape.utils.habitat_raster import (
     validate_percentage,
 )
 from seascape.utils.habitat_surface import (
-    _network_metrics,
+    habitat_network_metrics,
 )
 from seascape.utils.values import pipe_delimited_union as _pipe_union
 
@@ -174,7 +174,7 @@ def _r8_tables(
         for cell, fraction in zip(target_cells, hard_fraction, strict=True)
         if np.isfinite(fraction) and fraction >= hard_seed_min_fraction
     }
-    distance, _, distance_qc = _network_metrics(
+    distance, _, distance_qc = habitat_network_metrics(
         graph,
         target_cells,
         hard_cells,

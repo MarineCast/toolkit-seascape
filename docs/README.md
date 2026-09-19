@@ -16,6 +16,9 @@ and command: `seascape`.
 
 | Document | Purpose |
 | --- | --- |
+| [Python API](API.md) | Supported entry points, errors and side effects |
+| [Review remediation](review-remediation.md) | P1/P2 corrections and validation evidence |
+| [Environment baseline](environments/README.md) | Python and native-library versions |
 | [Scientific and source contracts](CONTRACTS.md) | Grain, units, support, missingness, provenance and source rights |
 | [Product index](products.md) | Family guides, cataloged fields, collection paths and inspection guidance |
 | [Migration report](MIGRATION.md) | Extraction scope, executed checks and deferred OrcaCast integration |

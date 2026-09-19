@@ -68,7 +68,8 @@ and checksums. Keep these three kinds of metadata distinct.
 The canonical release manifest freezes product paths, checksums, schema versions, producer code
 identity, resolution, grain, spatial support, family manifest, coverage/source-vintage metadata,
 and rights/attribution where supplied. `seascape.products` verifies the release and artifact before
-returning a frozen `ProductArtifact`. It never selects a different resolution or reads an
+returning a frozen `ProductArtifact` pointing into a retained `.seascape/releases/<release_id>`
+generation, independent of mutable canonical compatibility paths. See [API contracts](API.md). It never selects a different resolution or reads an
 unpublished candidate. Applications freeze these physical inputs and then own predictive feature
 and scale selection.
 

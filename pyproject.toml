@@ -14,11 +14,17 @@ dependencies = [
   "matplotlib>=3.8", "networkx>=3.2", "numpy>=1.26", "pandas>=2.1",
   "polars>=1.0", "pyarrow>=14", "pydantic>=2.0", "pyproj>=3.6",
   "PyYAML>=6.0", "rasterio>=1.4", "requests>=2.31", "scipy>=1.11",
-  "shapely>=2.0",
+  "shapely>=2.0", "urllib3>=2.0",
 ]
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+quality = ["ruff>=0.9", "mypy>=1.15", "pip-audit>=2.9"]
+notebook = [
+  "ipykernel>=6",
+  "jupyterlab>=4",
+  "nbconvert>=7",
+]
 
 [project.scripts]
 seascape = "seascape.cli:main"
@@ -32,3 +38,19 @@ seascape = ["resources/**/*", "**/*.md", "**/*.txt"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --import-mode=importlib"
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+# Bug-oriented baseline across all production code and tests, not a formatting rewrite.
+select = ["E9", "F63", "F7", "F82"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/seascape/products.py", "src/seascape/core/geo/crs.py", "src/seascape/core/artifacts/confinement.py", "src/seascape/seafloor_physiography/depth.py"]
+follow_imports = "skip"
+ignore_missing_imports = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+warn_unused_ignores = true

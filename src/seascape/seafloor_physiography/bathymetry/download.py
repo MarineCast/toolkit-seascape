@@ -13,11 +13,33 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable, Mapping
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 if TYPE_CHECKING:
     from .pipeline import BathymetryConfig
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _retrying_session() -> requests.Session:
+    """Return a session resilient to transient GEBCO queue/status disconnects."""
+
+    session = requests.Session()
+    retries = Retry(
+        total=5,
+        connect=5,
+        read=5,
+        status=5,
+        backoff_factor=1.0,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=frozenset({"GET", "HEAD", "OPTIONS"}),
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
 
 
 def _response_json(response: requests.Response, label: str) -> Any:
@@ -93,7 +115,7 @@ def download_gebco_geotiff(
         return config.raw_path
 
     config.raw_path.parent.mkdir(parents=True, exist_ok=True)
-    http = session or requests.Session()
+    http = session or _retrying_session()
     grids = _response_json(
         http.get(f"{config.api_base_url}/grids", timeout=config.request_timeout_seconds),
         "grids",

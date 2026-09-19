@@ -171,7 +171,9 @@ def atomic_write_json(
 ) -> Path:
     """Atomically write JSON without silently replacing an existing product."""
 
-    destination = Path(path)
+    from .confinement import validate_candidate_destination
+
+    destination = validate_candidate_destination(path)
     if destination.exists() and not overwrite:
         raise FileExistsError(f"Artifact already exists: {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -190,7 +192,9 @@ def atomic_write_json(
 def atomic_write_text(
     path: str | Path, text: str, *, overwrite: bool = False, encoding: str = "utf-8"
 ) -> Path:
-    destination = Path(path)
+    from .confinement import validate_candidate_destination
+
+    destination = validate_candidate_destination(path)
     if destination.exists() and not overwrite:
         raise FileExistsError(f"Artifact already exists: {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)

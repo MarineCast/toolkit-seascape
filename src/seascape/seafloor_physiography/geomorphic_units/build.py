@@ -112,6 +112,9 @@ def load_geomorphic_units_config(
 
     path = resolve_config_path(config_path)
     raw = load_data_config(path, domains="SEASCAPE_LAYER")
+    from seascape.seafloor_physiography.depth import require_positive_down_config
+
+    require_positive_down_config(raw)
     section = _mapping(raw.get("geomorphic_units"), "geomorphic_units")
     processing = _mapping(section.get("processing"), "geomorphic_units.processing")
     classification = _mapping(section.get("classification", {}), "geomorphic_units.classification")
@@ -221,6 +224,9 @@ def _load_inputs(config: GeomorphicUnitsConfig) -> pd.DataFrame:
         morphometry_columns,
         "Waterbody morphometry",
     )
+    from seascape.seafloor_physiography.depth import validate_positive_depth
+
+    validate_positive_depth(bathymetry["BATHYMETRY"])
     reference = set(bathymetry["H3_INDEX"])
     for name, frame in (
         ("Geomorphometry", geomorphometry),

@@ -39,11 +39,11 @@ def _lookup(mapping: Mapping[str, Any], dotted: str) -> Any:
     return value
 
 
-def _resolve_values(value: Any, root: Mapping[str, Any]) -> Any:
+def _resolve_values(value: Any, root: Mapping[str, Any], stack: tuple[str, ...] = ()) -> Any:
     if isinstance(value, Mapping):
-        return {key: _resolve_values(item, root) for key, item in value.items()}
+        return {key: _resolve_values(item, root, stack) for key, item in value.items()}
     if isinstance(value, list):
-        return [_resolve_values(item, root) for item in value]
+        return [_resolve_values(item, root, stack) for item in value]
     if isinstance(value, str):
         env_match = _ENV_PATTERN.match(value)
         if env_match:
@@ -53,7 +53,10 @@ def _resolve_values(value: Any, root: Mapping[str, Any]) -> Any:
             return os.environ[name]
         ref_match = _REF_PATTERN.match(value)
         if ref_match:
-            return _resolve_values(_lookup(root, ref_match.group(1)), root)
+            reference = ref_match.group(1)
+            if reference in stack:
+                raise ValueError(f"Configuration reference cycle: {' -> '.join((*stack, reference))}")
+            return _resolve_values(_lookup(root, reference), root, (*stack, reference))
     return value
 
 

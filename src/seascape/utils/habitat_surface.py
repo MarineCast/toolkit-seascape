@@ -283,13 +283,17 @@ def _surveyed_fraction(
     )
 
 
-def _network_metrics(
+def habitat_network_metrics(
     graph: WaterGraph,
     target_cells: list[str],
     present_cells: set[str],
     area_by_cell: pd.Series,
     radius_operator: RadiusSumOperator | None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Shared producer calculation of mapped habitat reachability and radius area.
+
+    This is a toolkit-internal habitat operation, not a downstream consumer API.
+    """
     if not present_cells:
         return (
             np.full(len(target_cells), np.nan, dtype="float64"),
@@ -393,7 +397,7 @@ def build_r8_tables(
     confidence["UNMAPPED_AREA"] = surveyed_fraction < 1.0 - 1e-9
 
     area = composition["HABITAT_AREA_M2"].astype("float64")
-    distance, within_radius, distance_qc = _network_metrics(
+    distance, within_radius, distance_qc = habitat_network_metrics(
         graph, target_cells, present_cells, area, radius_operator
     )
     water_area = support.set_index("H3_INDEX")["WATER_AREA_M2"].astype("float64")

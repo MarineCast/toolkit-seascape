@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
+import os
 import re
 import runpy
 from datetime import UTC, datetime
@@ -529,6 +531,13 @@ def _product_release_records(
     return records
 
 
+def _release_file(path: Path) -> bool:
+    return (
+        path.is_file() and not path.name.endswith(".lock")
+        and not {".staging", ".transactions"}.intersection(path.parts)
+    )
+
+
 def publish_candidate_release(
     *,
     canonical_project_root: Path,
@@ -549,7 +558,7 @@ def publish_candidate_release(
     family_manifests = {
         str(path.relative_to(candidate)): checksum_path(path)
         for path in sorted(processed.rglob("*manifest*.json"))
-        if path.name != SEASCAPE_RELEASE_MANIFEST
+        if _release_file(path) and path.name != SEASCAPE_RELEASE_MANIFEST
         and "biogenic_habitat/eelgrass" not in str(path)
     }
     governed = {
@@ -559,6 +568,13 @@ def publish_candidate_release(
         "release_audit": str(audit_path.relative_to(candidate)),
         "seascape_config": "config/data/environment_seascape.yaml",
     }
+    for name, relative in {
+        "effective_config_identity": ".seascape/config/identity.json",
+        "effective_config": ".seascape/config/environment_seascape.yaml",
+        "common_config": ".seascape/config/common.yaml",
+    }.items():
+        if (candidate / relative).is_file():
+            governed[name] = relative
     governed_checksums = {
         name: {
             "path": path,
@@ -573,7 +589,7 @@ def publish_candidate_release(
     artifact_checksums = {
         str(path.relative_to(candidate)): checksum_path(path)
         for path in sorted(processed.rglob("*"))
-        if path.is_file() and path.name != SEASCAPE_RELEASE_MANIFEST
+        if _release_file(path) and path.name != SEASCAPE_RELEASE_MANIFEST
     }
     code_identity = package_code_identity(canonical)
     products = _product_release_records(
@@ -596,8 +612,9 @@ def publish_candidate_release(
     release_relative = PROCESSED_ROOT / SEASCAPE_RELEASE_MANIFEST
     release_path = candidate / release_relative
     release_payload = {
-        "schema_version": 2,
+        "schema_version": 3,
         "release_id": release_id,
+        "storage_root": f".seascape/releases/{release_id}",
         "built_at_utc": datetime.now(UTC).isoformat(),
         "artifact_release_passed": True,
         "feature_eligibility_complete": bool(
@@ -629,10 +646,56 @@ def publish_candidate_release(
             relative_files.update(
                 item.relative_to(candidate)
                 for item in path.rglob("*")
-                if item.is_file()
-                and "/.staging/" not in f"/{item.relative_to(candidate)}"
+                if _release_file(item)
             )
+    # The generation and the replaceable compatibility paths are committed in
+    # one journaled transaction. Generations are copied, never hard-linked to
+    # canonical paths, and are never overwritten by subsequent releases.
+    generation = canonical / release_payload["storage_root"]
+    if not generation.resolve().is_relative_to(canonical.resolve()):
+        raise ValueError("Release generation escapes canonical workspace.")
     with SeascapeReleasePublisher(canonical, candidate) as publisher:
+        generation_files = relative_files | {
+            Path(record["path"]) for record in governed_checksums.values()
+        }
+        if generation.exists():
+            archived_manifest = generation / release_relative
+            existing = json.loads(archived_manifest.read_text(encoding="utf-8"))
+            if {k: v for k, v in existing.items() if k != "built_at_utc"} != {
+                k: v for k, v in release_payload.items() if k != "built_at_utc"
+            }:
+                raise ValueError("Existing release generation has conflicting identity.")
+            for relative in generation_files - {release_relative}:
+                source = candidate / relative
+                if not source.is_file():
+                    source = canonical / relative
+                if not (generation / relative).is_file() or checksum_path(
+                    generation / relative
+                ) != checksum_path(source):
+                    raise ValueError(f"Existing release generation checksum mismatch: {relative}")
+            # An idempotent publication retains its original creation metadata.
+            atomic_write_json(release_path, existing, overwrite=True)
+        else:
+            staged_generation = publisher.publisher.stage_path(generation)
+            staged_generation.mkdir(parents=True)
+            for relative in sorted(generation_files, key=str):
+                source = candidate / relative
+                if not source.is_file():
+                    source = canonical / relative
+                destination = staged_generation / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, destination)
+                with destination.open("rb") as handle:
+                    os.fsync(handle.fileno())
+            for directory in sorted(
+                [staged_generation, *(path for path in staged_generation.rglob("*") if path.is_dir())],
+                key=lambda path: len(path.parts), reverse=True,
+            ):
+                descriptor = os.open(directory, os.O_RDONLY)
+                try:
+                    os.fsync(descriptor)
+                finally:
+                    os.close(descriptor)
         for relative in sorted(relative_files, key=str):
             publisher.stage_candidate(relative, manifest=relative == release_relative)
         publisher.publish()

@@ -1,5 +1,7 @@
 name: package
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -27,12 +29,16 @@ jobs:
       - run: seascape build --dry-run
       - run: python -m pip wheel . --no-deps --wheel-dir dist
       - run: |
+          repo="$PWD"
           wheel_env="$(mktemp -d)/wheel-env"
           python -m venv --system-site-packages "$wheel_env"
-          "$wheel_env/bin/python" -m pip install --no-deps dist/*.whl
+          "$wheel_env/bin/python" -m pip install --force-reinstall --no-deps dist/*.whl
           outside="$(mktemp -d)"
           workspace="$(mktemp -d)/seascape-workspace"
+          cp tests/test_products.py tests/test_review_regressions.py "$outside/"
           cd "$outside"
+          "$wheel_env/bin/python" "$repo/scripts/check_installed_package.py"
+          "$wheel_env/bin/python" -m pytest -q --noconftest test_products.py test_review_regressions.py
           "$wheel_env/bin/seascape" --help
           "$wheel_env/bin/seascape" --workspace "$workspace" init
           test -f "$workspace/config/data/project.yaml"
@@ -63,3 +69,55 @@ jobs:
           assert not root.joinpath("resources/config/model_feature_policy.yaml").is_file()
           PY
       - run: git diff --check
+  notebook-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install '.[notebook]'
+      - run: python -m pip check
+      - run: |
+          jupyter nbconvert \
+            --to notebook \
+            --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb \
+            --ExecutePreprocessor.timeout=120 \
+            --output seascape-toolkit-validation.ipynb \
+            --output-dir /tmp
+      - run: git diff --exit-code
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install '.[test,quality]'
+      - run: python -m pip check
+      - run: ruff check src tests scripts
+      - run: ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py
+      - run: python -m mypy
+      - run: python scripts/environment_snapshot.py --output /tmp/seascape-environment
+      - run: pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-environment.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scientific-environment
+          path: /tmp/seascape-environment.*
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: false
+      # Standalone CLI avoids an organization-specific action license requirement.
+      - run: go install github.com/zricethezav/gitleaks/v8@v8.30.1
+      - run: gitleaks git . --redact --no-banner --log-opts="--all"
+      - run: gitleaks dir . --redact --no-banner

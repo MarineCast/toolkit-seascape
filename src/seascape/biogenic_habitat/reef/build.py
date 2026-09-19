@@ -57,7 +57,7 @@ from seascape.utils.habitat_configuration import (
     model_bbox_tuple,
 )
 from seascape.utils.habitat_surface import (
-    _network_metrics,
+    habitat_network_metrics,
 )
 from seascape.utils.values import pipe_delimited_union as _pipe_union
 
@@ -308,7 +308,7 @@ def _biogenic_metrics(
         subtype_area["oyster_bed"] + subtype_area["mussel_bed"],
     )
     area_series = pd.Series(total_area, index=target_cells)
-    distance, area_5km, distance_qc = _network_metrics(
+    distance, area_5km, distance_qc = habitat_network_metrics(
         graph, target_cells, present_cells, area_series, radius_operator
     )
     values = pd.DataFrame(

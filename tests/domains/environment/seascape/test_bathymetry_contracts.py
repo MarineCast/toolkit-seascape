@@ -10,6 +10,7 @@ from seascape.seafloor_physiography.bathymetry.build import (
     _isobath_crossings,
     _local_depth_anomaly,
 )
+from seascape.seafloor_physiography.bathymetry.download import _retrying_session
 from seascape.seafloor_physiography.bathymetry.pipeline import (
     recompute_parent_depth_bands,
 )
@@ -87,3 +88,14 @@ def test_parent_depth_fractions_are_recomputed_from_summed_child_counts(tmp_path
     assert sum(
         rebuilt[f"BATHYMETRY_FRAC_{token}_M"] for token, _, _ in DEPTH_BANDS_M
     ) == pytest.approx(1.0)
+
+
+def test_gebco_session_retries_transient_status_reads_but_not_queue_posts() -> None:
+    session = _retrying_session()
+    policy = session.get_adapter("https://").max_retries
+
+    assert policy.total == 5
+    assert policy.read == 5
+    assert 503 in policy.status_forcelist
+    assert "GET" in policy.allowed_methods
+    assert "POST" not in policy.allowed_methods

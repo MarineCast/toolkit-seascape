@@ -132,6 +132,9 @@ def load_geomorphometry_config(
 
     path = resolve_config_path(config_path)
     raw = load_data_config(path, domains="SEASCAPE_LAYER")
+    from seascape.seafloor_physiography.depth import require_positive_down_config
+
+    require_positive_down_config(raw)
     bathymetry = _mapping(raw.get("bathymetry"), "bathymetry")
     bathymetry_source = _mapping(bathymetry.get("source"), "bathymetry.source")
     bathymetry_processing = _mapping(bathymetry.get("processing"), "bathymetry.processing")
@@ -159,8 +162,8 @@ def load_geomorphometry_config(
             "include neighbor_ring."
         )
     quantile = float(processing.get("slope_upper_quantile", 0.90))
-    if not 0.5 < quantile < 1.0:
-        raise ValueError("geomorphometry.processing.slope_upper_quantile must be in (0.5, 1).")
+    if quantile != 0.90:
+        raise ValueError("slope_upper_quantile must be 0.90 for the stable Q90 column contract.")
     openness_radius = int(processing.get("openness_radius_rings", max(rings)))
     openness_sectors = int(processing.get("openness_bearing_sectors", 12))
     if openness_radius < 1 or openness_sectors < 4:
@@ -306,6 +309,10 @@ def _native_raster_slope_summary(
             raise ValueError("Native GEBCO slope input must be a one-band EPSG:4326 raster.")
         elevation = raster.read(1, masked=True).astype("float64").filled(np.nan)
         transform = raster.transform
+        if (transform.b != 0 or transform.d != 0 or transform.a <= 0 or transform.e >= 0):
+            raise ValueError("Native slope requires an unrotated north-up raster.")
+        if min(elevation.shape) < 3:
+            raise ValueError("Native slope requires at least three rows and columns.")
 
     rows, columns = np.indices(elevation.shape)
     longitudes, latitudes = rasterio.transform.xy(transform, rows, columns, offset="center")
@@ -316,8 +323,11 @@ def _native_raster_slope_summary(
     longitude_step_m = (
         abs(float(transform.a)) * 111_320.0 * np.maximum(np.cos(np.deg2rad(latitudes)), 0.1)
     )
-    gradient_row = np.gradient(elevation, axis=0) / latitude_step_m
-    gradient_column = np.gradient(elevation, axis=1) / longitude_step_m
+    # Central differences require marine support on both sides. Raster edges
+    # retain numpy's one-sided stencil; land and nodata never contribute.
+    marine_elevation = np.where(marine, elevation, np.nan)
+    gradient_row = np.gradient(marine_elevation, axis=0) / latitude_step_m
+    gradient_column = np.gradient(marine_elevation, axis=1) / longitude_step_m
     slope = np.degrees(np.arctan(np.hypot(gradient_column, gradient_row)))
     valid = marine & np.isfinite(slope)
     valid_latitudes = latitudes[valid]
@@ -470,7 +480,10 @@ def _derive_metrics(
     neighborhood_lookups: Mapping[int, Mapping[str, tuple[str, ...]]],
 ) -> pd.DataFrame:
     cells = frame["H3_INDEX"].astype(str).tolist()
-    numeric_depth = pd.to_numeric(frame["BATHYMETRY"], errors="coerce")
+    from seascape.seafloor_physiography.depth import validate_positive_depth
+
+    validate_positive_depth(frame["BATHYMETRY"])
+    numeric_depth = pd.to_numeric(frame["BATHYMETRY"], errors="raise")
     depths = {
         cell: float(depth)
         for cell, depth in zip(cells, numeric_depth, strict=True)
@@ -685,6 +698,9 @@ def build_geomorphometry(
         source_completeness="complete",
         metadata={
             "neighborhood_semantics": "water-passable graph neighborhoods",
+            "native_slope_method": "marine_only_central_differences_v2",
+            "native_slope_edges": "one_sided_at_raster_edges; missing_if_stencil_has_land_or_nodata",
+            "native_slope_affine": "unrotated_north_up_epsg4326",
             "surface_area_ratio_warning": (
                 "SURFACE_AREA_RATIO_FROM_SLOPE is deterministic from slope and excluded from "
                 "the default model matrix."

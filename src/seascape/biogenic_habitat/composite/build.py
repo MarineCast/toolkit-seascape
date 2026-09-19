@@ -106,6 +106,24 @@ def _build_resolution(
     reef_conf = pd.read_parquet(configs["reef"].confidence_path(resolution))
     substrate_conf = pd.read_parquet(configs["substrate"].confidence_path(resolution))
     keys = ["H3_INDEX", "H3_RESOLUTION"]
+    inputs = {
+        "seagrass": seagrass, "kelp": kelp, "reef": reef,
+        "seagrass confidence": seagrass_conf, "kelp confidence": kelp_conf,
+        "reef confidence": reef_conf, "substrate confidence": substrate_conf,
+    }
+    reference = None
+    for name, table in inputs.items():
+        if not set(keys).issubset(table.columns):
+            raise ValueError(f"{name} is missing composite identity columns.")
+        if (table.empty or table[keys].isna().any().any()
+                or table.duplicated(keys).any()
+                or not table["H3_RESOLUTION"].eq(resolution).all()):
+            raise ValueError(f"{name} requires unique non-null keys at resolution {resolution}.")
+        support = pd.MultiIndex.from_frame(table[keys])
+        if reference is None:
+            reference = support
+        elif set(support) != set(reference):
+            raise ValueError(f"{name} composite support must match seagrass exactly.")
     values = seagrass.merge(
         kelp, on=keys, how="inner", validate="one_to_one", suffixes=("", "_KELP")
     )
@@ -147,6 +165,8 @@ def _build_resolution(
         how="inner",
         validate="one_to_one",
     )
+    # One authoritative ordering before Series masks or numpy arrays are used.
+    confidence = values[keys].merge(confidence, on=keys, how="left", validate="one_to_one")
     output["BENTHIC_HABITAT_RICHNESS"] = _coverage_gated_richness(values, confidence)
     edge_density = pd.to_numeric(values["SEAGRASS_EDGE_DENSITY_M_PER_KM2"], errors="coerce").fillna(
         0

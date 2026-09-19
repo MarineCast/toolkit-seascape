@@ -115,7 +115,9 @@ def default_semantic_contracts(**overrides: str) -> dict[str, str]:
 def atomic_write_parquet(frame: Any, destination: Path, *, compression: str = "zstd") -> Path:
     """Write a DataFrame-like object through a same-filesystem temporary artifact."""
 
-    destination = destination.resolve()
+    from seascape.core.artifacts.confinement import validate_candidate_destination
+
+    destination = validate_candidate_destination(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_name(f".{destination.name}.{uuid.uuid4().hex}.part")
     try:

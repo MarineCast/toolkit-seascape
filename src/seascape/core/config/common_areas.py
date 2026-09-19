@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -12,7 +13,7 @@ DEFAULT_COMMON_CONFIG_PATH = "config/common.yaml"
 
 
 def _common_areas(common_config_path: str | Path | None = None) -> Mapping[str, Any]:
-    path = resolve_config_path(common_config_path or DEFAULT_COMMON_CONFIG_PATH)
+    path = resolve_config_path(common_config_path or os.environ.get("SEASCAPE_COMMON_CONFIG") or DEFAULT_COMMON_CONFIG_PATH)
     raw = load_data_config(path, domains=())
     areas = raw.get("areas")
     if not isinstance(areas, Mapping):

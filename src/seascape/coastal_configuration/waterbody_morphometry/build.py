@@ -133,6 +133,9 @@ def load_waterbody_morphometry_config(
 
     path = resolve_config_path(config_path)
     raw = load_data_config(path, domains="SEASCAPE_LAYER")
+    from seascape.seafloor_physiography.depth import require_positive_down_config
+
+    require_positive_down_config(raw)
     section = _mapping(raw.get("waterbody_morphometry"), "waterbody_morphometry")
     processing = _mapping(
         section.get("processing"),
@@ -393,6 +396,8 @@ def _sill_candidates(
         config.bathymetry_path,
         columns=["H3_INDEX", "BATHYMETRY"],
     ).drop_nulls()
+    if bathymetry["BATHYMETRY"].lt(0).any():
+        raise ValueError("Sill products require positive-down bathymetry.")
     depths = np.full(len(graph_cells), np.nan, dtype="float64")
     cell_index = {cell: index for index, cell in enumerate(graph_cells)}
     for cell, depth in bathymetry.iter_rows():

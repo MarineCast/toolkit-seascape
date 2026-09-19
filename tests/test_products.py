@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -31,8 +32,9 @@ def _release_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     release_manifest.write_text(
         json.dumps(
             {
-                "schema_version": 2,
-                "release_id": "fixture-release",
+                "schema_version": 3,
+                "release_id": "a" * 64,
+                "storage_root": ".seascape/releases/" + "a" * 64,
                 "artifact_release_passed": True,
                 "family_manifest_checksums": {
                     relative_family: checksum_path(family_manifest)
@@ -65,7 +67,12 @@ def _release_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
         ),
         encoding="utf-8",
     )
-    return workspace, artifact, release_manifest
+    generation = workspace / ".seascape/releases" / ("a" * 64)
+    for source in (artifact, family_manifest, release_manifest):
+        target = generation / source.relative_to(workspace)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+    return workspace, generation / artifact.relative_to(workspace), release_manifest
 
 
 def test_discovery_and_exact_resolution_resolution(tmp_path: Path) -> None:
@@ -79,7 +86,7 @@ def test_discovery_and_exact_resolution_resolution(tmp_path: Path) -> None:
 
     assert resolved.path == artifact
     assert resolved.dataset_id == "environment.seascape.bathymetry_r6"
-    assert resolved.release_id == "fixture-release"
+    assert resolved.release_id == "a" * 64
     assert resolved.grain == ("H3_INDEX",)
     with pytest.raises(TypeError):
         resolved.coverage["changed"] = True  # type: ignore[index]
@@ -123,3 +130,87 @@ def test_resolver_works_outside_repository_and_imports_no_orcacast(
 
     assert resolved.resolution == 6
     assert "orcacast" not in products_module.__dict__
+
+
+def _candidate_fixture(root: Path, value: bytes) -> Path:
+    """Minimal audited candidate to exercise the real publisher/resolver boundary."""
+    from seascape.release import PROCESSED_ROOT
+    artifact = root / PROCESSED_ROOT / "seafloor_physiography/bathymetry/BATHYMETRY_RES_6.parquet"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_bytes(value)
+    family = artifact.with_name("bathymetry_manifest.json")
+    family.write_text(json.dumps({
+        "schema_version": "3.0.0",
+        "artifacts": [{"path": str(artifact.relative_to(root))}],
+    }))
+    for relative in ("config/feature_catalog.yaml", "config/feature_eligibility.yaml",
+                     "docs/products.md", "config/data/environment_seascape.yaml"):
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("fixture")
+    audit = root / "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"
+    audit.parent.mkdir(parents=True, exist_ok=True)
+    audit.write_text(json.dumps({"artifact_release_passed": True, "feature_eligibility_complete": True}))
+    return artifact
+
+
+def test_two_publications_retain_prior_product_and_manifest_bytes(tmp_path):
+    from seascape.release import publish_candidate_release
+    workspace, candidate = tmp_path / "workspace", tmp_path / "candidate"
+    source = _candidate_fixture(candidate, b"release A")
+    publish_candidate_release(canonical_project_root=workspace, candidate_project_root=candidate)
+    first = resolve_product(workspace=workspace, product="bathymetry", resolution=6)
+    manifest_bytes = first.manifest_path.read_bytes()
+    source.write_bytes(b"release B")
+    publish_candidate_release(canonical_project_root=workspace, candidate_project_root=candidate)
+    second = resolve_product(workspace=workspace, product="bathymetry", resolution=6)
+    assert first.release_id != second.release_id
+    assert first.path.read_bytes() == b"release A"
+    assert first.manifest_path.read_bytes() == manifest_bytes
+    assert second.path.read_bytes() == b"release B"
+    assert checksum_path(first.path) == first.checksum
+    old = resolve_product(workspace=workspace, product="bathymetry", resolution=6,
+                          release_id=first.release_id)
+    assert old == first
+    assert list_products(workspace=workspace, release_id=first.release_id) == ("bathymetry",)
+    assert list_resolutions("bathymetry", workspace=workspace, release_id=first.release_id) == (6,)
+    # Identical publication must preserve the archived generation, including timestamp.
+    publish_candidate_release(canonical_project_root=workspace, candidate_project_root=candidate)
+    assert resolve_product(workspace=workspace, product="bathymetry", resolution=6) == second
+
+
+def test_generation_is_rolled_back_when_canonical_promotion_fails(tmp_path, monkeypatch):
+    import os
+    from seascape.release import publish_candidate_release
+    workspace, candidate = tmp_path / "workspace", tmp_path / "candidate"
+    source = _candidate_fixture(candidate, b"release A")
+    publish_candidate_release(canonical_project_root=workspace, candidate_project_root=candidate)
+    first = resolve_product(workspace=workspace, product="bathymetry", resolution=6)
+    source.write_bytes(b"release B")
+    original_replace = os.replace
+    canonical_artifact = workspace / source.relative_to(candidate)
+    def fail_new_artifact(source_path, destination):
+        if Path(destination) == canonical_artifact and ".staging" in Path(source_path).parts:
+            raise OSError("injected canonical failure")
+        return original_replace(source_path, destination)
+    with monkeypatch.context() as scoped:
+        scoped.setattr(os, "replace", fail_new_artifact)
+        with pytest.raises(OSError, match="injected"):
+            publish_candidate_release(canonical_project_root=workspace, candidate_project_root=candidate)
+    assert resolve_product(workspace=workspace, product="bathymetry", resolution=6) == first
+    assert sorted(p.name for p in (workspace / ".seascape/releases").iterdir()) == [first.release_id]
+
+
+def test_legacy_mutable_release_requires_republication(tmp_path):
+    workspace, _, manifest = _release_fixture(tmp_path)
+    payload = json.loads(manifest.read_text())
+    payload["schema_version"] = 2
+    manifest.write_text(json.dumps(payload))
+    with pytest.raises(ValueError, match="republish"):
+        resolve_product(workspace=workspace, product="bathymetry", resolution=6)
+
+
+@pytest.mark.parametrize("release_id", ["../outside", "x" * 64, ""])
+def test_historical_release_id_is_validated(tmp_path, release_id):
+    with pytest.raises(ValueError, match="SHA-256"):
+        list_products(workspace=tmp_path, release_id=release_id)

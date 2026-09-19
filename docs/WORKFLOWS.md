@@ -104,7 +104,8 @@ Use the same configuration and candidate directory:
 seascape --workspace /path/to/seascape-workspace build --candidate-root /path/to/seascape-workspace/.seascape/candidate --resume --publish
 ```
 
-Publication promotes files to canonical workspace paths and writes the seascape release manifest.
+Publication retains a copied generation under `.seascape/releases/<release_id>` and promotes
+canonical compatibility paths and the schema-3 release manifest in one journaled transaction.
 It is local artifact publication, not a Git push or a public dataset upload. Direct family APIs
 can also publish their own outputs; the candidate workflow's release gate is a separate operation.
 
@@ -126,7 +127,9 @@ artifact = resolve_product(
 
 The resolver holds a consistent snapshot, requires a completed canonical release, validates
 governed and family manifests, verifies the selected artifact checksum, and returns immutable
-identity/provenance. It never falls back to another resolution. Applications choose predictive
+identity/provenance and retained generation paths. Pass `release_id=artifact.release_id` to resolve
+a historical generation. Older schema-2 releases require republishing. See [API contracts](API.md).
+It never falls back to another resolution. Applications choose predictive
 features and scales after freezing these physical products.
 
 ## Common problems

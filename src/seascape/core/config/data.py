@@ -46,4 +46,7 @@ def load_data_config(
         domain_cfg = _read_yaml_mapping(include_path)
         merged.update(domain_cfg)
 
+    from seascape.core.geo.crs import validate_metric_crs_settings
+
+    validate_metric_crs_settings(merged)
     return merged

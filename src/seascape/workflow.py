@@ -19,7 +19,8 @@ from typing import Any
 
 import yaml
 
-from seascape.core.config.data import DOMAIN_CONFIG_KEYS
+from seascape.core.config.data import DOMAIN_CONFIG_KEYS, load_data_config
+from seascape.core.config.document import ConfigDocument
 from seascape.core.config.paths import (
     project_root,
     resolve_config_include,
@@ -75,10 +76,18 @@ def _patched_argv(program: str, args: Sequence[str]):
 @contextmanager
 def _candidate_environment(candidate_root: Path):
     previous = os.environ.get("SEASCAPE_CANDIDATE_ROOT")
+    previous_common = os.environ.get("SEASCAPE_COMMON_CONFIG")
+    common = candidate_root / ".seascape/config/common.yaml"
+    if common.is_file():
+        os.environ["SEASCAPE_COMMON_CONFIG"] = str(common)
     os.environ["SEASCAPE_CANDIDATE_ROOT"] = str(candidate_root)
     try:
         yield
     finally:
+        if previous_common is None:
+            os.environ.pop("SEASCAPE_COMMON_CONFIG", None)
+        else:
+            os.environ["SEASCAPE_COMMON_CONFIG"] = previous_common
         if previous is None:
             os.environ.pop("SEASCAPE_CANDIDATE_ROOT", None)
         else:
@@ -791,42 +800,103 @@ def _rebase_candidate_values(
     return value
 
 
+def _validate_candidate_outputs(value: Any, canonical_root: Path, candidate_root: Path) -> None:
+    """Reject configured output escapes before any family runs (inputs stay external)."""
+    if isinstance(value, dict):
+        for key, item in value.items():
+            name = str(key)
+            if isinstance(item, str) and (
+                name in {"output_dir", "output_path", "processed_path", "processed_directory"}
+                or name.endswith(("_output_dir", "_processed_out_dir"))
+                or name == "processed_out_dir"
+            ):
+                destination = Path(item).expanduser()
+                if not destination.is_absolute():
+                    destination = canonical_root / destination
+                if not destination.resolve().is_relative_to(candidate_root.resolve()):
+                    raise ValueError(f"Candidate output escapes candidate root ({name}): {item}")
+            if isinstance(item, str) and "filename" in name and not any(
+                part in name for part in ("raw_", "source_")
+            ):
+                if Path(item).name != item or item in {".", ".."}:
+                    raise ValueError(f"Candidate output filename must be a basename ({name}): {item}")
+            _validate_candidate_outputs(item, canonical_root, candidate_root)
+    elif isinstance(value, list):
+        for item in value:
+            _validate_candidate_outputs(item, canonical_root, candidate_root)
+
+
+def _configuration_identity(source_config: Path) -> dict[str, Any]:
+    """Fingerprint composed inputs and resolved values, including named-area bounds."""
+    project = ConfigDocument.load(source_config)
+    documents = [project]
+    for key in DOMAIN_CONFIG_KEYS:
+        if project.data.get(key):
+            documents.append(ConfigDocument.load(resolve_config_include(project.source, project.data[key])))
+    common = project_root() / "config/common.yaml"
+    if common.is_file():
+        documents.append(ConfigDocument.load(common))
+    paths = sorted({path for doc in documents for path in doc.include_chain}, key=str)
+    effective = load_data_config(project.source)
+    payload = {
+        "data": effective,
+        "common": dict(documents[-1].data) if common.is_file() else None,
+    }
+    return {
+        "files": {str(path): checksum_path(path) for path in paths},
+        "effective_sha256": hashlib.sha256(json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), default=str
+        ).encode("utf-8")).hexdigest(),
+    }
+
+
 def _prepare_candidate_config(
     source_config: Path,
     *,
     canonical_root: Path,
     candidate_root: Path,
 ) -> Path:
-    """Create a project config whose processed environment paths target the candidate."""
-
+    """Freeze the same effective configuration used by direct family APIs."""
+    if canonical_root.is_relative_to(candidate_root):
+        raise ValueError("Candidate must not be the canonical workspace or its ancestor.")
+    raw = load_data_config(source_config)
+    # Supply the only output-directory defaults otherwise resolved from the
+    # canonical base by the water/H3 loaders.
+    for section, key, relative in (
+        ("water_geometry", "processed_out_dir", "spatial_support/water_geometry"),
+        ("h3_geometry", "output_dir", "spatial_support/h3_geometry"),
+    ):
+        if section in raw:
+            raw[section].setdefault(key, f"data/processed/domain/environmental_layer/seascape/{relative}")
+    configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
+    input_root = (canonical_root / configured_base).resolve()
+    rendered = _rebase_candidate_values(raw, input_root, candidate_root)
+    _validate_candidate_outputs(rendered, input_root, candidate_root)
     config_dir = candidate_root / ".seascape/config"
+    if not config_dir.resolve().is_relative_to(candidate_root):
+        raise ValueError("Candidate configuration directory escapes candidate root.")
     config_dir.mkdir(parents=True, exist_ok=True)
-    raw = yaml.safe_load(source_config.read_text(encoding="utf-8"))
-    if not isinstance(raw, dict):
-        raise ValueError(f"Domain build config must be a mapping: {source_config}")
-    rendered = _rebase_candidate_values(raw, canonical_root, candidate_root)
-    for key in ("SEASCAPE_LAYER",):
-        include = raw.get(key)
-        if not include:
-            continue
-        include_path = resolve_config_path(str(include))
-        include_payload = yaml.safe_load(include_path.read_text(encoding="utf-8"))
-        if not isinstance(include_payload, dict):
-            raise ValueError(f"Environment config must be a mapping: {include_path}")
-        candidate_include = config_dir / include_path.name
-        candidate_include.write_text(
-            yaml.safe_dump(
-                _rebase_candidate_values(
-                    include_payload, canonical_root, candidate_root
-                ),
-                sort_keys=False,
-            ),
-            encoding="utf-8",
+    for key in DOMAIN_CONFIG_KEYS:
+        rendered.pop(key, None)
+    rendered["base_directory"] = str(input_root)
+    domain = config_dir / "environment_seascape.yaml"
+    destination = config_dir / "project.yaml"
+    for target in (domain, destination, config_dir / "common.yaml", config_dir / "identity.json"):
+        if not target.resolve().is_relative_to(candidate_root):
+            raise ValueError(f"Candidate configuration path escapes candidate root: {target}")
+    domain.write_text(yaml.safe_dump(rendered, sort_keys=False), encoding="utf-8")
+    destination.write_text(yaml.safe_dump({
+        "base_directory": str(input_root), "SEASCAPE_LAYER": str(domain),
+    }, sort_keys=False), encoding="utf-8")
+    common = canonical_root / "config/common.yaml"
+    if common.is_file():
+        (config_dir / "common.yaml").write_text(
+            yaml.safe_dump(dict(ConfigDocument.load(common).data), sort_keys=False), encoding="utf-8"
         )
-        rendered[key] = str(candidate_include)
-    rendered["base_directory"] = str(canonical_root)
-    destination = config_dir / source_config.name
-    destination.write_text(yaml.safe_dump(rendered, sort_keys=False), encoding="utf-8")
+    (config_dir / "identity.json").write_text(
+        json.dumps(_configuration_identity(source_config), sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
     return destination
 
 
@@ -835,22 +905,9 @@ def _stage_state_path(candidate_root: Path, stage: DomainBuildStage) -> Path:
 
 
 def _configuration_checksum(source_config: Path) -> str:
-    """Hash the project config and every declared domain include."""
-
-    source = source_config.resolve()
-    payload = yaml.safe_load(source.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"Domain build config must be a mapping: {source}")
-    paths = [source]
-    for key in DOMAIN_CONFIG_KEYS:
-        include = payload.get(key)
-        if include:
-            paths.append(resolve_config_include(source, str(include)))
-    digest = hashlib.sha256()
-    for path in sorted(set(paths), key=str):
-        digest.update(str(path).encode("utf-8"))
-        digest.update(checksum_path(path).encode("ascii"))
-    return digest.hexdigest()
+    return hashlib.sha256(json.dumps(
+        _configuration_identity(source_config), sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")).hexdigest()
 
 
 def _declared_paths(root: Path, stage: DomainBuildStage) -> tuple[Path, ...]:
@@ -1070,6 +1127,11 @@ def run_domain_layer_build(
         / ".seascape/candidates/seascape"
         / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     )
+    available_stages = tuple(stage_definitions or DOMAIN_LAYER_STAGES)
+    for stage in available_stages:
+        for path in _declared_paths(candidate, stage):
+            if not path.resolve().is_relative_to(candidate):
+                raise ValueError(f"Declared output escapes candidate root: {path}")
     config = (
         source_config
         if dry_run
@@ -1088,7 +1150,6 @@ def run_domain_layer_build(
         publish=publish,
         **context_kwargs,
     )
-    available_stages = tuple(stage_definitions or DOMAIN_LAYER_STAGES)
     registry = _stage_registry(available_stages)
     stages = selected_stages(only=only, skip=skip, stages=available_stages)
     skip_set = set(skip)

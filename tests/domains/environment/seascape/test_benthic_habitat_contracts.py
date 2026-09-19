@@ -47,7 +47,7 @@ from seascape.utils.habitat_raster import (
     sample_raster_bilinear,
 )
 from seascape.utils.habitat_surface import (
-    _network_metrics,
+    habitat_network_metrics,
     _record_metrics,
     build_r8_tables,
 )
@@ -200,7 +200,7 @@ def test_disconnected_habitat_source_retains_local_area_distance_and_qc():
         graph_checksum="fixture",
     )
     area = pd.Series([0.0, 12.0], index=cells)
-    distance, radius_sum, qc = _network_metrics(
+    distance, radius_sum, qc = habitat_network_metrics(
         graph,
         cells,
         {"disconnected"},

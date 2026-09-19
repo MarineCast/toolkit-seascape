@@ -59,6 +59,9 @@ def project_h3_centers(
     import h3
     from pyproj import Transformer
 
+    from seascape.core.geo.crs import require_metric_crs
+
+    require_metric_crs(projected_crs)
     normalized = [str(cell) for cell in cells]
     latitudes = np.empty(len(normalized), dtype="float64")
     longitudes = np.empty(len(normalized), dtype="float64")

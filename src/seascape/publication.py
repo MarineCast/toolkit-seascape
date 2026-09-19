@@ -13,6 +13,7 @@ import pandas as pd
 
 from seascape.core.artifacts import TransactionalFamilyPublisher
 from seascape.core.config.paths import project_root
+from seascape.core.artifacts.confinement import validate_candidate_destination
 
 SEASCAPE_RELEASE_MANIFEST = "seascape_release_manifest.json"
 SEASCAPE_RELEASE_LOCK = ".seascape-release.lock"
@@ -36,8 +37,11 @@ class TransactionalSeascapePublisher(TransactionalFamilyPublisher):
     """Publish one canonical family while holding the global seascape writer lock."""
 
     def __init__(self, parent: str | Path, run_id: str | None = None):
-        super().__init__(parent, run_id=run_id)
+        super().__init__(validate_candidate_destination(parent), run_id=run_id)
         self._release_lock: Any | None = None
+
+    def stage_path(self, destination: str | Path, *, terminal: bool = False) -> Path:
+        return super().stage_path(validate_candidate_destination(destination), terminal=terminal)
 
     def _publishes_canonical_seascape(self) -> bool:
         if os.environ.get("SEASCAPE_CANDIDATE_ROOT"):

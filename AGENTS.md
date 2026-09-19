@@ -57,6 +57,16 @@ are separate from offline tests; three materialized-product tests skip without r
 When adding executable behavior, add appropriate checks and document their exact commands here.
 Report tests actually run, unverified source acquisition, and any unrun integration paths.
 
+When changing user-visible workflows, product schemas, workspace behavior, or representative
+processing APIs, check whether `notebooks/validation/01_TOOLKIT_VALIDATION.ipynb` must change. The
+notebook exercises production APIs; do not duplicate scientific implementations in cells. Keep its
+required path offline, deterministic, small, and CI-executable. Run it headlessly without modifying
+the committed notebook:
+
+```bash
+jupyter nbconvert --to notebook --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --output seascape-toolkit-validation.ipynb --output-dir /tmp
+```
+
 ## Codebase navigation
 
 Use the existing local `graphify-out/graph.json` for structural questions; skip graph work for
@@ -94,3 +104,13 @@ prose semantically. Graphs/caches are disposable local-only files: never commit 
 Any future sharing requires an explicit policy covering destination, revision, freshness and review.
 Global skill defaults do not override repository scope or code-only extraction. Do not run
 `graphify codex install` over maintained instructions or enable hooks/merge drivers implicitly.
+
+## Review-hardening checks
+
+Install `.[test,quality]`, then run `ruff check src tests scripts`, `python -m mypy`, and
+`ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py`.
+Run installed-wheel imports using `scripts/check_installed_package.py` from outside the checkout.
+Capture the runtime/test closure with `scripts/environment_snapshot.py --output /tmp/seascape-env`
+and audit it with `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-env.txt`.
+CI also runs Gitleaks over history and the working tree. Scope and platform limits are documented in
+`docs/environments/README.md`; API/storage changes are documented in `docs/API.md`.

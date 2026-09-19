@@ -25,6 +25,36 @@ python -m pytest -q
 For a regular installation, use `python -m pip install .` or install a built wheel. Editable
 installation is optional. Source data and generated products are not included in the package.
 
+## Validate the toolkit
+
+Install the test and notebook tooling from the repository root, then run the automated suite and
+the human-readable offline acceptance workflow:
+
+```sh
+python -m pip install -e '.[test,notebook]'
+python -m pytest -q
+jupyter lab notebooks/validation/01_TOOLKIT_VALIDATION.ipynb
+```
+
+The notebook can also run headlessly without modifying the committed copy:
+
+```sh
+jupyter nbconvert \
+  --to notebook \
+  --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb \
+  --ExecutePreprocessor.timeout=120 \
+  --output seascape-toolkit-validation.ipynb \
+  --output-dir /tmp
+```
+
+`pytest` provides automated correctness and regression coverage. The
+[toolkit validation notebook](notebooks/validation/01_TOOLKIT_VALIDATION.ipynb) provides an
+inspectable, offline smoke/acceptance workflow over production APIs. The
+[Data Explorer](notebooks/01_DATA_EXPLORER.ipynb) defaults to live source acquisition and a bounded
+San Juan Islands exploratory build, including a Natural Earth water mask. It writes local data and
+is not a certified regional release or part of clean-checkout CI. Review the
+[notebook guide](notebooks/README.md) before running it.
+
 ## Choose a data workspace
 
 All config, source, candidate, and output paths belong to a workspace. Commands default to the
@@ -91,7 +121,8 @@ print(artifact.release_id, artifact.path, artifact.checksum)
 ```
 
 `list_products` and `list_resolutions` provide discovery. Resolution is exact and every returned
-artifact is checked against the completed canonical release. Applications such as OrcaCast own
+artifact is checked against a completed release. Paths are retained under `.seascape/releases/<release_id>`;
+pass `release_id=artifact.release_id` to select the same release later. See the [API contract](docs/API.md). Applications such as OrcaCast own
 target definition, temporal validation, feature/scale selection, model fitting and evaluation.
 
 ## Products and contracts
@@ -106,8 +137,8 @@ target definition, temporal validation, feature/scale selection, model fitting a
   this is not vessel, access, observer, recreation or effort modeling.
 
 See [scientific and source contracts](docs/CONTRACTS.md), the [product index](docs/products.md),
-and the [migration report](docs/MIGRATION.md). Existing formulas and product columns were retained;
-package ownership, workspace resolution and release orchestration changed. Products describe
+and the [migration report](docs/MIGRATION.md). The [review remediation record](docs/review-remediation.md) describes scientific validation,
+coastal slope stencil changes, and durable release storage introduced after extraction. Products describe
 physical conditions and evidence, not species occurrence or habitat preference.
 
 ## Validation boundary

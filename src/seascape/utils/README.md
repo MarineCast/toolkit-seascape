@@ -1,9 +1,10 @@
 # Seascape utilities
 
-`utils` contains source-agnostic infrastructure; it does not own ecological rules or publish a
-feature family. Supported helpers are intentionally small and explicit.
+`utils` contains toolkit-internal infrastructure and shared habitat calculations. Habitat evidence,
+aggregation and publication helpers are owned jointly by the benthic/biogenic producers; they are
+not source-agnostic utilities or supported downstream APIs. See [API contracts](../../../docs/API.md).
 
-## Public helpers
+## Internal shared helpers
 
 - `artifacts`: staged `PublishedArtifact` capture, `stage_parquet_family`,
   `portable_artifact_path`, manifest-v3 construction and strict checksum validation. The durable
@@ -31,6 +32,7 @@ journaled transaction. A stale manifest plus changed artifacts fails the indepen
 
 ## Non-goals and validation
 
-Utilities do not normalize a source ontology, decide habitat evidence, choose aggregation rules,
-or style a family map. Tests preserve null and evidence states, reject incomplete publication, and
+Shared habitat helpers implement evidence, aggregation and inspection rules. Family producers
+own their scientific interpretation and must review changes together. `habitat_network_metrics` is
+an intentional shared internal helper, not a private cross-module import or a consumer API. Tests preserve null and evidence states, reject incomplete publication, and
 cover rollback, crash recovery, manifest-last promotion, and reader/writer isolation.

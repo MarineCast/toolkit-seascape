@@ -251,12 +251,11 @@ def _distance_to_isobaths(
     """Measure H3-center distance to native-raster isobath crossings."""
 
     import h3
-    from pyproj import CRS, Transformer
+    from pyproj import Transformer
+    from seascape.core.geo.crs import require_metric_crs
     from scipy.spatial import cKDTree
 
-    target_crs = CRS.from_user_input(projected_crs)
-    if not target_crs.is_projected:
-        raise ValueError("Bathymetry isobath distance CRS must be projected.")
+    target_crs = require_metric_crs(projected_crs)
     transformer = Transformer.from_crs("EPSG:4326", target_crs, always_xy=True)
     cell_latlngs = [h3.cell_to_latlng(cell) for cell in cells]
     cell_x, cell_y = transformer.transform(

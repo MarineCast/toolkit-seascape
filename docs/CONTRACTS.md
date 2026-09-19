@@ -50,3 +50,27 @@ feature eligibility and product documentation are regenerated from materialized 
 before promotion. Source geometry paths and formulas were not silently changed during
 extraction. Full regional equality requires the retained rebuild comparison tool and source data;
 that expensive acquisition/rebuild was not run during this migration.
+
+## Hardened calculation and release contracts
+
+Composite feature and confidence tables must have identical unique, nonnull
+`(H3_INDEX, H3_RESOLUTION)` support at the requested resolution. Confidence is aligned by keys
+before masks or array calculations; missing support fails instead of reducing the output universe.
+
+Terrain and sill calculations require explicitly configured positive-down bathymetry and reject
+negative depth values. Missing depth remains missing. Planar meter/area calculations reject
+geographic and non-meter projected axes. Q90 remains exactly the 0.90 quantile.
+
+Native-raster slope supports one-band, unrotated north-up EPSG:4326 rasters of at least 3 by 3
+pixels. Land and nodata are masked before gradients. Interior central-difference stencils with
+land/nodata neighbors have no slope sample; raster edges use one-sided differences. Valid marine
+samples are aggregated to H3. The angular-to-meter approximation is unchanged; this is not a new
+geodesic derivative. The manifest records `marine_only_central_differences_v2` and edge/affine
+policy. Coastal values and sample support may change; rebuild affected terrain products.
+
+Release manifest schema 3 retains products, family manifests and governed metadata in a copied,
+release-addressed generation. Publication transactionally commits this generation and the mutable
+canonical compatibility paths. Product resolution returns generation paths, including after a later
+release. Schema-2 workspaces must republish before using the resolver. No automatic generation
+cleanup is provided; deleting or manually modifying retained files breaks their lifetime guarantee.
+See [API contracts](API.md) and [remediation evidence](review-remediation.md).

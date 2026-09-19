@@ -45,11 +45,10 @@ SEASCAPE_LAYER: config/data/environment_seascape.yaml
 paths resolve from the workspace; include resolution can fall back to the containing document's
 directory. Absolute paths remain absolute.
 
-The shared `ConfigDocument` supports `extends`, deep merging of mappings, replacement of lists,
-`${env:NAME}` environment values and `${section.key}` references. However, the workflow candidate
-preparation reads the project document and its direct `SEASCAPE_LAYER` include as plain YAML.
-For full workflow builds, use explicit values in those documents; do not assume arbitrary composed
-or interpolated configurations are fully resolved before candidate paths are rewritten.
+The shared `ConfigDocument` resolves `extends`, deep mapping merges, list replacement,
+`${env:NAME}` and `${section.key}` references for both direct APIs and workflow preparation.
+Reference cycles fail explicitly. Workflow preparation freezes the resolved domain and named-area
+configuration before rebasing output paths; source inputs can remain outside the candidate.
 
 ## Geographic and scientific settings
 
@@ -75,17 +74,28 @@ The workflow rewrites relative values beneath these prefixes into the candidate:
 - `config/feature_eligibility.yaml`
 - `docs/products.md`
 
-Relative `data/raw` paths continue to use the canonical workspace. Absolute paths are preserved,
-and arbitrary custom output prefixes are not automatically isolated. Review the rendered candidate
-configuration before using customized paths; keep standard relative output locations unless the
-owning workflow has been adapted for another layout.
+Relative `data/raw` paths use the configured input base (the canonical workspace by default).
+Absolute source inputs remain permitted. Output settings and declared stage outputs must resolve
+inside the candidate, including through symlinks. Absolute canonical outputs, arbitrary relative
+output prefixes outside the candidate, traversal, and non-basename output filenames fail before
+builders run. Custom output locations must explicitly resolve inside the candidate. Shared artifact
+writers also check the boundary while the candidate environment is active.
 
 Rendered files live under `<candidate>/.seascape/config/`; stage state lives under
-`<candidate>/.seascape/stages/`. Reuse checks hash the entry-point YAML and direct domain include,
-package commit/dirty source identity, upstream stage state, declared outputs, and file-backed
-source/upstream records found in family manifests. They do not automatically hash `common.yaml`,
-the presentation file, or remote sources without a local immutable identity. After those changes,
-use a fresh candidate or force the relevant stages to rebuild with `--overwrite`.
+`<candidate>/.seascape/stages/`. Reuse checks include the effective configuration, transitive
+configuration files, resolved environment values, `common.yaml`, package commit/dirty source
+identity, upstream state, declared outputs and file-backed source/upstream manifest records.
+Frozen configuration and identity are retained in published generations. Changing included
+geographic bounds invalidates reuse. Presentation-only settings and remote sources without a local
+immutable identity are not fully fingerprinted; use `--overwrite` or a fresh candidate when
+changing those inputs. Do not mutate configuration or candidate files during a build.
+
+Projected/equal-area CRS settings used for planar calculations require projected horizontal axes
+in meters. Geographic or feet-based targets fail; selecting a projection suitable for the study
+area remains the caller's responsibility. Terrain and sill consumers require explicit
+`bathymetry_sign: positive_down` and reject negative numeric depths. Standalone bathymetry may
+still emit `negative_elevation`, but those outputs cannot feed these dependent products.
+The fixed `SLOPE_Q90_NATIVE_RASTER` schema requires `slope_upper_quantile: 0.90`.
 
 ## Packaged templates
 
