@@ -91,6 +91,15 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Promote candidate after the release audit passes",
     )
+    export = commands.add_parser(
+        "export-metric-matrix",
+        help="Write one H3 cell by metric Parquet from a Seascape release",
+    )
+    export.add_argument("--output", type=Path, required=True)
+    export.add_argument("--resolution", type=int, action="append", choices=(6, 8))
+    export.add_argument("--catalog", type=Path)
+    export.add_argument("--legacy-unverified", action="store_true")
+    export.add_argument("--overwrite", action="store_true")
     for action in ("download", "inspect"):
         sub = commands.add_parser(
             action, help=f"Run a family's {action} command", add_help=False
@@ -119,6 +128,22 @@ def main(argv: list[str] | None = None) -> int:
                 return int(result or 0)
             finally:
                 sys.argv = old_argv
+        if args.command == "export-metric-matrix":
+            from seascape.metric_matrix import build_metric_matrix
+
+            result = build_metric_matrix(
+                workspace=project_root(),
+                output=args.output,
+                resolutions=tuple(args.resolution or (6, 8)),
+                legacy_unverified=args.legacy_unverified,
+                catalog_path=args.catalog,
+                overwrite=args.overwrite,
+            )
+            print(
+                f"{result.path}\t{result.row_count} H3 cells\t"
+                f"{result.field_count} catalog fields\t{result.source_validation}"
+            )
+            return 0
         from seascape.workflow import DOMAIN_LAYER_STAGES, run_domain_layer_build
 
         if args.command == "stages":

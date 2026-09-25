@@ -137,6 +137,7 @@ target definition, temporal validation, feature/scale selection, model fitting a
   this is not vessel, access, observer, recreation or effort modeling.
 
 See [scientific and source contracts](docs/CONTRACTS.md), the [product index](docs/products.md),
+the [H3 metric matrix export](docs/metric-matrix.md),
 and the [migration report](docs/MIGRATION.md). The [review remediation record](docs/review-remediation.md) describes scientific validation,
 coastal slope stencil changes, and durable release storage introduced after extraction. Products describe
 physical conditions and evidence, not species occurrence or habitat preference.

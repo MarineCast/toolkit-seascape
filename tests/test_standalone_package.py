@@ -40,10 +40,17 @@ def test_workspace_init_is_portable_and_preserves_edits(tmp_path, monkeypatch):
     workspace = tmp_path / "workspace"
     initialize_workspace(workspace)
     config = workspace / "config/data/project.yaml"
+    documentation = workspace / "docs/products.md"
     assert config.is_file()
+    assert documentation.is_file()
+    from seascape.maintenance.update_seascape_docs import START_MARKER, END_MARKER
+    assert documentation.read_text().count(START_MARKER) == 1
+    assert documentation.read_text().count(END_MARKER) == 1
     config.write_text(config.read_text() + "# user edit\n")
+    documentation.write_text(documentation.read_text() + "\nUser note.\n")
     initialize_workspace(workspace)
     assert config.read_text().endswith("# user edit\n")
+    assert documentation.read_text().endswith("User note.\n")
     monkeypatch.setenv("SEASCAPE_WORKSPACE", str(workspace))
     monkeypatch.chdir(tmp_path)
     assert project_root() == workspace

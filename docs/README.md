@@ -21,6 +21,7 @@ and command: `seascape`.
 | [Environment baseline](environments/README.md) | Python and native-library versions |
 | [Scientific and source contracts](CONTRACTS.md) | Grain, units, support, missingness, provenance and source rights |
 | [Product index](products.md) | Family guides, cataloged fields, collection paths and inspection guidance |
+| [H3 metric matrix](metric-matrix.md) | Single-Parquet export, source validation and field semantics |
 | [Migration report](MIGRATION.md) | Extraction scope, executed checks and deferred OrcaCast integration |
 | [Hardening review](hardening-review.md) | Clean-checkout repairs, architecture decisions, validation and remaining blockers |
 | [Transfer inventory](migration-inventory.json) | Original file hashes and transferred destinations |
