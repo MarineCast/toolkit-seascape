@@ -18,6 +18,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+build = ["build>=1.2", "setuptools>=80", "wheel"]
 test = ["pytest>=8"]
 quality = ["ruff>=0.9", "mypy>=1.15", "pip-audit>=2.9"]
 notebook = [

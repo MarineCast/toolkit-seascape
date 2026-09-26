@@ -34,6 +34,55 @@ is not evidence it ran. The offline suite includes tests that skip without regio
 products; report skips separately from passed checks. Do not infer live provider availability,
 map rendering, a full regional rebuild or application compatibility from unit tests.
 
+## Clean consumer acceptance
+
+The `consumer-install` CI job targets Linux Python 3.11/3.14 (x86_64) and macOS Python 3.14
+(arm64, `macos-14`). It asserts the observed interpreter/system/architecture and saves native
+library versions. Runner labels follow the [GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners);
+the saved environment, rather than the label alone, identifies what actually ran. Hosted jobs
+remain unverified until executed; local macOS evidence does not establish Linux or hosted acceptance.
+
+Use a build environment with the declared `build` extra. Python build's default command builds
+an sdist and then a wheel from that sdist. Set `DIST_DIR` and `CONSUMER_DIR` to new paths outside
+the checkout/group being forbidden; the absolute paths below are placeholders.
+
+```sh
+python -m pip install '.[build]'
+python -m build --outdir "$DIST_DIR"
+python scripts/check_distribution.py --sdist "$DIST_DIR"/*.tar.gz \
+  --wheel "$DIST_DIR"/*.whl --output "$DIST_DIR/distribution-report.json"
+python scripts/check_consumer_install.py --wheel "$DIST_DIR"/*.whl \
+  --source /absolute/path/to/toolkit-seascape --forbid-root /absolute/path/to/checkout-group \
+  --output "$CONSUMER_DIR"
+```
+
+The controller copies only acceptance files from the explicit source location, creates a fresh
+venv without inherited/user packages, clears source/workspace overrides and installs the wheel
+normally with declared runtime dependencies. Before extras, it runs `pip check`, every installed
+module with OrcaCast blocked, required packaged resources, CLI help/init/dry run and the synthetic
+demo. No notebook file, pytest or Jupyter is present in that phase. Then it installs the same wheel's
+declared test/notebook extras, runs copied product/review/demo tests and the copied-only notebook
+with an interpreter-pinned temporary kernel. Production calculations/validation are reused.
+
+Negative probes require an import-denied runtime dependency and a source import to fail, remove
+and restore one known config only in the throwaway installation, and inject an outbound attempt
+into the demo's pipeline call. The latter must leave a FAIL report. Import denial simulates an
+absent runtime module; it is not a live-provider test. Existing source or consumer output is never
+cleaned or overwritten. Demo artifacts stay in their owned `.seascape/demo` subtrees.
+
+Dependency installation permits network access. The invoked Python runtime/test processes then
+reject socket/DNS activity, child processes and checkout/group reads. The notebook kernel uses
+its existing guard, allowing Jupyter loopback. Guard rejection is tested explicitly. This is Python
+process evidence, not an OS firewall or protection against native-extension networking.
+
+`report.json` records each exact argv/cwd, expected and actual exit, status, duration and log.
+`runtime-environment.json` and `extras-environment.json` inventory their separate layers without
+requiring pytest for a runtime snapshot. Failure preserves logs and a FAIL report; CI uploads these,
+distribution checks/hashes, executed notebook and synthetic demo outputs on success or failure.
+It does not upload the venv, acquire real sources or publish a package.
+
+Focused regression command: `python -m pytest -q tests/test_consumer_acceptance.py`.
+
 ## Scientific changes
 
 Preserve row identity, units, CRS, vertical datum, resolution, source coverage and missingness.

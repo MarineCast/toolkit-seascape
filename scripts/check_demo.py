@@ -37,6 +37,7 @@ class RuntimeImports(importlib.abc.MetaPathFinder):
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path, required=True)
+    parser.add_argument("--forbid-root", type=Path)
     args = parser.parse_args()
     sys.dont_write_bytecode = True
     demo_root = args.workspace.resolve() / ".seascape/demo"
@@ -68,7 +69,13 @@ def main() -> int:
     def deny_network(event, arguments):
         if event == "open" and isinstance(arguments[0], (str, bytes, os.PathLike)):
             path = Path(os.fsdecode(arguments[0])).resolve()
-            if "toolkit-seascape" in path.parts or "OrcaCast" in path.parts:
+            if (
+                "toolkit-seascape" in path.parts
+                or "OrcaCast" in path.parts
+                or (
+                    args.forbid_root and path.is_relative_to(args.forbid_root.resolve())
+                )
+            ):
                 raise AssertionError(f"Checkout access forbidden: {path}")
             flags = arguments[2]
             if flags & (

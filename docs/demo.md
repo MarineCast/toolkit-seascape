@@ -84,4 +84,5 @@ imports and verifies a Python audit guard against outbound socket/DNS activity a
 This guard is process-level evidence, not an operating-system firewall. The
 [portable validation notebook](../notebooks/README.md) presents the same API results from a copied
 file, including real checks and environment restoration. It requires the notebook extra; the CLI
-demo's runtime dependencies remain unchanged. Consumer-install CI is the later SS-03 task.
+demo's runtime dependencies remain unchanged. The [clean consumer-install jobs](DEVELOPMENT.md#clean-consumer-acceptance)
+are configured; hosted execution remains unverified until actual run results are recorded.

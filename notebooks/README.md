@@ -86,4 +86,5 @@ outside the checkout and invoke it with `--notebook`, `--output`, `--forbid-root
 The helper pins a temporary kernel to the calling interpreter and verifies actual execution,
 synthetic provenance, no checkout reads/acquisition/outbound Python socket activity, environment
 restoration and unchanged source bytes. Jupyter loopback is permitted; this is not an OS firewall.
-No global kernel is registered. Hosted consumer-install CI remains SS-03 work.
+No global kernel is registered. [Clean consumer-install CI](../docs/DEVELOPMENT.md#clean-consumer-acceptance)
+is configured separately; a configured hosted job is not a passed run.

@@ -1,6 +1,7 @@
 # Seascape roadmap progress
 
-Completed scope: SS-00 through SS-02; [specification](SEASCAPE_CODEX_ROADMAP.md).
+Implemented scope: SS-00 through SS-03; SS-03 hosted acceptance pending.
+[Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-first-run-demo`. No remote mutations.
@@ -10,7 +11,8 @@ Working branch: `feature/seascape-first-run-demo`. No remote mutations.
 | SS-00 | passed | Baseline classified; notebook PASS (12 code cells, no errors) |
 | SS-01 | passed | 21 regressions, runtime-only guarded wheel demo; full suite 241 passed / 3 skipped |
 | SS-02 | passed | Portable copied notebook; 7 regressions; full suite 248 passed / 3 skipped |
-| SS-03–SS-11 | not_run | SS-03 consumer-install CI is next; not started |
+| SS-03 | blocked | Implementation/local macOS passed; hosted Linux/macOS matrix not_run |
+| SS-04–SS-11 | not_run | SS-04 is next; integrate after SS-03 hosted acceptance |
 
 ## SS-00 baseline
 
@@ -195,3 +197,72 @@ No implementation/acceptance blocker remains. Linux, other interpreters, hosted 
 live providers, regional scientific validity, downstream integration and a human newcomer trial
 remain **not_run**. Security/dependency audits already recorded in SS-01 were not rerun for this
 notebook-only task. Next: **SS-03 — clean consumer-install acceptance**. Stop before SS-03.
+
+## SS-03 clean consumer-install acceptance — blocked on hosted execution
+
+Implementation complete; local acceptance passed. Full task acceptance remains blocked by the
+unexecuted hosted matrix. Base: `c1cab8b44990f9e86d4a4bac26d88bddab0eb30a`, clean tree on
+`feature/seascape-first-run-demo`. This record's containing commit is the implementation handoff;
+final Git identity is in `/tmp/seascape-ss03-evidence/final-git-state.json`.
+Reverified SS-01/SS-02 APIs, resource loading, notebook source/hash and existing wheel/CI helpers.
+The inherited-site-package CI wheel check was still present; no prior task or baseline was reset.
+
+- Replaced that check with Linux Python 3.11/3.14 x86_64 and macOS Python 3.14 arm64 (`macos-14`)
+  consumer jobs. They build an isolated sdist, build the wheel from that sdist, inspect critical
+  files/all packaged resources, then install normally into a fresh venv with no inherited/user
+  site packages. Added only the declared optional build tools; runtime requirements unchanged.
+- Runtime layer runs dependency checks, 161 installed-module imports with OrcaCast blocked,
+  packaged-resource checks, the actual installed console script's help/init/26-stage dry run,
+  and the existing guarded demo before pytest/Jupyter or the notebook file is present.
+- Four expected nonzero probes passed: import-denied Rasterio (simulated dependency absence),
+  attempted source import rejected, actual installed config removal/restoration rejected by the
+  resource checker, and injected outbound demo activity rejected with a retained **FAIL** report.
+  Source config and ordinary/canonical/release directories are not used for these probes.
+- Only after runtime PASS, installed declared test/notebook extras; **55 copied tests passed**
+  (0 failed/skipped, 25 warnings) and the notebook-only copy passed **14 production / 15 notebook
+  checks**, 2 figures, no acquisition/outbound attempts, restored environment and retained artifacts.
+  Its source hash remains `f618fc5df6bc2d68eeda842e6e22f135da80827dde85b1adac1382a1b3c545b3`.
+- Python process guards self-test denied network/checkout access and deny child escapes. Jupyter
+  uses the existing loopback-aware kernel guard. This is not an OS/native-extension firewall.
+  CI asserts observed interpreter/system/architecture and uploads concise evidence on failure
+  or success, including hidden demo files, without uploading the consumer venv.
+  Existing notebook/security jobs and quality checks are retained; format targets add only this patch.
+
+Local environment: macOS **26.6.2**, Darwin **25.6.0**, arm64, Python **3.14.6**;
+GDAL **3.12.4**, PROJ **9.8.1**, GEOS **3.13.1**. Separate runtime/extras inventories and exact
+consumer argv/cwd/expected/actual exits: `acceptance-verified/{runtime-environment.json,
+extras-environment.json,report.json}` under `/tmp/seascape-ss03-evidence/`.
+Host commands/exits: `commands.json`; archive hashes/resource evidence: `distribution-report.json`.
+
+| Executed command / evidence | Exit / result |
+| --- | --- |
+| Development `python -m pip install 'build>=1.2'` | 0; newly declared build tool; existing setuptools/wheel already present |
+| `python -m build --outdir /tmp/seascape-ss03-evidence/distributions` | 0; isolated sdist then wheel from sdist; `distribution-build.log` |
+| `python scripts/check_distribution.py --sdist …tar.gz --wheel …whl --output …/distribution-report.json` | 0; 9 required files and all 5 packaged resources preserved |
+| `python -m pytest -q tests/test_consumer_acceptance.py` | 0; **11 passed / 0 failed / 0 skipped**; `focused-tests-verified.log` |
+| `python -m pytest -q` | 0; **259 passed / 0 failed / 3 skipped**; 31 warnings; `full-tests-verified.log` |
+| `python scripts/check_consumer_install.py --wheel …whl --source <checkout> --forbid-root <MarineCast> --output …/acceptance-verified` | 0; all 16 steps met expected exits; `consumer-run-verified.log`, consumer `report.json` |
+| `ruff check src tests scripts`; existing four-module + seven changed Python-file format gate; `python -m mypy` | 0 each; existing four-module typing scope retained |
+| Final YAML parse / all shell steps `bash -n`, guide reference checks, security/quality preservation, copied-file/hash checks, `git diff --check` | 0; evidence `review-check.json`, `source-reference-ci-check.json` |
+
+The same two feature-catalog tests and one network-consumer test skip for absent materialized
+regional artifacts. Earlier consumer runs exited **1**: first the helper incorrectly used
+`python -m seascape.cli` (no module entry point), then its outbound probe patched an unbound
+pipeline alias. Init-file and expected-denial assertions caught both. Corrected console dispatch
+and bound-call injection have regressions; fresh final acceptance passed. Earlier failures remain
+in `acceptance/` and `acceptance-final/`; they were not relabeled or counted as complete passes.
+
+Files: `.github/workflows/ci.yml`, `AGENTS.md`, `pyproject.toml`, `docs/{DEVELOPMENT,demo}.md`,
+`notebooks/README.md`, `scripts/{check_installed_package,check_demo,check_distribution,
+check_consumer_install,check_consumer_failures,consumer_guard}.py`,
+`tests/test_consumer_acceptance.py`, this progress record. Scientific/public API behavior changed:
+**no**; formulas, missingness, schemas, release gates, production source, configurations, notebook
+source, canonical products/retained releases and siblings preserved. No unrelated initial edits.
+No live acquisition, remote mutation, release publication or history rewrite.
+
+Hosted Linux 3.11/3.14 and macOS-14 3.14 arm64 jobs: **not_run**. No local Linux/container runtime
+or Python 3.11 was available; new hosted jobs cannot execute without an authorized remote update.
+Local macOS-26 evidence does not establish the hosted macOS-14 job. Security/dependency audits
+were not rerun; their existing CI gates remain unchanged. Regional/live/downstream/human checks
+remain outside scope. Next: **SS-04 — read-only prerequisite checks**, with SS-03 hosted acceptance
+still pending before integration. Stop before SS-04. Remote changes: **none**.

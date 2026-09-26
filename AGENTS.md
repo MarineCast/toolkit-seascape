@@ -83,6 +83,15 @@ checkout; run the helper with an installed-wheel interpreter plus notebook extra
 and output separate. See [notebook guide](notebooks/README.md). Do not overwrite the committed
 notebook with execution results or register a global kernel for acceptance.
 
+For packaging/consumer acceptance changes, run `python -m pytest -q tests/test_consumer_acceptance.py`
+then the required suite. Install `.[build]` in the build environment and use `python -m build`
+to build the wheel from an sdist. Inspect both with `scripts/check_distribution.py`, then run
+`scripts/check_consumer_install.py --wheel /transferred/wheel.whl --source /explicit/checkout
+--forbid-root /checkout/group --output /fresh/outside/directory`. This creates an isolated consumer
+and runs runtime checks before declared test/notebook extras. Output is refused if it already exists.
+Read [development guide](docs/DEVELOPMENT.md) for the full commands and process-guard limitations.
+Configured hosted jobs are not passed until their real run results exist.
+
 ## Codebase navigation
 
 Use the existing local `graphify-out/graph.json` for structural questions; skip graph work for
