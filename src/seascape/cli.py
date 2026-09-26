@@ -76,6 +76,15 @@ def main(argv: list[str] | None = None) -> int:
         "init", help="Create editable configuration from packaged templates"
     )
     commands.add_parser("stages", help="List dependency-ordered build stages")
+    demo = commands.add_parser(
+        "demo",
+        help="Run synthetic offline software acceptance (not a regional release)",
+    )
+    demo.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace only known artifacts in an owned demo directory",
+    )
     build = commands.add_parser(
         "build", help="Build an isolated candidate from local source data"
     )
@@ -118,6 +127,26 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "init":
             initialize_workspace(project_root())
             print(f"Initialized seascape workspace: {project_root()}")
+            return 0
+        if args.command == "demo":
+            from seascape.demo import DemoWorkspaceError, run_demo
+
+            try:
+                result = run_demo(project_root(), overwrite=args.overwrite)
+            except DemoWorkspaceError as exc:
+                print(
+                    f"Demo: {exc}. Use a fresh workspace or review the demo ownership before --overwrite.",
+                    file=sys.stderr,
+                )
+                return 1
+            print("Synthetic software acceptance: PASS (not a regional release)")
+            for path in (
+                result.parquet_path,
+                result.manifest_path,
+                result.report_path,
+                *result.figure_paths,
+            ):
+                print(path)
             return 0
         if args.command in {"download", "inspect"}:
             module = f"seascape.{FAMILIES[args.family]}.{args.command}"

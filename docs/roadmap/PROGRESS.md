@@ -1,14 +1,14 @@
 # Seascape roadmap progress
 
 Scope: SS-00 and SS-01 only; [specification](SEASCAPE_CODEX_ROADMAP.md).
-Base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
+SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-first-run-demo`. No remote mutations.
 
 | Task | Status | Evidence / next gap |
 | --- | --- | --- |
 | SS-00 | passed | Baseline classified; notebook PASS (12 code cells, no errors) |
-| SS-01 | not_run | Portable demo absent at baseline |
+| SS-01 | passed | 21 regressions, runtime-only guarded wheel demo; full suite 241 passed / 3 skipped |
 | SS-02–SS-11 | not_run | Outside this session; SS-02 is next |
 
 ## SS-00 baseline
@@ -48,3 +48,78 @@ and `baseline-environment.{json,txt}`. Logs are local machine evidence, not comm
 
 No production behavior changed during SS-00. No unrelated edits existed to preserve. Live acquisition,
 regional rebuild, consumer integration and remote release checks remain outside scope.
+
+## SS-01 portable demo — passed
+
+Implementation and local acceptance complete. Base: `0d6963b284e51184292cbf591abeeac977cca445`;
+this record's containing implementation commit is the SS-01 handoff. Final Git identity is also
+saved in `/tmp/seascape-roadmap-evidence/final-git-state.json` and reported in the task handoff.
+
+- Added `demo.run_demo(workspace, *, overwrite=False)` / `DemoResult` and `seascape demo`.
+  The 48×48 notebook recipe feeds the existing `bathymetry.run_pipeline` with download/map off.
+  Packaged configuration, transactional family publication, checksums and atomic writers are reused.
+- All paths belong to `.seascape/demo`; ordinary configs/canonical products/releases are preserved.
+  Ownership/symlink/path-type/transaction checks and a POSIX lock guard reruns. Only known files
+  are replaced; previous PASS is invalidated before computation, including metadata failures.
+- Reserved provider `SYNTHETIC` records fixture licensing/warnings and requires acquisition and
+  interactive maps disabled. Existing real-provider metadata defaults are regression-tested.
+  No scientific formulas, thresholds, default regional configs, schemas or release gates changed.
+- 14 executed checks cover actual nonempty output, exact H3 r8 support, 2016 eligible pixels,
+  5 m constant depth, observed zero statistics/fractions, null nodata/outside/sea-level support,
+  finite values, sign/CRS, provenance, family/source/upstream checksums and returned paths.
+- **21 focused tests passed / 0 failed / 0 skipped**; full suite **241 passed / 0 failed / 3 skipped**
+  (same absent regional artifacts as SS-00). Full run: 31 dependency/deprecation warnings.
+- Runtime-only wheel acceptance: 14/14 checks, 0 network attempts, pytest/Jupyter absent and their
+  imports forbidden. Installed package imported from consumer `site-packages`, arbitrary cwd `/tmp`,
+  source overrides cleared. Audit guard verifies outbound rejection and demo filesystem confinement;
+  two Matplotlib font-discovery child attempts were denied, with successful bundled-font fallback.
+  This is Python process evidence, not an OS-level firewall or a sandbox for native extensions.
+- Both static PNGs were opened and visually inspected: extent/orientation, synthetic titles,
+  meter/sign labels and grey unavailable cells. Figures generated without basemap/display server.
+- Final existing notebook: 12 executed code cells, PASS marker, zero errors. Notebook/config/resource
+  diffs remain empty. Portable thin-client conversion is SS-02 and was not started.
+
+Commands ran from the owning checkout with `/tmp/seascape-roadmap-dev/bin` on PATH unless indicated.
+Machine logs and exact baseline/final static commands: `/tmp/seascape-roadmap-evidence/`.
+
+| Command / evidence | Exit / result |
+| --- | --- |
+| `python -m pytest -q tests/test_demo.py` (`demo-tests-final.log`) | 0; 21 passed |
+| `python -m pytest -q` (`final-tests.log`) | 0; 241 passed, 3 regional skips |
+| `ruff check src tests scripts`; `python -m mypy` | 0 each; typing retains existing four-module scope |
+| Current four-module format gate plus `src/seascape/demo.py`, `src/seascape/cli.py`, `tests/test_demo.py`, `scripts/check_demo.py` | 0; 8 formatted files; full command in `final-commands.json` |
+| `python -m pip check` (development and runtime consumer) | 0 each |
+| `python -m pip wheel . --no-deps --no-build-isolation --wheel-dir /tmp/seascape-roadmap-evidence/wheels` | First failed (exit code not captured): setuptools absent in venv; declared build requirements installed; final exit 0 |
+| `python -m pip install 'setuptools>=80' wheel` (development venv) | 0; declared build prerequisites |
+| Consumer `python -m pip install /tmp/seascape-roadmap-evidence/wheels/toolkit_seascape-0.1.0-py3-none-any.whl` | First exit 1: wheel not yet built; final fresh runtime/dependency install exit 0, no inherited packages |
+| Consumer `python -m pip install --no-deps --force-reinstall /tmp/seascape-roadmap-evidence/wheels/toolkit_seascape-0.1.0-py3-none-any.whl` | 0; final wheel refresh after runtime dependencies were already installed normally |
+| From `/tmp`: `env -u PYTHONPATH -u SEASCAPE_WORKSPACE -u SEASCAPE_CANDIDATE_ROOT /tmp/seascape-roadmap-consumer/bin/python /tmp/seascape-roadmap-evidence/check_demo.py --workspace /private/tmp/seascape-roadmap-evidence/consumer-demo-confined2` | 0; 14/14, confinement and outbound guard; `consumer-demo-confined2.log` |
+| Copied `check_installed_package.py`, consumer Python from `/tmp`, PYTHONPATH cleared | 0; 161 modules imported with OrcaCast blocked; `consumer-imports.log` |
+| Consumer `seascape --help` | 0; `consumer-help.log` |
+| Consumer `seascape --workspace /private/tmp/seascape-roadmap-evidence/consumer-demo-confined2 demo` | 1 expected; existing output refused, PASS report retained |
+| `jupyter nbconvert --to notebook --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --output seascape-toolkit-validation-final.ipynb --output-dir /tmp/seascape-roadmap-evidence` | 0 with local kernel sockets and development venv PATH; `final-notebook.log` |
+| `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-roadmap-evidence/baseline-environment.txt` | 0; no known vulnerabilities; `dependency-audit.log` |
+| `gitleaks git . --redact --no-banner --log-opts="--all"` | 0; no leaks in history |
+| `gitleaks dir . --redact --no-banner` | 1; pre-existing ignored `graphify-out/cache/stat-index.json`, generic-api-key false positive on a 64-character file hash under `hashes["docs/api.md"]` |
+| `gitleaks dir /tmp/seascape-roadmap-evidence/review-files --redact --no-banner` | 0; copied tracked + nonignored files; cache preserved, no ignore added |
+| Local Markdown references in 6 changed guides; `git diff --check` | 0; links exist and diff clean |
+| `git diff --exit-code -- notebooks config src/seascape/resources` | 0; no notebook/template edits |
+
+Earlier consumer guard trials failed on metadata's `platform.platform()` subprocess and font
+probing (RuntimeError did not permit Matplotlib's expected fallback), then descriptor-relative
+publisher cleanup was incorrectly interpreted relative to cwd. Final code removes metadata's
+subprocess, records RUNNING before metadata, denies children with PermissionError, and tracks
+file-descriptor bases in the acceptance helper. Final guarded execution passed; failures were not
+counted as passes. Wheel/environment evidence: `wheel-build-final.log`, `consumer-environment.json`,
+`consumer-demo-confined2/.seascape/demo/report.json` and its figures beneath the evidence directory.
+
+Files: `src/seascape/demo.py`, `src/seascape/cli.py`, bathymetry `pipeline.py`, `tests/test_demo.py`,
+`scripts/check_demo.py`, `AGENTS.md`, `README.md`, `docs/{API,README,demo}.md`, this progress record.
+No new runtime dependencies. No unrelated initial edits existed; existing configuration, retained
+products, sibling repositories and local graph cache were preserved. No remote changes performed.
+
+Known limits: local macOS ARM64 Python 3.14.6 evidence only; no available hosted CI result for baseline,
+no Linux/other-interpreter acceptance, no live providers/regional rebuild/downstream integration,
+no human newcomer trial. Process-global environment selection is not thread-safe; separate-process
+writers are guarded. All these external checks remain unrun, not software acceptance blockers.
+Next: **SS-02 — portable notebook thin client**. Stop here; SS-02–SS-11 remain not_run.

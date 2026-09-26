@@ -25,6 +25,20 @@ python -m pytest -q
 For a regular installation, use `python -m pip install .` or install a built wheel. Editable
 installation is optional. Source data and generated products are not included in the package.
 
+## First offline result
+
+After installing from this source or a locally built wheel, run:
+
+```sh
+seascape --workspace "$HOME/seascape-demo" demo
+```
+
+No credentials, source downloads, pytest, Jupyter, or repository checkout are needed at runtime.
+The command prints the Parquet, family manifest, JSON validation report and two static PNG paths
+under `$HOME/seascape-demo/.seascape/demo/`. This is **synthetic software acceptance**, not regional
+scientific validation or an audited release. See the [demo guide](docs/demo.md) for interpretation,
+safe reruns and the Python API. The distribution is not assumed to be published on PyPI.
+
 ## Validate the toolkit
 
 Install the test and notebook tooling from the repository root, then run the automated suite and

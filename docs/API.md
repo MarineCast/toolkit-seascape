@@ -51,6 +51,21 @@ propagate `OSError`. Inspect signatures for optional parameters; do not infer co
 across other family modules. Other family CLI commands remain supported workflow entry points;
 individual implementation imports are not a stable downstream API.
 
+## Synthetic demo
+
+`seascape.demo.run_demo(workspace, *, overwrite=False)` returns `DemoResult` with demo-root,
+Parquet, manifest, report and figure paths, validation checks and execution metadata. It writes
+only beneath `<workspace>/.seascape/demo`, invokes production bathymetry with acquisition and
+interactive maps disabled, and restores environment overrides. Destination safety failures raise
+`DemoWorkspaceError`; calculation, validation and filesystem errors propagate with a FAIL report
+once execution starts. Existing output requires explicit overwrite and an intact ownership marker.
+See [the demo guide](demo.md) for overwrite limits and process-global environment constraints.
+
+The reserved bathymetry provider `SYNTHETIC` emits explicit synthetic source/license/validation
+metadata and requires both `skip_download=True` and `skip_map=True`. Real-provider configuration,
+calculation formulas, schemas and release gates are unchanged. This does not create a new live
+provider or certify a full release.
+
 ## Internal ownership
 
 `core` owns toolkit infrastructure; spatial support owns geometry and water-network contracts.

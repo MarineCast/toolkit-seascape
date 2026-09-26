@@ -67,6 +67,15 @@ the committed notebook:
 jupyter nbconvert --to notebook --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --output seascape-toolkit-validation.ipynb --output-dir /tmp
 ```
 
+## Offline demo checks
+
+For demo/CLI behavior, run `python -m pytest -q tests/test_demo.py`, then the required suite above.
+`seascape --workspace /path/to/fresh-workspace demo` performs synthetic software acceptance; it
+never establishes a regional release. Keep artifacts in its owned `.seascape/demo` subtree.
+After building/installing a wheel, copy `scripts/check_demo.py` outside the checkout and run it
+with a clean runtime-only interpreter and `--workspace /path/to/fresh-workspace`. No test or
+notebook extras may supply dependencies in that environment. See [demo guide](docs/demo.md).
+
 ## Codebase navigation
 
 Use the existing local `graphify-out/graph.json` for structural questions; skip graph work for
