@@ -1,6 +1,6 @@
 # Seascape roadmap progress
 
-Scope: SS-00 and SS-01 only; [specification](SEASCAPE_CODEX_ROADMAP.md).
+Completed scope: SS-00 through SS-02; [specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-first-run-demo`. No remote mutations.
@@ -9,7 +9,8 @@ Working branch: `feature/seascape-first-run-demo`. No remote mutations.
 | --- | --- | --- |
 | SS-00 | passed | Baseline classified; notebook PASS (12 code cells, no errors) |
 | SS-01 | passed | 21 regressions, runtime-only guarded wheel demo; full suite 241 passed / 3 skipped |
-| SS-02–SS-11 | not_run | Outside this session; SS-02 is next |
+| SS-02 | passed | Portable copied notebook; 7 regressions; full suite 248 passed / 3 skipped |
+| SS-03–SS-11 | not_run | SS-03 consumer-install CI is next; not started |
 
 ## SS-00 baseline
 
@@ -122,4 +123,75 @@ Known limits: local macOS ARM64 Python 3.14.6 evidence only; no available hosted
 no Linux/other-interpreter acceptance, no live providers/regional rebuild/downstream integration,
 no human newcomer trial. Process-global environment selection is not thread-safe; separate-process
 writers are guarded. All these external checks remain unrun, not software acceptance blockers.
-Next: **SS-02 — portable notebook thin client**. Stop here; SS-02–SS-11 remain not_run.
+The SS-01 handoff recommended SS-02; its subsequent implementation is recorded below.
+
+## SS-02 portable notebook — passed
+
+Base: `4017612214878ce181bde69c909b3c718142d74a`; clean initial working tree on the existing
+`feature/seascape-first-run-demo` branch. This record's containing commit is the SS-02 handoff;
+exact final Git identity is in `/tmp/seascape-ss02-evidence/final-git-state.json`.
+SS-01 prerequisites were reverified against current `run_demo`, CLI delegation, packaged resources,
+production bathymetry and tests. Its unchanged runtime wheel was reused, not rebuilt or relabeled:
+SHA-256 `503b38e2972ff61be2a2a307e77dba319df7fbdffdb33582e683372fab8b1682`.
+No baseline reset, live exploration or runtime-only acceptance redo.
+
+- Replaced checkout discovery and fixture/orchestration cells with installed `run_demo`.
+  Twelve readable code cells inspect environment, selected workspace, generated configuration,
+  input raster/support, output grain/schema/control values, the API's two figures, actual checks
+  and synthetic provenance. Default temporary products persist after kernel shutdown; optional
+  `SEASCAPE_DEMO_WORKSPACE` selects a workspace. Explicit overwrite remains false by default.
+- Added truthful presentation gates for empty/failed checks, report disagreement and environment
+  restoration. Corrected Data Explorer claims: its actual helper performs live San Juan bathymetry
+  exploration with an exploratory water mask, not completed-release inspection/certification.
+- Added copied-notebook acceptance with a temporary interpreter-pinned kernel, no global kernel
+  registration, checkout-read rejection, outbound Python socket/DNS rejection and provider denial.
+  Guard self-test rejects outbound access; loopback remains allowed. This is process evidence,
+  not an OS firewall or native-extension network sandbox.
+- Both default and chosen-workspace guarded runs passed **14 production / 15 notebook checks**,
+  displayed **2 PNGs**, retained synthetic reports after kernel shutdown, restored all four inspected
+  environment variables (including sentinel overrides), and recorded **0 acquisition / 0 outbound
+  attempts**. The consumer has notebook extras but still no pytest; imports resolve in its isolated
+  wheel `site-packages`. Each input directory contains only its copied notebook.
+- Plain `nbconvert` also passed: **12 executed code cells, 0 errors, 2 PNGs**, actual PASS marker,
+  explicit interpreter/import paths. Source is unexecuted, contains no machine paths/embedded
+  outputs, and stayed byte-identical through execution. Final source SHA-256:
+  `f618fc5df6bc2d68eeda842e6e22f135da80827dde85b1adac1382a1b3c545b3`.
+
+Exact command lines, cwd, exit codes and logs: `/tmp/seascape-ss02-evidence/commands.json`.
+Development interpreter `/tmp/seascape-roadmap-dev/bin/python`; consumer
+`/tmp/seascape-roadmap-consumer/bin/python`. Python 3.14.6, macOS 26.6.2 ARM64;
+GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1. Environment inventories:
+`development-environment.{json,txt}`, `consumer-environment.json` under that evidence directory.
+
+| Command / evidence | Exit / result |
+| --- | --- |
+| Consumer `python -m pip install 'toolkit-seascape[notebook] @ file:///private/tmp/seascape-roadmap-evidence/wheels/toolkit_seascape-0.1.0-py3-none-any.whl'` | 0; declared optional extra, no runtime install redo |
+| Development `python -m pytest -q tests/test_validation_notebook.py` | 0; 7 passed, 0 failed/skipped; `focused-tests-final.log` |
+| Development `python -m pytest -q` | 0; 248 passed, 0 failed, 3 skipped; `full-tests-final.log`; 31 dependency/deprecation warnings |
+| Consumer copied `check_validation_notebook.py`, chosen workspace + four sentinel overrides | 0; `selected-verified-executed.{ipynb,json}`, `selected-verified-notebook.log` |
+| Consumer copied helper, default temporary workspace + four environment variables unset | 0; `default-verified-executed.{ipynb,json}`, `default-verified-notebook.log` |
+| Consumer `python -m jupyter nbconvert --to notebook --execute 01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --ExecutePreprocessor.kernel_name=seascape-ss02 --output plain-verified-executed.ipynb --output-dir /tmp/seascape-ss02-evidence` | 0; cwd `plain-verified-copy`, explicit local kernel/PATH/JUPYTER_PATH; `plain-verified-notebook.log` |
+| `ruff check src tests scripts`; current four-module format gate + two new Python files; `python -m mypy` | 0 each; existing typing scope preserved; `ruff-check.log`, `ruff-format.log`, `mypy.log` |
+| Consumer `python -m pip check` | 0; `consumer-pip-check.log` |
+| Existing environment snapshot helper: consumer / development | 1 / 0; helper requires absent consumer pytest; consumer versions captured separately without installing pytest |
+| Evidence source/reference inspection; `git diff --check`; production/config/dependency/CI/live-notebook diff guard | 0 each; 22 local links, unchanged copied bytes and isolated execution verified |
+
+The three skips are two feature-catalog tests and one network-consumer test requiring absent
+materialized regional artifacts. Earlier notebook executions passed before final review exposed
+Pandas truncation of the import path. Plain-text paths were added and all final executions rerun.
+Two evidence-inspection trials failed on raw JSON stream-list handling and that path truncation;
+the normalized final inspection passed. These inspection failures were not counted as passes.
+Jupyter's local TCP transport warning is retained in logs; no external connections were authorized.
+
+Files: `AGENTS.md`, `README.md`, `docs/demo.md`, `notebooks/README.md`,
+`notebooks/validation/01_TOOLKIT_VALIDATION.ipynb`, `scripts/check_validation_notebook.py`,
+`tests/test_validation_notebook.py`, this progress record. No production API, formula, units/sign,
+missingness, schema, dependency declaration, default configuration or scientific/release gate change.
+No unrelated initial edits existed. Production source, canonical products/retained releases,
+other notebooks, graph cache and sibling repositories were preserved; all demo artifacts remain
+in demo-owned subtrees. Remote changes: **none**.
+
+No implementation/acceptance blocker remains. Linux, other interpreters, hosted consumer CI,
+live providers, regional scientific validity, downstream integration and a human newcomer trial
+remain **not_run**. Security/dependency audits already recorded in SS-01 were not rerun for this
+notebook-only task. Next: **SS-03 — clean consumer-install acceptance**. Stop before SS-03.

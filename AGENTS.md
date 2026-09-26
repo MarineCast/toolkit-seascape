@@ -76,6 +76,13 @@ After building/installing a wheel, copy `scripts/check_demo.py` outside the chec
 with a clean runtime-only interpreter and `--workspace /path/to/fresh-workspace`. No test or
 notebook extras may supply dependencies in that environment. See [demo guide](docs/demo.md).
 
+For portable validation-notebook changes, run `python -m pytest -q tests/test_validation_notebook.py`
+and the required suite. Copy the notebook and `scripts/check_validation_notebook.py` outside the
+checkout; run the helper with an installed-wheel interpreter plus notebook extra, `--notebook`,
+`--output`, `--forbid-root` and optionally `--workspace`. Keep its input directory notebook-only
+and output separate. See [notebook guide](notebooks/README.md). Do not overwrite the committed
+notebook with execution results or register a global kernel for acceptance.
+
 ## Codebase navigation
 
 Use the existing local `graphify-out/graph.json` for structural questions; skip graph work for

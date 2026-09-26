@@ -81,5 +81,7 @@ For maintainers, `python -m pytest -q tests/test_demo.py` checks regressions. Co
 [`scripts/check_demo.py`](../scripts/check_demo.py) outside the checkout and run it with a clean
 runtime-only wheel interpreter and `--workspace /path/to/fresh-workspace`. It rejects development
 imports and verifies a Python audit guard against outbound socket/DNS activity and child processes.
-This guard is process-level evidence, not an operating-system firewall. Consumer-install CI and the
-portable notebook are later roadmap tasks; the existing notebook is unchanged in SS-01.
+This guard is process-level evidence, not an operating-system firewall. The
+[portable validation notebook](../notebooks/README.md) presents the same API results from a copied
+file, including real checks and environment restoration. It requires the notebook extra; the CLI
+demo's runtime dependencies remain unchanged. Consumer-install CI is the later SS-03 task.

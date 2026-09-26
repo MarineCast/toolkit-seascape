@@ -63,8 +63,10 @@ jupyter nbconvert \
 
 `pytest` provides automated correctness and regression coverage. The
 [toolkit validation notebook](notebooks/validation/01_TOOLKIT_VALIDATION.ipynb) provides an
-inspectable, offline smoke/acceptance workflow over production APIs. The
-[Data Explorer](notebooks/01_DATA_EXPLORER.ipynb) defaults to live source acquisition and a bounded
+inspectable client of the same `run_demo` API as the CLI. A standalone copy executes against an
+installation with the notebook extra and needs no checkout or pytest. It displays actual checks,
+synthetic provenance and retained artifact paths; see the [copy-and-run guide](notebooks/README.md).
+The [Data Explorer](notebooks/01_DATA_EXPLORER.ipynb) defaults to live source acquisition and a bounded
 San Juan Islands exploratory build, including a Natural Earth water mask. It writes local data and
 is not a certified regional release or part of clean-checkout CI. Review the
 [notebook guide](notebooks/README.md) before running it.
