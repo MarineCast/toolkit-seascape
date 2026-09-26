@@ -69,6 +69,12 @@ jupyter nbconvert --to notebook --execute notebooks/validation/01_TOOLKIT_VALIDA
 
 ## Offline demo checks
 
+For planner/input-preflight changes, run `python -m pytest -q tests/test_preflight.py tests/test_workflow.py`
+then the required full suite. `seascape --workspace /path/to/workspace build --only
+seascape-geomorphometry --dry-run --check-inputs --json` inspects local prerequisites without writes,
+hashes, downloads or producers. A ready report establishes only its stated inspection level;
+missing/invalid/required-unverified checks fail. See [workflow limits](docs/WORKFLOWS.md).
+
 For demo/CLI behavior, run `python -m pytest -q tests/test_demo.py`, then the required suite above.
 `seascape --workspace /path/to/fresh-workspace demo` performs synthetic software acceptance; it
 never establishes a regional release. Keep artifacts in its owned `.seascape/demo` subtree.

@@ -1,6 +1,6 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-03; SS-03 hosted acceptance pending.
+Implemented scope: SS-00 through SS-04; SS-03 hosted acceptance pending.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
@@ -12,7 +12,8 @@ Working branch: `feature/seascape-first-run-demo`. No remote mutations.
 | SS-01 | passed | 21 regressions, runtime-only guarded wheel demo; full suite 241 passed / 3 skipped |
 | SS-02 | passed | Portable copied notebook; 7 regressions; full suite 248 passed / 3 skipped |
 | SS-03 | blocked | Implementation/local macOS passed; hosted Linux/macOS matrix not_run |
-| SS-04–SS-11 | not_run | SS-04 is next; integrate after SS-03 hosted acceptance |
+| SS-04 | passed | Read-only input preflight; 34 new regressions; guarded runtime-only wheel acceptance |
+| SS-05–SS-11 | not_run | SS-05 is next; hosted SS-03 acceptance remains pending before integration |
 
 ## SS-00 baseline
 
@@ -266,3 +267,96 @@ Local macOS-26 evidence does not establish the hosted macOS-14 job. Security/dep
 were not rerun; their existing CI gates remain unchanged. Regional/live/downstream/human checks
 remain outside scope. Next: **SS-04 — read-only prerequisite checks**, with SS-03 hosted acceptance
 still pending before integration. Stop before SS-04. Remote changes: **none**.
+
+
+## SS-04 read-only prerequisite checks — passed
+
+Base: `368ee1b2400415a298dd742f4d6cad3fe4990af8`; the containing implementation commit is this
+handoff (exact final identity also in `/tmp/seascape-ss04-evidence/final-git-state.json`).
+Clean initial tree; retained `feature/seascape-first-run-demo`. SS-00 prerequisites reverified
+against current CLI, stage registry, family loaders, candidate rebasing and scientific contracts.
+SS-03 implementation is present; its hosted acceptance remains blocked, not relabeled passed.
+
+- Added `build --dry-run --check-inputs [--json]`; flags require `--dry-run`. Plain dry-run stays
+  unchanged. JSON-only planning explicitly reports inspection `not_run`; checked failures emit
+  parseable JSON and exit 1. Report schema 1 includes workspace/config/candidate, stage expansion,
+  configured/default destinations, publication intent, checks, required/optional status and actions.
+- Execution and preflight share `plan_domain_layer_build` and candidate configuration rendering.
+  Existing family loaders inspect a context-local copy in memory; common/workspace overrides are
+  restored. No second stage registry, data hashes, acquisition, builder, cleanup or candidate writes.
+  Exact upstream output paths are `generated_by_plan`; absent external inputs remain distinct.
+- Existing CRS/unit/sign/H3/scale validation is reused. Native raster header checks were factored
+  out of the slope function and reused without reading pixels; formulas, thresholds, masks,
+  defaults, schemas and release validation remain unchanged. Header inspection accepts local TIFF
+  signatures/GTiff only, disables GDAL auxiliary writes and rejects disguised remote VRT sources.
+- Readability is not schema/coverage validation. Vector/Parquet headers, source values, datum,
+  checksum/reuse identity, directory/archive usability and release approval remain unverified.
+  Required skip reuse, kelp annual-layer usability and reef partial-inventory usability fail as
+  `unverified`; optional limits cannot turn them into PASS. All 26 packaged stages report their
+  selected prerequisites without execution. Configured fluvial barrier dependencies are included.
+- **43 focused passed / 0 failed / 0 skipped** (34 new plus 9 existing workflow tests); final full
+  suite **293 passed / 0 failed / 3 skipped**, 65 dependency/deprecation warnings. Same two
+  feature-catalog and one network-consumer tests skip for absent materialized regional artifacts.
+- Final wheel built from its sdist, required resources compared, then force-reinstalled into the
+  fresh runtime-only consumer (initial normal wheel install resolved all declared dependencies;
+  no inherited site packages). Guarded imports: 162 modules, OrcaCast/source access blocked.
+  Ready/missing cases passed with pytest/Jupyter absent and imports blocked, Python outbound/child
+  guards active, zero Python write attempts, identical workspace bytes and environment after
+  each call. Installed console help/negative JSON case also ran. This is Python guard evidence,
+  not an OS/native firewall. Fixtures explicitly label synthetic path/header acceptance only.
+- Validation notebook/demo/configuration resources are unchanged; this additive planning command
+  needs no thin-client notebook change. Their existing production regressions ran in the full suite;
+  copied-notebook/headless/SS-03 matrix acceptance was not redone. No real data or release created.
+
+Commands below ran in the owning checkout, with `/tmp/seascape-roadmap-dev/bin` as the development
+interpreter/tool prefix. Evidence root `E=/tmp/seascape-ss04-evidence`; `C=$E/consumer/bin/python`.
+These prefixes abbreviate absolute paths only. Final static argv/exit records are in
+`static-commands.json`; installed-console argv/cwd/expected/actual exits in `consumer-commands-final.json`.
+
+| Command | Exit / evidence |
+| --- | --- |
+| `python -m pytest -q tests/test_preflight.py tests/test_workflow.py` | 0; `focused-tests-final.log`, 43 passed |
+| `python -m pytest -q` | 0; `full-tests-final.log`, 293 passed / 3 skipped |
+| `ruff check src tests scripts` | 0 |
+| `python -m mypy` | 0; existing 4-module scope |
+| `ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py src/seascape/preflight.py src/seascape/cli.py src/seascape/core/config/data.py tests/test_preflight.py` | 0; 8 files |
+| `python scripts/environment_snapshot.py --output /tmp/seascape-ss04-evidence/environment` | 0; `environment.{json,txt}` |
+| `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-ss04-evidence/environment.txt` | 0; no known vulnerabilities; `dependency-audit.log` |
+| `gitleaks git . --redact --no-banner --log-opts=--all` | 0; 13 base commits; `gitleaks-history.log` |
+| `gitleaks dir . --redact --no-banner` | **1**; ignored local cache finding, below |
+| `gitleaks dir . --redact --no-banner --report-format json --report-path /tmp/seascape-ss04-evidence/gitleaks-tree-report.json` | **1**; redacted diagnostic |
+| `gitleaks dir /tmp/seascape-ss04-evidence/tracked-scan --redact --no-banner` | 0; current tracked source plus the two new task files, copied read-only; `gitleaks-tracked.log` |
+| `python -m build --no-isolation --outdir /tmp/seascape-ss04-evidence/distributions-final` | 0; sdist then wheel from sdist using installed declared build tools; `build-final.log` |
+| `python scripts/check_distribution.py --wheel /tmp/seascape-ss04-evidence/distributions-final/toolkit_seascape-0.1.0-py3-none-any.whl --sdist /tmp/seascape-ss04-evidence/distributions-final/toolkit_seascape-0.1.0.tar.gz --output /tmp/seascape-ss04-evidence/distribution-final.json` | 0; 9 required files, 5 resources |
+| `python -m venv /tmp/seascape-ss04-evidence/consumer` then `$C -m pip install /tmp/seascape-ss04-evidence/distributions/toolkit_seascape-0.1.0-py3-none-any.whl` | 0; fresh consumer, `install.log` |
+| `$C -m pip install --force-reinstall --no-deps /tmp/seascape-ss04-evidence/distributions-final/toolkit_seascape-0.1.0-py3-none-any.whl` | 0; final wheel, `install-final.log` |
+| `$C -m pip check` | 0; `pip-check-final.log` |
+| `$C $E/consumer_guard.py --forbid-root /Users/tylerstevenson/Documents/Code_Repos/MarineCast --script $E/check_installed_package.py -- --snapshot $E/consumer-environment-final.json` | 0; `imports-final.log`, 162 imports |
+| `$C $E/consumer_guard.py --forbid-root /Users/tylerstevenson/Documents/Code_Repos/MarineCast --script $E/preflight_acceptance_final.py` | 0; `consumer-preflight-final.log`, ready/missing reports |
+| `$C $E/consumer_guard.py --forbid-root /Users/tylerstevenson/Documents/Code_Repos/MarineCast --script $E/consumer/bin/seascape -- --workspace $E/workspace-final build --only seascape-geomorphometry --dry-run --check-inputs --json` | 1 **expected**; missing raster, parseable JSON, `console-missing.log` |
+| `$C $E/consumer_guard.py --forbid-root /Users/tylerstevenson/Documents/Code_Repos/MarineCast --script $E/consumer/bin/seascape -- build --help` | 0; both flags exposed, `console-help.log` |
+| `git diff --check` | 0 |
+
+Consumer commands clear `PYTHONPATH`/`PYTHONHOME` and set `PYTHONDONTWRITEBYTECODE=1`; scripts
+are copied outside the checkout. Python 3.14.6, macOS 26.6.2 arm64; GDAL 3.12.4, PROJ 9.8.1,
+GEOS 3.13.1. Final wheel SHA-256 `f68ef744a9adea081280205cd4393ec4cd411a3390889b6e9ce688a99cc96867`;
+sdist `0f32cbf1ecc871acb81747eeddf40731b07f32293b647c6e5db3d0a36fa802f8`.
+An earlier focused run exited 1 (one assertion counted the newly added destination-access check
+as a source input: 41 passed / 1 failed); corrected assertion scopes source inputs. Initial archive
+helper invocation omitted required `--output` (exit 2); corrected inspection passed. Earlier
+34/42-test runs and initial wheel acceptance passed, but final counts/artifact above supersede them.
+
+Broad directory secret scan is **failed**, not passed: one `generic-api-key` finding at ignored
+`graphify-out/cache/stat-index.json:1`, a 64-hex documentation hash under
+`docs/API.md -> hashes -> docs/api.md`. This pre-existing developer cache is unmodified. The
+tracked-source scan passed; no security gate or ignore/allowlist was weakened. Its redacted report
+is local evidence, not a published artifact. Hosted Linux/macOS SS-03 checks remain **not_run**
+because remote updates are not authorized. Regional/live/downstream/human acceptance is not_run.
+
+Changed files: `AGENTS.md`, `docs/{API,WORKFLOWS}.md`, `src/seascape/{cli,workflow,preflight}.py`,
+`src/seascape/core/config/data.py`, `src/seascape/seafloor_physiography/geomorphometry/build.py`,
+`tests/test_preflight.py`, this progress record. Scientific behavior changed: **no**. Additive CLI
+planning/report behavior; existing producer/consumer signatures and numerical behavior preserved.
+No unrelated tracked edits existed; configurations, canonical products, retained releases,
+notebook source, ignored cache and sibling repositories preserved. Next: **SS-05**, CLI diagnostics
+and side-effect contracts. Stop before SS-05. Remote changes: **none**.

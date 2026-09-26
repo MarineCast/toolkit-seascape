@@ -51,6 +51,13 @@ propagate `OSError`. Inspect signatures for optional parameters; do not infer co
 across other family modules. Other family CLI commands remain supported workflow entry points;
 individual implementation imports are not a stable downstream API.
 
+Candidate planning adds `build --dry-run --check-inputs [--json]`. It inspects selected local
+configuration, readability and GeoTIFF headers without creating a candidate or executing builders.
+JSON schema 1 includes stage order, destinations, publication intent, checks and limitations;
+required missing/invalid/unverified prerequisites produce exit 1. `ready` is preflight evidence,
+not scientific or release acceptance. Plain `--dry-run` remains supported. Plan objects and input
+inspection adapters are internal helpers; see [workflow inspection limits](WORKFLOWS.md).
+
 ## Synthetic demo
 
 `seascape.demo.run_demo(workspace, *, overwrite=False)` returns `DemoResult` with demo-root,

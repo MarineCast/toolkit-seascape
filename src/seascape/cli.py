@@ -7,6 +7,7 @@ from importlib.resources import files
 import os
 from pathlib import Path
 import importlib
+import json
 import sys
 
 FAMILIES = {
@@ -93,6 +94,16 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument("--skip", action="append", default=[])
     build.add_argument("--candidate-root", type=Path)
     build.add_argument("--dry-run", action="store_true")
+    build.add_argument(
+        "--check-inputs",
+        action="store_true",
+        help="Read-only local configuration/path/header preflight; requires --dry-run",
+    )
+    build.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable planning/preflight output; requires --dry-run",
+    )
     build.add_argument("--resume", action="store_true")
     build.add_argument("--overwrite", action="store_true")
     build.add_argument(
@@ -118,6 +129,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         sub.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
+    if (
+        args.command == "build"
+        and (args.check_inputs or args.json)
+        and not args.dry_run
+    ):
+        parser.error("build --check-inputs and --json require --dry-run")
     previous = os.environ.get("SEASCAPE_WORKSPACE")
     if args.workspace is not None:
         os.environ["SEASCAPE_WORKSPACE"] = str(args.workspace.expanduser().resolve())
@@ -179,6 +196,24 @@ def main(argv: list[str] | None = None) -> int:
             for stage in DOMAIN_LAYER_STAGES:
                 print(f"{stage.name}: {stage.description}")
             return 0
+        if args.check_inputs or args.json:
+            from seascape.preflight import preflight_build, print_preflight
+
+            report = preflight_build(
+                config_path=args.config,
+                only=args.only,
+                skip=args.skip,
+                candidate_root=args.candidate_root,
+                publish=args.publish,
+                resume=args.resume,
+                overwrite=args.overwrite,
+                check_inputs=args.check_inputs,
+            )
+            if args.json:
+                print(json.dumps(report, indent=2))
+            else:
+                print_preflight(report)
+            return int(report["status"] == "failed")
         results = run_domain_layer_build(
             config_path=args.config,
             only=args.only,

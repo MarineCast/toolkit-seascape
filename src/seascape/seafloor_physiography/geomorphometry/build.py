@@ -291,6 +291,17 @@ def _quadratic_curvatures(
     return legacy_laplacian, general, float(profile), float(plan)
 
 
+def validate_native_raster_header(raster) -> None:
+    """Check the existing native-slope support contract without reading pixels."""
+    if raster.count != 1 or raster.crs is None or raster.crs.to_epsg() != 4326:
+        raise ValueError("Native GEBCO slope input must be a one-band EPSG:4326 raster.")
+    transform = raster.transform
+    if (transform.b != 0 or transform.d != 0 or transform.a <= 0 or transform.e >= 0):
+        raise ValueError("Native slope requires an unrotated north-up raster.")
+    if min(raster.height, raster.width) < 3:
+        raise ValueError("Native slope requires at least three rows and columns.")
+
+
 def _native_raster_slope_summary(
     raster_path: Path,
     target_cells: set[str],
@@ -305,14 +316,9 @@ def _native_raster_slope_summary(
     if not raster_path.exists():
         raise FileNotFoundError(f"Native GEBCO raster not found: {raster_path}")
     with rasterio.open(raster_path) as raster:
-        if raster.count != 1 or raster.crs is None or raster.crs.to_epsg() != 4326:
-            raise ValueError("Native GEBCO slope input must be a one-band EPSG:4326 raster.")
+        validate_native_raster_header(raster)
         elevation = raster.read(1, masked=True).astype("float64").filled(np.nan)
         transform = raster.transform
-        if (transform.b != 0 or transform.d != 0 or transform.a <= 0 or transform.e >= 0):
-            raise ValueError("Native slope requires an unrotated north-up raster.")
-        if min(elevation.shape) < 3:
-            raise ValueError("Native slope requires at least three rows and columns.")
 
     rows, columns = np.indices(elevation.shape)
     longitudes, latitudes = rasterio.transform.xy(transform, rows, columns, offset="center")

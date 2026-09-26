@@ -55,6 +55,7 @@ The workflow expects configured source inputs to be available. A subset plan exp
 
 ```sh
 seascape --workspace /path/to/seascape-workspace build --only seascape-geomorphometry --dry-run
+seascape --workspace /path/to/seascape-workspace build --only seascape-geomorphometry --dry-run --check-inputs --json
 ```
 
 A full build creates products, metadata and a release audit while retaining the candidate by default:
@@ -69,6 +70,8 @@ seascape --workspace /path/to/seascape-workspace build --candidate-root /path/to
 | `--only STAGE` | Select a stage and its dependencies; repeat for several targets |
 | `--skip STAGE` | Require validated reusable output rather than silently omitting a dependency |
 | `--dry-run` | Print the plan without running builders |
+| `--check-inputs` | With `--dry-run`, inspect selected local prerequisites; return 1 on required missing, invalid or unverified inputs |
+| `--json` | With `--dry-run`, emit one JSON planning/preflight report; without `--check-inputs`, inspection status is `not_run` |
 | `--candidate-root PATH` | Reuse an explicit candidate location instead of a timestamped default |
 | `--resume` | Reuse stages whose recorded checks pass |
 | `--overwrite` | Rebuild rather than reuse valid resume state |
@@ -77,6 +80,31 @@ seascape --workspace /path/to/seascape-workspace build --candidate-root /path/to
 The default candidate path is `<workspace>/.seascape/candidates/seascape/<UTC timestamp>`.
 Use a distinct directory for each independent run. See the [configuration guide](CONFIGURATION.md)
 for which paths are isolated and which changes resume checks detect.
+
+Input preflight uses the same dependency expansion and candidate configuration rendering as
+execution. It calls existing family configuration loaders in memory, checks local file readability
+and GeoTIFF headers, and identifies exact configured intermediates as `generated_by_plan`. It
+never creates a candidate, downloads, hashes source datasets, runs producers, cleans outputs or
+publishes. The report includes workspace/config selection, expanded stages, default declarations
+and actual configured destinations, publication intent, performed checks, corrective actions and
+required/optional flags. Workspace precedence remains `--workspace`, `SEASCAPE_WORKSPACE`, cwd.
+Pass the same explicit `--candidate-root` to preflight and execution when reusing the exact printed
+destination; the timestamped default is resolved separately for each invocation.
+
+`ready` means only the reported preflight checks passed. `missing_external` identifies an absent
+local prerequisite; `invalid` identifies failed configuration/access/header checks;
+`unverified` identifies a check this inspection cannot establish; `not_applicable` identifies an
+unused operation. Generated files still require producer validation. Vector/Parquet schemas,
+feature/pixel values, H3 row identity, coverage, datum, checksums and scientific/release acceptance
+are not established. Existing plain `--dry-run` behavior is unchanged.
+
+`--skip` requires existing checksum/config/upstream reuse validation, so lightweight preflight
+reports required `unverified` and fails instead of hashing datasets. `--resume` identity and a
+requested publication audit are deferred and explicitly visible. Kelp annual-layer usability and
+reef partial-inventory usability require their producer inspections; preflight reports these as
+required `unverified`, even when individual optional source files exist. Directory/archive content
+checks are likewise limited: file readability is not proof of usable extracted data. Correct these
+through the family workflow and its source guide; preflight cannot approve a release.
 
 ## 5. Inspect existing products
 

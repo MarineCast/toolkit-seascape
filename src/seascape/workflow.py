@@ -63,6 +63,45 @@ class StageResult:
     error: str | None = None
 
 
+@dataclass(frozen=True)
+class DomainBuildPlan:
+    """Read-only stage and destination resolution shared with execution."""
+
+    source_config: Path
+    canonical_root: Path
+    candidate_root: Path
+    stages: tuple[DomainBuildStage, ...]
+
+
+def plan_domain_layer_build(
+    *,
+    config_path: str | Path,
+    only: Iterable[str] = (),
+    skip: Iterable[str] = (),
+    candidate_root: str | Path | None = None,
+    stage_definitions: Sequence[DomainBuildStage] | None = None,
+) -> DomainBuildPlan:
+    canonical = project_root().resolve()
+    candidate = (
+        Path(candidate_root).expanduser().resolve()
+        if candidate_root is not None
+        else canonical
+        / ".seascape/candidates/seascape"
+        / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    )
+    available = tuple(stage_definitions or DOMAIN_LAYER_STAGES)
+    for stage in available:
+        for path in _declared_paths(candidate, stage):
+            if not path.resolve().is_relative_to(candidate):
+                raise ValueError(f"Declared output escapes candidate root: {path}")
+    return DomainBuildPlan(
+        resolve_config_path(config_path),
+        canonical,
+        candidate,
+        tuple(selected_stages(only=only, skip=skip, stages=available)),
+    )
+
+
 @contextmanager
 def _patched_argv(program: str, args: Sequence[str]):
     original = sys.argv[:]
@@ -850,13 +889,13 @@ def _configuration_identity(source_config: Path) -> dict[str, Any]:
     }
 
 
-def _prepare_candidate_config(
+def _render_candidate_config(
     source_config: Path,
     *,
     canonical_root: Path,
     candidate_root: Path,
-) -> Path:
-    """Freeze the same effective configuration used by direct family APIs."""
+) -> dict[str, Any]:
+    """Resolve the effective candidate configuration without creating any paths."""
     if canonical_root.is_relative_to(candidate_root):
         raise ValueError("Candidate must not be the canonical workspace or its ancestor.")
     raw = load_data_config(source_config)
@@ -872,13 +911,34 @@ def _prepare_candidate_config(
     input_root = (canonical_root / configured_base).resolve()
     rendered = _rebase_candidate_values(raw, input_root, candidate_root)
     _validate_candidate_outputs(rendered, input_root, candidate_root)
+    for key in DOMAIN_CONFIG_KEYS:
+        rendered.pop(key, None)
+    rendered["base_directory"] = str(input_root)
+    config_dir = candidate_root / ".seascape/config"
+    config_names = ("project.yaml", "environment_seascape.yaml", "common.yaml", "identity.json")
+    for target in (config_dir, *(config_dir / name for name in config_names)):
+        if not target.resolve().is_relative_to(candidate_root):
+            raise ValueError(f"Candidate configuration path escapes candidate root: {target}")
+    return rendered
+
+
+def _prepare_candidate_config(
+    source_config: Path,
+    *,
+    canonical_root: Path,
+    candidate_root: Path,
+) -> Path:
+    """Freeze the same effective configuration used by direct family APIs."""
+    rendered = _render_candidate_config(
+        source_config,
+        canonical_root=canonical_root,
+        candidate_root=candidate_root,
+    )
+    input_root = Path(rendered["base_directory"])
     config_dir = candidate_root / ".seascape/config"
     if not config_dir.resolve().is_relative_to(candidate_root):
         raise ValueError("Candidate configuration directory escapes candidate root.")
     config_dir.mkdir(parents=True, exist_ok=True)
-    for key in DOMAIN_CONFIG_KEYS:
-        rendered.pop(key, None)
-    rendered["base_directory"] = str(input_root)
     domain = config_dir / "environment_seascape.yaml"
     destination = config_dir / "project.yaml"
     for target in (domain, destination, config_dir / "common.yaml", config_dir / "identity.json"):
@@ -1118,20 +1178,18 @@ def run_domain_layer_build(
     stage_definitions: Sequence[DomainBuildStage] | None = None,
     **context_kwargs: Any,
 ) -> list[StageResult]:
-    source_config = resolve_config_path(config_path)
-    canonical_root = project_root().resolve()
-    candidate = (
-        Path(candidate_root).expanduser().resolve()
-        if candidate_root is not None
-        else canonical_root
-        / ".seascape/candidates/seascape"
-        / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    only, skip = tuple(only), tuple(skip)
+    plan = plan_domain_layer_build(
+        config_path=config_path,
+        only=only,
+        skip=skip,
+        candidate_root=candidate_root,
+        stage_definitions=stage_definitions,
     )
+    source_config = plan.source_config
+    canonical_root = plan.canonical_root
+    candidate = plan.candidate_root
     available_stages = tuple(stage_definitions or DOMAIN_LAYER_STAGES)
-    for stage in available_stages:
-        for path in _declared_paths(candidate, stage):
-            if not path.resolve().is_relative_to(candidate):
-                raise ValueError(f"Declared output escapes candidate root: {path}")
     config = (
         source_config
         if dry_run
@@ -1151,7 +1209,7 @@ def run_domain_layer_build(
         **context_kwargs,
     )
     registry = _stage_registry(available_stages)
-    stages = selected_stages(only=only, skip=skip, stages=available_stages)
+    stages = plan.stages
     skip_set = set(skip)
     results: list[StageResult] = []
     status_by_name: dict[str, str] = {}
