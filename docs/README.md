@@ -31,6 +31,7 @@ The live explorer is a separate research path with explicit acquisition and expl
 | [Development](DEVELOPMENT.md) | Tests, packaging, documentation checks and release-owner boundaries |
 | [Tested environments](environments/README.md) | Observed platform coverage, dependency baseline and static-check scope |
 | [Roadmap progress](roadmap/PROGRESS.md) | Per-task executed evidence and remaining limits |
+| [Candidate and maintainer handoff](release-candidate.md) | Proposed release notes, tested artifact identity and pending owner gates |
 
 ## Dated records
 

@@ -1,15 +1,16 @@
 # Seascape roadmap progress
 
 Implemented scope: SS-00 through SS-09; SS-10 blocked-runbook preparation complete.
+SS-11 candidate review/handoff prepared; owner gates remain pending.
 SS-03 hosted acceptance passed; the SS-10 real-data gate remains unsatisfied.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
 on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
-Current next action: SS-11 may review an offline research candidate with the SS-10 limitation
-explicit. Executing SS-10 first requires provenance correction, valid support inputs and approved
-disposable-workspace publication/resource scope. No SS-11 work has started.
+Current next action: owner resolution of SS-11's human trial, version policy, classic protection
+and release authorization gates. SS-10 execution separately requires provenance correction,
+valid support inputs and approved disposable-workspace publication/resource scope. No SS-12.
 
 | Task | Status | Evidence / next gap |
 | --- | --- | --- |
@@ -24,7 +25,7 @@ disposable-workspace publication/resource scope. No SS-11 work has started.
 | SS-08 | passed | Analytic/matrix/publication evidence; local and hosted 352 passed / 3 skipped; run 36324502530, 9/9 jobs |
 | SS-09 | passed | Three journeys, guarded source quickstart, docs drift checks; local/hosted 368 passed / 3 skipped; run 36327449869, 9/9 jobs |
 | SS-10 | blocked | Checked bounded runbook and read-only preflight; no producer/publication/real-data QA; see below |
-| SS-11 | not_run | Next eligible task with the real-data limitation explicit; no release review performed |
+| SS-11 | blocked | Exact candidate software checks passed; handoff prepared; human/version/admin/release-owner gates pending |
 
 ## SS-00 baseline
 
@@ -1002,3 +1003,90 @@ use existing authorization and message `Repository Organization Updates`; final 
 remote synchronization are saved in `final-git-state.json` and the handoff. No merge, tag, package
 publication, settings, dataset or release changes. Next eligible task: **SS-11**, explicitly limited
 to an offline research candidate unless SS-10's execution gates are resolved first. Stop before SS-11.
+
+## SS-11 release-candidate review — owner gates pending
+
+September 27. Base and tested candidate: **`ee41524b92ea6a6ef643488f903a1d69248e6d8b`**.
+Clean initial tree; retained `feature/seascape-repository-organization-updates`. Current handoff
+commit is this record's containing documentation-only commit, separate from the tested artifact
+identity. Re-read instructions/roadmap/progress and actual CI, metadata, distribution/consumer
+helpers and scientific/publication/export evidence. SS-11 prerequisites are satisfied for an
+offline research candidate with SS-10's blocked real-data path explicit; no prior task rewritten.
+
+Prepared [candidate notes and maintainer checklist](../release-candidate.md): capabilities,
+fixed export/installation defects, additive interfaces and stricter invalid-export validation,
+scientific invariants, known limits, artifact hashes, version decision and go/no-go gates.
+No code/config/schema/default/dependency/version change. No scientific calculation changed.
+Review implementation is complete; human/version/classic-protection/release-owner gates are
+**blocked/pending**, not PASS. The owner explicitly replied that no unfamiliar tester is available;
+that human trial is pending, not replaced by automated acceptance. SS-10 remains blocked, with
+no acquisition/real processing, measured operating envelope, regional maps or release audit.
+
+Candidate GitHub run [36329187229](https://github.com/MarineCast/toolkit-seascape/actions/runs/36329187229)
+was freshly inspected: **completed/success, nine jobs**, exact candidate SHA. Both test jobs ran
+**368 passed / 3 skipped / 69 warnings**. Three clean consumers built/inspected sdist-derived wheels,
+ran all 16 expected-exit runtime/extras steps, copied notebook and documented source quickstart.
+Actual runtime records: Linux x86_64 Python 3.11.16 (GDAL 3.10.3 / PROJ 9.5.1 / GEOS 3.13.1),
+Linux x86_64 3.14.7 and macOS ARM64 3.14.7 (GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1).
+Both quality jobs, original notebook and history/tree secret jobs passed. This is verified exact-SHA
+hosted evidence, not a new workflow dispatch or a transfer of the local wheel to Linux. Artifact
+ZIPs were not downloaded; hosted copied-test/notebook internal counts are not independently
+asserted. Nine decoded logs are retained (consumer logs are explicitly bounded tails).
+
+Local evidence: **`/tmp/seascape-ss11-evidence`**, `*.command.json` with exact argv/cwd/exits and
+corresponding stdout/stderr; distribution/candidate reports, consumer logs/reports/notebook,
+source-quickstart reports, environment, API observations and preservation evidence. Existing
+development CPython 3.14.6, Darwin ARM64; fresh build/consumer/source-install environments have
+no inherited site packages. Local GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1. Installation can reach
+declared dependency indexes; runtime is Python-guarded, not native/OS-firewalled.
+
+Commands below ran from this owning checkout. `D=/tmp/seascape-roadmap-dev/bin`,
+`E=/tmp/seascape-ss11-evidence`, `B=$E/build-env/bin`, `R` is the absolute owning checkout and
+`G` the absolute MarineCast workspace. Exact expanded paths are in the command JSON files;
+machine paths/logs remain untracked.
+
+| Executed command | Exit / result |
+| --- | --- |
+| `$D/python -m venv $E/build-env`; `$B/python -m pip install '.[build]'` | 0 each; clean declared-dependency build environment |
+| `$B/python -m build --outdir $E/distributions` | 0; isolated sdist, then isolated wheel from sdist; setuptools 84.0.0 / wheel 0.48.0 |
+| `$B/python scripts/check_distribution.py --sdist $E/distributions/toolkit_seascape-0.1.0.tar.gz --wheel $E/distributions/toolkit_seascape-0.1.0-py3-none-any.whl --output $E/distribution-report.json` | 0; 9 required files / 5 resources; archive/metadata/source-byte checks passed |
+| `$B/python scripts/check_consumer_install.py --wheel $E/distributions/toolkit_seascape-0.1.0-py3-none-any.whl --source $R --forbid-root $G --output $E/consumer` | 0; **16 expected-exit steps**, **83 copied tests passed**, copied notebook **15 production / 16 total checks**, two embedded figures |
+| `$B/python scripts/check_quickstart.py --sdist $E/distributions/toolkit_seascape-0.1.0.tar.gz --source $R --forbid-root $G --output $E/quickstart` | 0; exact install/demo/plan blocks; 15 synthetic demo checks; automated simulation only |
+| `$D/python -m pytest -q -rs` | 0; **368 passed / 0 failed / 3 skipped**, 69 warnings; includes scientific/publication/release/matrix regressions |
+| `$D/ruff check src tests scripts`; `$D/ruff format --check src tests scripts`; `$D/python -m mypy` | 0 each; 235 formatted files / 12 interface modules |
+| `$D/python scripts/environment_snapshot.py --extra test --extra quality --output $E/environment` | 0 |
+| `$D/pip-audit --disable-pip --no-deps --strict -r $E/environment.txt` | 0; no known vulnerabilities |
+| `/opt/homebrew/bin/gitleaks git . --redact --no-banner --log-opts=--all` | 0; 24 commits |
+| `/opt/homebrew/bin/gitleaks dir $E/tracked-tree --redact --no-banner` | 0; tracked candidate snapshot only; local ignored cache excluded explicitly |
+| `$D/python scripts/check_docs.py`; `git diff --check` | 0; final 41 documents / 152 local links / 26 stages; external URL availability not checked by this offline tool |
+| `$D/python -m pytest -q tests/test_documentation.py` | 0; **16 passed / 0 failed / 0 skipped** on the final handoff documentation |
+| `/opt/homebrew/bin/gitleaks dir $E/handoff-tracked-tree --redact --no-banner` | 0; intended final tracked documentation/source snapshot, including new handoff; ignored caches excluded explicitly |
+
+Local wheel SHA-256 **`463aa070c2a4d5d22d8383eb55b66b3bc4b453b13c78dbce78cdc7248c062df3`**;
+sdist **`a7ba7fa13feb35a6f6c5c244bf05629b6c6e925f3ff6ebe134e3a2727abea8bd`**.
+Metadata: toolkit-seascape 0.1.0, Python >=3.11, Apache-2.0. All packaged source/resource bytes
+match the exact candidate; no datasets/retained products/graph caches entered either archive.
+Both synthetic demo PNGs were opened and inspected for titles, orientation, sign/meters and grey
+unavailable support. This is synthetic illustration QA, not regional coastline/data validation.
+
+Three full-suite skips are still `test_feature_catalog.py:107,130` and
+`test_network_consumer_contracts.py:207`, requiring absent regional materialized products.
+The older broad ignored-cache Gitleaks failure remains historical/unresolved; no cleanup or
+allowlist change. Current tracked/history scans and clean hosted tree scans pass their stated scopes.
+
+Administration inspection: repository rulesets including parents returned `[]`; the connector
+rejected the effective-branch endpoint as unsupported, then a public read-only GET to that endpoint
+returned **HTTP 200 / `[]`**. Classic `main` protection returned integration **403**, so that check
+is blocked and empty rulesets are not proof of absent classic protection. Repository metadata
+enables squash/merge/rebase, disables auto-merge; these are options, not a chosen merge policy.
+Nine actual observed check names are listed in the handoff; no settings change was proposed/applied.
+No version policy/tags were found. Existing tested **0.1.0** is retained as the proposed base;
+public version/prerelease policy needs owner approval, with rebuild/revalidation if metadata changes.
+
+Changed: `docs/release-candidate.md`, `docs/README.md`, this record. All other tracked files and
+all 46 cached explorer files remain byte-identical; configs, scientific code, canonical products,
+retained releases, notebook and siblings preserved. Detailed final preservation and Git state
+are saved under the evidence root. No unrelated starting edits. Normal feature commit/push use
+existing authorization and message `Repository Organization Updates`; no merge/tag/registry,
+release upload, settings, dataset or application changes. Next: **owner resolution of the pending
+SS-11 gates**; SS-10 execution requires its separate scope/correction/input gates. No SS-12 started.
