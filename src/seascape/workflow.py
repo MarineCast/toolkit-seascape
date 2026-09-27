@@ -1176,6 +1176,7 @@ def run_domain_layer_build(
     resume: bool = False,
     publish: bool = True,
     stage_definitions: Sequence[DomainBuildStage] | None = None,
+    _failure_reporter: Callable[[str, float, Exception], None] | None = None,
     **context_kwargs: Any,
 ) -> list[StageResult]:
     only, skip = tuple(only), tuple(skip)
@@ -1345,7 +1346,12 @@ def run_domain_layer_build(
                     stage.name, "failed", elapsed_seconds=elapsed, error=str(exc)
                 )
             )
-            print(f"[build-domain-layers] {stage.name} failed ({elapsed:.1f}s): {exc}")
+            if _failure_reporter is None:
+                print(f"[build-domain-layers] {stage.name} failed ({elapsed:.1f}s): {exc}")
+            else:
+                # CLI presentation must not echo raw sensitive exception text.
+                # The Python default still reports and re-raises the same error.
+                _failure_reporter(stage.name, elapsed, exc)
             if not ctx.continue_on_error:
                 _write_manifest_if_requested(
                     manifest_path, source_config, results, dry_run=False

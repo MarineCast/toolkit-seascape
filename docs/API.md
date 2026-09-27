@@ -58,6 +58,22 @@ required missing/invalid/unverified prerequisites produce exit 1. `ready` is pre
 not scientific or release acceptance. Plain `--dry-run` remains supported. Plan objects and input
 inspection adapters are internal helpers; see [workflow inspection limits](WORKFLOWS.md).
 
+The installed CLI translates identified missing files, existing destinations, configuration
+validators, blocked dependencies and release/publication failures into guidance on stderr and
+exit 1. Family argument errors still exit 2; forwarded help still exits 0, and family return codes
+are retained. JSON planning stdout remains one report, including on failure. Python API exception
+types, exception causes, return values and release checks are unchanged. Workflow callers retain
+the existing re-raise default and `continue_on_error` result behavior. The private workflow failure
+reporter only lets the CLI suppress raw stage exception text; it is not a supported producer API.
+
+Unlisted calculation, dependency or programming errors still raise with their traceback. Only
+known validator sites are translated; an arbitrary `ValueError` or `RuntimeError` is not assumed
+to be a user mistake. To expose chained detail for translated failures, put the global option
+**before the command**: `seascape --workspace PATH --debug build ...` (also supported for demo,
+download, inspect and export). Debug does not execute a failed preflight or bypass any gate.
+Tracebacks can contain sensitive provider/configuration detail; review them before sharing.
+See [diagnostic examples and operation effects](WORKFLOWS.md#common-problems).
+
 ## Synthetic demo
 
 `seascape.demo.run_demo(workspace, *, overwrite=False)` returns `DemoResult` with demo-root,

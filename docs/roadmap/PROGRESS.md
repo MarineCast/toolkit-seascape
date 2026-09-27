@@ -1,6 +1,6 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-04; SS-03 hosted acceptance pending.
+Implemented scope: SS-00 through SS-05; SS-03 hosted acceptance pending.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
@@ -13,7 +13,8 @@ Working branch: `feature/seascape-first-run-demo`. No remote mutations.
 | SS-02 | passed | Portable copied notebook; 7 regressions; full suite 248 passed / 3 skipped |
 | SS-03 | blocked | Implementation/local macOS passed; hosted Linux/macOS matrix not_run |
 | SS-04 | passed | Read-only input preflight; 34 new regressions; guarded runtime-only wheel acceptance |
-| SS-05–SS-11 | not_run | SS-05 is next; hosted SS-03 acceptance remains pending before integration |
+| SS-05 | passed | CLI-only guidance/debug, side-effect contracts, 29 regressions; runtime-only wheel acceptance |
+| SS-06–SS-11 | not_run | SS-06 is next; hosted SS-03 acceptance remains pending before integration |
 
 ## SS-00 baseline
 
@@ -360,3 +361,94 @@ planning/report behavior; existing producer/consumer signatures and numerical be
 No unrelated tracked edits existed; configurations, canonical products, retained releases,
 notebook source, ignored cache and sibling repositories preserved. Next: **SS-05**, CLI diagnostics
 and side-effect contracts. Stop before SS-05. Remote changes: **none**.
+
+## SS-05 CLI diagnostics and operation effects
+
+**passed** (local implementation/acceptance). Base `7ebdb999d80ecce934169a4cb1b52de107be245b`;
+current commit is the SS-05 commit containing this record. Preserved
+`feature/seascape-first-run-demo`. SS-01/SS-04 prerequisites were satisfied; source reinspection
+confirmed family forwarding/restoration, existing config validators, stage re-raise behavior,
+candidate runners disabling acquisition, immutable release checks and transaction recovery.
+
+Identified CLI failures now report operation/stage, reason, nonsecret path/setting, corrective
+action and guide on stderr, with exit 1. Translation uses known validation sites/resource failure
+types; unlisted calculation/programming failures still raise. Global `--debug` **before** the
+command exposes original chained tracebacks. Family help (0), parser errors (2), nonzero family
+returns, workspace/argv restoration and Python exception types/causes remain intact. An internal
+workflow callback changes only CLI stage-failure presentation; normal API re-raise/results are
+unchanged. JSON preflight schema/stdout are unchanged; failure guidance is additive stderr.
+The workflow guide now lists prerequisites, network/write/replacement/reuse behavior and
+candidate/family/whole-release effects, including direct-family and inspection hazards.
+
+Final verification below ran in the owning checkout unless the command uses the copied helpers
+under `E` (those ran from `E`, outside the checkout). Exact command prefixes:
+
+```sh
+D=/tmp/seascape-roadmap-dev/bin
+R=/tmp/seascape-ss04-evidence/consumer/bin
+E=/tmp/seascape-ss05-evidence
+F=/Users/tylerstevenson/Documents/Code_Repos/MarineCast
+$D/python -m pytest -q tests/test_cli_diagnostics.py tests/test_products.py tests/test_demo.py tests/test_preflight.py tests/test_workflow.py
+$D/python -m pytest -q
+$D/ruff check src tests scripts
+$D/python -m mypy
+$D/ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py src/seascape/cli.py src/seascape/_cli_diagnostics.py tests/test_cli_diagnostics.py
+$D/python -m build --no-isolation --outdir $E/distributions-final
+$D/python scripts/check_distribution.py --sdist $E/distributions-final/toolkit_seascape-0.1.0.tar.gz --wheel $E/distributions-final/toolkit_seascape-0.1.0-py3-none-any.whl --output $E/distribution-final.json
+$R/python -m pip install --force-reinstall --no-deps $E/distributions-final/toolkit_seascape-0.1.0-py3-none-any.whl
+$R/python -m pip check
+$R/python $E/consumer_guard.py --forbid-root $F --script $E/check_installed_package.py -- --snapshot $E/installed-final.json
+$R/python $E/consumer_guard.py --forbid-root $F --script $E/cli_acceptance_final.py
+$R/python $E/check_demo.py --workspace $E/demo-workspace-final --forbid-root $F
+$D/python scripts/environment_snapshot.py --output $E/environment
+$D/pip-audit --disable-pip --no-deps --strict -r $E/environment.txt
+git diff --check
+gitleaks dir $E/tracked-scan --redact --no-banner
+gitleaks git . --redact --no-banner --log-opts=--all
+```
+
+All final commands above exited **0**. Focused **103 passed / 0 failed / 0 skipped**; full
+**322 passed / 0 failed / 3 skipped**, 65 warnings. Skips: two feature-catalog and one
+network-consumer test require absent materialized regional artifacts. Added **29 regressions**.
+Lint, four-module mypy and seven-file format checks passed; no repository-wide formatting.
+Build used provisioned declared build tools, producing wheel from sdist. Distribution inspection
+passed (9 required files, 5 resources). Final wheel SHA-256
+`e7b947f0cf62ccc7b538c1e4e061ef097d22d8dd877e94f806977058e4d841e4`;
+sdist `e356f47837efff0e52869f56fc21eee692348c34e50dd9f4bc1b9aed13aeb307`.
+
+Runtime-only acceptance reused the isolated SS-04 consumer **after force-reinstalling this wheel**;
+no inherited site packages, pytest or Jupyter supplied dependencies. Guarded imports: **163 modules**.
+Copied CLI helper: **13 cases** with exit/JSON/diagnostic/restoration/output-preservation checks.
+Copied demo: **14 production acceptance checks**, synthetic provenance, demo-owned artifacts only.
+Python checkout/outbound/child guards passed; these are not an OS/native-extension firewall claim.
+Console wrapper commands using `$R/python $E/consumer_guard.py --forbid-root $F --script
+$R/seascape --` also ran: `--help` exit **0**; `--workspace $E/cli-workspace --debug inspect
+bathymetry --config missing.yaml` exit **1**; `--workspace $E/cli-workspace build --only
+seascape-bathymetry --dry-run --check-inputs --json` exit **1**. Failure exits were expected;
+JSON parsed and debug stderr contained the original traceback with empty stdout.
+
+Evidence: `/tmp/seascape-ss05-evidence/` (`commands.json`, final test/build/import/demo logs, CLI cases, distribution,
+installed/environment snapshots, audit/security logs; initial intermediate logs also retained).
+Python 3.14.6/macOS ARM64; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1. Audit exit **0**, no known
+vulnerabilities. Initial focused runs exited **1** (4 failed/83 passed, then 1 failed/99 passed):
+test API calls needed the selected workspace for relative includes and the original `CRSError`
+type for an invalid CRS. Corrected tests passed. Intermediate focused/full checks also passed
+(102/321 respectively); final review added a publication-path refusal regression and revalidated
+the final source/wheel. One read-only inspection shell typo (`/ tmp`) exited **126**, no mutation.
+
+Broad `gitleaks dir . --redact --no-banner --report-format json --report-path
+/tmp/seascape-ss05-evidence/gitleaks-tree.json` exited **1**: the same ignored, untouched
+`graphify-out/cache/stat-index.json:1` `generic-api-key` finding, a 64-hex documentation cache
+hash at `docs/API.md -> hashes -> docs/api.md`. Broad scan **failed**, not waived/passed.
+Tracked-source and local-history scans passed; no ignore/allowlist/gate weakened. Debug/provider
+tracebacks can contain sensitive detail. Unlisted validation failures remain diagnosable tracebacks.
+Hosted SS-03 Linux/macOS checks remain **not_run**, remote updates unauthorized. Live acquisition,
+regional rebuilds, downstream integration and human release acceptance are **not_run**. Notebook
+was assessed: it still calls unchanged `run_demo`; hash unchanged, no edit or redundant headless run.
+
+Changed: `AGENTS.md`, `docs/{API,WORKFLOWS}.md`, this record,
+`src/seascape/{cli,workflow,_cli_diagnostics}.py`, `tests/{test_cli_diagnostics,test_products}.py`.
+Scientific behavior changed: **no**; formulas, defaults, product/release schemas, Python exception
+contracts and scientific/release gates retained. No unrelated tracked changes existed. Existing
+configurations, canonical/retained products, notebook, ignored cache and siblings preserved.
+Next: **SS-06**, repository-wide formatting only. Stop before SS-06. Remote changes: **none**.

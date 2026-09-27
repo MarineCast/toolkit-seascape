@@ -76,6 +76,9 @@ hashes, downloads or producers. A ready report establishes only its stated inspe
 missing/invalid/required-unverified checks fail. See [workflow limits](docs/WORKFLOWS.md).
 
 For demo/CLI behavior, run `python -m pytest -q tests/test_demo.py`, then the required suite above.
+For CLI diagnostics, also run `python -m pytest -q tests/test_cli_diagnostics.py tests/test_products.py`
+to verify failure codes, stderr/JSON separation, family help forwarding and unchanged API exceptions.
+`--debug` is a global option before the command; it never relaxes validation.
 `seascape --workspace /path/to/fresh-workspace demo` performs synthetic software acceptance; it
 never establishes a regional release. Keep artifacts in its owned `.seascape/demo` subtree.
 After building/installing a wheel, copy `scripts/check_demo.py` outside the checkout and run it

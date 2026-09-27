@@ -9,6 +9,14 @@ from pathlib import Path
 import importlib
 import json
 import sys
+import traceback
+
+from seascape._cli_diagnostics import (
+    EXPECTED_TYPES,
+    build_operation,
+    identify_failure,
+    safe_detail,
+)
 
 FAMILIES = {
     "water-geometry": "spatial_support.water_geometry",
@@ -65,12 +73,28 @@ def initialize_workspace(root: Path) -> None:
     copy_tree(files("seascape").joinpath("resources"), root)
 
 
+def _config_selection(args: argparse.Namespace) -> str:
+    if hasattr(args, "config"):
+        return args.config
+    for index, argument in enumerate(getattr(args, "arguments", [])):
+        if argument.startswith("--config="):
+            return argument.split("=", 1)[1]
+        if argument == "--config" and index + 1 < len(args.arguments):
+            return args.arguments[index + 1]
+    return "family default (see --help) / release metadata"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--workspace",
         type=Path,
         help="Data/config/output root (default: current directory)",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Print chained tracebacks for identified failures; place before the command",
     )
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser(
@@ -151,8 +175,10 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 result = run_demo(project_root(), overwrite=args.overwrite)
             except DemoWorkspaceError as exc:
+                if args.debug:
+                    traceback.print_exception(exc, file=sys.stderr)
                 print(
-                    f"Demo: {exc}. Use a fresh workspace or review the demo ownership before --overwrite.",
+                    f"demo: {safe_detail(exc)}. Use a fresh workspace or review the demo ownership before --overwrite. Guide: docs/demo.md.",
                     file=sys.stderr,
                 )
                 return 1
@@ -213,6 +239,18 @@ def main(argv: list[str] | None = None) -> int:
                 print(json.dumps(report, indent=2))
             else:
                 print_preflight(report)
+            for check in report["checks"]:
+                if check["required"] and check["status"] in {
+                    "missing_external",
+                    "invalid",
+                    "unverified",
+                }:
+                    print(
+                        f"build preflight / {check['stage']}: {check['name']} "
+                        f"is {check['status']} ({check['path'] or report['config']}). "
+                        f"Action: {check['corrective_action']} Guide: docs/WORKFLOWS.md.",
+                        file=sys.stderr,
+                    )
             return int(report["status"] == "failed")
         results = run_domain_layer_build(
             config_path=args.config,
@@ -223,10 +261,45 @@ def main(argv: list[str] | None = None) -> int:
             resume=args.resume,
             overwrite=args.overwrite,
             publish=args.publish,
+            _failure_reporter=lambda name, elapsed, exc: print(
+                f"build / {name}: failed ({elapsed:.1f}s; {type(exc).__name__})",
+                file=sys.stderr,
+            ),
         )
+        for result in results:
+            if result.status == "blocked_dependency":
+                print(
+                    f"build / {result.name}: incomplete dependency "
+                    f"({safe_detail(result.error or 'no validated reusable output')}). "
+                    "Action: repair the upstream failure or provide checksum/config/upstream-valid "
+                    "output; remove --skip to build a missing stage in a fresh candidate. "
+                    "Guide: docs/WORKFLOWS.md#4-build-a-candidate.",
+                    file=sys.stderr,
+                )
         return int(
             any(result.status in {"failed", "blocked_dependency"} for result in results)
         )
+    except EXPECTED_TYPES as exc:
+        diagnostic = identify_failure(exc)
+        if diagnostic is None:
+            raise
+        operation = (
+            build_operation(exc)
+            if args.command == "build"
+            else f"{args.command} / {args.family}"
+            if args.command in {"download", "inspect"}
+            else args.command
+        )
+        if args.debug:
+            traceback.print_exception(exc, file=sys.stderr)
+        print(
+            f"{operation}: {diagnostic.reason}\n"
+            f"Location: {safe_detail(project_root())}; "
+            f"config: {safe_detail(_config_selection(args))}\n"
+            f"Action: {diagnostic.action}\nGuide: {diagnostic.guide}",
+            file=sys.stderr,
+        )
+        return 1
     finally:
         if previous is None:
             os.environ.pop("SEASCAPE_WORKSPACE", None)

@@ -75,6 +75,33 @@ def _release_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     return workspace, generation / artifact.relative_to(workspace), release_manifest
 
 
+def test_cli_checksum_failure_preserves_release_and_api_exception(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    from seascape.cli import main
+
+    workspace, _artifact, manifest = _release_fixture(tmp_path)
+    payload = json.loads(manifest.read_text())
+    relative = next(iter(payload["family_manifest_checksums"]))
+    family = workspace / ".seascape/releases" / payload["release_id"] / relative
+    family.write_text("synthetic tampered manifest")
+    retained_bytes = family.read_bytes()
+    monkeypatch.setenv("SEASCAPE_WORKSPACE", "previous-workspace")
+    output = tmp_path / "matrix.parquet"
+    assert main(
+        ["--workspace", str(workspace), "export-metric-matrix", "--output", str(output)]
+    ) == 1
+    captured = capsys.readouterr()
+    assert "checksum mismatch" in captured.err
+    assert "export-metric-matrix" in captured.err
+    assert "restore verified source bytes" in captured.err
+    assert "Guide: docs/" in captured.err
+    assert not captured.out
+    assert family.read_bytes() == retained_bytes and not output.exists()
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        list_products(workspace=workspace)
+
+
 def test_discovery_and_exact_resolution_resolution(tmp_path: Path) -> None:
     workspace, artifact, _manifest = _release_fixture(tmp_path)
 

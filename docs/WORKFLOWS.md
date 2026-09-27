@@ -160,7 +160,67 @@ a historical generation. Older schema-2 releases require republishing. See [API 
 It never falls back to another resolution. Applications choose predictive
 features and scales after freezing these physical products.
 
+## 8. Export a metric matrix
+
+```sh
+seascape --workspace /path/to/seascape-workspace export-metric-matrix --resolution 6 --output /path/to/owned-exports/seascape-r6.parquet
+```
+
+This resolves a completed release and its archived catalog, verifies artifacts and H3 support,
+and writes Parquet with embedded export metadata. Choose a distinct output destination; existing output
+requires explicit `--overwrite`. The existing `--legacy-unverified --catalog PATH` mode records
+structural evidence from a legacy release, not certified release acceptance. It is not a remedy
+for checksum failures in a validated release.
+
+## Operation effects
+
+All local artifact publication below is distinct from remote publication. Source acquisition is
+explicit through download commands or family pipeline options. File paths, network access and
+source rights remain governed by the selected configuration and owning family's source guide.
+
+| Operation | Prerequisites | Network behavior | Writes / replacement and resume | Release effect |
+| --- | --- | --- | --- | --- |
+| `init` | Writable workspace | None | Packaged config/governance/docs templates; existing files preserved | None |
+| `stages`, top-level or family `--help` | Installed package | None | No artifacts | None |
+| `demo` / `run_demo` | Fresh owned demo workspace, or intact ownership marker with explicit `--overwrite` | Offline; acquisition disabled | Synthetic fixtures/products/report/figures only in `.seascape/demo`; replacement confined to known owned artifacts | Synthetic software acceptance only |
+| `build --dry-run` | Stage selection; reusable artifacts for `--skip` / `--resume` | No acquisition | Prints plan; reuse checks can read/hash existing artifacts; no candidate writes through this CLI | No build or release approval |
+| `build --dry-run [--check-inputs] --json` and human input preflight | Selected config; local inputs for input checks | No acquisition; local inspection only | JSON report on stdout or human report; no writes/hashes/producers; failure guidance on stderr | No build or release approval |
+| `download FAMILY` | Reviewed config, source rights/access, provider credentials where required | Family-specific HTTP acquisition or local input validation/reuse; see family help/source guide | Configured raw caches, archives and inventories; overwrite/reuse rules vary by family | No whole-release promotion |
+| `build` | Configured local inputs and selected dependencies | No downloader is invoked by the candidate runners; source locations must be local | Candidate config/products/manifests/catalog/audit/docs. Fresh directory recommended; producer replacement rules vary, and some producers replace configured outputs even without `--overwrite`. `--resume` / `--skip` require existing identity/checksum validation | Retains candidate by default; selected family products may be published within that candidate |
+| `build --resume --publish` | Same candidate/config, valid reuse state, complete passing release audit | No acquisition | Retained generation, canonical compatibility products and release manifest; local journaled promotion. Existing retained releases remain | Whole-release promotion only after existing gates pass |
+| `inspect FAMILY` | Existing configured products and presentation config | Local rendering; opening HTML can fetch external basemap tiles | Maps/diagnostics at configured or explicit output paths, which can replace existing visualizations; no resume contract | No scientific release approval |
+| `export-metric-matrix` / `build_metric_matrix` | Validated release and archived catalog (or explicit existing legacy mode) | None | Parquet with embedded export metadata at explicit destination; existing output requires `--overwrite`; no resume | Export only; does not publish a release |
+| Product discovery/resolution Python facade | Completed release; requested product/resolution/retained identity | None | Reader lock bookkeeping may be created; no data writes | Checksum-verifies existing release/products |
+| Direct family Python APIs / `python -m seascape.<family>.<module>` | Family config and required inputs | Varies: pipelines may acquire sources unless their own skip options disable it | Writes configured outputs, family manifests and optional maps. Flags and replacement behavior differ; these are **not isolated candidates** | Family publication where implemented; does not certify/promote a whole release |
+
+Residual hazards: configured direct-family or inspection paths may point at canonical outputs or
+standard maps. Choose an owned destination before running them. Candidate producers differ in
+replacement behavior; review the configuration and use a fresh candidate to protect prior work.
+Resume evidence does not certify new source coverage, units or scientific suitability. Permission,
+storage, interruption and unrecognized provider errors can still require detailed debugging;
+transaction recovery and release/scientific validation remain mandatory.
+
 ## Common problems
+
+Identified failures return exit 1 with the operation, reason, workspace/config or source path,
+corrective action and a guide pointer on stderr. Missing configuration, missing local sources,
+invalid declared scientific settings, existing export output, incomplete dependencies, checksum
+mismatches and publication/recovery failures receive this guidance. Existing JSON preflight fields
+and statuses remain authoritative; human guidance does not appear in JSON stdout. Normal build
+progress remains human stdout. Family help/parser behavior and Python API exceptions are retained.
+
+Unrecognized errors retain tracebacks. To inspect the original chained exception for an identified
+failure, put `--debug` before the command, alongside `--workspace`:
+
+```sh
+seascape --workspace /path/to/seascape-workspace --debug build --only seascape-bathymetry
+seascape --workspace /path/to/seascape-workspace --debug inspect bathymetry --config config/data/project.yaml
+```
+
+`build --debug` is not valid. Debug keeps the same failure code and gates. Preflight remains
+read-only and reports its inspection limitations; debug does not run producers to reconstruct
+a traceback. Normal CLI diagnostics redact remote locations and sensitive conversion details;
+debug tracebacks and provider logs can contain credentials, so review them before sharing.
 
 | Symptom | Next check |
 | --- | --- |
@@ -169,4 +229,6 @@ features and scales after freezing these physical products.
 | A skipped stage is blocked | Provide valid reusable outputs or remove `--skip` and rebuild |
 | Resume reuses output after a geographic/source/code change | Use a fresh candidate or `--overwrite`; see the documented checksum limits |
 | Release audit fails | Inspect the reported schema, missingness, manifest or metadata mismatch; correct it before promotion |
+| Release/export checksum mismatch | Preserve retained releases; restore verified source bytes or correct and audit a fresh candidate. Do not edit checksums or select legacy mode to clear validation |
+| Publication is busy or recovery fails | Wait for the active writer or inspect preserved recovery evidence; keep lock files, journals and trusted releases intact |
 | Imports fail in OrcaCast | Application integration remains deferred; use the standalone toolkit interfaces |
