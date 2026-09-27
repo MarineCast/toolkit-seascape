@@ -79,6 +79,16 @@ The supported bathymetry facade is `seascape.seafloor_physiography.bathymetry`:
 - `build_bathymetry_parquet(config, raster_path=...)` returns the written `Path`; it requires
   configured support inputs and does not alone publish a complete family/release manifest.
 
+When a selected water mask has `water_geometry_manifest.json`, H3/support and bathymetry
+builders verify its artifact identity before publication and retain its source/completeness and
+manifest lineage. Explicit exploratory support stays model-ineligible in additive
+`metadata.water_geometry_provenance`; no schema or scientific formula changes. The San Juan
+helper now publishes an exploratory mask manifest and uses explicit exploratory support versions.
+An older San Juan mask bearing its exploratory `AREA` label without a manifest is rejected;
+rebuild it in an approved disposable workspace rather than relabeling historical products.
+Legacy masks without that declaration retain existing absence behavior. These checks do not
+independently certify a source boundary's legal authority or grant release eligibility.
+
 Invalid configuration or scientific inputs raise `ValueError`; absent inputs raise
 `FileNotFoundError`. Acquisition can propagate HTTP/network exceptions and output failures can
 propagate `OSError`. Inspect signatures for optional parameters; do not infer consistent signatures

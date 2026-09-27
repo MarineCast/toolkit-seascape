@@ -135,3 +135,9 @@ settings or proof that classic protection is absent. Retain all applicable softw
 when the maintainer reviews requirements. Do not turn missing human/data/admin evidence into PASS.
 There is no SS-12. The next action is owner resolution of these explicit gates, not automatic
 promotion, unbounded source acquisition or another toolkit implementation.
+
+PILOT-01 continuation prepares the existing exploratory route with verified future mask lineage
+and explicit exploratory support versions; see the [pilot runbook](pilots/san-juan.md) and
+[progress record](roadmap/PROGRESS.md). This follow-up does not replace the immutable VERIFY-01
+candidate evidence above. Local pilot workspace/resource/family-publication approval remains
+pending; no real-data numerical, resource or regional map acceptance is claimed.

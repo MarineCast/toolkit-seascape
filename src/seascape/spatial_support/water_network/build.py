@@ -37,6 +37,7 @@ from seascape.core.geo.h3 import (
 from seascape.publication import (
     TransactionalSeascapePublisher,
 )
+from seascape.spatial_support.provenance import water_geometry_provenance
 from seascape.utils.artifacts import (
     build_manifest,
     capture_staged_parquet_artifact,
@@ -554,6 +555,7 @@ def build_marine_spatial_support(
         raise FileExistsError(
             f"Marine support artifacts exist; pass --overwrite: {existing[0]}"
         )
+    provenance = water_geometry_provenance(config.water_polygon_path, project_root())
     water_geometry, aoi = _load_water_geometry(config)
     water_checksum = checksum_path(config.water_polygon_path)
     run = run_id or f"marine-spatial-support-{uuid.uuid4().hex[:12]}"
@@ -834,7 +836,9 @@ def build_marine_spatial_support(
             resolved_config=asdict(config),
             artifacts=artifacts,
             project_root=project_root(),
-            sources=[
+            sources=provenance["sources"]
+            if provenance
+            else [
                 {
                     "name": "Canonical Seascape Toolkit territorial-water geometry",
                     "path": str(config.water_polygon_path),
@@ -850,15 +854,20 @@ def build_marine_spatial_support(
                 }
             ],
             upstream_artifacts=[
-                {"path": str(config.water_polygon_path), "checksum": water_checksum}
+                {"path": str(config.water_polygon_path), "checksum": water_checksum},
+                *([provenance["upstream"]] if provenance else []),
             ],
-            attribution=[
+            attribution=provenance["attribution"]
+            if provenance
+            else [
                 {
                     "text": "Canonical Seascape Toolkit territorial-water geometry",
                     "license": "See water_geometry source manifest and seascape documentation",
                 }
             ],
-            source_completeness="complete",
+            source_completeness=provenance["source_completeness"]
+            if provenance
+            else "complete",
             semantic_contracts=default_semantic_contracts(
                 aggregation=(
                     "The 5 km radius operator uses exact water-network distance with terminal "
@@ -866,6 +875,11 @@ def build_marine_spatial_support(
                 )
             ),
             metadata={
+                **(
+                    {"water_geometry_provenance": provenance["metadata"]}
+                    if provenance
+                    else {}
+                ),
                 "water_mask_version": config.water_mask_version,
                 "spatial_support_version": config.spatial_support_version,
                 "summary": summary,

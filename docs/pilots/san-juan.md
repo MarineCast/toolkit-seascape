@@ -1,6 +1,6 @@
 # Bounded San Juan pilot — execution blocked
 
-SS-10 preparation, September 27, 2026. This is a checked configuration and blocked runbook,
+SS-10 / PILOT-01 preparation, September 27, 2026. This is a checked configuration and blocked runbook,
 not a reproduced real-data run or a measured operating envelope. No source acquisition,
 producer, publication, release audit or regional visual QA was performed for this task.
 It uses the existing [San Juan explorer](../../notebooks/01_DATA_EXPLORER.ipynb) and
@@ -25,9 +25,11 @@ Two execution gates remain open:
 
 1. The standard bathymetry plan requires canonical multi-source water geometry. Those inputs
    are missing in the fresh pilot workspace. Natural Earth is an **exploratory land-mask proxy**,
-   not canonical territorial waters or a navigation/legal boundary. A future exploratory
-   recipe must retain that label in support and provenance and explicitly validate its reuse;
-   it must not bypass the canonical planner's input/reuse checks to obtain a ready report.
+   not canonical territorial waters or a navigation/legal boundary. The existing exploratory
+   recipe now publishes source/version/checksum, partial completeness and model-ineligible
+   lineage, propagated by the production H3/network/bathymetry builders. Offline fixtures
+   verify this reuse and exact numerical equality; real-data validation remains pending. It
+   must not bypass the canonical planner's input/reuse checks to obtain a ready report.
 2. `bathymetry.run_pipeline(skip_download=True, skip_map=True)` still performs transactional
    family publication. It has no publication-off option. [SS-10 step 5](../roadmap/SEASCAPE_CODEX_ROADMAP.md#ss-10-prepare-a-bounded-real-data-pilot-and-measured-operating-envelope)
    requires an approved disposable workspace and explicit publication scope for this path.
@@ -167,8 +169,21 @@ coastline alignment, unavailable versus zero display and artifacts. Record visua
 separately from file generation; opening a tile/CDN-backed HTML map would exceed zero-network
 scope. Preserve sources outside tracked examples and preserve all old datasets/releases.
 
-Current measurements: cached input storage only. Processing time, output storage, peak memory,
-repeatability, source pixel/coverage validation and map generation/inspection are **not_run**.
+PILOT-01 prepared exact local execution at
+`/private/tmp/seascape-pilot-01-20260927/replicate-1` and `replicate-2`; neither exists or has
+been executed. The reviewed plan, source headers/pixel counts, configuration fingerprints,
+existing-API phase recipe and process-group watchdog are in
+`/private/tmp/seascape-pilot-01-readiness`. The watchdog refuses execution without a recorded
+explicit scope approval. It samples wall/disk/process-tree RSS every 0.25 seconds and terminates
+on a breach; sampling can overshoot and is not a hard OS memory reservation. The proposed caps
+above and zero-download Python guard remain pending approval, not a measured capacity.
+
+Read-only source checksum/header/pixel inspection and canonical preflight were rerun; six inputs
+remain missing and preflight returns 1, never READY. Future manifests preserve exploratory identity;
+old cache manifests remain untouched. Synthetic publisher regressions pass, including bad-lineage
+rejection before writes. Processing time, output storage, peak memory, repeatability and regional
+map generation/inspection are still **not_run**. Read-only source pixel counts do not establish
+regional scientific coverage acceptance.
 The [progress record](../roadmap/PROGRESS.md) supplies executed commands, evidence paths,
 environment and exact code identity. SS-10's blocked-runbook alternative is prepared; the
 real-data gate remains unsatisfied. SS-11 may only proceed with that limitation explicit.

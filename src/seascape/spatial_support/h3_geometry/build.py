@@ -35,6 +35,7 @@ from seascape.core.geo.h3 import polygonize_h3_indices as core_polygonize_h3_ind
 from seascape.publication import (
     TransactionalSeascapePublisher,
 )
+from seascape.spatial_support.provenance import water_geometry_provenance
 from seascape.utils.artifacts import (
     build_manifest,
     capture_staged_parquet_artifact,
@@ -417,7 +418,7 @@ def build_h3_grid_layers(
     clip_simplify_tolerance: float | None = None,
     max_workers: int | None = None,
 ) -> tuple[tuple[Path, Path], ...]:
-    """Build configured H3 geometry layers from the canonical water geometry."""
+    """Build configured H3 layers while retaining declared water-geometry lineage."""
 
     cfg = load_h3_geometry_config(config_path)
     selected_resolutions = (
@@ -428,6 +429,7 @@ def build_h3_grid_layers(
         raise FileNotFoundError(
             f"Water geometry not found: {source}. Build water_geometry before h3_geometry."
         )
+    provenance = water_geometry_provenance(source, project_root())
     waters = _ensure_epsg4326(gpd.read_parquet(source))
     waters = _clip_to_bbox(waters, cfg["bbox"])
     if waters.empty:
@@ -493,7 +495,9 @@ def build_h3_grid_layers(
             },
             artifacts=records,
             project_root=project_root(),
-            sources=[
+            sources=provenance["sources"]
+            if provenance
+            else [
                 {
                     "name": "Canonical territorial-water geometry",
                     "license": "Derived source; see water_geometry_manifest.json",
@@ -506,16 +510,28 @@ def build_h3_grid_layers(
                     ),
                 }
             ],
-            upstream_artifacts=[{"path": str(source), "checksum": water_checksum}],
-            attribution=[
+            upstream_artifacts=[
+                {"path": str(source), "checksum": water_checksum},
+                *([provenance["upstream"]] if provenance else []),
+            ],
+            attribution=provenance["attribution"]
+            if provenance
+            else [
                 {
                     "text": "Derived from the canonical territorial-water geometry",
                     "license": "See water_geometry_manifest.json",
                 }
             ],
-            source_completeness="complete",
+            source_completeness=provenance["source_completeness"]
+            if provenance
+            else "complete",
             metadata={
-                "geometry_role": "multi-resolution full and water-clipped support"
+                "geometry_role": "multi-resolution full and water-clipped support",
+                **(
+                    {"water_geometry_provenance": provenance["metadata"]}
+                    if provenance
+                    else {}
+                ),
             },
         )
         publisher.stage_manifest(output_dir / "h3_geometry_manifest.json", manifest)

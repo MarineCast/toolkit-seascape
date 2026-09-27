@@ -19,6 +19,7 @@ from seascape.core.geo.h3 import cell_to_parent
 from seascape.publication import (
     TransactionalSeascapePublisher,
 )
+from seascape.spatial_support.provenance import water_geometry_provenance
 from seascape.utils.artifacts import (
     build_manifest,
     capture_staged_parquet_artifact,
@@ -400,6 +401,7 @@ def run_pipeline(
             )
         )
     output_dir = config.processed_path.parent
+    provenance = water_geometry_provenance(config.water_polygon_path, project_root())
     with TransactionalSeascapePublisher(output_dir) as publisher:
         staged_configs: list[BathymetryConfig] = []
         for product_config in product_configs:
@@ -425,7 +427,7 @@ def run_pipeline(
             capture_staged_parquet_artifact(publisher, destination)
             for destination in processed_paths
         ]
-        upstream_artifacts = []
+        upstream_artifacts = [provenance["upstream"]] if provenance else []
         for product_config in product_configs:
             for upstream in (
                 product_config.h3_grid_path,
@@ -473,9 +475,16 @@ def run_pipeline(
                     ),
                 }
             ],
-            source_completeness="complete",
+            source_completeness=provenance["source_completeness"]
+            if provenance
+            else "complete",
             metadata={
                 **synthetic_metadata,
+                **(
+                    {"water_geometry_provenance": provenance["metadata"]}
+                    if provenance
+                    else {}
+                ),
                 "bathymetry_sign": config.bathymetry_sign,
                 "h3_resolutions": [item.h3_resolution for item in product_configs],
                 "depth_band_intervals_m": [

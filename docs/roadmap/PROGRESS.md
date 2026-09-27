@@ -1167,3 +1167,76 @@ wall/storage/memory and inspected-map evidence. Future rights correction removes
 **ACCEPT-01** still needs an unfamiliar user's install/demo/output/units-resolution/provenance/null
 trial (owner confirmed none available), observed friction, owner version/merge/release decisions and
 classic-protection review (prior integration 403, not proof of no protection). Neither gate passed.
+
+## PILOT-01 continuation — execution approval pending (September 27)
+
+Started clean at `8eaae5fc1ed8e2359726527c528f55f45913e3fb` on the existing authorized
+`feature/seascape-repository-organization-updates`; no reset/repeated roadmap implementation.
+Read owner/workspace instructions, current roadmap/progress/runbook and actual producers.
+PILOT-01 is the next incomplete task. Its existing explorer mask was explicitly exploratory,
+but downstream H3/network manifests hard-coded canonical territorial-water provenance.
+The helper now transactionally publishes a schema-3 exploratory mask manifest with actual
+Natural Earth release/ZIP checksum, optional-credit public-domain rights, partial completeness,
+cartographic scale and model-ineligible caveats. Prepared workspace support-version overrides
+are explicitly exploratory. The three existing production builders verify available selected-mask
+manifest identity and retain lineage/completeness; old San Juan masks with their explicit
+exploratory AREA declaration and no manifest fail before publication. Ordinary legacy absence
+behavior remains. Historical manifests are not rewritten. No formulas, CRS/datum/sign, nodata,
+quantiles, neighborhoods, H3 selection, parent bands, scientific settings or release gates changed.
+Offline fixtures compare all support/network products and bathymetry values exactly and reject
+bad lineage before writes, preserving existing destinations. No public signature/schema change;
+additive metadata only, plus stricter validation of declared provenance. Validation notebook's
+existing production-demo coverage stays appropriate; its committed bytes are unchanged.
+
+Evidence: `/private/tmp/seascape-pilot-01-readiness`; command JSON retains exact argv/cwd/exits
+and logs. `prepare.py` exits 0: cached GEBCO 2026 production checksum and Natural Earth 5.1.1
+ZIP identity reverified; 7,204,615 extracted ZIP bytes; raster header and valid/nodata/land/zero
+pixel counts recorded without writes. Fresh configuration fingerprint/hash in `pilot-plan.json`.
+No real producer or source acquisition ran. Guarded canonical preflight exits 1 with valid failed
+JSON and the same six missing external water inputs; no READY claim. Proposed new roots:
+`/private/tmp/seascape-pilot-01-20260927/replicate-{1,2}`. Exact existing-API phase recipe and
+outer process-group watchdog prepared outside Git; compile check exits 0 and unapproved runner
+refusal exits 1 before workspace creation. Caps proposed: zero source downloads, 32 MiB inputs
+including extraction, 256 MiB workspace, 10 minutes / 2 GiB sampled aggregate process-tree RSS
+per realization, four workers. Sampler interval 0.25 seconds; overshoot possible, not a hard OS
+memory reservation or native-network firewall. Actual regional monitoring/stress, two-run
+comparison and map generation/inspection remain not_run. SS-10 step 5's explicit disposable
+workspace/publication approval was requested with this concrete plan and remains pending;
+existing feature push/local software-check authorizations were preserved.
+
+Executed using `/tmp/seascape-roadmap-dev/bin` (CPython 3.14.6, macOS 26.6.2 ARM64;
+GDAL 3.12.4/PROJ 9.8.1/GEOS 3.13.1):
+
+| Command | Exit / actual result |
+| --- | --- |
+| `python -m pytest -q tests/test_water_geometry_provenance.py` | initial 1: 9 passed/1 failed, test copy omitted logical-name checksum update; corrected, no validator relaxation; subsequent 0: 11 passed before final extra rejection regression |
+| `python -m pytest -q tests/test_water_geometry_provenance.py tests/test_demo.py tests/domains/environment/seascape/test_bathymetry_contracts.py tests/domains/environment/seascape/spatial_support/test_water_network.py` | 0; 55 passed/0 skipped at that development step |
+| `python -m pytest -q` | final 0; 410 passed/3 existing regional skips/101 warnings, including all 12 new regressions; previous intermediate 409 passed/3 skipped |
+| `ruff check src tests scripts`; `ruff format --check src tests scripts`; `python -m mypy` | 0 each; 237 formatted files / 12 typed modules |
+| `jupyter nbconvert --to notebook --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --output seascape-toolkit-validation.ipynb --output-dir /private/tmp/seascape-pilot-01-readiness` | sandbox 1 on loopback bind; authorized local-loopback retry 0; output copy only |
+| `python scripts/check_docs.py`; `python -m pip check`; `git diff --check` | 0 each; 41 documents/152 local links/26 stages, external URLs not checked by offline checker |
+| Existing isolated build interpreter `python -m build --outdir /private/tmp/seascape-pilot-01-readiness/distributions` | 0; sdist then wheel from sdist, setuptools 84.0.0/wheel 0.48.0 |
+| `python scripts/check_distribution.py --sdist ... --wheel ... --output .../distribution-report.json` | 0; 9 required files/5 resources; actual full paths in command JSON |
+
+Three regional skips remain feature-catalog lines 107/130 and network-consumer line 207;
+no new skip. Read-only refresh of prior [hosted run 36345837141](https://github.com/MarineCast/toolkit-seascape/actions/runs/36345837141)
+confirms success on starting `8eaae5f`; that is not hosted evidence for this new change.
+Installed-wheel acceptance and final preservation/commit evidence follow below when actually run.
+PILOT-01 remains blocked only on the exact requested local execution scope for the exploratory
+route (canonical inputs still unavailable). Its real numerical/resource/visual gates are not passed.
+Next after resolving PILOT-01: ACCEPT-01; the unfamiliar tester remains unavailable/pending and
+owner version/merge/release/classic-protection decisions remain open. No ACCEPT-01 work started.
+
+Final package acceptance: existing `scripts/check_consumer_install.py --wheel ... --source
+<owner checkout> --forbid-root <MarineCast> --output .../consumer` exits 0. Fresh runtime-only
+consumer first: 164 imports, unchanged 15-check synthetic demo, four negative cases expected
+exit 1; declared extras only afterward, 175 external tests passed/0 skipped, copied notebook
+passed with two embedded figures. The new 190-file package matches this tested working tree
+byte-for-byte. Wheel SHA-256 `79abf3642b3b2b2dab2189f036648b45743a22e7829295a0d02b0b79c0b5e3a7`;
+sdist `ecbfa454aadff6a72e35e450ab8641c38e7ff228c691027042cdd507a2c95780`.
+`python scripts/environment_snapshot.py --extra test --extra quality --output .../environment`,
+`pip-audit --disable-pip --no-deps --strict -r .../environment.txt`, Gitleaks 8.30.1 history and
+fresh tracked-tree scans all exit 0. Ignored-cache broad-scan finding remains historical, excluded
+explicitly; no cleanup/allowlist/gate change. Final docs checker exits 0 (41 documents/154 local
+links/26 stages), documentation tests 16 passed. No current-run source quickstart or regional
+producer/visual acceptance claim; previous VERIFY-01 evidence remains identified separately.
