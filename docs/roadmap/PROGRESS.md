@@ -5,13 +5,14 @@ Implemented scope: SS-00 through SS-07; SS-03 hosted acceptance pending.
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-first-run-demo`. No remote mutations.
+Current next action: close SS-03 hosted acceptance; SS-08 prerequisites are not yet satisfied.
 
 | Task | Status | Evidence / next gap |
 | --- | --- | --- |
 | SS-00 | passed | Baseline classified; notebook PASS (12 code cells, no errors) |
 | SS-01 | passed | 21 regressions, runtime-only guarded wheel demo; full suite 241 passed / 3 skipped |
 | SS-02 | passed | Portable copied notebook; 7 regressions; full suite 248 passed / 3 skipped |
-| SS-03 | blocked | Implementation/local macOS passed; hosted Linux/macOS matrix not_run |
+| SS-03 | blocked | Implementation/local macOS passed; hosted matrix not_run; remote absence reverified 2026-09-27 |
 | SS-04 | passed | Read-only input preflight; 34 new regressions; guarded runtime-only wheel acceptance |
 | SS-05 | passed | CLI-only guidance/debug, side-effect contracts, 29 regressions; runtime-only wheel acceptance |
 | SS-06 | passed | Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped |
@@ -643,3 +644,46 @@ explicit extras and sanitized evidence; runtime Python APIs, CLI outputs and rep
 Scientific behavior changed: **no**. No unrelated starting edits existed; configs, packaged
 resources, canonical/retained products, notebook, ignored cache and siblings preserved.
 Next: **SS-08**, pending hosted SS-03 prerequisite; stop before SS-08. Remote changes: **none**.
+
+## SS-03 acceptance closure recheck — blocked
+
+Selected the earliest incomplete task with satisfied prerequisites: **SS-03** (SS-01/SS-02 passed).
+Base `721a7199436ece870cceea17b3b2e312378e24ac`; current commit is this documentation handoff.
+Clean starting tree; retained `feature/seascape-first-run-demo`. Read current instructions,
+roadmap/progress, consumer CI, `check_consumer_install.py` and its regression tests. Runtime-first
+installation, copied outside-checkout helpers, negative probes, declared test/notebook layer,
+three Linux/macOS interpreter/architecture cases and scientific/security gates remain implemented.
+No independent unfinished local implementation was identified; verified work was not repeated.
+
+Read-only GitHub checks at **2026-09-27 13:19 UTC**:
+
+- `github_fetch_commit` for current `721a7199436ece870cceea17b3b2e312378e24ac` and SS-03
+  `368ee1b2400415a298dd742f4d6cad3fe4990af8`: HTTP **422**, "No commit found for SHA" for both.
+- `github_search_branches(owner=MarineCast, repo_name=toolkit-seascape,
+  query=feature/seascape-first-run-demo)`: successful read, no matching branches.
+- Direct GET `https://api.github.com/repos/MarineCast/toolkit-seascape/actions/runs?head_sha=721a7199436ece870cceea17b3b2e312378e24ac&per_page=100`
+  and the same endpoint with `head_sha=368ee1b2400415a298dd742f4d6cad3fe4990af8`:
+  both successful reads, **total_count=0**. These queries include all trigger types;
+  an empty pull-request-only wrapper was not used to infer absence of other runs.
+- GET `https://api.github.com/repos/MarineCast/toolkit-seascape/branches/main`:
+  successful read, remote main remains `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4`.
+
+Precise blocker: the consumer workflow changes are local; the required hosted Linux 3.11/3.14
+x86_64 and macOS 3.14 ARM64 execution/results do not exist for these commits. Executing them
+requires an explicitly authorized remote update followed by inspection of real job results.
+Current scope forbids push/remote mutations; no dispatch, rerun, PR, settings change or remote
+update was performed. SS-08 depends on SS-03; SS-09 onward likewise remain ineligible. Local
+macOS success and configured jobs do not satisfy the missing hosted evidence.
+
+Commands: `git status --short`, `git branch --show-current`, `git rev-parse HEAD`, `git remote -v`,
+`git log -10 --oneline`, `git branch -vv`, reference/diff checks and `git diff --check`: exit **0**.
+`command -v docker`, `command -v podman`, `command -v python3.11`: exit **1** each (not on PATH).
+`/tmp/seascape-roadmap-dev/bin/python -c 'import platform; print(platform.python_version(), platform.system(), platform.machine())'`:
+exit **0**, Python **3.14.6 / Darwin / arm64**. Hosted acceptance **not_run**; pytest/build/demo/
+notebook/audits **not_run this recheck**, preserving previously verified evidence rather than
+claiming fresh passes. Tests this turn: **not_run**, no new pass/fail/skip counts.
+
+Changed: this progress record only. Behavior/API/scientific changes: **none**. No unrelated
+starting changes; production source, CI, tests, configs, resources, notebooks, products/releases,
+ignored caches and sibling repositories preserved. Evidence: `/tmp/seascape-ss03-recheck-evidence/`.
+Next: finish **SS-03 hosted acceptance**, then **SS-08**; stop before SS-08. Remote changes: **none**.
