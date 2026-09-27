@@ -11,8 +11,8 @@ It runs offline after installation, with no credentials, source downloads, pytes
 
 ## Install and get a first result
 
-Download and extract the [source ZIP](https://github.com/MarineCast/toolkit-seascape/archive/0d307de978c98358af6dbfce31a034dc80bed91c.zip)
-for the [verified revision](https://github.com/MarineCast/toolkit-seascape/tree/0d307de978c98358af6dbfce31a034dc80bed91c).
+Download and extract the [source ZIP](https://github.com/MarineCast/toolkit-seascape/archive/9755f94f4ae50957f5c1af5316afb3e3cda26e54.zip)
+for the [verified revision](https://github.com/MarineCast/toolkit-seascape/tree/9755f94f4ae50957f5c1af5316afb3e3cda26e54).
 Open a terminal in the extracted root containing `pyproject.toml` and `README.md` (a checkout at
 that revision also works). Use Python 3.11 or 3.14 on a tested Linux/macOS environment
 ([observed platform coverage](docs/environments/README.md#tested-platforms)).

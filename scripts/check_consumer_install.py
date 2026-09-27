@@ -261,6 +261,8 @@ def accept(wheel: Path, source: Path, output: Path, forbidden: Path) -> int:
             "test_review_regressions.py",
             "test_demo.py",
             "test_metric_matrix.py",
+            "test_preflight.py",
+            "test_cli_diagnostics.py",
         ):
             shutil.copyfile(source / "tests" / name, external_tests / name)
         run(
@@ -278,6 +280,8 @@ def accept(wheel: Path, source: Path, output: Path, forbidden: Path) -> int:
                 "tests/test_review_regressions.py",
                 "tests/test_demo.py",
                 "tests/test_metric_matrix.py",
+                "tests/test_preflight.py",
+                "tests/test_cli_diagnostics.py",
             ],
         )
         notebook_dir = output / "notebook-only"
