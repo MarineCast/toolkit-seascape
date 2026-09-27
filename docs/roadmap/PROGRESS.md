@@ -1,12 +1,15 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-09; SS-03 hosted acceptance passed.
+Implemented scope: SS-00 through SS-09; SS-10 blocked-runbook preparation complete.
+SS-03 hosted acceptance passed; the SS-10 real-data gate remains unsatisfied.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
 on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
-Current next action: SS-10 requires explicit approved source/bounds/network/resource scope. Stop before the real-data pilot.
+Current next action: SS-11 may review an offline research candidate with the SS-10 limitation
+explicit. Executing SS-10 first requires provenance correction, valid support inputs and approved
+disposable-workspace publication/resource scope. No SS-11 work has started.
 
 | Task | Status | Evidence / next gap |
 | --- | --- | --- |
@@ -20,7 +23,8 @@ Current next action: SS-10 requires explicit approved source/bounds/network/reso
 | SS-07 | passed | Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed |
 | SS-08 | passed | Analytic/matrix/publication evidence; local and hosted 352 passed / 3 skipped; run 36324502530, 9/9 jobs |
 | SS-09 | passed | Three journeys, guarded source quickstart, docs drift checks; local/hosted 368 passed / 3 skipped; run 36327449869, 9/9 jobs |
-| SS-10–SS-11 | not_run | SS-10 needs approved inputs/network/resource scope; no pilot or release review performed |
+| SS-10 | blocked | Checked bounded runbook and read-only preflight; no producer/publication/real-data QA; see below |
+| SS-11 | not_run | Next eligible task with the real-data limitation explicit; no release review performed |
 
 ## SS-00 baseline
 
@@ -927,3 +931,74 @@ identity, final status and remote synchronization are saved in `final-git-state.
 Documentation-only closure checks: `python scripts/check_docs.py` and `git diff --check` both
 returned 0; no Python/scientific implementation changed after the successful hosted run.
 No real-data or SS-10 work was performed. The existing feature-branch push authorization was reused.
+
+## SS-10 bounded San Juan pilot — blocked execution, runbook complete
+
+September 27. Base `515e60de133fcb4346d976a683978f45c2d64101`; current implementation is this
+record's containing commit on `feature/seascape-repository-organization-updates`. Clean starting
+tree. SS-09 closure run [36327837094](https://github.com/MarineCast/toolkit-seascape/actions/runs/36327837094)
+was re-read for that exact base: completed/success. Reverified owner instructions, actual explorer,
+helper, production bathymetry/downloader/publication code, preflight contracts and cached inputs.
+No earlier task reimplementation or reset.
+
+The [bounded runbook](../pilots/san-juan.md) is SS-10's explicit blocked-runbook alternative.
+It contains the existing San Juan bounds/R6/R8 recipe, pinned source identities and rights,
+CRS/datum/alignment/sign/nodata, proposed limits, exact configuration-only/preflight commands,
+future numerical/visual acceptance and resource-measurement limitations. The real-data gate
+is **unsatisfied**; execution, output validation, measurements, repeatability and map QA are
+**not_run**. No scientific formula, API, config default, source/retained manifest or notebook changed.
+
+Local GEBCO 2026 and Natural Earth 5.1.1 inputs exist; safe local reads require no acquisition.
+All seven historical family-manifest artifact checks matched production `checksum_path`.
+The 46-file cache is 22,717,798 bytes. This is inventory/identity evidence, not scientific acceptance.
+Official GEBCO 2026/terms and Natural Earth terms pages were read; no provider metadata queue,
+source download, extraction, pixel processing or redistribution was performed.
+
+Execution blockers: (1) production source/attribution metadata and the historical manifest say
+CC BY 4.0, conflicting with the GeoTIFF and current GEBCO public-domain terms; the producer needs
+a focused correction/regression before new trusted manifests; retained history remains untouched;
+(2) six canonical water inputs are absent in the fresh workspace, while the Natural Earth proxy
+cannot be relabeled canonical or used to bypass reuse validation; (3) family publication cannot
+be disabled in this pipeline, and SS-10 step 5's explicit disposable-workspace publication/resource
+scope is not approved. The runbook makes a concrete bounded proposal; no unbounded default ran.
+
+Local evidence: `/tmp/seascape-ss10-evidence`. CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4,
+PROJ 9.8.1, GEOS 3.13.1; existing isolated development environment, no dependency changes.
+For commands below, `D=/tmp/seascape-roadmap-dev/bin`, `E=/tmp/seascape-ss10-evidence`,
+`W=$E/accepted-preflight-workspace`; cwd is this owning checkout. Preparation's exact Python
+code/argv is saved in `accepted-preparation.command.json`; preflight argv/exits are in
+`accepted-preflight.command.json`. Both initial and final preparation reports are retained;
+both returned 0, and both guarded preflights returned the expected 1, not a ready/PASS build.
+
+| Executed acceptance command | Exit / result |
+| --- | --- |
+| `$D/python -c <exact runbook preparation code in accepted-preparation.command.json>` with `SEASCAPE_PILOT_ROOT=$W` | 0; bbox/R6/R8/workers/sign/output confinement and cached raster checksum assertions passed |
+| `$D/python scripts/consumer_guard.py --forbid-root $W/forbidden --module seascape -- --workspace $W build --only seascape-bathymetry --dry-run --check-inputs --json --candidate-root $W/candidate` with common/candidate overrides unset | **1, expected block**; six `missing_external`, source raster ready, intermediates `generated_by_plan`, resume/publication `not_applicable` |
+| `$D/python scripts/check_docs.py` | 0; 40 documents / 148 local links / 26 stages; external URL availability not checked by this offline tool |
+| `$D/python -m pytest -q tests/test_documentation.py tests/test_preflight.py tests/test_workflow.py` | 0; **59 passed / 0 failed / 0 skipped**, 34 warnings |
+| `$D/python -m pytest -q -rs` | 0; **368 passed / 0 failed / 3 skipped**, 69 warnings |
+| `$D/python scripts/environment_snapshot.py --extra test --extra quality --output $E/environment` | 0 |
+| `git diff --check` | 0 |
+
+Final preparation's production resolved-config hash is
+`21245ccfbf85677c8da6e9054c9aee32419c87e4d118e6967f3b5c1e76ee934c`.
+Its archived resolved config includes machine paths; those reports stay untracked. This hash
+differs from history and another fresh workspace because paths participate in production hashing.
+`preflight-acceptance.json` confirms all configured outputs under the fresh candidate and no
+candidate/artifacts created. The guard deliberately allows checkout/cache reads and denies Python
+outbound/child calls; it is not an OS firewall or evidence of installed-wheel isolation.
+
+`cached-input-inventory.json` and `preservation.json` record all 46 cached files byte-identical
+and all **257 tracked files outside docs/** byte-identical. No unrelated initial edits existed;
+existing configs, canonical products, retained releases, explorer outputs and sibling repositories
+are preserved. Three suite skips remain `test_feature_catalog.py:107,130` and
+`test_network_consumer_contracts.py:207`: clean-checkout regional artifacts intentionally absent.
+No new executable source/tests: existing docs/preflight/workflow regressions and executed recipe
+provide the relevant acceptance. Fresh wheel/consumer/notebook/static/security gates were not
+rerun for these documentation-only edits; the successful exact-base SS-09 closure is prior evidence.
+
+Changed files: `docs/pilots/san-juan.md`, `docs/README.md`, this record. Feature-branch commit/push
+use existing authorization and message `Repository Organization Updates`; final identities and
+remote synchronization are saved in `final-git-state.json` and the handoff. No merge, tag, package
+publication, settings, dataset or release changes. Next eligible task: **SS-11**, explicitly limited
+to an offline research candidate unless SS-10's execution gates are resolved first. Stop before SS-11.
