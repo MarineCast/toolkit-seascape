@@ -27,7 +27,8 @@ approval.
 
 ## Validated toolkit release
 
-Build and audit a schema-3 regional release first, then export using its archived
+Set `SEASCAPE_WORKSPACE` to an existing audited schema-3 release workspace as in the
+[consumer example](API.md#freeze-and-read-a-release), then export using its archived
 catalog and immutable products. The exporter calls the public `resolve_product` API
 for each table, which verifies the release and source artifact checksums. It rejects
 missing products, unexpected grain, catalog path disagreements, missing columns,
@@ -39,8 +40,8 @@ serialization and replacement failures preserve an existing destination. Each ex
 one release ID before reading its catalog and tables; a concurrent publication cannot mix generations.
 
 ```sh
-seascape --workspace /path/to/seascape-workspace export-metric-matrix \
-  --output /path/to/data/seascape/processed/seascape-h3-metrics.parquet
+seascape --workspace "$SEASCAPE_WORKSPACE" export-metric-matrix \
+  --output "$SEASCAPE_WORKSPACE/exports/seascape-h3-metrics.parquet"
 ```
 
 Pass `--resolution 8` to select only R8. Repeat `--resolution` for both. The default
@@ -57,17 +58,22 @@ sets `source_validation=legacy_structural_only`, carries the old release's
 Use a clearly marked output filename and keep it internal until a current release
 replaces it.
 
+Select the existing legacy workspace explicitly; the catalog path below is an absolute placeholder.
+
 ```sh
-seascape --workspace /path/to/legacy-workspace export-metric-matrix \
-  --catalog /path/to/toolkit-seascape/config/feature_catalog.yaml \
+export SEASCAPE_WORKSPACE="/absolute/path/to/legacy-workspace"
+seascape --workspace "$SEASCAPE_WORKSPACE" export-metric-matrix \
+  --catalog /absolute/path/to/reference-feature-catalog.yaml \
   --legacy-unverified \
-  --output /path/to/data/seascape/processed/seascape-h3-metrics-legacy-unverified.parquet
+  --output "$SEASCAPE_WORKSPACE/exports/seascape-h3-metrics-legacy-unverified.parquet"
 ```
 
-The retained OrcaCast schema-1 workspace has 46 structurally aligned R6/R8
+### Historical consumer observation (2026-09 migration/remediation)
+
+The historical retained OrcaCast schema-1 workspace had 46 structurally aligned R6/R8
 tables, but its water-geometry family manifest differs from the release checksum.
-Its release also records `model_policy_complete=false`. A bridge export from those
+Its release also recorded `model_policy_complete=false`. A bridge export from those
 tables is therefore only an inspectable legacy artifact. It had 1,263 R6 and
-43,393 R8 cells and 522 cataloged fields. OrcaCast's local data product now uses
+43,393 R8 cells and 522 cataloged fields. The migration/remediation record reported that OrcaCast's local data product used
 a fresh audited schema-3 toolkit release through the validated path above; the
 legacy bridge file was removed from its `data/seascape/processed/` directory.

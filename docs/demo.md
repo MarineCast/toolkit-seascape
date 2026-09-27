@@ -2,22 +2,10 @@
 
 [Documentation index](README.md) · [Supported APIs](API.md)
 
-From an obtained source checkout, an isolated install and first result are:
-
-```sh
-python3 -m venv /tmp/seascape-user
-. /tmp/seascape-user/bin/activate
-python -m pip install .
-DEMO_WORKSPACE="$HOME/seascape-demo"
-seascape --workspace "$DEMO_WORKSPACE" demo
-```
-
-Installation requires access to declared Python dependencies. After installation the demo uses no
-network, credentials, checkout files, pytest, or notebook tooling. Alternatively install a wheel
-built from this source with `python -m pip install /path/to/toolkit_seascape-0.1.0-py3-none-any.whl`
-(the wheel path is a placeholder for the actual build). Python 3.11+ and POSIX are required by the
-existing publication helpers. This session verified a runtime-only wheel on macOS ARM64 Python
-3.14.6; hosted Linux checks and other platforms are not newly verified here.
+Use the [single installation and first-result recipe](../README.md#install-and-get-a-first-result)
+and its `SEASCAPE_WORKSPACE`. Runtime requires neither checkout files, network, credentials,
+pytest nor Jupyter. Installation may download declared Python dependencies. Linux Python 3.11/3.14
+and macOS ARM64 Python 3.14 have [executed CI evidence](environments/README.md#tested-platforms).
 
 The CLI prints `Synthetic software acceptance: PASS (not a regional release)` only after every
 check and figure succeeds, followed by exact output paths. All demo-owned inputs and outputs are
@@ -42,6 +30,20 @@ and the [10,30) m band fraction is **0**. The [0,10) fraction is **1**. Nodata-o
 cells retain null depth and count, not zero. Production's existing marine mask excludes exact sea
 level (0 m); this demo does not reinterpret that input as measured marine depth.
 
+Representative output schema (153 rows in the verified fixture; 29 columns total):
+
+| Column | Type / interpretation |
+| --- | --- |
+| `H3_INDEX` | String; unique H3 r8 identity |
+| `BATHYMETRY` | Float64; mean depth in meters, positive down |
+| `BATHYMETRY_STD`, `BATHYMETRY_RANGE` | Float64 meters; observed zero on the constant patch |
+| `BATHYMETRY_PIXEL_COUNT` | Float64 count; null for unavailable cells |
+| `BATHYMETRY_FRAC_0_10_M` | Float64 fraction; `[0, 10)` m marine pixels |
+
+This bathymetry output has no separate per-row QC column. Interpret pixel counts, nulls, band
+fractions and the report's executed controls together. Other products' QC, coverage and evidence
+columns remain separate quantities in the [reference index](products.md); none implies species absence.
+
 Acceptance requires nonempty support and valid depths, exact unique keys/resolution, 2016 eligible
 marine pixels, finite-or-null numerics, sign/CRS/nodata, complete depth-band fractions, known constant
 and gradient values, required synthetic provenance, and real family/input/upstream checksums. The 5 m control
@@ -61,7 +63,7 @@ are untouched. Matplotlib's font cache and publisher locks/bookkeeping also stay
 Existing demo output is refused. An intentional rerun uses:
 
 ```sh
-seascape --workspace "$DEMO_WORKSPACE" demo --overwrite
+seascape --workspace "$SEASCAPE_WORKSPACE" demo --overwrite
 ```
 
 Overwrite requires the exact demo ownership marker, refuses symlinks and unreviewed transaction

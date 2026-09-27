@@ -13,7 +13,7 @@ reusable behavior in toolkit helpers. Do not introduce application imports or si
 
 | Change | Appropriate checks |
 | --- | --- |
-| Documentation only | Verify file links and command names; inspect diff; run `git diff --check` |
+| Documentation only | `python scripts/check_docs.py`; inspect diff; `git diff --check`; execute quickstart acceptance if examples change |
 | Formatting only | `ruff format --check src tests scripts`, full offline suite and an AST comparison ignoring location metadata |
 | Calculation or loader | Focused family tests, meaningful synthetic fixtures and applicable scientific contracts |
 | CLI, configuration or package layout | Standalone-package tests, command help, build dry run and wheel installation |
@@ -23,13 +23,14 @@ reusable behavior in toolkit helpers. Do not introduce application imports or si
 From the checkout after installing `.[test]`:
 
 ```sh
+python scripts/check_docs.py
 python -m pytest -q
 python -m pytest -q tests/test_standalone_package.py tests/test_workflow.py
 seascape build --dry-run
-python -m pip wheel . --no-deps --wheel-dir dist
 git diff --check
 ```
 
+The [observed platform table](environments/README.md#tested-platforms) records actual CI evidence.
 The [CI workflow](../.github/workflows/ci.yml) defines Python 3.11 and 3.14 jobs. A configured job
 is not evidence it ran. The offline suite includes tests that skip without regional materialized
 products; report skips separately from passed checks. Do not infer live provider availability,
@@ -65,6 +66,8 @@ an sdist and then a wheel from that sdist. Set `DIST_DIR` and `CONSUMER_DIR` to 
 the checkout/group being forbidden; the absolute paths below are placeholders.
 
 ```sh
+DIST_DIR="$(mktemp -d)"
+CONSUMER_DIR="$(mktemp -d)/consumer"
 python -m pip install '.[build]'
 python -m build --outdir "$DIST_DIR"
 python scripts/check_distribution.py --sdist "$DIST_DIR"/*.tar.gz \
@@ -79,7 +82,7 @@ venv without inherited/user packages, clears source/workspace overrides and inst
 normally with declared runtime dependencies. Before extras, it runs `pip check`, every installed
 module with OrcaCast blocked, required packaged resources, CLI help/init/dry run and the synthetic
 demo. No notebook file, pytest or Jupyter is present in that phase. Then it installs the same wheel's
-declared test/notebook extras, runs copied product/review/demo tests and the copied-only notebook
+declared test/notebook extras, runs copied product/review/demo/matrix tests and the copied-only notebook
 with an interpreter-pinned temporary kernel. Production calculations/validation are reused.
 
 Negative probes require an import-denied runtime dependency and a source import to fail, remove
@@ -100,6 +103,41 @@ distribution checks/hashes, executed notebook and synthetic demo outputs on succ
 It does not upload the venv, acquire real sources or publish a package.
 
 Focused regression command: `python -m pytest -q tests/test_consumer_acceptance.py`.
+
+## Documentation and first-result acceptance
+
+`python scripts/check_docs.py` checks local links and heading fragments, fenced CLI command/stage
+names, the checked-in catalog's generated reference block and byte-identical packaged configuration
+templates. External URL availability is deliberately outside this offline check. It compares the
+[stage-input reference](stage-inputs.md) with the existing planner/preflight metadata from temporary
+templates; it runs no producers and generates no authoritative product catalog.
+
+After deliberately changing stage declarations, review `python scripts/check_docs.py --write-stage-reference`
+and its diff. Catalog/eligibility/product-document generation still requires materialized products.
+
+Using the distributions built above, execute all three marked first-result blocks verbatim:
+
+```sh
+QUICKSTART_DIR="$(mktemp -d)/quickstart"
+python scripts/check_quickstart.py --sdist "$DIST_DIR"/*.tar.gz \
+  --source "$PWD" --forbid-root "$(dirname "$PWD")" --output "$QUICKSTART_DIR"
+```
+
+This transfers an sdist to a disposable directory, runs the README's normal isolated source install,
+then runs its demo and the workflow's init/stages/dry-run outside both source trees. The CLI runner
+rejects Python checkout reads, socket activity and child processes, and verifies a normal installed
+package with no pytest/Jupyter. Installation may contact dependency indexes; runtime uses the existing
+consumer guard, with the same native-network limitation described above. Reports retain the exact
+blocks, traced shell commands and logs. Existing output is refused and failure preserves evidence.
+CI executes this on each consumer platform and uploads its report/log/demo artifacts.
+
+`python -m pytest -q tests/test_documentation.py` tests link/anchor/template/command drift and executes
+the API's freeze-and-read example through the real publisher/resolver using a small publication
+fixture. That fixture is software boundary evidence, not a full regional scientific release audit.
+
+Before proposing a release, review the full offline/quality/consumer/notebook results, source rights,
+real-data limitations and progress record. Preserve retained releases; remote publishing and the
+bounded real-data pilot require their own authorization. Release-candidate review remains SS-11.
 
 ## Scientific changes
 

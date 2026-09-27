@@ -101,6 +101,16 @@ and runs runtime checks before declared test/notebook extras. Output is refused 
 Read [development guide](docs/DEVELOPMENT.md) for the full commands and process-guard limitations.
 Configured hosted jobs are not passed until their real run results exist.
 
+## Documentation checks
+
+For documentation/example changes, run `python scripts/check_docs.py` and
+`python -m pytest -q tests/test_documentation.py`; executable-check changes also require the full
+suite and review-hardening checks. After building an sdist, use `scripts/check_quickstart.py --sdist
+/transferred/source.tar.gz --source /explicit/checkout --forbid-root /checkout/group --output
+/fresh/outside/directory` to execute the marked source-install/demo/plan commands. Installation
+may download declared dependencies; runtime uses the existing Python consumer guard and cannot
+acquire sources. See [development](docs/DEVELOPMENT.md#documentation-and-first-result-acceptance).
+
 ## Codebase navigation
 
 Use the existing local `graphify-out/graph.json` for structural questions; skip graph work for

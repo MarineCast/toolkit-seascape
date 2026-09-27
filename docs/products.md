@@ -1,4 +1,8 @@
-# Seascape architecture
+# Seascape reference products
+
+> Checked-in reference metadata from an earlier materialization, not a certified current release.
+> Candidates regenerate the release index from their actual products. See [current workflows](WORKFLOWS.md)
+> and [progress](roadmap/PROGRESS.md) for validation boundaries. The generated field block is preserved.
 
 This package builds static marine-environment features on Seascape Toolkit's canonical water-cell
 support. It preserves the ecological mechanism owned by each family: terrain remains terrain,
@@ -82,8 +86,8 @@ distance, aggregation, and uncertainty semantics in `semantic_contracts`.
 
 The dependency-aware candidate orchestrator, transactional publication, manifest v3, shared
 snapshot lock, canonical 5 km radius operator, reachable-water-area derivative, module ownership
-split, and scoped static checks are implemented. The canonical roadmap is
-[`TODO.txt`](TODO.txt).
+split, and scoped static checks are implemented. Physical research gates remain in
+[`TODO.txt`](../src/seascape/TODO.txt).
 
 The radius operator is registered as the compressed R8/5 km
 `H3_WATER_RADIUS_OPERATOR_RES_8_5000M.npz` support product. Its single materialized derivative,

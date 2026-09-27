@@ -6,16 +6,18 @@
 
 The workspace is the root for configuration, data and outputs. It is independent of the package
 installation. The CLI's `--workspace` option takes precedence over `SEASCAPE_WORKSPACE`; otherwise
-the current directory is used. Put the global option before the subcommand:
+the current directory is used. Use `SEASCAPE_WORKSPACE` from the
+[first-result guide](../README.md#install-and-get-a-first-result), or select your own absolute owned
+path (the `/absolute/path/to/owned-workspace` below is a placeholder). Put the global option before the subcommand:
 
 ```sh
-seascape --workspace /path/to/seascape-workspace build --dry-run
+seascape --workspace "$SEASCAPE_WORKSPACE" build --dry-run
 ```
 
 Python and maintenance-module callers can use:
 
 ```sh
-export SEASCAPE_WORKSPACE=/path/to/seascape-workspace
+export SEASCAPE_WORKSPACE="/absolute/path/to/owned-workspace"
 python -m seascape.maintenance.update_seascape_docs --help
 ```
 
@@ -63,6 +65,33 @@ parent-child aggregation, expected support counts and bathymetry sign together. 
 units, vertical datum, nodata treatment and the distinction between full-cell and water-clipped
 support. Family loaders implement their own validation; there is no single top-level CLI command
 that validates every source and artifact without a build.
+
+## Before a bounded build
+
+Start with the workspace initialized in the [workflow guide](WORKFLOWS.md#bounded-real-data-processing).
+Edit its files, not the installation's packaged resources. These are configuration requirements,
+not authorization to acquire the configured sources:
+
+| Workspace setting | Required review/edit |
+| --- | --- |
+| `config/common.yaml`: `areas.*.bbox_wgs84` | Set explicit intended WGS84 bounds; inspect every selected area's use, especially `regional_source_area` |
+| `environment_seascape.yaml`: `water_geometry.build.area`, `h3_geometry.area`, `water_network.area` / `model_area` | Choose compatible source, counting and analysis support; review expected cell counts and graph parameters together |
+| `bathymetry.area`, `bathymetry.source.*` | Confirm provider/release/grid, source rights, local raster path and actual source extent; provider request bounds may be larger than analysis bounds |
+| `bathymetry.processing.*` | Keep matching H3 support paths/resolutions, positive-down meters for dependent terrain, projected-meter distance CRS and an owned destination |
+| Other selected families' `source` / `processing` settings | Supply their exact reviewed local inventories; preserve source vintage, coverage and missingness |
+| `presentation_settings.yaml` | Choose owned inspection outputs; opening maps can fetch basemap tiles |
+
+The [stage reference](stage-inputs.md) is generated from default template preflight metadata;
+it cannot replace inspection of your edited configuration. For your selected stages, run:
+
+```sh
+seascape --workspace "$SEASCAPE_WORKSPACE" build --only seascape-bathymetry --dry-run --check-inputs --json
+```
+
+In an initialized workspace without datasets this returns exit 1 with `missing_external` or
+`unverified` requirements. That is expected missing-input evidence. `ready` covers only the stated
+config/path/header inspections, not values, datum, support/cardinality, rights, hashes or science.
+A small pilot, acquisition/resource limits and real-data validation remain separate reviewed work.
 
 ## Candidate paths and resume limits
 

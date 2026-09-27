@@ -1,12 +1,12 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-08; SS-03 hosted acceptance passed.
+Implemented scope: SS-00 through SS-09; SS-03 hosted acceptance passed.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
 on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
-Current next action: SS-09. Stop before documentation consolidation in this SS-08 execution.
+Current next action: SS-10 requires explicit approved source/bounds/network/resource scope. Stop before the real-data pilot.
 
 | Task | Status | Evidence / next gap |
 | --- | --- | --- |
@@ -19,7 +19,8 @@ Current next action: SS-09. Stop before documentation consolidation in this SS-0
 | SS-06 | passed | Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped |
 | SS-07 | passed | Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed |
 | SS-08 | passed | Analytic/matrix/publication evidence; local and hosted 352 passed / 3 skipped; run 36324502530, 9/9 jobs |
-| SS-09–SS-11 | not_run | SS-09 is next; no documentation consolidation or real-data pilot performed |
+| SS-09 | passed (local; hosted pending) | Three journeys, guarded source quickstart, docs drift checks; 368 passed / 3 skipped |
+| SS-10–SS-11 | not_run | SS-10 needs approved inputs/network/resource scope; no pilot or release review performed |
 
 ## SS-00 baseline
 
@@ -828,3 +829,82 @@ repositories preserved. Files: demo/matrix APIs, consumer helper, three contract
 test-package marker, demo/matrix guides, notebook explanation and this record.
 Remote actions: normal authorized feature push of implementation and this progress closure;
 no merge, tag, package publication, settings or dataset changes. Next: **SS-09**; stop before it.
+
+
+## SS-09 three user journeys — local acceptance passed; hosted pending
+
+September 27. Base `0d307de978c98358af6dbfce31a034dc80bed91c`; this record's containing
+implementation commit identifies current work on `feature/seascape-repository-organization-updates`.
+Clean starting tree. Re-read owner/ancestor instructions, roadmap/progress and actual CLI/config,
+preflight, packaging and publication fixtures. SS-08 closure run **36324758385** was rechecked
+`completed/success`; no reset, source acquisition or prior task reimplementation.
+
+README now leads with purpose, a verified source-install route and the actual synthetic PNG.
+Demo, bounded candidate processing and audited-release consumption have separate prerequisites.
+Configuration edits name real keys; output schema/units/sign/counts/null-zero/QC and failure limits
+are explicit. The consumer example freezes one release ID and reads its retained R6 product.
+Dated migration/remediation evidence is labeled; the original generated product block is intact.
+A 26-stage input reference comes from existing preflight metadata in disposable templates.
+Offline CI checks local links/headings, command/stage/family names, catalog-reference drift and
+four packaged YAML pairs. Three-platform CI also runs the exact marked quickstart blocks.
+No new producer framework, formula, public API, product schema or dependency declaration.
+
+Evidence: `/tmp/seascape-ss09-evidence`; exact argv/cwd/exits in `*.command.json`, corresponding
+logs, distribution reports, `quickstart-accepted/report.json`, `consumer/report.json`, environment
+snapshot and `preservation.json`. Local CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4,
+PROJ 9.8.1, GEOS 3.13.1; no inherited site packages in new consumer/source-install environments.
+For commands below, `D=/tmp/seascape-roadmap-dev/bin`, `E=/tmp/seascape-ss09-evidence`,
+`R=/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape`,
+`G=/Users/tylerstevenson/Documents/Code_Repos/MarineCast` (absolute paths, no placeholders).
+
+| Exact check command | Result |
+| --- | --- |
+| `$D/python scripts/check_docs.py` | 0; 39 documents, 139 local links, 26 stages; external URL availability deliberately unrun |
+| `$D/python -m pytest -q tests/test_documentation.py tests/test_consumer_acceptance.py` | 0; **27 passed** (16 new documentation cases plus 11 existing consumer cases) |
+| `$D/python -m pytest -q` | 0; **368 passed / 3 skipped / 69 warnings** |
+| `$D/ruff check src tests scripts` | 0 |
+| `$D/ruff format --check src tests scripts` | 0; 235 files |
+| `$D/python -m mypy` | 0; 12 interface modules |
+| `$D/python -m pip check` | 0 |
+| `$D/python scripts/environment_snapshot.py --extra test --extra quality --output $E/environment` | 0 |
+| `$D/pip-audit --disable-pip --no-deps --strict -r $E/environment.txt` | 0; no known vulnerabilities |
+| `$D/python -m build --no-isolation --outdir $E/accepted-distributions` | 0; sdist then wheel from sdist |
+| `$D/python scripts/check_distribution.py --sdist $E/accepted-distributions/toolkit_seascape-0.1.0.tar.gz --wheel $E/accepted-distributions/toolkit_seascape-0.1.0-py3-none-any.whl --output $E/distribution-accepted-report.json` | 0; 9 required files / 5 packaged resources |
+| `$D/python scripts/check_quickstart.py --sdist $E/accepted-distributions/toolkit_seascape-0.1.0.tar.gz --source $R --forbid-root $G --output $E/quickstart-accepted` | 0; all 12 documented shell lines; 15 production demo checks; normal runtime-only installation, both source trees guarded |
+| `$D/python scripts/check_consumer_install.py --wheel $E/distributions/toolkit_seascape-0.1.0-py3-none-any.whl --source $R --forbid-root $G --output $E/consumer` | 0; 16/16 expected-exit steps; 163 imports, 83 copied tests passed, copied notebook 15 production/16 total checks and 2 embedded figures |
+| `/opt/homebrew/bin/gitleaks dir /tmp/seascape-ss09-evidence/tracked-tree --redact --no-banner` | 0; current tracked files only; ignored local cache excluded explicitly |
+| `git diff --check` / `git diff --cached --check` | 0 |
+
+The accepted wheel differs from the clean-consumer-tested wheel only in README-derived METADATA
+and RECORD; every packaged code/resource byte matches (`preservation.json`). All **196 tracked
+source/config/package/notebook files** under protected paths equal the base commit. The README PNG
+is copied from SS-08's actual demo; visual inspection confirmed its synthetic title, units and grey
+unavailable cells. This is illustration QA, not regional scientific validation.
+
+Initial docs-check failures (prose mistaken for a CLI command, stale TODO link) and one import-order
+lint failure were corrected, with succeeding checks above. The first source quickstart passed;
+a stricter rerun failed its evidence-directory assertion although all shell commands exited zero.
+Using an explicit `mktemp` template corrected that portability issue; `quickstart-accepted` passed.
+Failed logs/reports are retained, never relabeled PASS. Distribution hashes are in the reports.
+Guarded installed CLI family help returned 0; the documented bathymetry input preflight returned
+the expected **1** (`missing_external`/`unverified`), not a ready/PASS release. Exact interpreter,
+runner, workspace and arguments are in `family-help.command.json` and `missing-input-preflight.command.json`.
+The broad local ignored-cache Gitleaks false positive remains the SS-07/SS-08 limitation; no cache
+cleanup or allowlist change. Current tracked-tree/history and hosted results are recorded below.
+
+Three regional artifact skips remain `test_feature_catalog.py:107,130` and
+`test_network_consumer_contracts.py:207`; inputs are intentionally absent. No live sources,
+regional rebuild/comparison/audit, full real-data release, downstream application integration,
+Windows-native publication or unfamiliar-human usability trial ran. Python guards are not an OS
+firewall; dependency installation permits index access. Longer processing/publishing/export
+examples require their explicitly documented existing inputs and authorization.
+
+Changed: `.github/workflows/ci.yml`, `AGENTS.md`, `README.md`, `docs/{API,CONFIGURATION,DEVELOPMENT,
+MIGRATION,README,WORKFLOWS,demo,hardening-review,metric-matrix,products,review-remediation}.md`,
+`docs/environments/README.md`, `docs/stage-inputs.md`, `docs/assets/demo-bathymetry.png`,
+`notebooks/README.md`, `scripts/{check_docs,check_quickstart}.py`, `tests/test_documentation.py`,
+this record. Unrelated work, configurations, canonical products, retained releases, source calculations
+and notebook bytes are preserved; no sibling edits. Next: **SS-10**, requiring explicit approved
+inputs, AOI, network and resource limits. Stop before it. Feature-branch commit/push use the user's
+existing authorization and message `Repository Organization Updates`; no merge/tag/package
+publication/settings/data changes. Hosted verification is pending, not claimed passed.

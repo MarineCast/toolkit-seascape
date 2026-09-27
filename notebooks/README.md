@@ -4,7 +4,8 @@ The offline validation notebook is a readable client of the same installed `run_
 used by `seascape demo`. It needs the notebook extra; pytest and a repository checkout are
 not runtime prerequisites. The CLI demo needs neither notebook nor test tooling.
 
-From an obtained source checkout:
+First follow the [isolated installation](../README.md#install-and-get-a-first-result).
+With that environment active, return to the obtained source root to add the optional notebook extra:
 
 ```sh
 python -m pip install '.[notebook]'
@@ -64,9 +65,10 @@ existing headless command and a separate output directory.
 To retain demo products at a chosen location, set this before launching Jupyter:
 
 ```sh
-export SEASCAPE_DEMO_WORKSPACE="$HOME/seascape-notebook-demo"
+export SEASCAPE_DEMO_WORKSPACE="$SEASCAPE_WORKSPACE"
 ```
 
+Use the chosen workspace from the first-result guide, or explicitly select a new owned workspace.
 The notebook also exposes `DEMO_WORKSPACE` and `OVERWRITE` in its parameter cell. Existing demo
 output is refused with `OVERWRITE = False`. Change that value explicitly only for a safe rerun;
 the demo's ownership/symlink/transaction checks still apply. All generated inputs, config,

@@ -1,5 +1,25 @@
 # Validated environments and static checks
 
+## Tested platforms
+
+The [SS-08 implementation run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36324502530)
+and [progress closure run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36324758385)
+passed all nine jobs on `aace671` and `0d307de`, respectively. These are observed environments,
+not a guarantee for all dependency lower bounds, OS versions or architectures.
+
+| Environment | Executed evidence |
+| --- | --- |
+| Linux x86_64, Python 3.11 / 3.14 | Full offline suite and clean runtime-first wheel consumers; copied contracts/notebook |
+| macOS ARM64, Python 3.14 | Clean runtime-first wheel consumer and constrained quality/native baseline |
+| Local macOS 26.6.2 ARM64, CPython 3.14.6 | SS-08 full suite/clean consumer; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1 |
+| Native Windows | Not supported for the existing POSIX publication locks; no Windows acceptance claimed |
+
+Linux 3.11/3.14 each ran 352 tests with three absent-regional-artifact skips. All three hosted
+consumer cases completed 16 expected-exit steps. Real sources, regional scientific accuracy,
+downstream integration and unfamiliar-human onboarding are separate, unrun gates.
+
+## Reproducibility baseline
+
 `quality-python314-macos-arm64.txt` is the SS-07 reproducibility baseline for the installed
 runtime/test/quality closure. Its JSON records CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4,
 PROJ 9.8.1 and GEOS 3.13.1. Fresh isolated constrained and unconstrained wheel installations

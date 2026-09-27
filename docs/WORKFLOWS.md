@@ -1,67 +1,60 @@
-# Setup and workflows
+# Three workflows and operation effects
 
 [Documentation index](README.md)
 
-## 1. Install from the checkout
+## Offline synthetic demo
 
-Use Python 3.11+ on Linux or macOS with compatible geospatial libraries. Publication uses POSIX
-file locks. From the repository root:
+Follow the [source installation and first-result commands](../README.md#install-and-get-a-first-result).
+Keep its active environment and `SEASCAPE_WORKSPACE`. No editable install, test extra, notebook,
+source credentials or data acquisition is needed. Interpretation and safe reruns are in the
+[demo guide](demo.md). A synthetic PASS does not establish a regional release.
+
+## Bounded real-data processing
+
+Use a new owned workspace for real inputs. The block below uses the workspace from the quickstart
+and only initializes templates and prints a plan; it does not acquire data or build products.
+For a separate real-data project, first set `export SEASCAPE_WORKSPACE="/absolute/path/to/owned-workspace"`
+(the path is an explicit placeholder). Do not point it at an existing application/data checkout.
+
+<!-- BEGIN QUICKSTART plan -->
+```sh
+seascape --workspace "$SEASCAPE_WORKSPACE" init
+seascape --workspace "$SEASCAPE_WORKSPACE" stages
+seascape --workspace "$SEASCAPE_WORKSPACE" build --dry-run
+```
+<!-- END QUICKSTART plan -->
+
+Before a real build, make the [specific configuration edits](CONFIGURATION.md#before-a-bounded-build).
+Inspect the [generated stage input reference](stage-inputs.md) and each family's `DATA_SOURCES.md`
+through the [product index](products.md#family-guides). Review source identity, redistribution rights,
+spatial bounds and acquisition size. The defaults include a very large `regional_source_area`;
+a small analysis area does not guarantee a small provider download. No real-data acquisition or
+measured operating envelope is established by the offline guide; that is the separate SS-10 gate.
+
+Family help is safe to inspect, for example:
 
 ```sh
-python -m venv .venv
-. .venv/bin/activate
-python -m pip install -e '.[test]'
-seascape --help
+seascape --workspace "$SEASCAPE_WORKSPACE" download bathymetry --help
 ```
 
-Use `python -m pip install .` for a regular installation. Python 3.14 was exercised during extraction;
-see the dated [migration report](MIGRATION.md) for the exact verification boundary.
+Actual `download FAMILY --config config/data/project.yaml` commands can contact providers and
+write caches. They require separately reviewed source/bounds/resource authorization. Some
+families validate local inventories instead. Builds expect configured local sources and never
+serve as a universal downloader. Inspect preflight before selecting a fresh candidate.
 
-## 2. Initialize and review configuration
-
-The example paths below are placeholders; replace them with absolute paths on your machine.
-
-```sh
-seascape --workspace /path/to/seascape-workspace init
-seascape --workspace /path/to/seascape-workspace stages
-seascape --workspace /path/to/seascape-workspace build --dry-run
-```
-
-Review [configuration](CONFIGURATION.md) and the [source contracts](CONTRACTS.md) before running
-acquisition. Initialization supplies templates and reference metadata, not regional data.
-
-## 3. Acquire or provide source inputs
-
-Each acquisition family has its own options:
-
-```sh
-seascape --workspace /path/to/seascape-workspace download bathymetry --help
-seascape --workspace /path/to/seascape-workspace download bathymetry --config config/data/project.yaml
-seascape --workspace /path/to/seascape-workspace download water-geometry --config config/data/project.yaml
-```
-
-These examples are not a complete acquisition recipe for all families. Supported download selectors
-are `water-geometry`, `bathymetry`, `shoreline-characterization`, `freshwater-sources`,
-`estuarine-connectivity`, `fluvial-barriers`, `substrate-classification`, `bottom-hardness`,
-`seagrass`, `kelp`, `reef`, `habitat-composite` and `anthropogenic`.
-
-Some commands validate local inputs or reuse another family's sources. Follow the owning family's
-`DATA_SOURCES.md`, linked through the [product index](products.md), for provider access, licensing,
-coverage and local-file requirements. Use each command's help for overwrite behavior.
-
-## 4. Build a candidate
+### Plan and build a candidate
 
 The workflow expects configured source inputs to be available. A subset plan expands dependencies:
 
 ```sh
-seascape --workspace /path/to/seascape-workspace build --only seascape-geomorphometry --dry-run
-seascape --workspace /path/to/seascape-workspace build --only seascape-geomorphometry --dry-run --check-inputs --json
+seascape --workspace "$SEASCAPE_WORKSPACE" build --only seascape-geomorphometry --dry-run
+seascape --workspace "$SEASCAPE_WORKSPACE" build --only seascape-geomorphometry --dry-run --check-inputs --json
 ```
 
 A full build creates products, metadata and a release audit while retaining the candidate by default:
 
 ```sh
-seascape --workspace /path/to/seascape-workspace build --candidate-root /path/to/seascape-workspace/.seascape/candidate
+seascape --workspace "$SEASCAPE_WORKSPACE" build --candidate-root "$SEASCAPE_WORKSPACE/.seascape/candidate"
 ```
 
 | Option | Behavior |
@@ -106,30 +99,30 @@ required `unverified`, even when individual optional source files exist. Directo
 checks are likewise limited: file readability is not proof of usable extracted data. Correct these
 through the family workflow and its source guide; preflight cannot approve a release.
 
-## 5. Inspect existing products
+### Inspect existing products
 
 Inspectors render diagnostics; they do not replace a scientific release audit. For canonical outputs:
 
 ```sh
-seascape --workspace /path/to/seascape-workspace inspect bathymetry --help
-seascape --workspace /path/to/seascape-workspace inspect bathymetry --config config/data/project.yaml
+seascape --workspace "$SEASCAPE_WORKSPACE" inspect bathymetry --help
+seascape --workspace "$SEASCAPE_WORKSPACE" inspect bathymetry --config config/data/project.yaml
 ```
 
 For an unpublished candidate built from the default project entry point:
 
 ```sh
-seascape --workspace /path/to/seascape-workspace inspect bathymetry --config /path/to/seascape-workspace/.seascape/candidate/.seascape/config/project.yaml --output /path/to/seascape-workspace/.seascape/candidate/bathymetry.html
+seascape --workspace "$SEASCAPE_WORKSPACE" inspect bathymetry --config "$SEASCAPE_WORKSPACE/.seascape/candidate/.seascape/config/project.yaml" --output "$SEASCAPE_WORKSPACE/.seascape/candidate/bathymetry.html"
 ```
 
 Use explicit inspection output paths when keeping diagnostics inside the candidate; presentation
 settings may otherwise route maps into the workspace's standard output directory.
 
-## 6. Publish after review
+### Publish after review
 
 Use the same configuration and candidate directory:
 
 ```sh
-seascape --workspace /path/to/seascape-workspace build --candidate-root /path/to/seascape-workspace/.seascape/candidate --resume --publish
+seascape --workspace "$SEASCAPE_WORKSPACE" build --candidate-root "$SEASCAPE_WORKSPACE/.seascape/candidate" --resume --publish
 ```
 
 Publication retains a copied generation under `.seascape/releases/<release_id>` and promotes
@@ -137,40 +130,15 @@ canonical compatibility paths and the schema-3 release manifest in one journaled
 It is local artifact publication, not a Git push or a public dataset upload. Direct family APIs
 can also publish their own outputs; the candidate workflow's release gate is a separate operation.
 
-## 7. Resolve a published product
+## Consume an audited release
 
-Consumers should use the canonical release API instead of copying internal paths:
+Use an existing completed schema-3 workspace and the [freeze-and-read Python example](API.md#freeze-and-read-a-release).
+The resolver never builds missing products or substitutes a resolution. Preserve retained releases;
+checksum failures require restoring verified bytes or auditing a new candidate, not editing metadata.
 
-```python
-from seascape.products import list_products, list_resolutions, resolve_product
-
-print(list_products(workspace="/path/to/seascape-workspace"))
-print(list_resolutions("bathymetry", workspace="/path/to/seascape-workspace"))
-artifact = resolve_product(
-    workspace="/path/to/seascape-workspace",
-    product="bathymetry",
-    resolution=6,
-)
-```
-
-The resolver holds a consistent snapshot, requires a completed canonical release, validates
-governed and family manifests, verifies the selected artifact checksum, and returns immutable
-identity/provenance and retained generation paths. Pass `release_id=artifact.release_id` to resolve
-a historical generation. Older schema-2 releases require republishing. See [API contracts](API.md).
-It never falls back to another resolution. Applications choose predictive
-features and scales after freezing these physical products.
-
-## 8. Export a metric matrix
-
-```sh
-seascape --workspace /path/to/seascape-workspace export-metric-matrix --resolution 6 --output /path/to/owned-exports/seascape-r6.parquet
-```
-
-This resolves a completed release and its archived catalog, verifies artifacts and H3 support,
-and writes Parquet with embedded export metadata. Choose a distinct output destination; existing output
-requires explicit `--overwrite`. The existing `--legacy-unverified --catalog PATH` mode records
-structural evidence from a legacy release, not certified release acceptance. It is not a remedy
-for checksum failures in a validated release.
+For a single keyed Parquet export, use the [matrix guide](metric-matrix.md). It freezes one generation,
+retains null/zero and evidence distinctions, and records source units/types/checksums. Explicit legacy
+mode establishes structural evidence only; it is not a remedy for release checksum failures.
 
 ## Operation effects
 
@@ -213,8 +181,8 @@ Unrecognized errors retain tracebacks. To inspect the original chained exception
 failure, put `--debug` before the command, alongside `--workspace`:
 
 ```sh
-seascape --workspace /path/to/seascape-workspace --debug build --only seascape-bathymetry
-seascape --workspace /path/to/seascape-workspace --debug inspect bathymetry --config config/data/project.yaml
+seascape --workspace "$SEASCAPE_WORKSPACE" --debug build --only seascape-bathymetry
+seascape --workspace "$SEASCAPE_WORKSPACE" --debug inspect bathymetry --config config/data/project.yaml
 ```
 
 `build --debug` is not valid. Debug keeps the same failure code and gates. Preflight remains

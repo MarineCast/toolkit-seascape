@@ -1,5 +1,8 @@
 # Hardening review — 2026-09-17
 
+> Dated historical evidence; follow the [current guide](README.md) and [progress](roadmap/PROGRESS.md)
+> for present behavior and executed checks. Past test/release/integration claims are not new verification.
+
 ## Baseline and defects
 
 - Baseline: `main` at `89f0bc42d85131914a12c714a6723f9af42c81ee`.

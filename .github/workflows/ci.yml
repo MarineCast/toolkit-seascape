@@ -16,6 +16,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python -m pip install '.[test]'
       - run: python -m pip check
+      - run: python scripts/check_docs.py
       - run: python -m pytest --collect-only -q
       - run: python -m pytest -q
       - run: seascape --help
@@ -58,6 +59,13 @@ jobs:
             --source "$GITHUB_WORKSPACE" \
             --forbid-root "$(dirname "$GITHUB_WORKSPACE")" \
             --output "$RUNNER_TEMP/seascape-consumer"
+      - name: Execute documented source-install quickstart
+        run: |
+          python scripts/check_quickstart.py \
+            --sdist "$RUNNER_TEMP/seascape-distributions"/*.tar.gz \
+            --source "$GITHUB_WORKSPACE" \
+            --forbid-root "$(dirname "$GITHUB_WORKSPACE")" \
+            --output "$RUNNER_TEMP/seascape-quickstart"
       - name: Verify actual interpreter and architecture
         run: |
           python - "$RUNNER_TEMP/seascape-consumer/runtime-environment.json" '${{ matrix.system }}' '${{ matrix.machine }}' '${{ matrix.python }}' <<'PY'
@@ -83,6 +91,11 @@ jobs:
             ${{ runner.temp }}/seascape-consumer/executed-notebook.*
             ${{ runner.temp }}/seascape-consumer/runtime-demo/.seascape/demo/
             ${{ runner.temp }}/seascape-consumer/outbound-demo/.seascape/demo/report.json
+            ${{ runner.temp }}/seascape-quickstart/report.json
+            ${{ runner.temp }}/seascape-quickstart/commands.sh
+            ${{ runner.temp }}/seascape-quickstart/commands.log
+            ${{ runner.temp }}/seascape-quickstart/workspace.txt
+            ${{ runner.temp }}/seascape-quickstart/tmp/**/.seascape/demo/
       - run: git diff --exit-code
 
   notebook-validation:

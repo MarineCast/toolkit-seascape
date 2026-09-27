@@ -28,6 +28,40 @@ republished; there is no automatic migration or garbage collection. Administrato
 retained generations while consumers reference them. Checksums detect tampering at resolution,
 not arbitrary filesystem edits after resolution. Returned paths do not require an open reader lock.
 
+## Freeze and read a release
+
+Set `SEASCAPE_WORKSPACE` to an **existing audited schema-3 workspace** (an absolute path placeholder
+is shown in the workflow guide). A demo or initialized workspace is insufficient. This example
+selects R6 bathymetry once, retains its release ID, then uses that same ID for discovery and reads.
+It performs no acquisition, rebuilding, promotion or ecological feature selection.
+
+<!-- BEGIN CONSUMER EXAMPLE -->
+```python
+import os
+from pathlib import Path
+
+import pyarrow.parquet as pq
+
+from seascape.products import list_products, list_resolutions, resolve_product
+
+workspace = Path(os.environ["SEASCAPE_WORKSPACE"])
+selected = resolve_product(workspace=workspace, product="bathymetry", resolution=6)
+release_id = selected.release_id  # Save this identity with downstream run metadata.
+print(list_products(workspace=workspace, release_id=release_id))
+print(list_resolutions("bathymetry", workspace=workspace, release_id=release_id))
+artifact = resolve_product(
+    workspace=workspace, product="bathymetry", resolution=6, release_id=release_id
+)
+table = pq.read_table(artifact.path)
+print(release_id, artifact.checksum, table.num_rows, table.column_names)
+print(artifact.spatial_support, artifact.source_vintage, artifact.rights)
+```
+<!-- END CONSUMER EXAMPLE -->
+
+Choose a different resolution only if discovery says it is present; there is no R8/R6 fallback.
+Keep keys, physical units/sign, nulls, QC/evidence columns and source rights intact in downstream joins.
+Checksum verification covers bytes at resolution time; it does not authorize mutation of retained files.
+
 ## Producer entry points
 
 Use `seascape --workspace PATH build` for candidate isolation and the complete release gate.
