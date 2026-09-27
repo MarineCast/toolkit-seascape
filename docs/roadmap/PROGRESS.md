@@ -8,7 +8,7 @@ SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset)
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
 on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
-Current next action: owner resolution of SS-11's human trial, version policy, classic protection
+Current next action: VERIFY-01 corrected-candidate acceptance, then owner resolution of SS-11's human trial, version policy, classic protection
 and release authorization gates. FIX-01 corrects future GEBCO rights; SS-10 execution still requires
 valid support inputs and approved disposable-workspace publication/resource scope. No SS-12.
 
@@ -27,7 +27,7 @@ valid support inputs and approved disposable-workspace publication/resource scop
 | SS-10 | blocked | Checked bounded runbook and read-only preflight; no producer/publication/real-data QA; see below |
 | SS-11 | blocked | Exact candidate software checks passed; handoff prepared; human/version/admin/release-owner gates pending |
 | FIX-01 | passed | Future GEBCO rights corrected; 32 focused tests; retained fixture/data bytes preserved |
-| FIX-02 | not_run | Actionable safe preflight detail/debug context pending |
+| FIX-02 | passed | 113 focused regressions; safe detail, original debug, unchanged gates |
 | VERIFY-01 | not_run | Corrected-candidate package/hosted checks pending |
 
 ## SS-00 baseline
@@ -1108,4 +1108,15 @@ exit 4, no tests run; corrected to the actual nested path. Logs/exact argv are i
 `/tmp/seascape-review-fixes-evidence/{fix01,fix01-focused}.command.json` and matching logs.
 FIX-02 pre-change reproduction: malformed YAML and fixed-Q90 violation each exit 1 in text,
 JSON and debug+JSON, but useful details and tracebacks are absent. Reports saved under the same
-evidence root; debug files stay local/private. Separate FIX-02 implementation and VERIFY-01 follow.
+evidence root; debug files stay local/private. FIX-02 now retains safe reason/type and document/setting context with additive optional schema-1
+fields. Existing classifier/sanitizer reused; malformed YAML excludes snippets, quoted user values
+are redacted while fixed scientific enum requirements remain. Explicit debug receives the original
+caught exception on stderr; unfiltered debug logs remain private. Unknown defects re-raise, and
+preflight remains read-only with environment restoration. No scientific validation rule changed.
+`python -m pytest -q tests/test_preflight.py tests/test_cli_diagnostics.py tests/test_workflow.py tests/test_products.py`:
+exit 0, **113 passed**, 62 warnings (`fix02-confirm` logs). Earlier regression development runs
+exit 1 (12 then 10 failures): omitted existing positive-down classifier and a test mutation of an
+unused field, both corrected without weakening validation. Text/JSON/debug tests cover both caught
+paths, YAML/include/reference/Q90, secrets, legacy fields and unexpected exceptions. Actual Q90
+JSON exit 1 supplies the workflow example. Notebook stays unchanged: its existing production-demo
+thin-client coverage remains appropriate; copied installed-wheel execution follows in VERIFY-01.

@@ -26,6 +26,8 @@ _CONFIG_SITES = {
     },
     "seascape.core.geo.crs": {"require_metric_crs"},
     "seascape.utils.config": {"require_mapping"},
+    "seascape.preflight": {"_contract"},
+    "seascape.seafloor_physiography.depth": {"require_positive_down_config"},
     "seascape.spatial_support.water_geometry.config": {"load_water_geometry_config"},
     "seascape.spatial_support.water_geometry.download": {
         "load_water_geometry_source_config"
@@ -109,8 +111,20 @@ def safe_detail(value: object) -> str:
         return (
             "Invalid numeric configuration value; inspect the selected configuration."
         )
+    # Config validators can interpolate arbitrary quoted user values (e.g. an
+    # unknown area). Keep the setting/requirement, omit the supplied literal.
+    expected_literals = {"positive_down", "negative_elevation", "wilson"}
+    text = re.sub(
+        r"(['\"])(.*?)\1",
+        lambda match: (
+            match.group(0)
+            if match.group(2) in expected_literals
+            else "<redacted value>"
+        ),
+        text,
+    )
     if re.search(r"[A-Za-z][A-Za-z0-9+.-]*:/", text) or re.search(
-        r"(?i)(password|secret|token|api[_-]?key)\s*[=:]", text
+        r"(?i)(password|secret|token|api[_-]?key)[\"\']?\s*[=:]", text
     ):
         return "<redacted sensitive detail>"
     return text.replace("\n", " ")
@@ -183,11 +197,21 @@ def identify_failure(exc: BaseException) -> Diagnostic | None:
             "Correct the YAML syntax in the selected or referenced configuration.",
             "docs/CONFIGURATION.md",
         )
-    if isinstance(exc, (ValueError, KeyError)) and config:
+    if isinstance(exc, (ValueError, KeyError, TypeError)) and config:
         return Diagnostic(
-            f"Invalid configuration: {safe_detail(exc)}",
+            f"Invalid configuration: {safe_detail(exc.args[0] if isinstance(exc, KeyError) and exc.args else exc)}",
             "Correct the reported setting using the configuration and source contracts; preserve declared CRS, units, sign and missingness.",
             "docs/CONFIGURATION.md; docs/CONTRACTS.md",
+        )
+    if (
+        isinstance(exc, ValueError)
+        and module == "seascape.preflight"
+        and function == "preflight_build"
+        and str(exc) == "Resolved output escapes candidate"
+    ):
+        return Diagnostic(
+            str(exc),
+            "Correct the selected family's output paths; all resolved outputs must stay inside the fresh candidate.",
         )
     if (
         isinstance(exc, ValueError)

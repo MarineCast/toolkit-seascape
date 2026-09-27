@@ -226,6 +226,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.check_inputs or args.json:
             from seascape.preflight import preflight_build, print_preflight
 
+            def report_failure(stage: str, exc: BaseException) -> None:
+                print(f"build preflight / {stage}: original failure", file=sys.stderr)
+                traceback.print_exception(exc, file=sys.stderr)
+
             report = preflight_build(
                 config_path=args.config,
                 only=args.only,
@@ -235,6 +239,7 @@ def main(argv: list[str] | None = None) -> int:
                 resume=args.resume,
                 overwrite=args.overwrite,
                 check_inputs=args.check_inputs,
+                _failure_reporter=report_failure if args.debug else None,
             )
             if args.json:
                 print(json.dumps(report, indent=2))
@@ -249,6 +254,7 @@ def main(argv: list[str] | None = None) -> int:
                     print(
                         f"build preflight / {check['stage']}: {check['name']} "
                         f"is {check['status']} ({check['path'] or report['config']}). "
+                        f"{check.get('detail', '')} "
                         f"Action: {check['corrective_action']} Guide: docs/WORKFLOWS.md.",
                         file=sys.stderr,
                     )

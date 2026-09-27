@@ -174,7 +174,8 @@ Identified failures return exit 1 with the operation, reason, workspace/config o
 corrective action and a guide pointer on stderr. Missing configuration, missing local sources,
 invalid declared scientific settings, existing export output, incomplete dependencies, checksum
 mismatches and publication/recovery failures receive this guidance. Existing JSON preflight fields
-and statuses remain authoritative; human guidance does not appear in JSON stdout. Normal build
+and statuses remain authoritative; optional safe `detail` and `error_type` fields identify caught
+configuration failures. Human guidance/debug traces stay off JSON stdout. Normal build
 progress remains human stdout. Family help/parser behavior and Python API exceptions are retained.
 
 Unrecognized errors retain tracebacks. To inspect the original chained exception for an identified
@@ -187,8 +188,25 @@ seascape --workspace "$SEASCAPE_WORKSPACE" --debug inspect bathymetry --config c
 
 `build --debug` is not valid. Debug keeps the same failure code and gates. Preflight remains
 read-only and reports its inspection limitations; debug does not run producers to reconstruct
-a traceback. Normal CLI diagnostics redact remote locations and sensitive conversion details;
+a traceback. Caught planning and family-loader exceptions retain their original traceback for
+explicit debug requests; JSON stdout remains one report. Normal CLI diagnostics redact remote
+locations, secret assignments and arbitrary quoted/conversion values;
 debug tracebacks and provider logs can contain credentials, so review them before sharing.
+
+For example, a controlled fixture with `slope_upper_quantile: 0.8` produced exit 1 and this
+excerpt from the actual preflight JSON (September 27 review-fix regression):
+
+```json
+{
+  "stage": "seascape-geomorphometry",
+  "status": "invalid",
+  "detail": "Invalid configuration: slope_upper_quantile must be 0.90 for the stable Q90 column contract.",
+  "error_type": "ValueError"
+}
+```
+
+Correct that setting to the loader's required `0.90`; the report also retains the configuration
+path and corrective action. Preflight does not calculate a different quantile or approve a release.
 
 | Symptom | Next check |
 | --- | --- |

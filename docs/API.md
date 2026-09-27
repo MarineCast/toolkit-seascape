@@ -88,7 +88,11 @@ individual implementation imports are not a stable downstream API.
 Candidate planning adds `build --dry-run --check-inputs [--json]`. It inspects selected local
 configuration, readability and GeoTIFF headers without creating a candidate or executing builders.
 JSON schema 1 includes stage order, destinations, publication intent, checks and limitations;
-required missing/invalid/unverified prerequisites produce exit 1. `ready` is preflight evidence,
+required missing/invalid/unverified prerequisites produce exit 1. Failed configuration checks
+add optional `detail` (safe reason) and `error_type` (exception class name), preserving all schema-1
+required fields and statuses. Readers must tolerate optional fields. `path` identifies the failing
+include/document when available, otherwise the selected configuration entry point; YAML reasons
+include one-based line/column without source snippets. `ready` is preflight evidence,
 not scientific or release acceptance. Plain `--dry-run` remains supported. Plan objects and input
 inspection adapters are internal helpers; see [workflow inspection limits](WORKFLOWS.md).
 
@@ -104,7 +108,10 @@ Unlisted calculation, dependency or programming errors still raise with their tr
 known validator sites are translated; an arbitrary `ValueError` or `RuntimeError` is not assumed
 to be a user mistake. To expose chained detail for translated failures, put the global option
 **before the command**: `seascape --workspace PATH --debug build ...` (also supported for demo,
-download, inspect and export). Debug does not execute a failed preflight or bypass any gate.
+download, inspect and export). The private preflight failure reporter passes the original caught
+exception only to the explicitly requested CLI debug sink, never into JSON or process-global
+state. Debug writes unfiltered tracebacks to stderr, including with `--json`, and keeps the same
+failure status. It does not execute a failed preflight or bypass any gate.
 Tracebacks can contain sensitive provider/configuration detail; review them before sharing.
 See [diagnostic examples and operation effects](WORKFLOWS.md#common-problems).
 

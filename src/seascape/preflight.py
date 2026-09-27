@@ -9,7 +9,7 @@ from __future__ import annotations
 import importlib
 import os
 import re
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, fields
 from pathlib import Path
@@ -17,6 +17,7 @@ from typing import Any, Literal, NotRequired, TypedDict
 
 import yaml
 
+from seascape._cli_diagnostics import identify_failure, safe_detail
 from seascape.core.config.data import _preview_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.utils.config import resolve_project_path
@@ -68,6 +69,8 @@ class PreflightCheck(TypedDict):
     path: str | None
     performed: list[str]
     corrective_action: str
+    detail: NotRequired[str]
+    error_type: NotRequired[str]
 
 
 class PreflightStage(TypedDict):
@@ -99,7 +102,7 @@ def _safe(value: Any) -> str:
     return (
         "<redacted remote location>"
         if re.search(r"[A-Za-z][A-Za-z0-9+.-]*:/", text)
-        else text
+        else safe_detail(text)
     )
 
 
@@ -122,6 +125,50 @@ def _check(
         "performed": performed or [],
         "corrective_action": action,
     }
+
+
+# Only the original exception is sent to an explicitly requested CLI debug sink.
+FailureReporter = Callable[[str, BaseException], None]
+
+
+def _failure_check(
+    stage: str,
+    name: str,
+    exc: BaseException,
+    config_path: Path,
+    reporter: FailureReporter | None,
+) -> PreflightCheck:
+    diagnostic = identify_failure(exc)
+    if diagnostic is None:
+        # Do not turn a calculation/dependency/programming defect into readiness.
+        raise exc
+    location = config_path
+    filename = getattr(exc, "filename", None)
+    if isinstance(filename, (str, Path)):
+        location = Path(filename)
+    else:
+        tb = exc.__traceback__
+        while tb is not None:
+            frame = tb.tb_frame
+            # These loaders read string content, so YAML marks have no filename.
+            # Recover only their path, never their config values or other locals.
+            if frame.f_globals.get("__name__") == "seascape.core.config.document":
+                path = frame.f_locals.get("path")
+                if isinstance(path, Path):
+                    location = path
+            tb = tb.tb_next
+    if reporter is not None:
+        reporter(stage, exc)
+    check = _check(
+        stage,
+        name,
+        "invalid",
+        path=location,
+        action=f"{diagnostic.action} Guide: {diagnostic.guide}",
+    )
+    check["detail"] = diagnostic.reason
+    check["error_type"] = type(exc).__name__
+    return check
 
 
 @contextmanager
@@ -622,6 +669,7 @@ def preflight_build(
     resume: bool = False,
     overwrite: bool = False,
     check_inputs: bool = True,
+    _failure_reporter: FailureReporter | None = None,
 ) -> PreflightReport:
     """Report selected prerequisites without writes, hashes, downloads or builders."""
     only, skip = tuple(only), tuple(skip)
@@ -671,11 +719,12 @@ def preflight_build(
         )
     except _EXPECTED as exc:
         report["checks"].append(
-            _check(
+            _failure_check(
                 "plan",
                 "configuration/selection/destination",
-                "invalid",
-                action=f"Review selected stages, config mapping/includes, metric CRS and candidate confinement ({type(exc).__name__}); see docs/WORKFLOWS.md.",
+                exc,
+                resolve_config_path(config_path),
+                _failure_reporter,
             )
         )
         report["status"] = "failed"
@@ -753,11 +802,12 @@ def preflight_build(
                 generated.update({p.resolve(): stage.name for p in outputs})
             except _EXPECTED as exc:
                 report["checks"].append(
-                    _check(
+                    _failure_check(
                         stage.name,
                         "configuration/input contract",
-                        "invalid",
-                        action=f"Correct this family's configuration, spatial/unit/sign declarations or input access ({type(exc).__name__}); see docs/CONTRACTS.md and its DATA_SOURCES.md.",
+                        exc,
+                        plan.source_config,
+                        _failure_reporter,
                     )
                 )
     report["checks"].append(
@@ -808,6 +858,8 @@ def print_preflight(report: PreflightReport) -> None:
         print(
             f"  [{check['status']}] {check['stage']}: {check['name']} ({'required' if check['required'] else 'optional'}) {check['path'] or ''}"
         )
+        if check.get("detail"):
+            print(f"    reason: {check['detail']}")
         for performed in check["performed"]:
             print(f"    checked: {performed}")
         if check["corrective_action"]:

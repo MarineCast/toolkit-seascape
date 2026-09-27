@@ -542,3 +542,156 @@ def test_barrier_plan_identifies_configured_fluvial_prerequisites(workspace):
         c["name"] == "watershed_crosswalk_path" and c["status"] == "generated_by_plan"
         for c in barrier
     )
+
+
+@pytest.mark.parametrize("mode", ["text", "json", "debug-json"])
+@pytest.mark.parametrize("failure", ["yaml", "include", "reference", "q90"])
+def test_loader_failures_have_safe_detail_and_original_debug_context(
+    workspace, monkeypatch, capsys, mode, failure
+):
+    project = workspace / "config/data/project.yaml"
+    domain = workspace / "config/data/environment_seascape.yaml"
+    if failure == "yaml":
+        domain.write_text("password: [PRIVATE_YAML_VALUE\n")
+        expected, stage, location = "Invalid configuration YAML", "plan", domain
+    elif failure == "include":
+        domain.write_text("extends: missing-parent.yaml\n")
+        expected, stage, location = (
+            "Configuration is missing",
+            "plan",
+            domain.parent / "missing-parent.yaml",
+        )
+    elif failure == "reference":
+        domain.write_text("value: ${missing.setting}\n")
+        expected, stage, location = "missing.setting", "plan", domain
+    else:
+        change(
+            workspace,
+            lambda raw: raw["geomorphometry"]["processing"].update(
+                slope_upper_quantile=0.8, password="PRIVATE_UNUSED_VALUE"
+            ),
+        )
+        expected, stage, location = (
+            "slope_upper_quantile must be 0.90 for the stable Q90 column contract",
+            "seascape-geomorphometry",
+            project,
+        )
+    before, environment = tree(workspace), dict(os.environ)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Preflight attempted acquisition or a producer")
+
+    monkeypatch.setattr(socket.socket, "connect", forbidden)
+    monkeypatch.setattr(socket, "getaddrinfo", forbidden)
+    monkeypatch.setattr("seascape.workflow.run_domain_layer_build", forbidden)
+    monkeypatch.setattr(
+        "seascape.seafloor_physiography.bathymetry.run_pipeline", forbidden
+    )
+    args = ["--workspace", str(workspace)]
+    if mode == "debug-json":
+        args.append("--debug")
+    args += [
+        "build",
+        "--only",
+        "seascape-geomorphometry",
+        "--dry-run",
+        "--check-inputs",
+    ]
+    if mode != "text":
+        args.append("--json")
+    assert main(args) == 1
+    captured = capsys.readouterr()
+    assert expected in captured.out and expected in captured.err
+    assert str(location) in captured.out and str(location) in captured.err
+    assert "Action:" in captured.err and "Guide:" in captured.err
+    assert "PRIVATE_" not in captured.out
+    assert "Traceback" not in captured.out
+    if mode != "debug-json":
+        assert "PRIVATE_" not in captured.err and "Traceback" not in captured.err
+    else:
+        assert "Traceback (most recent call last)" in captured.err
+        assert "original failure" in captured.err and "preflight_build" in captured.err
+    if failure == "yaml":
+        assert "line 2, column 1" in captured.out
+    if mode != "text":
+        report = json.loads(captured.out)
+        assert report["status"] == "failed" and report["schema_version"] == 1
+        check = next(c for c in report["checks"] if expected in c.get("detail", ""))
+        assert check["stage"] == stage and check["status"] == "invalid"
+        assert check["error_type"]
+        # Existing readers still consume their required schema-1 fields.
+        legacy = [
+            (
+                c["stage"],
+                c["name"],
+                c["status"],
+                c["required"],
+                c["path"],
+                c["performed"],
+                c["corrective_action"],
+            )
+            for c in report["checks"]
+        ]
+        assert any(row[0] == stage and row[2] == "invalid" for row in legacy)
+    assert tree(workspace) == before
+    assert dict(os.environ) == environment
+
+
+@pytest.mark.parametrize("mode", ["text", "json"])
+@pytest.mark.parametrize(
+    "value",
+    [
+        "password=PRIVATE_VALUE",
+        "token: PRIVATE_VALUE",
+        "api_key=PRIVATE_VALUE",
+        "https://user:PRIVATE_VALUE@example.invalid/config?token=PRIVATE_VALUE",
+        "PRIVATE_VALUE",
+    ],
+)
+def test_preflight_config_values_are_not_echoed(workspace, capsys, mode, value):
+    change(workspace, lambda raw: raw["bathymetry"].update(area=value))
+    args = [
+        "--workspace",
+        str(workspace),
+        "build",
+        "--only",
+        "seascape-geomorphometry",
+        "--dry-run",
+        "--check-inputs",
+    ]
+    if mode == "json":
+        args.append("--json")
+    assert main(args) == 1
+    captured = capsys.readouterr()
+    assert "PRIVATE_VALUE" not in captured.out + captured.err
+    assert "Unknown common area" in captured.out + captured.err
+    assert "seascape-bathymetry" in captured.err
+    if mode == "json":
+        assert json.loads(captured.out)["status"] == "failed"
+
+
+@pytest.mark.parametrize("site", ["plan", "family"])
+@pytest.mark.parametrize(
+    "error",
+    [
+        ValueError("programming defect"),
+        TypeError("programming defect"),
+        RuntimeError("programming defect"),
+    ],
+)
+def test_preflight_does_not_swallow_unrelated_errors(
+    workspace, monkeypatch, site, error
+):
+    from seascape import preflight
+
+    def broken(*args, **kwargs):
+        raise error
+
+    monkeypatch.setattr(
+        preflight, "plan_domain_layer_build" if site == "plan" else "_contract", broken
+    )
+    before, environment = tree(workspace), dict(os.environ)
+    with pytest.raises(type(error)) as caught:
+        plan(workspace)
+    assert caught.value is error
+    assert tree(workspace) == before and dict(os.environ) == environment
