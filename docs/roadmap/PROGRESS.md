@@ -9,7 +9,7 @@ Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seasc
 Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
 on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
 Current next action: owner resolution of SS-11's human trial, version policy, classic protection
-and release authorization gates. SS-10 execution separately requires provenance correction,
+and release authorization gates. FIX-01 corrects future GEBCO rights; SS-10 execution still requires
 valid support inputs and approved disposable-workspace publication/resource scope. No SS-12.
 
 | Task | Status | Evidence / next gap |
@@ -26,6 +26,9 @@ valid support inputs and approved disposable-workspace publication/resource scop
 | SS-09 | passed | Three journeys, guarded source quickstart, docs drift checks; local/hosted 368 passed / 3 skipped; run 36327449869, 9/9 jobs |
 | SS-10 | blocked | Checked bounded runbook and read-only preflight; no producer/publication/real-data QA; see below |
 | SS-11 | blocked | Exact candidate software checks passed; handoff prepared; human/version/admin/release-owner gates pending |
+| FIX-01 | passed | Future GEBCO rights corrected; 32 focused tests; retained fixture/data bytes preserved |
+| FIX-02 | not_run | Actionable safe preflight detail/debug context pending |
+| VERIFY-01 | not_run | Corrected-candidate package/hosted checks pending |
 
 ## SS-00 baseline
 
@@ -1090,3 +1093,19 @@ are saved under the evidence root. No unrelated starting edits. Normal feature c
 existing authorization and message `Repository Organization Updates`; no merge/tag/registry,
 release upload, settings, dataset or application changes. Next: **owner resolution of the pending
 SS-11 gates**; SS-10 execution requires its separate scope/correction/input gates. No SS-12 started.
+
+## Focused review fixes (September 27)
+
+Base `ec78b57878c4a93b28892132df7c1edf900d6da3`, clean existing feature branch; no reset.
+FIX-01 changes future source/attribution rights only: GEBCO public-domain terms/acknowledgement
+reference, synthetic fixture licensing unchanged, unknown-provider rights explicitly unverified.
+Official terms/release documentation rechecked; runtime metadata needs no network. Production
+fixture tests verify release/checksum, identical keyed values/nulls/resolution and retained
+publisher-created manifest/product bytes. Historical source caches/manifests remain untouched.
+`python -m pytest -q tests/test_demo.py tests/domains/environment/seascape/test_bathymetry_contracts.py`:
+exit 0, **32 passed**, 27 warnings. Initial suggested top-level bathymetry test path did not exist:
+exit 4, no tests run; corrected to the actual nested path. Logs/exact argv are in
+`/tmp/seascape-review-fixes-evidence/{fix01,fix01-focused}.command.json` and matching logs.
+FIX-02 pre-change reproduction: malformed YAML and fixed-Q90 violation each exit 1 in text,
+JSON and debug+JSON, but useful details and tracebacks are absent. Reports saved under the same
+evidence root; debug files stay local/private. Separate FIX-02 implementation and VERIFY-01 follow.

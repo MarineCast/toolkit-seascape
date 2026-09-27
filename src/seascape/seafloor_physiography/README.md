@@ -12,6 +12,22 @@ and R6; geomorphometry and geomorphic units are R8 products. Geomorphic units co
 depth/terrain inputs and are fully materialized, not planned work. Source authority and versions
 remain in configuration and leaf manifests.
 
+### GEBCO source rights (reviewed September 27, 2026)
+
+The [official terms](https://www.gebco.net/data-products/gridded-bathymetry/terms-of-use)
+place GEBCO grids in the public domain with source acknowledgement, conditions and disclaimers;
+this is not a CC BY or CC0 grant. Newly generated source and attribution records share that
+statement and terms reference. Runtime metadata creation is offline. Historical manifests retain
+their original labels and checksums; no archive migration is performed. Unknown providers retain
+unverified rights, and synthetic fixtures retain their explicit software/fixture attribution.
+
+For the configured [GEBCO 2026 release](https://www.gebco.net/data-products-gridded-bathymetry-data/gebco2026-grid),
+acknowledge GEBCO Bathymetric Compilation Group 2026, the GEBCO_2026 Grid, NERC EDS BODC NOC,
+DOI `10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa`. Cite the matching release's documentation
+for other configured releases; never substitute the 2026 DOI for another grid. Grid spacing is
+not measurement accuracy. These data are unsuitable for navigation or safety at sea; do not imply
+provider endorsement. Source-data rights are separate from toolkit-seascape's Apache-2.0 license.
+
 ## Commands
 
 ```bash

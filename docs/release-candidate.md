@@ -55,8 +55,9 @@ Three materialized-product tests skip without regional inputs. No live acquisiti
 rebuild/comparison, real-data numerical/visual QA, whole real-data release audit, redistribution,
 downstream application integration or Windows-native publication ran in this review.
 
-The GEBCO producer still contains the rights-label conflict recorded in SS-10. A future real-data
-run needs corrected source/attribution metadata, valid canonical support or explicitly validated
+FIX-01 corrects future GEBCO source/attribution rights metadata; historical manifests keep their
+original labels. The corrected code requires VERIFY-01 evidence before replacing the dated
+candidate above. A future real-data run still needs valid canonical support or explicitly validated
 exploratory support, and approved disposable-workspace publication/resource scope. Retained
 manifests must not be rewritten. The Python offline guard does not firewall native extensions.
 The unfamiliar-user trial is **pending**: the owner confirmed no unfamiliar tester is available.

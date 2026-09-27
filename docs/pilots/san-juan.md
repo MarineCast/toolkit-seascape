@@ -16,19 +16,19 @@ band aggregation. No new geomorphology, habitat inference, regional expansion or
 with a different source release is proposed. See the [family guide](../../src/seascape/seafloor_physiography/README.md)
 and [scientific contracts](../CONTRACTS.md).
 
-Three execution gates remain open:
+Future GEBCO metadata was corrected by FIX-01: source and attribution now use the official
+public-domain terms and acknowledgement context. Historical manifests still retain CC BY 4.0;
+their bytes/checksums were not rewritten. This removes the future-producer rights-label blocker,
+not the need to validate source identity and rights for an actual pilot. No pilot has run.
 
-1. The production bathymetry pipeline and historical manifest label GEBCO as CC BY 4.0.
-   The cached raster and [current GEBCO terms](https://www.gebco.net/data-products/gridded-bathymetry/terms-of-use)
-   say public domain, subject to terms, acknowledgement and limitations. Correct the producer's
-   source/attribution metadata with regression checks before creating a trusted new manifest.
-   Do not edit retained manifests or regenerate their checksums to conceal the discrepancy.
-2. The standard bathymetry plan requires canonical multi-source water geometry. Those inputs
+Two execution gates remain open:
+
+1. The standard bathymetry plan requires canonical multi-source water geometry. Those inputs
    are missing in the fresh pilot workspace. Natural Earth is an **exploratory land-mask proxy**,
    not canonical territorial waters or a navigation/legal boundary. A future exploratory
    recipe must retain that label in support and provenance and explicitly validate its reuse;
    it must not bypass the canonical planner's input/reuse checks to obtain a ready report.
-3. `bathymetry.run_pipeline(skip_download=True, skip_map=True)` still performs transactional
+2. `bathymetry.run_pipeline(skip_download=True, skip_map=True)` still performs transactional
    family publication. It has no publication-off option. [SS-10 step 5](../roadmap/SEASCAPE_CODEX_ROADMAP.md#ss-10-prepare-a-bounded-real-data-pilot-and-measured-operating-envelope)
    requires an approved disposable workspace and explicit publication scope for this path.
    That approval is pending. Proposed scope is only new exploratory support/network and R6/R8

@@ -15,7 +15,10 @@ import yaml
 from seascape import demo
 from seascape.cli import main
 from seascape.core.artifacts.checksums import checksum_path
+from seascape.products import resolve_product
+from seascape.release import publish_candidate_release
 from seascape.seafloor_physiography.bathymetry import pipeline
+from tests.test_products import _candidate_fixture
 
 
 @pytest.fixture(autouse=True)
@@ -62,6 +65,9 @@ def test_normal_run_nonempty_expected_values_and_provenance(result):
     assert manifest["sources"][0]["name"] == "SYNTHETIC seascape-demo-v1"
     assert "GEBCO" not in json.dumps(manifest)
     assert "CC BY" not in json.dumps(manifest)
+    assert "Public domain" not in json.dumps(manifest)
+    assert "terms_url" not in manifest["sources"][0]
+    assert manifest["attribution"][0]["license"] == "Apache-2.0 synthetic fixture"
     for path in result.figure_paths:
         assert path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
 
@@ -296,19 +302,60 @@ def test_overlapping_writer_is_refused_without_invalidating_report(result):
     assert result.report_path.read_bytes() == before
 
 
-def test_real_provider_manifest_defaults_are_preserved(result):
+@pytest.mark.parametrize("release", ["2026", "2025"])
+def test_gebco_manifest_terms_on_controlled_fixture(result, release):
+    """Exercise metadata only with generated demo inputs, never a live GEBCO survey."""
+    before = pd.read_parquet(result.parquet_path)
+    retained = result.workspace / "retained-test-release"
+    candidate = result.workspace / "retention-test-candidate"
+    # Existing test-only pre-audited fixture: retention evidence, not a regional audit.
+    source = _candidate_fixture(candidate, b"retained test product")
+    legacy_family = source.with_name("bathymetry_manifest.json")
+    legacy = json.loads(legacy_family.read_text())
+    legacy["sources"] = [{"name": "GEBCO legacy test", "license": "CC BY 4.0"}]
+    legacy_family.write_text(json.dumps(legacy))
+    publish_candidate_release(
+        canonical_project_root=retained, candidate_project_root=candidate
+    )
+    frozen = resolve_product(workspace=retained, product="bathymetry", resolution=6)
+    old_manifest = frozen.manifest_path.read_bytes()
+    old_family = frozen.path.with_name("bathymetry_manifest.json").read_bytes()
+    old_product = frozen.path.read_bytes()
     config_path = result.workspace / "config/demo.yaml"
     config = yaml.safe_load(config_path.read_text())
     config["bathymetry"]["source"]["provider"] = "GEBCO"
-    config["bathymetry"]["source"]["release"] = "2026"
+    config["bathymetry"]["source"]["release"] = release
     config_path.write_text(yaml.safe_dump(config))
     pipeline.run_pipeline(config_path, skip_download=True, skip_map=True)
     manifest = json.loads(result.manifest_path.read_text())
-    assert manifest["sources"][0]["name"] == "GEBCO 2026"
-    assert (
-        manifest["sources"][0]["license"]
-        == "GEBCO data are distributed under the CC BY 4.0 license."
+    assert manifest["sources"][0]["name"] == f"GEBCO {release}"
+    assert manifest["sources"][0]["license"] == pipeline.GEBCO_RIGHTS
+    assert manifest["sources"][0]["terms_url"] == pipeline.GEBCO_TERMS_URL
+    assert manifest["sources"][0]["checksum"] == checksum_path(
+        result.workspace / "input/synthetic_bathymetry.tif"
     )
-    assert manifest["attribution"][0]["license"] == "CC BY 4.0"
+    assert manifest["attribution"][0]["license"] == pipeline.GEBCO_RIGHTS
+    assert manifest["attribution"][0]["terms_url"] == pipeline.GEBCO_TERMS_URL
+    assert f"GEBCO {release} Grid" in manifest["attribution"][0]["text"]
+    assert "not to be used for navigation" in manifest["attribution"][0]["text"]
+    assert "CC BY" not in json.dumps(manifest)
     assert "synthetic" not in manifest["metadata"]
     assert "validation_scope" not in manifest["metadata"]
+    pd.testing.assert_frame_equal(before, pd.read_parquet(result.parquet_path))
+    assert frozen.manifest_path.read_bytes() == old_manifest
+    assert frozen.path.with_name("bathymetry_manifest.json").read_bytes() == old_family
+    assert frozen.path.read_bytes() == old_product
+
+
+def test_unknown_provider_does_not_inherit_gebco_rights(result):
+    config_path = result.workspace / "config/demo.yaml"
+    config = yaml.safe_load(config_path.read_text())
+    config["bathymetry"]["source"]["provider"] = "UNVERIFIED_TEST_PROVIDER"
+    config_path.write_text(yaml.safe_dump(config))
+    pipeline.run_pipeline(config_path, skip_download=True, skip_map=True)
+    manifest = json.loads(result.manifest_path.read_text())
+    assert "Unverified source-data rights" in manifest["sources"][0]["license"]
+    assert manifest["sources"][0]["license"] == manifest["attribution"][0]["license"]
+    assert "terms_url" not in manifest["sources"][0]
+    assert "GEBCO" not in json.dumps(manifest)
+    assert "Public domain" not in json.dumps(manifest)
