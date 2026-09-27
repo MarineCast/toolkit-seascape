@@ -34,7 +34,9 @@ from .build import (
 
 LOGGER = logging.getLogger(__name__)
 
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/hydrologic_connectivity")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/hydrologic_connectivity"
+)
 RIVER_MOUTH_MAP_FILENAME = "freshwater_sources.html"
 RIVER_SOURCE_COLORS = {
     "BC_FWA_STREAM_NETWORK": "#176F7D",
@@ -51,7 +53,8 @@ def _h3_feature(
     cell = str(row["H3_INDEX"])
     geometry = mapping(cell_to_polygon(cell))
     geometry["coordinates"] = [
-        [[round(x, 6), round(y, 6)] for x, y in ring] for ring in geometry["coordinates"]
+        [[round(x, 6), round(y, 6)] for x, y in ring]
+        for ring in geometry["coordinates"]
     ]
     return {
         "type": "Feature",
@@ -80,7 +83,11 @@ def _mouth_feature(row: Mapping[str, Any]) -> dict[str, Any]:
             "COAST_DISTANCE_M",
         )
     }
-    return {"type": "Feature", "properties": properties, "geometry": mapping(row["geometry"])}
+    return {
+        "type": "Feature",
+        "properties": properties,
+        "geometry": mapping(row["geometry"]),
+    }
 
 
 def _river_feature(row: Mapping[str, Any]) -> dict[str, Any]:
@@ -88,7 +95,11 @@ def _river_feature(row: Mapping[str, Any]) -> dict[str, Any]:
         column: _property_value(row.get(column))
         for column in ("RIVER_SEGMENT_ID", "SOURCE_DATASET", "RIVER_NAME")
     }
-    return {"type": "Feature", "properties": properties, "geometry": mapping(row["geometry"])}
+    return {
+        "type": "Feature",
+        "properties": properties,
+        "geometry": mapping(row["geometry"]),
+    }
 
 
 def _inspection_simplification(config_path: str | Path) -> float:
@@ -107,7 +118,11 @@ def _load_map_inputs(config_path: str | Path):
     import geopandas as gpd
 
     config = load_river_mouth_build_config(config_path)
-    for path in (config.feature_path, config.river_mouths_path, config.river_systems_path):
+    for path in (
+        config.feature_path,
+        config.river_mouths_path,
+        config.river_systems_path,
+    ):
         if not path.exists():
             raise FileNotFoundError(f"River-mouth processed product not found: {path}")
     features = pd.read_parquet(config.feature_path)
@@ -115,7 +130,9 @@ def _load_map_inputs(config_path: str | Path):
     if missing:
         raise ValueError(f"River-mouth H3 product is missing columns: {missing}")
     if features.empty or not features["H3_INDEX"].is_unique:
-        raise ValueError("River-mouth H3 product must have one nonempty row per H3_INDEX.")
+        raise ValueError(
+            "River-mouth H3 product must have one nonempty row per H3_INDEX."
+        )
     mouths = gpd.read_parquet(config.river_mouths_path)
     rivers = gpd.read_parquet(config.river_systems_path)
     if mouths.crs is None or rivers.crs is None:
@@ -129,11 +146,13 @@ def _prepare_rivers(rivers: Any, *, simplify_m: float, projected_crs: str):
         raise ValueError("River-system product contains no displayable linework.")
     if simplify_m > 0:
         projected = selected.to_crs(projected_crs)
-        projected.geometry = projected.geometry.simplify(simplify_m, preserve_topology=True)
+        projected.geometry = projected.geometry.simplify(
+            simplify_m, preserve_topology=True
+        )
         selected = projected.to_crs("EPSG:4326")
-    return selected.loc[selected.geometry.notna() & ~selected.geometry.is_empty].reset_index(
-        drop=True
-    )
+    return selected.loc[
+        selected.geometry.notna() & ~selected.geometry.is_empty
+    ].reset_index(drop=True)
 
 
 def inspect_river_mouths(
@@ -178,7 +197,12 @@ def inspect_river_mouths(
     }
     metric_specs = []
     for property_name, column, label, log_scale in (
-        ("DISTANCE_M", "DISTANCE_TO_RIVER_MOUTH_M", "Distance to nearest river mouth", False),
+        (
+            "DISTANCE_M",
+            "DISTANCE_TO_RIVER_MOUTH_M",
+            "Distance to nearest river mouth",
+            False,
+        ),
         (
             "PRESSURE",
             pressure_column,
@@ -226,12 +250,12 @@ def inspect_river_mouths(
     map_ = folium.Map(**map_options)
     map_name = map_.get_name()
     script = f"""
-    const riverMouthH3 = {json.dumps(h3_data, separators=(',', ':'))};
-    const riverMouths = {json.dumps(mouth_data, separators=(',', ':'))};
-    const riverSystems = {json.dumps(river_data, separators=(',', ':'))};
-    const riverSourceColors = {json.dumps(RIVER_SOURCE_COLORS, separators=(',', ':'))};
-    const riverMetricColors = {json.dumps(list(settings.color_map()), separators=(',', ':'))};
-    const riverMetricSpecs = {json.dumps(metric_specs, separators=(',', ':'))};
+    const riverMouthH3 = {json.dumps(h3_data, separators=(",", ":"))};
+    const riverMouths = {json.dumps(mouth_data, separators=(",", ":"))};
+    const riverSystems = {json.dumps(river_data, separators=(",", ":"))};
+    const riverSourceColors = {json.dumps(RIVER_SOURCE_COLORS, separators=(",", ":"))};
+    const riverMetricColors = {json.dumps(list(settings.color_map()), separators=(",", ":"))};
+    const riverMetricSpecs = {json.dumps(metric_specs, separators=(",", ":"))};
 
     function riverHexRgb(hex) {{
       const value = hex.replace('#', '');
@@ -328,7 +352,9 @@ def inspect_river_mouths(
     L.control.layers({{}}, riverOverlays, {{collapsed: true}}).addTo({map_name});
     """
     element = MacroElement()
-    element._template = Template("{% macro script(this, kwargs) %}" + script + "{% endmacro %}")
+    element._template = Template(
+        "{% macro script(this, kwargs) %}" + script + "{% endmacro %}"
+    )
     map_.add_child(element)
     map_.fit_bounds(
         [
@@ -354,7 +380,9 @@ def inspect_river_mouths(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--output")
     args = parser.parse_args()
     logging.basicConfig(

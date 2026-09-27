@@ -15,7 +15,9 @@ def _weighted_mean(values: pd.Series, weights: pd.Series) -> float:
     if not valid.any():
         return np.nan
     return float(
-        np.average(values.loc[valid].astype(float), weights=weights.loc[valid].astype(float))
+        np.average(
+            values.loc[valid].astype(float), weights=weights.loc[valid].astype(float)
+        )
     )
 
 
@@ -86,9 +88,13 @@ def aggregate_r8_to_r6(
                     rows[f"{p}_AREA_WITHIN_5KM_M2"],
                     rows["CHILD_WATER_AREA_M2"],
                 ),
-                f"{p}_OCCUPIED_CHILD_COUNT": int(rows[f"{p}_OCCUPIED_CHILD_COUNT"].sum()),
+                f"{p}_OCCUPIED_CHILD_COUNT": int(
+                    rows[f"{p}_OCCUPIED_CHILD_COUNT"].sum()
+                ),
                 f"{p}_PATCH_COUNT": int(rows[f"{p}_PATCH_COUNT"].sum()),
-                f"{p}_LARGEST_PATCH_AREA_M2": float(rows[f"{p}_LARGEST_PATCH_AREA_M2"].max()),
+                f"{p}_LARGEST_PATCH_AREA_M2": float(
+                    rows[f"{p}_LARGEST_PATCH_AREA_M2"].max()
+                ),
                 f"{p}_MEAN_PATCH_AREA_M2": (
                     habitat_area / float(rows[f"{p}_PATCH_COUNT"].sum())
                     if rows[f"{p}_PATCH_COUNT"].sum() > 0
@@ -103,7 +109,9 @@ def aggregate_r8_to_r6(
                 f"{p}_FRAGMENTATION_INDEX": (
                     float(
                         np.clip(
-                            1.0 - float(rows[f"{p}_LARGEST_PATCH_AREA_M2"].max()) / habitat_area,
+                            1.0
+                            - float(rows[f"{p}_LARGEST_PATCH_AREA_M2"].max())
+                            / habitat_area,
                             0.0,
                             1.0,
                         )
@@ -117,11 +125,14 @@ def aggregate_r8_to_r6(
                 f"{p}_YEARS_SURVEYED": int(rows[f"{p}_YEARS_SURVEYED"].max()),
                 f"{p}_PERSISTENCE_RATIO": persistence,
                 f"{p}_PERSISTENCE_BASIS": persistence_basis,
-                f"{p}_RECENT_5YR_PRESENCE": bool(rows[f"{p}_RECENT_5YR_PRESENCE"].any()),
+                f"{p}_RECENT_5YR_PRESENCE": bool(
+                    rows[f"{p}_RECENT_5YR_PRESENCE"].any()
+                ),
                 f"{p}_RECENCY_YEARS": rows[f"{p}_RECENCY_YEARS"].min(skipna=True),
                 f"{p}_OBSERVED_PRESENCE": bool(rows[f"{p}_OBSERVED_PRESENCE"].any()),
                 f"{p}_OBSERVED_ABSENCE": bool(
-                    not rows[f"{p}_OBSERVED_PRESENCE"].any() and rows[f"{p}_OBSERVED_ABSENCE"].any()
+                    not rows[f"{p}_OBSERVED_PRESENCE"].any()
+                    and rows[f"{p}_OBSERVED_ABSENCE"].any()
                 ),
                 f"{p}_UNSURVEYED": bool(rows[f"{p}_UNSURVEYED"].all()),
                 "NETWORK_DISTANCE_QC_REASON": (
@@ -145,14 +156,23 @@ def aggregate_r8_to_r6(
                 "H3_RESOLUTION": 6,
                 f"{p}_SOURCE_DATASETS": datasets,
                 f"{p}_SOURCE_COUNT": len(datasets.split("|")) if datasets else 0,
-                f"{p}_LATEST_SURVEY_YEAR": rows[f"{p}_LATEST_SURVEY_YEAR"].max(skipna=True),
+                f"{p}_LATEST_SURVEY_YEAR": rows[f"{p}_LATEST_SURVEY_YEAR"].max(
+                    skipna=True
+                ),
                 f"{p}_SURVEY_METHOD": _pipe_union(rows[f"{p}_SURVEY_METHOD"]),
-                f"{p}_SPATIAL_PRECISION_CLASS": _pipe_union(rows[f"{p}_SPATIAL_PRECISION_CLASS"]),
-                f"{p}_TEMPORAL_PRECISION_CLASS": _pipe_union(rows[f"{p}_TEMPORAL_PRECISION_CLASS"]),
-                f"{p}_OBSERVED_VS_MODELED": _pipe_union(rows[f"{p}_OBSERVED_VS_MODELED"]),
+                f"{p}_SPATIAL_PRECISION_CLASS": _pipe_union(
+                    rows[f"{p}_SPATIAL_PRECISION_CLASS"]
+                ),
+                f"{p}_TEMPORAL_PRECISION_CLASS": _pipe_union(
+                    rows[f"{p}_TEMPORAL_PRECISION_CLASS"]
+                ),
+                f"{p}_OBSERVED_VS_MODELED": _pipe_union(
+                    rows[f"{p}_OBSERVED_VS_MODELED"]
+                ),
                 confidence_name: int(rows[confidence_name].max()),
                 f"{p}_SURVEYED_AREA_FRAC": min(
-                    1.0, surveyed_area / parent_water_area if parent_water_area > 0 else 0.0
+                    1.0,
+                    surveyed_area / parent_water_area if parent_water_area > 0 else 0.0,
                 ),
                 f"{p}_UNMAPPED_AREA": bool(surveyed_area < parent_water_area - 1e-6),
             }
@@ -177,7 +197,9 @@ def aggregate_r8_to_r6(
     for table in (parent_features, parent_confidence):
         for column in table.columns:
             if column.endswith(("FIRST_YEAR", "LAST_YEAR", "LATEST_SURVEY_YEAR")):
-                table[column] = pd.to_numeric(table[column], errors="coerce").astype("Int16")
+                table[column] = pd.to_numeric(table[column], errors="coerce").astype(
+                    "Int16"
+                )
     validate_surface_tables(parent_features, parent_confidence, prefix, 6)
     return parent_features, parent_confidence
 
@@ -200,7 +222,9 @@ def validate_surface_tables(
     fraction = pd.to_numeric(features[f"{prefix}_FRAC"], errors="raise")
     if not fraction.between(0.0, 1.0 + 1e-9).all():
         raise ValueError("Habitat fractions must be in [0, 1].")
-    confidence_values = pd.to_numeric(confidence[f"{prefix}_CONFIDENCE"], errors="raise")
+    confidence_values = pd.to_numeric(
+        confidence[f"{prefix}_CONFIDENCE"], errors="raise"
+    )
     if not confidence_values.between(0, 3).all():
         raise ValueError("Habitat confidence must remain in [0, 3].")
     state_total = (
@@ -209,7 +233,9 @@ def validate_surface_tables(
         + features[f"{prefix}_UNSURVEYED"].astype(int)
     )
     if not state_total.eq(1).all():
-        raise ValueError("Presence, explicit absence, and unsurveyed must remain three-state.")
+        raise ValueError(
+            "Presence, explicit absence, and unsurveyed must remain three-state."
+        )
 
 
 __all__ = ["aggregate_r8_to_r6", "validate_surface_tables"]

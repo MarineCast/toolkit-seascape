@@ -113,7 +113,7 @@ jobs:
       - run: python -m pip install '.[test,quality]'
       - run: python -m pip check
       - run: ruff check src tests scripts
-      - run: ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py scripts/check_consumer_install.py scripts/check_consumer_failures.py scripts/consumer_guard.py scripts/check_distribution.py scripts/check_installed_package.py scripts/check_demo.py tests/test_consumer_acceptance.py
+      - run: ruff format --check src tests scripts
       - run: python -m mypy
       - run: python scripts/environment_snapshot.py --output /tmp/seascape-environment
       - run: pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-environment.txt

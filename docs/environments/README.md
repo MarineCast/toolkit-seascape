@@ -15,8 +15,10 @@ Use the text file as pip constraints (`-c`) when reproducing on a compatible pla
 of binary wheels and native libraries still matters. CI separately solves Python 3.11/3.14 on Linux;
 it saves its own scientific environment snapshot and audits the installed runtime/test closure.
 
-Install `.[test,quality]` for Ruff, mypy and pip-audit. Ruff's bug checks cover source, tests and scripts;
-format and strict function-annotation checks currently cover four hardened boundary modules. This
-is deliberately incremental, not a claim that the entire legacy codebase is strictly typed/formatted.
+Install `.[test,quality]` for Ruff, mypy and pip-audit. Ruff's bug and formatting checks cover
+`src/`, `tests/` and `scripts/` (`ruff format --check src tests scripts`). Strict function-annotation
+checks retain the four hardened boundary modules configured in `pyproject.toml`; broader typing
+remains incremental. The formatting baseline was exercised with Ruff 0.16.9 on macOS ARM64;
+this records the tested tool version, without adding a new dependency pin.
 Gitleaks scans Git history and current files; dependency auditing requires network access and fails
 when it cannot complete. A clean scan does not establish absence of all vulnerabilities or secrets.

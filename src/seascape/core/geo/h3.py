@@ -40,7 +40,9 @@ def cell_to_boundary(cell: str) -> list[tuple[float, float]]:
     elif hasattr(h3, "h3_to_geo_boundary"):
         boundary = h3.h3_to_geo_boundary(str(cell))
     else:
-        raise ImportError("Unknown h3 API: expected cell_to_boundary or h3_to_geo_boundary")
+        raise ImportError(
+            "Unknown h3 API: expected cell_to_boundary or h3_to_geo_boundary"
+        )
     return [(float(lat), float(lng)) for lat, lng in boundary]
 
 
@@ -143,13 +145,19 @@ def h3_cells_within_distance(
     if not -90.0 <= latitude <= 90.0:
         raise ValueError(f"Latitude must be between -90 and 90 degrees; got {lat!r}.")
     if not -180.0 <= longitude <= 180.0:
-        raise ValueError(f"Longitude must be between -180 and 180 degrees; got {lon!r}.")
+        raise ValueError(
+            f"Longitude must be between -180 and 180 degrees; got {lon!r}."
+        )
     if not 0 <= h3_resolution <= 15:
         raise ValueError(f"H3 resolution must be between 0 and 15; got {resolution!r}.")
     if not math.isfinite(radius_km) or radius_km < 0.0:
-        raise ValueError(f"distance_km must be a finite non-negative value; got {distance_km!r}.")
+        raise ValueError(
+            f"distance_km must be a finite non-negative value; got {distance_km!r}."
+        )
     if max_cells is not None and int(max_cells) < 0:
-        raise ValueError(f"max_cells must be non-negative when provided; got {max_cells!r}.")
+        raise ValueError(
+            f"max_cells must be non-negative when provided; got {max_cells!r}."
+        )
 
     h3 = _load_h3()
     if hasattr(h3, "average_hexagon_edge_length"):
@@ -157,12 +165,16 @@ def h3_cells_within_distance(
     elif hasattr(h3, "edge_length"):
         edge_km = float(h3.edge_length(h3_resolution, unit="km"))
     else:
-        raise ImportError("Unknown h3 API: expected average_hexagon_edge_length or edge_length")
+        raise ImportError(
+            "Unknown h3 API: expected average_hexagon_edge_length or edge_length"
+        )
 
     try:
         from pyproj import Geod
     except Exception as exc:
-        raise ImportError("Install pyproj to select H3 cells by geodesic distance.") from exc
+        raise ImportError(
+            "Install pyproj to select H3 cells by geodesic distance."
+        ) from exc
 
     center_cell = latlng_to_cell(latitude, longitude, h3_resolution)
     candidate_k = int(math.ceil(radius_km / edge_km)) + 2
@@ -195,7 +207,10 @@ def polygon_to_cells(geometry: Any, resolution: int) -> set[str]:
         try:
             return {str(x) for x in h3.geo_to_cells(geometry, int(resolution))}
         except TypeError:
-            return {str(x) for x in h3.geo_to_cells(geometry.__geo_interface__, int(resolution))}
+            return {
+                str(x)
+                for x in h3.geo_to_cells(geometry.__geo_interface__, int(resolution))
+            }
 
     geojson = mapping(geometry)
     if hasattr(h3, "polyfill_geojson"):
@@ -212,7 +227,9 @@ def polygon_to_cells(geometry: Any, resolution: int) -> set[str]:
     raise ImportError("Unknown h3 API: expected geo_to_cells or polyfill")
 
 
-def polygon_to_cells_overlap(geometry: Polygon | MultiPolygon, resolution: int) -> set[str]:
+def polygon_to_cells_overlap(
+    geometry: Polygon | MultiPolygon, resolution: int
+) -> set[str]:
     """Return cells overlapping a polygon using h3-py v4 when available.
 
     Falls back to center-contained polygon fill for older h3-py versions.
@@ -291,7 +308,9 @@ def polygon_to_h3shape(poly: Polygon) -> Any:
         if hole_coords:
             holes.append(hole_coords)
     if not outer:
-        raise ValueError("Polygon provided to H3 shape conversion has too few vertices.")
+        raise ValueError(
+            "Polygon provided to H3 shape conversion has too few vertices."
+        )
     if not hasattr(h3, "LatLngPoly"):
         raise ImportError("h3-py version does not expose LatLngPoly.")
     return h3.LatLngPoly(outer, *holes)
@@ -352,10 +371,14 @@ def bbox_h3_cells(
             cells.update(grid_disk(cell, int(buffer_rings)))
 
     if strict_intersection:
-        cells = {cell for cell in cells if cell_to_polygon(cell).intersects(bbox_polygon)}
+        cells = {
+            cell for cell in cells if cell_to_polygon(cell).intersects(bbox_polygon)
+        }
 
     if not cells:
-        raise ValueError(f"No H3 cells generated for bbox={bbox_wgs84} at resolution={resolution}.")
+        raise ValueError(
+            f"No H3 cells generated for bbox={bbox_wgs84} at resolution={resolution}."
+        )
 
     return sorted(cells)
 

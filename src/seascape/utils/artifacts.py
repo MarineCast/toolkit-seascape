@@ -112,7 +112,9 @@ def default_semantic_contracts(**overrides: str) -> dict[str, str]:
     return contracts
 
 
-def atomic_write_parquet(frame: Any, destination: Path, *, compression: str = "zstd") -> Path:
+def atomic_write_parquet(
+    frame: Any, destination: Path, *, compression: str = "zstd"
+) -> Path:
     """Write a DataFrame-like object through a same-filesystem temporary artifact."""
 
     from seascape.core.artifacts.confinement import validate_candidate_destination
@@ -126,7 +128,9 @@ def atomic_write_parquet(frame: Any, destination: Path, *, compression: str = "z
         elif hasattr(frame, "write_parquet"):
             frame.write_parquet(temporary, compression=compression)
         else:
-            raise TypeError("atomic_write_parquet requires to_parquet() or write_parquet().")
+            raise TypeError(
+                "atomic_write_parquet requires to_parquet() or write_parquet()."
+            )
         os.replace(temporary, destination)
     finally:
         temporary.unlink(missing_ok=True)
@@ -150,14 +154,20 @@ def parquet_contract(path: Path) -> dict[str, Any]:
         ],
     }
     if "H3_INDEX" in schema.names:
-        values = pq.read_table(path, columns=["H3_INDEX"]).column("H3_INDEX").to_pylist()
+        values = (
+            pq.read_table(path, columns=["H3_INDEX"]).column("H3_INDEX").to_pylist()
+        )
         contract["h3_cell_set_hash"] = h3_cell_set_hash(values)
-        contract["unique_h3_count"] = len({str(value) for value in values if value is not None})
+        contract["unique_h3_count"] = len(
+            {str(value) for value in values if value is not None}
+        )
         normalized = [str(value) for value in values if value is not None]
         try:
             import h3
 
-            resolutions = sorted({int(h3.get_resolution(value)) for value in normalized})
+            resolutions = sorted(
+                {int(h3.get_resolution(value)) for value in normalized}
+            )
             centers = [h3.cell_to_latlng(value) for value in normalized]
         except (TypeError, ValueError):
             resolutions = []
@@ -277,8 +287,14 @@ def build_manifest(
         if isinstance(value, Mapping):
             normalized: dict[str, Any] = {}
             for key, item in value.items():
-                if key == "path" and isinstance(item, (str, Path)) and "://" not in str(item):
-                    normalized[str(key)] = portable_artifact_path(Path(item), root=manifest_root)
+                if (
+                    key == "path"
+                    and isinstance(item, (str, Path))
+                    and "://" not in str(item)
+                ):
+                    normalized[str(key)] = portable_artifact_path(
+                        Path(item), root=manifest_root
+                    )
                 else:
                     normalized[str(key)] = portable_metadata_paths(item)
             return normalized
@@ -287,13 +303,17 @@ def build_manifest(
         return value
 
     if source_completeness not in {"complete", "partial", "unavailable"}:
-        raise ValueError("source_completeness must be complete, partial, or unavailable.")
+        raise ValueError(
+            "source_completeness must be complete, partial, or unavailable."
+        )
     candidate_root = os.environ.get("SEASCAPE_CANDIDATE_ROOT")
     manifest_root = Path(candidate_root).resolve() if candidate_root else project_root
     source_records = [normalize_source_record(item) for item in sources]
     for record in source_records:
         if record.get("path"):
-            record["path"] = portable_artifact_path(Path(str(record["path"])), root=manifest_root)
+            record["path"] = portable_artifact_path(
+                Path(str(record["path"])), root=manifest_root
+            )
     artifact_records = [
         (
             item.to_dict(path=portable_artifact_path(item.path, root=manifest_root))
@@ -308,7 +328,9 @@ def build_manifest(
         if item.get("license")
     ]
     bounds = [
-        item["spatial_bounds_wgs84"] for item in artifact_records if "spatial_bounds_wgs84" in item
+        item["spatial_bounds_wgs84"]
+        for item in artifact_records
+        if "spatial_bounds_wgs84" in item
     ]
     h3_resolutions = sorted(
         {
@@ -328,7 +350,9 @@ def build_manifest(
         "upstream_artifacts": [
             {
                 **dict(item),
-                "path": portable_artifact_path(Path(str(item["path"])), root=manifest_root),
+                "path": portable_artifact_path(
+                    Path(str(item["path"])), root=manifest_root
+                ),
             }
             for item in upstream_artifacts
         ],
@@ -374,7 +398,9 @@ def validate_manifest(
             "Seascape semantic_contracts must contain exactly: "
             + ", ".join(sorted(SEMANTIC_CONTRACT_KEYS))
         )
-    if any(not isinstance(value, str) or not value.strip() for value in contracts.values()):
+    if any(
+        not isinstance(value, str) or not value.strip() for value in contracts.values()
+    ):
         raise ValueError("Every seascape semantic contract must be non-empty text.")
     if not isinstance(payload["sources"], list):
         raise ValueError("Seascape manifest sources must be a list.")
@@ -431,7 +457,9 @@ class StagedParquetFamily:
         self.run_id = publisher.run_id
         self._closed = False
 
-    def publish_manifest(self, destination: Path, payload: Mapping[str, Any]) -> tuple[Path, ...]:
+    def publish_manifest(
+        self, destination: Path, payload: Mapping[str, Any]
+    ) -> tuple[Path, ...]:
         """Stage the terminal manifest, promote the family, and clean staging state."""
 
         if self._closed:
@@ -463,7 +491,8 @@ def stage_parquet_family(
     publisher.__enter__()
     try:
         artifacts = [
-            stage_parquet_artifact(publisher, frame, destination) for frame, destination in outputs
+            stage_parquet_artifact(publisher, frame, destination)
+            for frame, destination in outputs
         ]
     except Exception:
         publisher.__exit__(None, None, None)

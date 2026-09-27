@@ -105,7 +105,9 @@ def positive_raster_polygons(
                 if int(value) == 1
             )
     if not output:
-        raise ValueError("No configured positive raster pixels intersect the model area.")
+        raise ValueError(
+            "No configured positive raster pixels intersect the model area."
+        )
     return output, "EPSG:4326"
 
 
@@ -128,7 +130,9 @@ def sample_raster_bilinear(
     lon = np.asarray(longitudes, dtype="float64")
     lat = np.asarray(latitudes, dtype="float64")
     if lon.shape != lat.shape:
-        raise ValueError("Raster sample longitude and latitude arrays must have equal shape.")
+        raise ValueError(
+            "Raster sample longitude and latitude arrays must have equal shape."
+        )
     result = np.full(lon.shape, np.nan, dtype="float64")
     valid_result = np.zeros(lon.shape, dtype=bool)
     with rasterio.open(path) as source:

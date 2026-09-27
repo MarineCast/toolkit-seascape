@@ -52,8 +52,12 @@ def inspect_water_network(
         component_id=component_id,
     )
     if support.empty:
-        raise ValueError("No canonical support rows match the requested inspection filters.")
-    geometry = gpd.read_parquet(config.clipped_geometry_path(resolution)).to_crs("EPSG:4326")
+        raise ValueError(
+            "No canonical support rows match the requested inspection filters."
+        )
+    geometry = gpd.read_parquet(config.clipped_geometry_path(resolution)).to_crs(
+        "EPSG:4326"
+    )
     geometry = geometry.loc[geometry["H3_INDEX"].isin(support["H3_INDEX"])].merge(
         support,
         on=["H3_INDEX", "H3_RESOLUTION"],
@@ -74,7 +78,9 @@ def inspect_water_network(
         json.loads(geometry.to_json(drop_id=True)),
         name="Marine support",
         style_function=lambda feature: {
-            "fillColor": _component_color(feature["properties"].get("WATER_COMPONENT_ID")),
+            "fillColor": _component_color(
+                feature["properties"].get("WATER_COMPONENT_ID")
+            ),
             "color": "#102A43",
             "weight": 0.35,
             "fillOpacity": 0.55,
@@ -98,7 +104,9 @@ def inspect_water_network(
     ]
     if invalid_only:
         edges = edges.loc[~edges["EDGE_IS_WATER_PASSABLE"].astype(bool)]
-    edges = edges.sort_values(["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]).head(maximum_edges)
+    edges = edges.sort_values(["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]).head(
+        maximum_edges
+    )
     line_rows = []
     for row in edges.itertuples(index=False):
         source = selected.loc[str(row.SOURCE_H3_INDEX)]
@@ -142,7 +150,9 @@ def inspect_water_network(
         & connectors["TARGET_H3_INDEX"].isin(selected.index)
     ]
     if invalid_only:
-        connectors = connectors.loc[~connectors["CONNECTOR_IS_WATER_PASSABLE"].astype(bool)]
+        connectors = connectors.loc[
+            ~connectors["CONNECTOR_IS_WATER_PASSABLE"].astype(bool)
+        ]
     connector_rows = []
     for row in connectors.sort_values("H3_INDEX").itertuples(index=False):
         source = selected.loc[str(row.H3_INDEX)]
@@ -199,7 +209,9 @@ def inspect_water_network(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--resolution", required=True, choices=(6, 8), type=int)
     parser.add_argument("--bbox", nargs=4, type=float, metavar=("W", "S", "E", "N"))
     parser.add_argument("--component")

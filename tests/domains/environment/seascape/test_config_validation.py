@@ -30,7 +30,10 @@ def _write_config(tmp_path: Path, payload: dict) -> Path:
 @pytest.mark.parametrize(
     ("mutator", "message"),
     [
-        (lambda raw: raw["water_network"].update(resolutions=[5]), "exactly H3 r6 and r8"),
+        (
+            lambda raw: raw["water_network"].update(resolutions=[5]),
+            "exactly H3 r6 and r8",
+        ),
         (
             lambda raw: raw["water_network"].update(maximum_neighborhood_hops=0),
             "maximum neighborhood hops must be positive",

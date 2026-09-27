@@ -69,7 +69,9 @@ def test_eligibility_excludes_metadata_and_applies_all_static_candidates() -> No
     )
 
     assert selected.columns.tolist() == ["H3_INDEX", "BATHYMETRY"]
-    metadata = [record for record in eligibility["features"] if record["column"] == "QC_REASON"]
+    metadata = [
+        record for record in eligibility["features"] if record["column"] == "QC_REASON"
+    ]
     assert metadata[0]["eligible"] is False
 
 
@@ -115,13 +117,11 @@ def test_collinearity_is_diagnostic_for_eligible_physical_fields() -> None:
     values = list(range(120))
     frame = pd.DataFrame({"A": values, "B": values, "C": list(reversed(values))})
     eligibility = {
-        "features": [
-            {"column": column, "eligible": True} for column in frame.columns
-        ]
+        "features": [{"column": column, "eligible": True} for column in frame.columns]
     }
     audit = audit_collinearity(frame, eligibility)
     exact = audit.loc[audit["EXACT_DUPLICATE"]]
-    assert {tuple(value) for value in exact[["LEFT_COLUMN", "RIGHT_COLUMN"]].to_numpy()} == {
-        ("A", "B")
-    }
+    assert {
+        tuple(value) for value in exact[["LEFT_COLUMN", "RIGHT_COLUMN"]].to_numpy()
+    } == {("A", "B")}
     assert audit["ABS_SPEARMAN_RHO"].min() == pytest.approx(1.0)

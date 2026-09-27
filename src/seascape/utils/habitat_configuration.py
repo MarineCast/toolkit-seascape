@@ -39,10 +39,14 @@ class HabitatSurfaceConfig:
     parent_child_path: Path
 
     def feature_path(self, resolution: int) -> Path:
-        return self.processed_dir / self.feature_filename_template.format(res=resolution)
+        return self.processed_dir / self.feature_filename_template.format(
+            res=resolution
+        )
 
     def confidence_path(self, resolution: int) -> Path:
-        return self.processed_dir / self.confidence_filename_template.format(res=resolution)
+        return self.processed_dir / self.confidence_filename_template.format(
+            res=resolution
+        )
 
 
 def load_habitat_surface_config(
@@ -55,19 +59,27 @@ def load_habitat_surface_config(
     path = resolve_config_path(config_path)
     raw = load_data_config(path, domains="SEASCAPE_LAYER")
     section = require_mapping(raw.get(section_name), section_name)
-    processing = require_mapping(section.get("processing"), f"{section_name}.processing")
+    processing = require_mapping(
+        section.get("processing"), f"{section_name}.processing"
+    )
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     native_resolution = int(processing.get("native_h3_resolution", 8))
     model_resolution = int(processing.get("model_h3_resolution", 6))
     if (native_resolution, model_resolution) != (8, 6):
-        raise ValueError(f"{section_name} must process at H3 r8 and aggregate to H3 r6.")
+        raise ValueError(
+            f"{section_name} must process at H3 r8 and aggregate to H3 r6."
+        )
     reference_year = int(processing.get("reference_year", datetime.now(UTC).year))
     radius = float(processing.get("marine_buffer_m", 5_000.0))
     if reference_year < 1900 or radius <= 0:
-        raise ValueError("Habitat reference year and marine buffer must be positive and valid.")
+        raise ValueError(
+            "Habitat reference year and marine buffer must be positive and valid."
+        )
     processed_dir = resolve_project_path(processing["processed_directory"], base_dir)
     network = load_water_network_config(path)
     return HabitatSurfaceConfig(
@@ -90,7 +102,9 @@ def load_habitat_surface_config(
 
 
 def model_bbox_tuple(config: HabitatSurfaceConfig) -> tuple[float, float, float, float]:
-    return tuple(float(config.bbox[key]) for key in ("min_lon", "min_lat", "max_lon", "max_lat"))
+    return tuple(
+        float(config.bbox[key]) for key in ("min_lon", "min_lat", "max_lon", "max_lat")
+    )
 
 
 def load_cell_geometry(config: HabitatSurfaceConfig, support: pd.DataFrame):
@@ -102,13 +116,21 @@ def load_cell_geometry(config: HabitatSurfaceConfig, support: pd.DataFrame):
         raise FileNotFoundError(
             f"Canonical water-clipped H3 geometry not found: {config.clipped_geometry_path}"
         )
-    geometry = gpd.read_parquet(config.clipped_geometry_path, columns=["H3_INDEX", "geometry"])
+    geometry = gpd.read_parquet(
+        config.clipped_geometry_path, columns=["H3_INDEX", "geometry"]
+    )
     selected = set(support["H3_INDEX"].astype(str))
     geometry = geometry.loc[geometry["H3_INDEX"].astype(str).isin(selected)].copy()
     geometry["H3_INDEX"] = geometry["H3_INDEX"].astype("string")
-    geometry = geometry.set_index("H3_INDEX").loc[support["H3_INDEX"].astype(str)].reset_index()
+    geometry = (
+        geometry.set_index("H3_INDEX")
+        .loc[support["H3_INDEX"].astype(str)]
+        .reset_index()
+    )
     if len(geometry) != len(support) or geometry.geometry.isna().any():
-        raise ValueError("H3 water-clipped geometry and canonical support do not align.")
+        raise ValueError(
+            "H3 water-clipped geometry and canonical support do not align."
+        )
     return geometry
 
 

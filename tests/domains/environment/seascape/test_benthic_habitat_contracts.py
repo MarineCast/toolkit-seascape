@@ -256,7 +256,10 @@ def test_persistence_distinguishes_survey_ratio_from_published_bin():
     assert features.loc["survey-cell", "PERSISTENCE_RATIO"] == pytest.approx(0.5)
     assert features.loc["survey-cell", "PERSISTENCE_BASIS"] == "surveyed_years"
     assert features.loc["mapped-cell", "PERSISTENCE_RATIO"] == pytest.approx(0.7)
-    assert features.loc["mapped-cell", "PERSISTENCE_BASIS"] == "mapped_binned_proportion_midpoint"
+    assert (
+        features.loc["mapped-cell", "PERSISTENCE_BASIS"]
+        == "mapped_binned_proportion_midpoint"
+    )
     assert pd.isna(features.loc["unmapped-cell", "PERSISTENCE_RATIO"])
 
 
@@ -296,7 +299,9 @@ def test_modeled_presence_drives_distance_sources_without_claiming_observed_pres
     inventory.loc[0, "OBSERVED_VS_MODELED"] = "modeled"
     inventory.loc[0, "EVIDENCE_CLASS"] = "modeled_occurrence"
     pairs = pd.DataFrame({"H3_INDEX": ["modeled-cell"], "index_right": [0]})
-    features, confidence, present = _record_metrics(inventory, pairs, ["modeled-cell"], 2026)
+    features, confidence, present = _record_metrics(
+        inventory, pairs, ["modeled-cell"], 2026
+    )
     assert present == {"modeled-cell"}
     assert features.loc[0, "UNSURVEYED"]
     assert not features.loc[0, "OBSERVED_PRESENCE"]
@@ -437,7 +442,10 @@ def test_substrate_ontology_and_hardness_derivation_are_bounded():
         {
             "H3_INDEX": ["cell"],
             "H3_RESOLUTION": [8],
-            **{f"SUBSTRATE_{name}_FRAC": [1.0 if name == "ROCK" else 0.0] for name in CLASSES},
+            **{
+                f"SUBSTRATE_{name}_FRAC": [1.0 if name == "ROCK" else 0.0]
+                for name in CLASSES
+            },
             "SUBSTRATE_HARD_SUBSTRATE_FRAC": [0.4],
             "SUBSTRATE_DISTANCE_TO_HARD_SUBSTRATE_M": [0.0],
             "WATER_COMPONENT_ID": ["cell"],

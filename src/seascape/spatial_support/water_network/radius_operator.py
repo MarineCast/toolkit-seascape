@@ -31,9 +31,7 @@ class RadiusSumOperator:
     source_support_hash: str
     water_mask_version: str
     spatial_support_version: str
-    connector_semantics: str = (
-        "source connector plus graph path plus target connector; direct self-support retained"
-    )
+    connector_semantics: str = "source connector plus graph path plus target connector; direct self-support retained"
 
     def __post_init__(self) -> None:
         if self.radius_m <= 0:
@@ -48,13 +46,18 @@ class RadiusSumOperator:
             int(self.target_source_indices.min()) < 0
             or int(self.target_source_indices.max()) >= len(self.source_cells)
         ):
-            raise ValueError("RadiusSumOperator target/source mapping is out of bounds.")
+            raise ValueError(
+                "RadiusSumOperator target/source mapping is out of bounds."
+            )
         if self.indptr[0] != 0 or self.indptr[-1] != len(self.indices):
             raise ValueError("RadiusSumOperator CSR offsets are invalid.")
         if len(self.indices) and (
-            int(self.indices.min()) < 0 or int(self.indices.max()) >= len(self.source_cells)
+            int(self.indices.min()) < 0
+            or int(self.indices.max()) >= len(self.source_cells)
         ):
-            raise ValueError("RadiusSumOperator contains an out-of-support source index.")
+            raise ValueError(
+                "RadiusSumOperator contains an out-of-support source index."
+            )
         observed_hash = h3_cell_set_hash(self.cells.astype(str))
         if observed_hash != self.support_hash:
             raise ValueError("RadiusSumOperator support hash is invalid.")
@@ -65,7 +68,9 @@ class RadiusSumOperator:
             self.source_cells[self.target_source_indices].astype(str),
             self.cells.astype(str),
         ):
-            raise ValueError("RadiusSumOperator target cells are not mapped to themselves.")
+            raise ValueError(
+                "RadiusSumOperator target cells are not mapped to themselves."
+            )
 
     @classmethod
     def build(
@@ -85,7 +90,12 @@ class RadiusSumOperator:
         if len(set(cells.tolist())) != len(cells):
             raise ValueError("RadiusSumOperator support cells must be unique.")
         sources = np.asarray(
-            [str(cell) for cell in (source_cells if source_cells is not None else support_cells)],
+            [
+                str(cell)
+                for cell in (
+                    source_cells if source_cells is not None else support_cells
+                )
+            ],
             dtype=str,
         )
         if len(set(sources.tolist())) != len(sources):
@@ -118,7 +128,11 @@ class RadiusSumOperator:
             zip(positions, connectors, strict=True)
         ):
             included = {int(target_source_indices[target_index])}
-            if start >= 0 and np.isfinite(target_connector) and target_connector <= radius_m:
+            if (
+                start >= 0
+                and np.isfinite(target_connector)
+                and target_connector <= radius_m
+            ):
                 cutoff = radius_m - float(target_connector)
                 distances = {int(start): 0.0}
                 queue = [(0.0, int(start))]
@@ -126,7 +140,9 @@ class RadiusSumOperator:
                     current, position = heapq.heappop(queue)
                     if current > distances[position] + 1e-9 or current > cutoff:
                         continue
-                    for source_index, source_connector in sources_by_position.get(position, ()):
+                    for source_index, source_connector in sources_by_position.get(
+                        position, ()
+                    ):
                         if current + source_connector <= cutoff + 1e-9:
                             included.add(source_index)
                     neighbors, weights = graph.neighbors_of(position)
@@ -135,7 +151,8 @@ class RadiusSumOperator:
                         candidate = current + float(weight)
                         if (
                             candidate <= cutoff
-                            and candidate < distances.get(neighbor_position, np.inf) - 1e-9
+                            and candidate
+                            < distances.get(neighbor_position, np.inf) - 1e-9
                         ):
                             distances[neighbor_position] = candidate
                             heapq.heappush(queue, (candidate, neighbor_position))
@@ -166,7 +183,9 @@ class RadiusSumOperator:
         numeric = np.asarray(values, dtype=np.float64)
         eligible = np.asarray(eligible_sources, dtype=bool)
         if numeric.shape != eligible.shape:
-            raise ValueError("RadiusSumOperator values and eligibility must have the same shape.")
+            raise ValueError(
+                "RadiusSumOperator values and eligibility must have the same shape."
+            )
         if not np.isfinite(numeric[eligible]).all():
             raise ValueError("Eligible RadiusSumOperator source values must be finite.")
         prepared = np.zeros(len(self.source_cells), dtype=np.float64)

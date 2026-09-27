@@ -103,7 +103,9 @@ def safe_polygonal_union(
         if clip_polygon is not None:
             if not polygonal.intersects(clip_polygon):
                 continue
-            polygonal = polygons_from_any(safe_make_valid(polygonal.intersection(clip_polygon)))
+            polygonal = polygons_from_any(
+                safe_make_valid(polygonal.intersection(clip_polygon))
+            )
             if polygonal is None or polygonal.is_empty:
                 continue
             if not polygonal.is_valid:
@@ -121,7 +123,9 @@ def safe_polygonal_union(
             if polygonal is None or polygonal.is_empty:
                 continue
             if not polygonal.is_valid:
-                raise ValueError("Projected geometry could not be repaired before union.")
+                raise ValueError(
+                    "Projected geometry could not be repaired before union."
+                )
             parts.append(polygonal)
         if not parts:
             raise ValueError("No polygonal geometry remains after reprojection.")
@@ -175,18 +179,24 @@ def _safe_polygonal_binary(
     if right_polygon is None or right_polygon.is_empty:
         raise ValueError(f"{label}: right geometry has no valid polygonal component.")
     if not left_polygon.is_valid or not right_polygon.is_valid:
-        raise ValueError(f"{label}: an input could not be repaired to valid polygonal geometry.")
+        raise ValueError(
+            f"{label}: an input could not be repaired to valid polygonal geometry."
+        )
     try:
         result = getattr(left_polygon, operation)(right_polygon)
     except Exception as exc:
-        raise ValueError(f"{label}: GEOS {operation} failed after repairing both inputs.") from exc
+        raise ValueError(
+            f"{label}: GEOS {operation} failed after repairing both inputs."
+        ) from exc
     if result is None or result.is_empty:
         return Polygon()
     polygonal = polygons_from_any(safe_make_valid(result))
     if polygonal is None or polygonal.is_empty:
         return Polygon()
     if not polygonal.is_valid:
-        raise ValueError(f"{label}: result could not be repaired to valid polygonal geometry.")
+        raise ValueError(
+            f"{label}: result could not be repaired to valid polygonal geometry."
+        )
     return polygonal
 
 
@@ -247,10 +257,14 @@ def report_invalid(
         return 0
 
     log.warning("%s: invalid geometries = %s / %s", name, invalid_count, len(gdf))
-    sample = gdf.loc[invalid, [id_col] if id_col and id_col in gdf.columns else []].head(5)
+    sample = gdf.loc[
+        invalid, [id_col] if id_col and id_col in gdf.columns else []
+    ].head(5)
     if not sample.empty:
         reasons = gdf.loc[sample.index, "geometry"].apply(explain_validity)
-        log.warning("%s invalid sample ids/reasons: %s", name, list(zip(sample.values, reasons)))
+        log.warning(
+            "%s invalid sample ids/reasons: %s", name, list(zip(sample.values, reasons))
+        )
     return invalid_count
 
 

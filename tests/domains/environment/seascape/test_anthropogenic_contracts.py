@@ -107,7 +107,9 @@ def test_overpass_query_is_bounded_and_endpoint_fallback_is_manifested(tmp_path)
 
     destination = tmp_path / "osm.json"
     session = Session()
-    count, metadata = _download_overpass(session, source, destination, bbox=bbox, timeout=5)
+    count, metadata = _download_overpass(
+        session, source, destination, bbox=bbox, timeout=5
+    )
     assert count == 1
     assert session.endpoints == source["endpoints"]
     assert metadata["endpoint"] == source["endpoints"][1]
@@ -156,7 +158,9 @@ def test_shorezone_normalizers_preserve_denominator_and_structure_counts(tmp_pat
         "ferry_terminal",
     }
     assert (
-        bc.loc[bc["FEATURE_CLASS"].eq("shoreline_survey"), "ARMORING_FRACTION_ESTIMATE"].iloc[0]
+        bc.loc[
+            bc["FEATURE_CLASS"].eq("shoreline_survey"), "ARMORING_FRACTION_ESTIMATE"
+        ].iloc[0]
         == 1
     )
 
@@ -302,7 +306,9 @@ def test_distance_handles_missing_graph_qc_reason_without_boolean_coercion():
         water_mask_version=graph.water_mask_version,
         spatial_support_version=graph.spatial_support_version,
     )
-    distance, qc = distance_from_seed_sources(graph, ["c"], [("a", 0.0, 0)], empty_reason="empty")
+    distance, qc = distance_from_seed_sources(
+        graph, ["c"], [("a", 0.0, 0)], empty_reason="empty"
+    )
     assert np.isnan(distance[0])
     assert qc.tolist() == ["target_has_no_graph_mapping"]
 
@@ -398,7 +404,9 @@ def test_feature_aware_r8_to_r6_aggregation():
             "GRAPH_QC_REASON": [None],
         }
     )
-    output, output_confidence = aggregate_r8_to_r6(features, confidence, crosswalk, support)
+    output, output_confidence = aggregate_r8_to_r6(
+        features, confidence, crosswalk, support
+    )
     parent = output.iloc[0]
     assert parent["SHORELINE_ARMORING_FRAC"] == pytest.approx(0.25)
     assert parent["DREDGED_AREA_FRAC"] == pytest.approx(0.1)

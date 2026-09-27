@@ -18,7 +18,9 @@ def _product(family: str, resolution: int, path: str, feature_count: int = 1) ->
     }
 
 
-def test_catalog_table_audit_excludes_non_seascape_products(monkeypatch, tmp_path) -> None:
+def test_catalog_table_audit_excludes_non_seascape_products(
+    monkeypatch, tmp_path
+) -> None:
     reads: list[Path] = []
 
     def fake_read(path: Path, **_kwargs) -> pd.DataFrame:
@@ -37,11 +39,15 @@ def test_catalog_table_audit_excludes_non_seascape_products(monkeypatch, tmp_pat
 
     results = release._catalog_table_audit(tmp_path, catalog)
 
-    assert [(item["product"], item["resolution"]) for item in results] == [("seascape", 8)]
+    assert [(item["product"], item["resolution"]) for item in results] == [
+        ("seascape", 8)
+    ]
     assert reads == [tmp_path / "seascape.parquet"]
 
 
-def test_catalog_table_audit_rejects_unexpected_seascape_resolution(monkeypatch, tmp_path) -> None:
+def test_catalog_table_audit_rejects_unexpected_seascape_resolution(
+    monkeypatch, tmp_path
+) -> None:
     monkeypatch.setattr(
         release.pd,
         "read_parquet",

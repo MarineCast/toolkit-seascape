@@ -51,7 +51,8 @@ def h3_metric_feature(
     cell = str(row["H3_INDEX"])
     geometry = mapping(cell_to_polygon(cell))
     geometry["coordinates"] = [
-        [[round(x, digits), round(y, digits)] for x, y in ring] for ring in geometry["coordinates"]
+        [[round(x, digits), round(y, digits)] for x, y in ring]
+        for ring in geometry["coordinates"]
     ]
     return {
         "type": "Feature",

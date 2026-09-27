@@ -52,10 +52,14 @@ def _response_json(response: requests.Response, label: str) -> Any:
         raise RuntimeError(f"GEBCO {label} returned invalid JSON.") from exc
 
 
-def _item_by_name(items: Iterable[Mapping[str, Any]], name: str, label: str) -> Mapping[str, Any]:
+def _item_by_name(
+    items: Iterable[Mapping[str, Any]], name: str, label: str
+) -> Mapping[str, Any]:
     match = next((item for item in items if str(item.get("name")) == name), None)
     if match is None:
-        raise RuntimeError(f"GEBCO {label} {name!r} was not returned by the download API.")
+        raise RuntimeError(
+            f"GEBCO {label} {name!r} was not returned by the download API."
+        )
     return match
 
 
@@ -88,10 +92,13 @@ def _extract_single_geotiff(archive_path: Path, output_path: Path) -> None:
         members = [
             member
             for member in archive.infolist()
-            if not member.is_dir() and member.filename.lower().endswith((".tif", ".tiff"))
+            if not member.is_dir()
+            and member.filename.lower().endswith((".tif", ".tiff"))
         ]
         if len(members) != 1:
-            raise RuntimeError(f"Expected one GeoTIFF in the GEBCO archive; found {len(members)}.")
+            raise RuntimeError(
+                f"Expected one GeoTIFF in the GEBCO archive; found {len(members)}."
+            )
         partial_path = output_path.with_suffix(output_path.suffix + ".part")
         try:
             with archive.open(members[0]) as source, partial_path.open("wb") as target:
@@ -117,11 +124,15 @@ def download_gebco_geotiff(
     config.raw_path.parent.mkdir(parents=True, exist_ok=True)
     http = session or _retrying_session()
     grids = _response_json(
-        http.get(f"{config.api_base_url}/grids", timeout=config.request_timeout_seconds),
+        http.get(
+            f"{config.api_base_url}/grids", timeout=config.request_timeout_seconds
+        ),
         "grids",
     )
     formats = _response_json(
-        http.get(f"{config.api_base_url}/formats", timeout=config.request_timeout_seconds),
+        http.get(
+            f"{config.api_base_url}/formats", timeout=config.request_timeout_seconds
+        ),
         "formats",
     )
     grid = _item_by_name(grids, config.grid_name, "grid")
@@ -173,8 +184,12 @@ def download_gebco_geotiff(
         if status == "finished":
             break
         if status in {"error", "failed", "cancelled"}:
-            detail = status_payload.get("message") or status_payload.get("error_message")
-            raise RuntimeError(f"GEBCO queue job {basket_id} failed: {detail or status}")
+            detail = status_payload.get("message") or status_payload.get(
+                "error_message"
+            )
+            raise RuntimeError(
+                f"GEBCO queue job {basket_id} failed: {detail or status}"
+            )
         if time.monotonic() >= deadline:
             raise TimeoutError(
                 f"GEBCO queue job {basket_id} did not finish within "
@@ -201,6 +216,7 @@ def download_gebco_geotiff(
 def main() -> int:
     import argparse
     from .pipeline import load_bathymetry_config
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="config/data/project.yaml")
     parser.add_argument("--overwrite", action="store_true")
@@ -208,6 +224,7 @@ def main() -> int:
     config = load_bathymetry_config(args.config)
     download_gebco_geotiff(config, overwrite=args.overwrite)
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -80,7 +80,9 @@ def load_substrate_inventory(
                     "UNITS": str(source.get("units", "percent")),
                     "EVIDENCE_BASIS": "interpolated_raster",
                     "OBSERVED_VS_MODELED": "modeled",
-                    "SOURCE_URL": str(source.get("dataset_url", "https://dbseabed.com/")),
+                    "SOURCE_URL": str(
+                        source.get("dataset_url", "https://dbseabed.com/")
+                    ),
                     "PATH": str(path),
                     "SHA256": _sha256(path),
                     "CRS": raster.crs.to_string(),
@@ -107,7 +109,9 @@ def load_substrate_inventory(
         "GRID_TRANSFORM",
     ]
     if any(inventory[column].nunique(dropna=False) != 1 for column in grid_columns):
-        raise ValueError("dbSEABED rock, gravel, sand, and mud rasters must share one grid.")
+        raise ValueError(
+            "dbSEABED rock, gravel, sand, and mud rasters must share one grid."
+        )
     return inventory
 
 
@@ -119,13 +123,17 @@ def _close_composition(
 ) -> tuple[dict[str, np.ndarray], np.ndarray]:
     """Close dbSEABED rock plus gravel/sand/mud to a four-part composition."""
 
-    valid = np.isfinite(rock) & np.isfinite(gravel) & np.isfinite(sand) & np.isfinite(mud)
+    valid = (
+        np.isfinite(rock) & np.isfinite(gravel) & np.isfinite(sand) & np.isfinite(mud)
+    )
     sediment_total = gravel + sand + mud
     valid &= sediment_total > 0
     sediment_share = np.clip(1.0 - rock, 0.0, 1.0)
     classes = {name: np.full(rock.shape, np.nan, dtype="float64") for name in CLASSES}
     classes["ROCK"][valid] = rock[valid]
-    classes["GRAVEL"][valid] = sediment_share[valid] * gravel[valid] / sediment_total[valid]
+    classes["GRAVEL"][valid] = (
+        sediment_share[valid] * gravel[valid] / sediment_total[valid]
+    )
     classes["SAND"][valid] = sediment_share[valid] * sand[valid] / sediment_total[valid]
     classes["MUD"][valid] = sediment_share[valid] * mud[valid] / sediment_total[valid]
     for name in ("BOULDER", "COBBLE", "MIXED"):
@@ -246,7 +254,11 @@ def _r6_tables(
         for name in CLASSES:
             values = rows[f"SUBSTRATE_{name}_FRAC"]
             class_values[name] = (
-                float(np.average(values.loc[valid].astype(float), weights=weights.loc[valid]))
+                float(
+                    np.average(
+                        values.loc[valid].astype(float), weights=weights.loc[valid]
+                    )
+                )
                 if valid.any()
                 else np.nan
             )
@@ -275,8 +287,12 @@ def _r6_tables(
                     "SUBSTRATE_DISTANCE_TO_HARD_SUBSTRATE_M"
                 ].min(skipna=True),
                 "WATER_COMPONENT_ID": support.loc[str(parent), "WATER_COMPONENT_ID"],
-                "NETWORK_CONNECTOR_METHOD": support.loc[str(parent), "CONNECTOR_METHOD"],
-                "NETWORK_CONNECTOR_DISTANCE_M": support.loc[str(parent), "CONNECTOR_DISTANCE_M"],
+                "NETWORK_CONNECTOR_METHOD": support.loc[
+                    str(parent), "CONNECTOR_METHOD"
+                ],
+                "NETWORK_CONNECTOR_DISTANCE_M": support.loc[
+                    str(parent), "CONNECTOR_DISTANCE_M"
+                ],
                 "NETWORK_DISTANCE_QC_REASON": (
                     None
                     if rows["SUBSTRATE_DISTANCE_TO_HARD_SUBSTRATE_M"].notna().any()
@@ -293,8 +309,12 @@ def _r6_tables(
                 "H3_RESOLUTION": 6,
                 "SUBSTRATE_SOURCE_DATASETS": sources,
                 "SUBSTRATE_SOURCE_COUNT": 1 if sources else 0,
-                "SUBSTRATE_EVIDENCE_BASIS": _pipe_union(rows["SUBSTRATE_EVIDENCE_BASIS"]),
-                "SUBSTRATE_OBSERVED_VS_MODELED": _pipe_union(rows["SUBSTRATE_OBSERVED_VS_MODELED"]),
+                "SUBSTRATE_EVIDENCE_BASIS": _pipe_union(
+                    rows["SUBSTRATE_EVIDENCE_BASIS"]
+                ),
+                "SUBSTRATE_OBSERVED_VS_MODELED": _pipe_union(
+                    rows["SUBSTRATE_OBSERVED_VS_MODELED"]
+                ),
                 "SUBSTRATE_CONFIDENCE": int(rows["SUBSTRATE_CONFIDENCE"].max()),
                 "SUBSTRATE_UNMAPPED_AREA": bool(
                     coverage["SUBSTRATE_INTERPOLATED_COVERAGE_FRAC"].lt(1).any()
@@ -311,7 +331,9 @@ def build_substrate_classification(
     processing = load_processing_config(config_path, SECTION_NAME)
     resampling = str(processing.get("raster_resampling", "bilinear")).strip().lower()
     if resampling != "bilinear":
-        raise ValueError("dbSEABED raster_resampling currently supports only 'bilinear'.")
+        raise ValueError(
+            "dbSEABED raster_resampling currently supports only 'bilinear'."
+        )
     inventory = load_substrate_inventory(config_path)
     bbox = model_bbox_tuple(config)
     support_r8 = load_model_area_support(8, config_path)
@@ -320,7 +342,9 @@ def build_substrate_classification(
         inventory,
         support_r8,
         graph,
-        hard_seed_min_fraction=float(processing.get("hard_substrate_seed_min_fraction", 0.5)),
+        hard_seed_min_fraction=float(
+            processing.get("hard_substrate_seed_min_fraction", 0.5)
+        ),
     )
     del graph, support_r8
     gc.collect()
@@ -332,9 +356,13 @@ def build_substrate_classification(
     support_r6 = load_model_area_support(6, config_path)
     support_r6 = support_r6.loc[support_r6["H3_INDEX"].astype(str).isin(parents)].copy()
     crosswalk = crosswalk.loc[
-        crosswalk["PARENT_H3_INDEX"].astype(str).isin(set(support_r6["H3_INDEX"].astype(str)))
+        crosswalk["PARENT_H3_INDEX"]
+        .astype(str)
+        .isin(set(support_r6["H3_INDEX"].astype(str)))
     ].copy()
-    r6_features, r6_confidence = _r6_tables(r8_features, r8_confidence, crosswalk, support_r6)
+    r6_features, r6_confidence = _r6_tables(
+        r8_features, r8_confidence, crosswalk, support_r6
+    )
     paths = (
         config.inventory_path,
         config.feature_path(8),
@@ -378,7 +406,10 @@ def build_substrate_classification(
         project_root=project_root(),
         sources=source_records,
         upstream_artifacts=[
-            {"path": str(config.parent_child_path), "checksum": _sha256(config.parent_child_path)}
+            {
+                "path": str(config.parent_child_path),
+                "checksum": _sha256(config.parent_child_path),
+            }
         ],
         attribution=[
             {

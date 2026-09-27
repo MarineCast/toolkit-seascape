@@ -14,7 +14,10 @@ from shapely.geometry import Point, box
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.geo.geometry import normalize_polygonal_geometry, safe_polygonal_union
+from seascape.core.geo.geometry import (
+    normalize_polygonal_geometry,
+    safe_polygonal_union,
+)
 from seascape.utils.config import require_mapping as _mapping
 from seascape.utils.config import resolve_project_path as _resolve
 from seascape.utils.spatial import (
@@ -161,7 +164,9 @@ def load_fluvial_connectivity_config(
     )
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     resolution = int(processing.get("h3_resolution", 8))
     if resolution != 8:
@@ -182,7 +187,8 @@ def load_fluvial_connectivity_config(
         processed_dir=processed_dir,
         feature_path=processed_dir / str(processing["feature_filename"]),
         crosswalk_path=processed_dir / str(processing["crosswalk_filename"]),
-        network_segments_path=processed_dir / str(processing["network_segments_filename"]),
+        network_segments_path=processed_dir
+        / str(processing["network_segments_filename"]),
         network_mouths_path=processed_dir / str(processing["network_mouths_filename"]),
         network_context_buffer_km=context_buffer_km,
         mouth_coast_tolerance_m=coast_tolerance_m,
@@ -222,7 +228,8 @@ def _load_hydrorivers_context(path: Path, context_box: Any):
         raise ValueError(f"HydroRIVERS source has no CRS: {path}")
     frame = frame.to_crs("EPSG:4326")
     frame.columns = [
-        str(column).upper() if column != frame.geometry.name else column for column in frame.columns
+        str(column).upper() if column != frame.geometry.name else column
+        for column in frame.columns
     ]
     if frame.geometry.name != "geometry":
         frame = frame.rename_geometry("geometry")
@@ -313,7 +320,9 @@ def _river_mouth_points(
         candidates["COAST_DISTANCE_M"] <= config.mouth_coast_tolerance_m
     ].copy()
     if candidates.empty:
-        raise ValueError("No HydroRIVERS outlet lies within the configured coast tolerance.")
+        raise ValueError(
+            "No HydroRIVERS outlet lies within the configured coast tolerance."
+        )
     return candidates.reset_index(drop=True)
 
 
@@ -324,7 +333,9 @@ def _network_attributes(attributes: pd.DataFrame) -> pd.DataFrame:
         output["HYRIV_ID"].map(direct_upstream).fillna(0).astype("int64")
     )
     known_ids = set(output["HYRIV_ID"].tolist())
-    output["_TOPOLOGY_GAP"] = output["NEXT_DOWN"].ne(0) & ~output["NEXT_DOWN"].isin(known_ids)
+    output["_TOPOLOGY_GAP"] = output["NEXT_DOWN"].ne(0) & ~output["NEXT_DOWN"].isin(
+        known_ids
+    )
     return output
 
 
@@ -334,7 +345,9 @@ def _network_summaries(
 ) -> pd.DataFrame:
     selected = attributes.loc[attributes["MAIN_RIV"].isin(basin_ids)].copy()
     if selected.empty:
-        raise ValueError("No full-network attributes match the contextual river outlets.")
+        raise ValueError(
+            "No full-network attributes match the contextual river outlets."
+        )
     selected["_JUNCTION"] = selected["_DIRECT_UPSTREAM_COUNT"].ge(2).astype("int64")
     selected["_HEADWATER"] = selected["_DIRECT_UPSTREAM_COUNT"].eq(0).astype("int64")
     selected["_TOPOLOGY_GAP_INT"] = selected["_TOPOLOGY_GAP"].astype("int64")
@@ -362,14 +375,20 @@ def _build_network_products(
 
     attributes = _network_attributes(attributes)
     mouths = _river_mouth_points(context, coast_boundary, config)
-    mouths["HYRIV_ID"] = pd.to_numeric(mouths["HYRIV_ID"], errors="raise").astype("int64")
+    mouths["HYRIV_ID"] = pd.to_numeric(mouths["HYRIV_ID"], errors="raise").astype(
+        "int64"
+    )
     mouths["RIVER_BASIN_ID"] = pd.to_numeric(
         mouths["MAIN_RIV"],
         errors="raise",
     ).astype("int64")
     summaries = _network_summaries(attributes, set(mouths["RIVER_BASIN_ID"]))
-    mouths = mouths.merge(summaries, on="RIVER_BASIN_ID", how="left", validate="many_to_one")
-    mouths["FLUVIAL_MOUTH_ID"] = HYDRORIVERS_SOURCE + "_" + mouths["HYRIV_ID"].astype(str)
+    mouths = mouths.merge(
+        summaries, on="RIVER_BASIN_ID", how="left", validate="many_to_one"
+    )
+    mouths["FLUVIAL_MOUTH_ID"] = (
+        HYDRORIVERS_SOURCE + "_" + mouths["HYRIV_ID"].astype(str)
+    )
     mouths["SOURCE_DATASET"] = HYDRORIVERS_SOURCE
     mouths["OUTLET_SUBBASIN_ID"] = pd.to_numeric(
         mouths["HYBAS_L12"],
@@ -388,13 +407,19 @@ def _build_network_products(
         errors="raise",
     )
     if mouths[list(summaries.columns[1:])].isna().any().any():
-        raise ValueError("One or more contextual outlets lack complete network summaries.")
+        raise ValueError(
+            "One or more contextual outlets lack complete network summaries."
+        )
 
     direct_upstream = attributes.set_index("HYRIV_ID")["_DIRECT_UPSTREAM_COUNT"]
     topology_gap = attributes.set_index("HYRIV_ID")["_TOPOLOGY_GAP"]
     segments = context.copy()
-    segments["HYRIV_ID"] = pd.to_numeric(segments["HYRIV_ID"], errors="raise").astype("int64")
-    segments["FLUVIAL_SEGMENT_ID"] = HYDRORIVERS_SOURCE + "_" + segments["HYRIV_ID"].astype(str)
+    segments["HYRIV_ID"] = pd.to_numeric(segments["HYRIV_ID"], errors="raise").astype(
+        "int64"
+    )
+    segments["FLUVIAL_SEGMENT_ID"] = (
+        HYDRORIVERS_SOURCE + "_" + segments["HYRIV_ID"].astype(str)
+    )
     segments["SOURCE_DATASET"] = HYDRORIVERS_SOURCE
     segments["NEXT_DOWN_ID"] = pd.to_numeric(
         segments["NEXT_DOWN"],

@@ -14,10 +14,16 @@ from seascape.metric_matrix import build_metric_matrix
 from seascape.core.artifacts.checksums import checksum_path
 
 
-def _fixture(tmp_path: Path, *, duplicate: bool = False) -> tuple[Path, Path, Path, list[str]]:
+def _fixture(
+    tmp_path: Path, *, duplicate: bool = False
+) -> tuple[Path, Path, Path, list[str]]:
     workspace = tmp_path / "source"
-    support_rel = Path("data/processed/domain/environmental_layer/seascape/support.parquet")
-    bathy_rel = Path("data/processed/domain/environmental_layer/seascape/bathymetry.parquet")
+    support_rel = Path(
+        "data/processed/domain/environmental_layer/seascape/support.parquet"
+    )
+    bathy_rel = Path(
+        "data/processed/domain/environmental_layer/seascape/bathymetry.parquet"
+    )
     support = workspace / support_rel
     bathy = workspace / bathy_rel
     support.parent.mkdir(parents=True)
@@ -123,9 +129,9 @@ def test_matrix_aligns_by_h3_and_preserves_zero_null_and_qc(tmp_path: Path) -> N
     assert metadata["source_validation"] == "legacy_structural_only"
     assert metadata["legacy_family_manifest_mismatches"] == ["missing.json"]
     assert metadata["fields"]["bathymetry__BATHYMETRY"]["unit"] == "m"
-    assert metadata["fields"]["bathymetry__BATHYMETRY"]["source_types_by_resolution"] == {
-        "6": "double"
-    }
+    assert metadata["fields"]["bathymetry__BATHYMETRY"][
+        "source_types_by_resolution"
+    ] == {"6": "double"}
     with pytest.raises(FileExistsError):
         build_metric_matrix(
             workspace=workspace,
@@ -213,4 +219,6 @@ def test_matrix_resolves_one_validated_release(tmp_path: Path) -> None:
     assert table.column("H3_INDEX").to_pylist() == cells
     assert table.column("bathymetry__BATHYMETRY").to_pylist() == [None, 12.0]
     metadata = json.loads(table.schema.metadata[b"seascape_metric_matrix"])
-    assert {record["dataset_id"] for record in metadata["source_tables"]} == set(products)
+    assert {record["dataset_id"] for record in metadata["source_tables"]} == set(
+        products
+    )

@@ -21,7 +21,9 @@ def _resolutions(value: Any) -> tuple[int, ...]:
     if not resolutions:
         raise ValueError("water_network.resolutions must not be empty.")
     if any(item not in {6, 8} for item in resolutions):
-        raise ValueError("water_network.resolutions currently supports exactly H3 r6 and r8.")
+        raise ValueError(
+            "water_network.resolutions currently supports exactly H3 r6 and r8."
+        )
     return resolutions
 
 
@@ -60,21 +62,26 @@ class WaterNetworkConfig:
     max_workers: int
 
     def support_path(self, resolution: int) -> Path:
-        return self.h3_geometry_output_dir / self.support_filename_template.format(res=resolution)
+        return self.h3_geometry_output_dir / self.support_filename_template.format(
+            res=resolution
+        )
 
     def model_support_path(self, resolution: int) -> Path:
-        return self.h3_geometry_output_dir / self.model_support_filename_template.format(
-            res=resolution
+        return (
+            self.h3_geometry_output_dir
+            / self.model_support_filename_template.format(res=resolution)
         )
 
     def full_geometry_path(self, resolution: int) -> Path:
-        return self.h3_geometry_output_dir / self.full_geometry_filename_template.format(
-            res=resolution
+        return (
+            self.h3_geometry_output_dir
+            / self.full_geometry_filename_template.format(res=resolution)
         )
 
     def clipped_geometry_path(self, resolution: int) -> Path:
-        return self.h3_geometry_output_dir / self.clipped_geometry_filename_template.format(
-            res=resolution
+        return (
+            self.h3_geometry_output_dir
+            / self.clipped_geometry_filename_template.format(res=resolution)
         )
 
     def edge_path(self, resolution: int) -> Path:
@@ -84,7 +91,9 @@ class WaterNetworkConfig:
         return self.output_dir / self.connector_filename_template.format(res=resolution)
 
     def neighborhood_path(self, resolution: int) -> Path:
-        return self.output_dir / self.neighborhood_filename_template.format(res=resolution)
+        return self.output_dir / self.neighborhood_filename_template.format(
+            res=resolution
+        )
 
     @property
     def radius_sum_operator_path(self) -> Path:
@@ -112,7 +121,9 @@ def load_water_network_config(
     section = _mapping(raw.get("water_network"), "water_network")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     resolutions = _resolutions(section.get("resolutions", (6, 8)))
     connector_raw = _mapping(
@@ -120,7 +131,9 @@ def load_water_network_config(
         "water_network.connector_max_distance_m",
     )
     connector_limits = {
-        resolution: float(connector_raw.get(resolution, connector_raw.get(str(resolution), 0.0)))
+        resolution: float(
+            connector_raw.get(resolution, connector_raw.get(str(resolution), 0.0))
+        )
         for resolution in resolutions
     }
     numeric_positive = {
@@ -130,7 +143,9 @@ def load_water_network_config(
         "geodesic_segment_max_m": float(section.get("geodesic_segment_max_m", 100.0)),
     }
     if any(value <= 0.0 for value in numeric_positive.values()):
-        raise ValueError(f"Water-network metric tolerances must be positive: {numeric_positive}")
+        raise ValueError(
+            f"Water-network metric tolerances must be positive: {numeric_positive}"
+        )
     minimum_fraction = float(section.get("minimum_water_fraction", 0.01))
     if not 0.0 <= minimum_fraction <= 1.0:
         raise ValueError("water_network.minimum_water_fraction must be in [0, 1].")
@@ -162,7 +177,9 @@ def load_water_network_config(
         h3_geometry_output_dir=_resolve(section["h3_geometry_output_dir"], base_dir),
         output_dir=_resolve(section["output_dir"], base_dir),
         support_filename_template=str(
-            section.get("support_filename_template", "H3_MARINE_SUPPORT_RES_{res}.parquet")
+            section.get(
+                "support_filename_template", "H3_MARINE_SUPPORT_RES_{res}.parquet"
+            )
         ),
         model_support_filename_template=str(
             section.get(
@@ -183,10 +200,14 @@ def load_water_network_config(
             )
         ),
         edge_filename_template=str(
-            section.get("edge_filename_template", "H3_WATER_PASSABLE_EDGES_RES_{res}.parquet")
+            section.get(
+                "edge_filename_template", "H3_WATER_PASSABLE_EDGES_RES_{res}.parquet"
+            )
         ),
         connector_filename_template=str(
-            section.get("connector_filename_template", "H3_WATER_CONNECTORS_RES_{res}.parquet")
+            section.get(
+                "connector_filename_template", "H3_WATER_CONNECTORS_RES_{res}.parquet"
+            )
         ),
         neighborhood_filename_template=str(
             section.get(
@@ -208,7 +229,9 @@ def load_water_network_config(
         ),
         canonical_radius_m=canonical_radius_m,
         parent_child_filename=str(
-            section.get("parent_child_filename", "H3_PARENT_CHILD_RES_8_TO_RES_6.parquet")
+            section.get(
+                "parent_child_filename", "H3_PARENT_CHILD_RES_8_TO_RES_6.parquet"
+            )
         ),
         maximum_neighborhood_hops=maximum_neighborhood_hops,
         minimum_water_fraction=minimum_fraction,

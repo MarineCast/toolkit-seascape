@@ -22,7 +22,9 @@ from seascape.core.geo.h3 import cell_to_polygon
 from .build import OUTPUT_COLUMNS, load_shoreline_proximity_config
 
 LOGGER = logging.getLogger(__name__)
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/coastal_configuration")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/coastal_configuration"
+)
 SHORELINE_PROXIMITY_MAP_FILENAME = "shoreline_proximity.html"
 
 METRICS = {
@@ -50,7 +52,8 @@ def _feature(row: Mapping[str, Any]) -> dict[str, object]:
     cell = str(row["H3_INDEX"])
     geometry = mapping(cell_to_polygon(cell))
     geometry["coordinates"] = [
-        [[round(x, 6), round(y, 6)] for x, y in ring] for ring in geometry["coordinates"]
+        [[round(x, 6), round(y, 6)] for x, y in ring]
+        for ring in geometry["coordinates"]
     ]
     properties: dict[str, object] = {"H3_INDEX": cell}
     for metric in METRICS:
@@ -73,7 +76,11 @@ def inspect_shoreline_proximity(
 
     config = load_shoreline_proximity_config(config_path)
     settings = load_presentation_settings(presentation_config_path)
-    source = Path(parquet_path).expanduser().resolve() if parquet_path else config.output_path
+    source = (
+        Path(parquet_path).expanduser().resolve()
+        if parquet_path
+        else config.output_path
+    )
     destination = (
         Path(output_path).expanduser().resolve()
         if output_path
@@ -122,8 +129,8 @@ def inspect_shoreline_proximity(
     map_ = folium.Map(**map_options)
     map_name = map_.get_name()
     script = f"""
-    const shorelineProximityData = {json.dumps(feature_collection, separators=(',', ':'))};
-    const shorelineProximityScales = {json.dumps(scales, separators=(',', ':'))};
+    const shorelineProximityData = {json.dumps(feature_collection, separators=(",", ":"))};
+    const shorelineProximityScales = {json.dumps(scales, separators=(",", ":"))};
     function shorelineProximityHexRgb(hex) {{
       const value = hex.replace('#', '');
       return [parseInt(value.slice(0,2),16), parseInt(value.slice(2,4),16), parseInt(value.slice(4,6),16)];
@@ -170,14 +177,18 @@ def inspect_shoreline_proximity(
         "{% macro script(this, kwargs) %}" + script + "{% endmacro %}"
     )
     map_.add_child(layer_script)
-    bounds = [polygon.bounds for polygon in map(cell_to_polygon, frame["H3_INDEX"].to_list())]
+    bounds = [
+        polygon.bounds for polygon in map(cell_to_polygon, frame["H3_INDEX"].to_list())
+    ]
     map_.fit_bounds(
         [
             [min(item[1] for item in bounds), min(item[0] for item in bounds)],
             [max(item[3] for item in bounds), max(item[2] for item in bounds)],
         ]
     )
-    map_.get_root().header.add_child(folium.Element("<title>Seascape Toolkit Shoreline Proximity</title>"))
+    map_.get_root().header.add_child(
+        folium.Element("<title>Seascape Toolkit Shoreline Proximity</title>")
+    )
     destination.parent.mkdir(parents=True, exist_ok=True)
     map_.save(destination)
     LOGGER.info("Saved shoreline-proximity inspection map: %s", destination)

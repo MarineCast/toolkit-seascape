@@ -839,13 +839,21 @@ def _rebase_candidate_values(
     return value
 
 
-def _validate_candidate_outputs(value: Any, canonical_root: Path, candidate_root: Path) -> None:
+def _validate_candidate_outputs(
+    value: Any, canonical_root: Path, candidate_root: Path
+) -> None:
     """Reject configured output escapes before any family runs (inputs stay external)."""
     if isinstance(value, dict):
         for key, item in value.items():
             name = str(key)
             if isinstance(item, str) and (
-                name in {"output_dir", "output_path", "processed_path", "processed_directory"}
+                name
+                in {
+                    "output_dir",
+                    "output_path",
+                    "processed_path",
+                    "processed_directory",
+                }
                 or name.endswith(("_output_dir", "_processed_out_dir"))
                 or name == "processed_out_dir"
             ):
@@ -853,12 +861,18 @@ def _validate_candidate_outputs(value: Any, canonical_root: Path, candidate_root
                 if not destination.is_absolute():
                     destination = canonical_root / destination
                 if not destination.resolve().is_relative_to(candidate_root.resolve()):
-                    raise ValueError(f"Candidate output escapes candidate root ({name}): {item}")
-            if isinstance(item, str) and "filename" in name and not any(
-                part in name for part in ("raw_", "source_")
+                    raise ValueError(
+                        f"Candidate output escapes candidate root ({name}): {item}"
+                    )
+            if (
+                isinstance(item, str)
+                and "filename" in name
+                and not any(part in name for part in ("raw_", "source_"))
             ):
                 if Path(item).name != item or item in {".", ".."}:
-                    raise ValueError(f"Candidate output filename must be a basename ({name}): {item}")
+                    raise ValueError(
+                        f"Candidate output filename must be a basename ({name}): {item}"
+                    )
             _validate_candidate_outputs(item, canonical_root, candidate_root)
     elif isinstance(value, list):
         for item in value:
@@ -871,7 +885,11 @@ def _configuration_identity(source_config: Path) -> dict[str, Any]:
     documents = [project]
     for key in DOMAIN_CONFIG_KEYS:
         if project.data.get(key):
-            documents.append(ConfigDocument.load(resolve_config_include(project.source, project.data[key])))
+            documents.append(
+                ConfigDocument.load(
+                    resolve_config_include(project.source, project.data[key])
+                )
+            )
     common = project_root() / "config/common.yaml"
     if common.is_file():
         documents.append(ConfigDocument.load(common))
@@ -883,9 +901,11 @@ def _configuration_identity(source_config: Path) -> dict[str, Any]:
     }
     return {
         "files": {str(path): checksum_path(path) for path in paths},
-        "effective_sha256": hashlib.sha256(json.dumps(
-            payload, sort_keys=True, separators=(",", ":"), default=str
-        ).encode("utf-8")).hexdigest(),
+        "effective_sha256": hashlib.sha256(
+            json.dumps(
+                payload, sort_keys=True, separators=(",", ":"), default=str
+            ).encode("utf-8")
+        ).hexdigest(),
     }
 
 
@@ -897,7 +917,9 @@ def _render_candidate_config(
 ) -> dict[str, Any]:
     """Resolve the effective candidate configuration without creating any paths."""
     if canonical_root.is_relative_to(candidate_root):
-        raise ValueError("Candidate must not be the canonical workspace or its ancestor.")
+        raise ValueError(
+            "Candidate must not be the canonical workspace or its ancestor."
+        )
     raw = load_data_config(source_config)
     # Supply the only output-directory defaults otherwise resolved from the
     # canonical base by the water/H3 loaders.
@@ -906,7 +928,9 @@ def _render_candidate_config(
         ("h3_geometry", "output_dir", "spatial_support/h3_geometry"),
     ):
         if section in raw:
-            raw[section].setdefault(key, f"data/processed/domain/environmental_layer/seascape/{relative}")
+            raw[section].setdefault(
+                key, f"data/processed/domain/environmental_layer/seascape/{relative}"
+            )
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     input_root = (canonical_root / configured_base).resolve()
     rendered = _rebase_candidate_values(raw, input_root, candidate_root)
@@ -915,10 +939,17 @@ def _render_candidate_config(
         rendered.pop(key, None)
     rendered["base_directory"] = str(input_root)
     config_dir = candidate_root / ".seascape/config"
-    config_names = ("project.yaml", "environment_seascape.yaml", "common.yaml", "identity.json")
+    config_names = (
+        "project.yaml",
+        "environment_seascape.yaml",
+        "common.yaml",
+        "identity.json",
+    )
     for target in (config_dir, *(config_dir / name for name in config_names)):
         if not target.resolve().is_relative_to(candidate_root):
-            raise ValueError(f"Candidate configuration path escapes candidate root: {target}")
+            raise ValueError(
+                f"Candidate configuration path escapes candidate root: {target}"
+            )
     return rendered
 
 
@@ -941,20 +972,36 @@ def _prepare_candidate_config(
     config_dir.mkdir(parents=True, exist_ok=True)
     domain = config_dir / "environment_seascape.yaml"
     destination = config_dir / "project.yaml"
-    for target in (domain, destination, config_dir / "common.yaml", config_dir / "identity.json"):
+    for target in (
+        domain,
+        destination,
+        config_dir / "common.yaml",
+        config_dir / "identity.json",
+    ):
         if not target.resolve().is_relative_to(candidate_root):
-            raise ValueError(f"Candidate configuration path escapes candidate root: {target}")
+            raise ValueError(
+                f"Candidate configuration path escapes candidate root: {target}"
+            )
     domain.write_text(yaml.safe_dump(rendered, sort_keys=False), encoding="utf-8")
-    destination.write_text(yaml.safe_dump({
-        "base_directory": str(input_root), "SEASCAPE_LAYER": str(domain),
-    }, sort_keys=False), encoding="utf-8")
+    destination.write_text(
+        yaml.safe_dump(
+            {
+                "base_directory": str(input_root),
+                "SEASCAPE_LAYER": str(domain),
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
     common = canonical_root / "config/common.yaml"
     if common.is_file():
         (config_dir / "common.yaml").write_text(
-            yaml.safe_dump(dict(ConfigDocument.load(common).data), sort_keys=False), encoding="utf-8"
+            yaml.safe_dump(dict(ConfigDocument.load(common).data), sort_keys=False),
+            encoding="utf-8",
         )
     (config_dir / "identity.json").write_text(
-        json.dumps(_configuration_identity(source_config), sort_keys=True, indent=2) + "\n",
+        json.dumps(_configuration_identity(source_config), sort_keys=True, indent=2)
+        + "\n",
         encoding="utf-8",
     )
     return destination
@@ -965,9 +1012,13 @@ def _stage_state_path(candidate_root: Path, stage: DomainBuildStage) -> Path:
 
 
 def _configuration_checksum(source_config: Path) -> str:
-    return hashlib.sha256(json.dumps(
-        _configuration_identity(source_config), sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(
+            _configuration_identity(source_config),
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
 
 
 def _declared_paths(root: Path, stage: DomainBuildStage) -> tuple[Path, ...]:
@@ -1347,7 +1398,9 @@ def run_domain_layer_build(
                 )
             )
             if _failure_reporter is None:
-                print(f"[build-domain-layers] {stage.name} failed ({elapsed:.1f}s): {exc}")
+                print(
+                    f"[build-domain-layers] {stage.name} failed ({elapsed:.1f}s): {exc}"
+                )
             else:
                 # CLI presentation must not echo raw sensitive exception text.
                 # The Python default still reports and re-raises the same error.

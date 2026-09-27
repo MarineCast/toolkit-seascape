@@ -100,13 +100,19 @@ def load_bathymetry_config(
 
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
 
     h3_resolution = int(_required(processing, "bathymetry.processing", "h3_resolution"))
     if not 0 <= h3_resolution <= 15:
-        raise ValueError("bathymetry.processing.h3_resolution must be between 0 and 15.")
-    grid_template = str(_required(processing, "bathymetry.processing", "h3_grid_path_template"))
+        raise ValueError(
+            "bathymetry.processing.h3_resolution must be between 0 and 15."
+        )
+    grid_template = str(
+        _required(processing, "bathymetry.processing", "h3_grid_path_template")
+    )
     bathymetry_sign = str(processing.get("bathymetry_sign", "positive_down"))
     if bathymetry_sign not in {"positive_down", "negative_elevation"}:
         raise ValueError(
@@ -116,12 +122,18 @@ def load_bathymetry_config(
 
     quantile_values = processing.get("depth_quantiles", [0.10, 0.25, 0.75, 0.90])
     if not isinstance(quantile_values, list) or not quantile_values:
-        raise ValueError("bathymetry.processing.depth_quantiles must be a non-empty list.")
+        raise ValueError(
+            "bathymetry.processing.depth_quantiles must be a non-empty list."
+        )
     depth_quantiles = tuple(sorted(float(value) for value in quantile_values))
     if any(not 0.0 < value < 1.0 for value in depth_quantiles):
-        raise ValueError("bathymetry.processing.depth_quantiles values must be between 0 and 1.")
+        raise ValueError(
+            "bathymetry.processing.depth_quantiles values must be between 0 and 1."
+        )
     if len(set(depth_quantiles)) != len(depth_quantiles):
-        raise ValueError("bathymetry.processing.depth_quantiles must not contain duplicates.")
+        raise ValueError(
+            "bathymetry.processing.depth_quantiles must not contain duplicates."
+        )
     if 0.5 in depth_quantiles:
         raise ValueError(
             "bathymetry.processing.depth_quantiles must not include 0.5; "
@@ -135,7 +147,8 @@ def load_bathymetry_config(
     anomaly_rings = int(anomaly_config.get("neighborhood_rings", 2))
     if anomaly_rings < 1:
         raise ValueError(
-            "bathymetry.processing.local_depth_anomaly.neighborhood_rings " "must be at least 1."
+            "bathymetry.processing.local_depth_anomaly.neighborhood_rings "
+            "must be at least 1."
         )
     water_network = _mapping(raw.get("water_network"), "water_network")
     water_network_output_dir = resolve_project_path(
@@ -161,14 +174,22 @@ def load_bathymetry_config(
         "levels_m",
     )
     if not isinstance(isobath_values, list) or not isobath_values:
-        raise ValueError("bathymetry.processing.isobaths.levels_m must be a non-empty list.")
+        raise ValueError(
+            "bathymetry.processing.isobaths.levels_m must be a non-empty list."
+        )
     isobath_levels_m = tuple(sorted(float(value) for value in isobath_values))
     if any(value <= 0.0 for value in isobath_levels_m):
-        raise ValueError("bathymetry.processing.isobaths.levels_m values must be positive.")
+        raise ValueError(
+            "bathymetry.processing.isobaths.levels_m values must be positive."
+        )
     if len(set(isobath_levels_m)) != len(isobath_levels_m):
-        raise ValueError("bathymetry.processing.isobaths.levels_m must not contain duplicates.")
+        raise ValueError(
+            "bathymetry.processing.isobaths.levels_m must not contain duplicates."
+        )
 
-    raw_dir = resolve_project_path(_required(source, "bathymetry.source", "raw_dir"), base_dir)
+    raw_dir = resolve_project_path(
+        _required(source, "bathymetry.source", "raw_dir"), base_dir
+    )
     raw_filename = str(_required(source, "bathymetry.source", "raw_filename"))
     if Path(raw_filename).name != raw_filename or not raw_filename.lower().endswith(
         (".tif", ".tiff")
@@ -199,11 +220,17 @@ def load_bathymetry_config(
         bbox=bbox_from_config(section),
         provider=str(source.get("provider", "GEBCO")),
         release=str(_required(source, "bathymetry.source", "release")),
-        native_resolution_arc_seconds=float(source.get("native_resolution_arc_seconds", 15)),
+        native_resolution_arc_seconds=float(
+            source.get("native_resolution_arc_seconds", 15)
+        ),
         grid_name=str(_required(source, "bathymetry.source", "grid_name")),
-        data_source_name=str(_required(source, "bathymetry.source", "data_source_name")),
+        data_source_name=str(
+            _required(source, "bathymetry.source", "data_source_name")
+        ),
         format_name=str(_required(source, "bathymetry.source", "format_name")),
-        api_base_url=str(_required(source, "bathymetry.source", "api_base_url")).rstrip("/"),
+        api_base_url=str(_required(source, "bathymetry.source", "api_base_url")).rstrip(
+            "/"
+        ),
         raw_path=raw_dir / raw_filename,
         request_timeout_seconds=float(source.get("request_timeout_seconds", 120)),
         poll_interval_seconds=float(source.get("poll_interval_seconds", 5)),
@@ -211,9 +238,12 @@ def load_bathymetry_config(
         overwrite=bool(source.get("overwrite", False)),
         h3_resolution=h3_resolution,
         h3_grid_path_template=grid_template,
-        h3_grid_path=resolve_project_path(grid_template.format(res=h3_resolution), base_dir),
+        h3_grid_path=resolve_project_path(
+            grid_template.format(res=h3_resolution), base_dir
+        ),
         water_polygon_path=resolve_project_path(
-            _required(processing, "bathymetry.processing", "water_polygon_path"), base_dir
+            _required(processing, "bathymetry.processing", "water_polygon_path"),
+            base_dir,
         ),
         processed_path=resolve_project_path(
             _required(processing, "bathymetry.processing", "processed_path"), base_dir
@@ -226,13 +256,19 @@ def load_bathymetry_config(
         isobath_distance_projected_crs=str(
             isobath_config.get("distance_projected_crs", "EPSG:32610")
         ),
-        smoothing_projected_crs=str(map_config.get("smoothing_projected_crs", "EPSG:32610")),
+        smoothing_projected_crs=str(
+            map_config.get("smoothing_projected_crs", "EPSG:32610")
+        ),
         smoothing_output_crs=str(map_config.get("smoothing_output_crs", "EPSG:3857")),
         smoothing_analysis_pixel_size_m=float(
             map_config.get("smoothing_analysis_pixel_size_m", 250.0)
         ),
-        smoothing_output_pixel_size_m=float(map_config.get("smoothing_output_pixel_size_m", 100.0)),
-        smoothing_gaussian_sigma_km=float(map_config.get("smoothing_gaussian_sigma_km", 1.5)),
+        smoothing_output_pixel_size_m=float(
+            map_config.get("smoothing_output_pixel_size_m", 100.0)
+        ),
+        smoothing_gaussian_sigma_km=float(
+            map_config.get("smoothing_gaussian_sigma_km", 1.5)
+        ),
         smoothing_fill_opacity=float(map_config.get("smoothing_fill_opacity", 0.82)),
         additional_exports=tuple(additional_exports),
     )
@@ -248,21 +284,25 @@ def recompute_parent_depth_bands(
 
     child = pd.read_parquet(child_path)
     parent = pd.read_parquet(parent_path)
-    count_columns = [f"BATHYMETRY_PIXEL_COUNT_{token}_M" for token, _lower, _upper in DEPTH_BANDS_M]
+    count_columns = [
+        f"BATHYMETRY_PIXEL_COUNT_{token}_M" for token, _lower, _upper in DEPTH_BANDS_M
+    ]
     required = {"H3_INDEX", *count_columns}
     for name, frame in (("child", child), ("parent", parent)):
         missing = sorted(required.difference(frame.columns))
         if missing:
-            raise ValueError(f"Bathymetry {name} table lacks depth-band columns: {missing}")
+            raise ValueError(
+                f"Bathymetry {name} table lacks depth-band columns: {missing}"
+            )
     child_counts = child.loc[:, ["H3_INDEX", *count_columns]].copy()
     child_counts["H3_INDEX"] = (
         child_counts["H3_INDEX"]
         .astype(str)
         .map(lambda cell: cell_to_parent(cell, parent_resolution))
     )
-    grouped = child_counts.groupby("H3_INDEX", sort=True, observed=True)[count_columns].sum(
-        min_count=1
-    )
+    grouped = child_counts.groupby("H3_INDEX", sort=True, observed=True)[
+        count_columns
+    ].sum(min_count=1)
     parent["H3_INDEX"] = parent["H3_INDEX"].astype(str)
     parent = parent.set_index("H3_INDEX").copy()
     unknown = sorted(set(grouped.index).difference(parent.index))
@@ -301,18 +341,28 @@ def run_pipeline(
         raise ValueError(
             "SYNTHETIC bathymetry requires skip_map=True; use the demo's static figures."
         )
-    synthetic_source = {
-        "observation_period": "None: synthetic software fixture",
-        "source_warning": (
-            "Synthetic software acceptance only; not regional data or a navigational survey."
-        ),
-    } if synthetic else {}
-    synthetic_metadata = {
-        "synthetic": True,
-        "validation_scope": "software acceptance; not a regional release",
-    } if synthetic else {}
+    synthetic_source = (
+        {
+            "observation_period": "None: synthetic software fixture",
+            "source_warning": (
+                "Synthetic software acceptance only; not regional data or a navigational survey."
+            ),
+        }
+        if synthetic
+        else {}
+    )
+    synthetic_metadata = (
+        {
+            "synthetic": True,
+            "validation_scope": "software acceptance; not a regional release",
+        }
+        if synthetic
+        else {}
+    )
     raw_path = (
-        config.raw_path if skip_download else download_gebco_geotiff(config, overwrite=overwrite)
+        config.raw_path
+        if skip_download
+        else download_gebco_geotiff(config, overwrite=overwrite)
     )
     product_configs = [replace(config, additional_exports=())]
     for export in config.additional_exports:
@@ -340,7 +390,9 @@ def run_pipeline(
             )
         for staged_config in staged_configs:
             build_bathymetry_parquet(staged_config, raster_path=raw_path)
-        staged_by_resolution = {item.h3_resolution: item.processed_path for item in staged_configs}
+        staged_by_resolution = {
+            item.h3_resolution: item.processed_path for item in staged_configs
+        }
         if {6, 8}.issubset(staged_by_resolution):
             recompute_parent_depth_bands(
                 staged_by_resolution[8],
@@ -391,7 +443,9 @@ def run_pipeline(
                         f"Bathymetry derived from {config.provider} {config.release}; "
                         "not to be used for navigation."
                     ),
-                    "license": "Apache-2.0 synthetic fixture" if synthetic else "CC BY 4.0",
+                    "license": "Apache-2.0 synthetic fixture"
+                    if synthetic
+                    else "CC BY 4.0",
                 }
             ],
             source_completeness="complete",

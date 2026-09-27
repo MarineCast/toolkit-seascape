@@ -60,7 +60,11 @@ def water_path_metrics(
     path_distance = abs(float(GEOD.geometry_length(line)))
     if path_distance <= 0.0:
         return direct_distance, 1.0, True
-    prepared = prepared_water if prepared_water is not None else prep(from_wkb(water_geometry.wkb))
+    prepared = (
+        prepared_water
+        if prepared_water is not None
+        else prep(from_wkb(water_geometry.wkb))
+    )
     if prepared.covers(line):
         return direct_distance, 1.0, True
     water_part = line.intersection(water_geometry)
@@ -90,7 +94,9 @@ def directional_water_fraction(
         distances,
     )
     prepare(water_geometry)
-    in_water = np.asarray(covers(water_geometry, points(longitudes, latitudes)), dtype=bool)
+    in_water = np.asarray(
+        covers(water_geometry, points(longitudes, latitudes)), dtype=bool
+    )
     first_land = np.flatnonzero(~in_water)
     if not len(first_land):
         return 1.0

@@ -49,7 +49,8 @@ def load_seagrass_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
     frame = gpd.GeoDataFrame(
         {
             "RECORD_ID": [
-                f"GLOBAL_SENTINEL2_SEAGRASS_2023_2024:{index}" for index in range(len(polygons))
+                f"GLOBAL_SENTINEL2_SEAGRASS_2023_2024:{index}"
+                for index in range(len(polygons))
             ],
             "HABITAT_TYPE": "seagrass",
             "SOURCE_DATASET": "GLOBAL_SENTINEL2_SEAGRASS_2023_2024",
@@ -71,7 +72,9 @@ def load_seagrass_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
         crs=crs,
     ).to_crs("EPSG:4326")
     if frame.empty:
-        raise ValueError("Sentinel-2 source produced no seagrass polygons in the model area.")
+        raise ValueError(
+            "Sentinel-2 source produced no seagrass polygons in the model area."
+        )
     return frame.loc[:, NORMALIZED_INVENTORY_COLUMNS]
 
 
@@ -95,9 +98,9 @@ def build_seagrass_habitat(
                 "archive_path": str(archive_path),
                 "archive_bytes": archive_path.stat().st_size,
                 "archive_expected_md5": source.get("md5"),
-                "positive_values": load_processing_config(config_path, SECTION_NAME).get(
-                    "positive_values", [1]
-                ),
+                "positive_values": load_processing_config(
+                    config_path, SECTION_NAME
+                ).get("positive_values", [1]),
             },
             "evidence_contract": (
                 "Binary satellite-model occurrence contributes to mapped area and distance, "

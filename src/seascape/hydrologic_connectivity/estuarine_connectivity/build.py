@@ -17,7 +17,10 @@ from shapely.geometry import box
 
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.geo.geometry import normalize_polygonal_geometry, safe_polygonal_union
+from seascape.core.geo.geometry import (
+    normalize_polygonal_geometry,
+    safe_polygonal_union,
+)
 from seascape.spatial_support.water_network.graph import (
     WaterGraph,
     target_graph_mapping,
@@ -101,10 +104,14 @@ def load_estuarine_connectivity_config(
     path = resolve_config_path(config_path)
     raw = load_data_config(path, domains="SEASCAPE_LAYER")
     section = _mapping(raw.get("estuarine_connectivity"), "estuarine_connectivity")
-    processing = _mapping(section.get("processing"), "estuarine_connectivity.processing")
+    processing = _mapping(
+        section.get("processing"), "estuarine_connectivity.processing"
+    )
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     download = load_estuarine_download_config(path)
     resolution = int(processing.get("h3_resolution", 8))
@@ -164,7 +171,9 @@ def _read_vector(path: Path):
     import geopandas as gpd
 
     if not path.exists():
-        raise FileNotFoundError(f"Estuary source not found: {path}. Run download.py first.")
+        raise FileNotFoundError(
+            f"Estuary source not found: {path}. Run download.py first."
+        )
     frame = gpd.read_file(path)
     if frame.crs is None:
         raise ValueError(f"Estuary source has no CRS: {path}")
@@ -184,7 +193,9 @@ def _load_bc_points(config: EstuarineConnectivityConfig):
     frame = frame.loc[frame.geometry.notna() & ~frame.geometry.is_empty].copy()
     frame.geometry = frame.geometry.map(normalize_polygonal_geometry)
     context = _bbox_polygon(config.context_bbox)
-    frame = frame.loc[~frame.geometry.is_empty & frame.geometry.intersects(context)].copy()
+    frame = frame.loc[
+        ~frame.geometry.is_empty & frame.geometry.intersects(context)
+    ].copy()
     frame.geometry = frame.geometry.map(
         lambda geometry: normalize_polygonal_geometry(geometry.intersection(context))
     )
@@ -253,23 +264,33 @@ def _load_estuary_inventory(config: EstuarineConnectivityConfig):
     import geopandas as gpd
 
     inventory = gpd.GeoDataFrame(
-        pd.concat([_load_bc_points(config), _load_pmep_points(config)], ignore_index=True),
+        pd.concat(
+            [_load_bc_points(config), _load_pmep_points(config)], ignore_index=True
+        ),
         geometry="geometry",
         crs="EPSG:4326",
     )
-    inventory["WITHIN_MODEL_BBOX"] = inventory.geometry.intersects(_bbox_polygon(config.bbox))
-    inventory["MARINE_GRAPH_H3_INDEX"] = pd.Series([None] * len(inventory), dtype="string")
+    inventory["WITHIN_MODEL_BBOX"] = inventory.geometry.intersects(
+        _bbox_polygon(config.bbox)
+    )
+    inventory["MARINE_GRAPH_H3_INDEX"] = pd.Series(
+        [None] * len(inventory), dtype="string"
+    )
     inventory["MARINE_GRAPH_SNAP_DISTANCE_M"] = np.nan
     inventory["SOURCE_TO_WATER_DISTANCE_M"] = np.nan
     inventory["MARINE_GRAPH_WATER_PATH_FRACTION"] = np.nan
     inventory["MARINE_GRAPH_CONNECTION_QC_REASON"] = pd.Series(
         [None] * len(inventory), dtype="string"
     )
-    inventory["MARINE_NETWORK_COMPONENT_ID"] = pd.Series([None] * len(inventory), dtype="string")
+    inventory["MARINE_NETWORK_COMPONENT_ID"] = pd.Series(
+        [None] * len(inventory), dtype="string"
+    )
     inventory = inventory.sort_values("ESTUARY_ID").reset_index(drop=True)
     inventory = inventory.loc[:, ESTUARY_COLUMNS]
     if inventory.empty or inventory["ESTUARY_ID"].duplicated().any():
-        raise ValueError("Mapped estuary inventory must contain unique, nonempty locations.")
+        raise ValueError(
+            "Mapped estuary inventory must contain unique, nonempty locations."
+        )
     if inventory.geometry.is_empty.any() or inventory.geometry.isna().any():
         raise ValueError("Mapped estuary inventory contains missing point geometry.")
     return inventory
@@ -284,7 +305,9 @@ def _spatial_support(config: EstuarineConnectivityConfig):
         )
     frame = gpd.read_parquet(config.water_polygon_path)
     if frame.crs is None:
-        raise ValueError(f"Canonical marine-water geometry has no CRS: {config.water_polygon_path}")
+        raise ValueError(
+            f"Canonical marine-water geometry has no CRS: {config.water_polygon_path}"
+        )
     target_water = safe_polygonal_union(
         frame.to_crs("EPSG:4326"),
         clip_geometry=_bbox_polygon(config.bbox),
@@ -329,12 +352,22 @@ def _snap_estuaries_to_graph(
     )
     output = estuaries.copy()
     output["MARINE_GRAPH_H3_INDEX"] = attachment["GRAPH_H3_INDEX"].astype("string")
-    output["MARINE_GRAPH_SNAP_DISTANCE_M"] = attachment["GRAPH_CONNECTOR_DISTANCE_M"].to_numpy()
-    output["SOURCE_TO_WATER_DISTANCE_M"] = attachment["SOURCE_TO_WATER_DISTANCE_M"].to_numpy()
-    output["MARINE_GRAPH_WATER_PATH_FRACTION"] = attachment["WATER_PATH_FRACTION"].to_numpy()
-    output["MARINE_GRAPH_CONNECTION_QC_REASON"] = attachment["QC_REASON"].astype("string")
+    output["MARINE_GRAPH_SNAP_DISTANCE_M"] = attachment[
+        "GRAPH_CONNECTOR_DISTANCE_M"
+    ].to_numpy()
+    output["SOURCE_TO_WATER_DISTANCE_M"] = attachment[
+        "SOURCE_TO_WATER_DISTANCE_M"
+    ].to_numpy()
+    output["MARINE_GRAPH_WATER_PATH_FRACTION"] = attachment[
+        "WATER_PATH_FRACTION"
+    ].to_numpy()
+    output["MARINE_GRAPH_CONNECTION_QC_REASON"] = attachment["QC_REASON"].astype(
+        "string"
+    )
     component = graph.support.set_index("H3_INDEX")["WATER_COMPONENT_ID"]
-    output["MARINE_NETWORK_COMPONENT_ID"] = output["MARINE_GRAPH_H3_INDEX"].map(component)
+    output["MARINE_NETWORK_COMPONENT_ID"] = output["MARINE_GRAPH_H3_INDEX"].map(
+        component
+    )
     return output.loc[:, ESTUARY_COLUMNS]
 
 
@@ -378,11 +411,13 @@ def _build_features(
     )
     graph_cells = graph.cells.astype(str).tolist()
     estuaries = _snap_estuaries_to_graph(estuaries, graph, context_water, config)
-    connected_estuaries = estuaries.loc[estuaries["MARINE_GRAPH_H3_INDEX"].notna()].reset_index(
-        drop=True
-    )
+    connected_estuaries = estuaries.loc[
+        estuaries["MARINE_GRAPH_H3_INDEX"].notna()
+    ].reset_index(drop=True)
     if connected_estuaries.empty:
-        raise ValueError("No mapped estuary has a water-valid canonical graph connector.")
+        raise ValueError(
+            "No mapped estuary has a water-valid canonical graph connector."
+        )
     graph_distances, _owners = multi_source_shortest_paths(
         graph,
         [
@@ -396,7 +431,9 @@ def _build_features(
             )
         ],
     )
-    target_graph_indices, target_connectors, target_qc = target_graph_mapping(graph, target_cells)
+    target_graph_indices, target_connectors, target_qc = target_graph_mapping(
+        graph, target_cells
+    )
     mapped = target_graph_indices >= 0
     reachable = np.zeros(len(target_cells), dtype=bool)
     reachable[mapped] = np.isfinite(graph_distances[target_graph_indices[mapped]])
@@ -404,7 +441,9 @@ def _build_features(
     network_distances[reachable] = (
         graph_distances[target_graph_indices[reachable]] + target_connectors[reachable]
     )
-    network_distances[reachable] = np.maximum(network_distances[reachable], distances[reachable])
+    network_distances[reachable] = np.maximum(
+        network_distances[reachable], distances[reachable]
+    )
     lineage = graph.support.set_index("H3_INDEX").loc[target_cells]
     qc = np.where(
         reachable,
@@ -440,14 +479,18 @@ def _validate(
     config: EstuarineConnectivityConfig,
 ) -> None:
     if list(features.columns) != FEATURE_COLUMNS:
-        raise ValueError(f"Unexpected estuary-distance schema: {list(features.columns)}")
+        raise ValueError(
+            f"Unexpected estuary-distance schema: {list(features.columns)}"
+        )
     if features.empty or not features["H3_INDEX"].is_unique:
-        raise ValueError("Estuary-distance features must retain unique canonical H3 support.")
+        raise ValueError(
+            "Estuary-distance features must retain unique canonical H3 support."
+        )
     if features["DISTANCE_TO_ESTUARY_M"].isna().any():
         raise ValueError("Straight distance to estuary cannot be null.")
-    straight_values = pd.to_numeric(features["DISTANCE_TO_ESTUARY_M"], errors="raise").to_numpy(
-        dtype="float64"
-    )
+    straight_values = pd.to_numeric(
+        features["DISTANCE_TO_ESTUARY_M"], errors="raise"
+    ).to_numpy(dtype="float64")
     if not np.isfinite(straight_values).all() or (straight_values < 0).any():
         raise ValueError("DISTANCE_TO_ESTUARY_M must be finite and nonnegative.")
     network_values = pd.to_numeric(
@@ -455,21 +498,30 @@ def _validate(
     ).to_numpy(dtype="float64")
     finite_network = network_values[np.isfinite(network_values)]
     if np.isinf(network_values).any() or (finite_network < 0).any():
-        raise ValueError("WATER_NETWORK_DISTANCE_TO_ESTUARY_M must be nonnegative where available.")
+        raise ValueError(
+            "WATER_NETWORK_DISTANCE_TO_ESTUARY_M must be nonnegative where available."
+        )
     disconnected = np.isnan(network_values)
     if features.loc[disconnected, "NETWORK_DISTANCE_QC_REASON"].isna().any():
-        raise ValueError("Null marine-connected distances must preserve a network QC reason.")
+        raise ValueError(
+            "Null marine-connected distances must preserve a network QC reason."
+        )
     if (
-        features["WATER_NETWORK_DISTANCE_TO_ESTUARY_M"] + 1e-6 < features["DISTANCE_TO_ESTUARY_M"]
+        features["WATER_NETWORK_DISTANCE_TO_ESTUARY_M"] + 1e-6
+        < features["DISTANCE_TO_ESTUARY_M"]
     ).any():
-        raise ValueError("Marine-connected distance cannot be shorter than straight distance.")
+        raise ValueError(
+            "Marine-connected distance cannot be shorter than straight distance."
+        )
     if list(estuaries.columns) != ESTUARY_COLUMNS:
         raise ValueError(f"Unexpected mapped-estuary schema: {list(estuaries.columns)}")
     if estuaries.empty or estuaries["ESTUARY_ID"].duplicated().any():
         raise ValueError("Mapped estuary inventory must contain unique locations.")
     disconnected = estuaries["MARINE_GRAPH_H3_INDEX"].isna()
     if estuaries.loc[disconnected, "MARINE_GRAPH_CONNECTION_QC_REASON"].isna().any():
-        raise ValueError("Disconnected mapped estuaries must preserve a graph QC reason.")
+        raise ValueError(
+            "Disconnected mapped estuaries must preserve a graph QC reason."
+        )
     snap_distance = pd.to_numeric(
         estuaries["MARINE_GRAPH_SNAP_DISTANCE_M"], errors="raise"
     ).to_numpy(dtype="float64")
@@ -477,13 +529,18 @@ def _validate(
         np.isinf(snap_distance).any()
         or (snap_distance[np.isfinite(snap_distance)] < 0).any()
         or (
-            snap_distance[np.isfinite(snap_distance)] > config.estuary_graph_snap_max_km * 1_000
+            snap_distance[np.isfinite(snap_distance)]
+            > config.estuary_graph_snap_max_km * 1_000
         ).any()
     ):
-        raise ValueError("Mapped-estuary graph snap distances violate the configured limit.")
+        raise ValueError(
+            "Mapped-estuary graph snap distances violate the configured limit."
+        )
     source_counts = estuaries["SOURCE_DATASET"].value_counts()
     if BC_SOURCE not in source_counts or US_SOURCE not in source_counts:
-        raise ValueError("Mapped estuary inventory must retain both B.C. and U.S. sources.")
+        raise ValueError(
+            "Mapped estuary inventory must retain both B.C. and U.S. sources."
+        )
 
 
 def build_estuarine_connectivity(

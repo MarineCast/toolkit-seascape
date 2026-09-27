@@ -9,7 +9,9 @@ import pytest
 
 @pytest.fixture(scope="module")
 def infer_unit():
-    script = Path(__file__).parents[4] / "scripts" / "update_seascape_feature_catalog.py"
+    script = (
+        Path(__file__).parents[4] / "scripts" / "update_seascape_feature_catalog.py"
+    )
     return runpy.run_path(str(script))["unit"]
 
 

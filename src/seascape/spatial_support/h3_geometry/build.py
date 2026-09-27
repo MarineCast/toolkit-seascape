@@ -66,7 +66,9 @@ def _resolutions(value: Any) -> tuple[int, ...]:
     values = (value,) if isinstance(value, int) else tuple(value)
     resolutions = tuple(dict.fromkeys(int(item) for item in values))
     if not resolutions:
-        raise ValueError("h3_geometry.resolutions must contain at least one resolution.")
+        raise ValueError(
+            "h3_geometry.resolutions must contain at least one resolution."
+        )
     invalid = [item for item in resolutions if not 0 <= item <= 15]
     if invalid:
         raise ValueError(f"Invalid H3 resolutions: {invalid}")
@@ -86,7 +88,9 @@ def load_h3_geometry_config(config_path: str | Path) -> dict[str, Any]:
         water_geometry.get("build", {}),
         "water_geometry.build",
     )
-    base_dir = (project_root() / Path(raw.get("base_directory", ".")).expanduser()).resolve()
+    base_dir = (
+        project_root() / Path(raw.get("base_directory", ".")).expanduser()
+    ).resolve()
     water_dir = _resolve_project_path(
         water_geometry.get(
             "processed_out_dir",
@@ -116,7 +120,9 @@ def load_h3_geometry_config(config_path: str | Path) -> dict[str, Any]:
         "h3_resolutions": _resolutions(configured_resolutions),
         "bbox": bbox_from_config(h3_config),
         "output_grid_filename_template": str(
-            h3_config.get("output_grid_filename_template", DEFAULT_H3_GRID_FILENAME_TEMPLATE)
+            h3_config.get(
+                "output_grid_filename_template", DEFAULT_H3_GRID_FILENAME_TEMPLATE
+            )
         ),
         "output_clipped_grid_filename_template": str(
             h3_config.get(
@@ -126,7 +132,9 @@ def load_h3_geometry_config(config_path: str | Path) -> dict[str, Any]:
         ),
         "buffer_m": float(h3_config.get("buffer_m", 2000)),
         "fill_simplify_tolerance": float(h3_config.get("fill_simplify_tolerance", 0.0)),
-        "clip_simplify_tolerance": float(h3_config.get("clip_simplify_tolerance", 0.003)),
+        "clip_simplify_tolerance": float(
+            h3_config.get("clip_simplify_tolerance", 0.003)
+        ),
         "max_workers": int(h3_config.get("max_workers", 8)),
         "log_level": str(raw.get("log_level", "INFO")).upper(),
     }
@@ -170,8 +178,12 @@ def _estimate_cell_radius_m(target_resolution: int) -> float:
     sample_cell = latlng_to_cell(0.0, 0.0, target_resolution)
     center_lat, center_lon = cell_to_latlng(sample_cell)
     boundary = cell_to_boundary(sample_cell)
-    radius = max(_haversine_distance(center_lat, center_lon, lat, lon) for lat, lon in boundary)
-    LOGGER.debug("Estimated circumradius %.1f m for resolution %d", radius, target_resolution)
+    radius = max(
+        _haversine_distance(center_lat, center_lon, lat, lon) for lat, lon in boundary
+    )
+    LOGGER.debug(
+        "Estimated circumradius %.1f m for resolution %d", radius, target_resolution
+    )
     return radius
 
 
@@ -384,9 +396,12 @@ def _build_h3_grid_layer(
     full_grid = full_grid[["H3_INDEX", "H3_RESOLUTION", "geometry"]]
     clipped_grid = clipped_grid[["H3_INDEX", "H3_RESOLUTION", "geometry"]]
     output_dir.mkdir(parents=True, exist_ok=True)
-    full_path = full_path or output_dir / output_grid_filename_template.format(res=resolution)
-    clipped_path = clipped_path or output_dir / output_clipped_grid_filename_template.format(
+    full_path = full_path or output_dir / output_grid_filename_template.format(
         res=resolution
+    )
+    clipped_path = (
+        clipped_path
+        or output_dir / output_clipped_grid_filename_template.format(res=resolution)
     )
     full_grid.to_parquet(full_path, index=False)
     clipped_grid.to_parquet(clipped_path, index=False)
@@ -439,15 +454,17 @@ def build_h3_grid_layers(
             full_destination = output_dir / cfg["output_grid_filename_template"].format(
                 res=resolution
             )
-            clipped_destination = output_dir / cfg["output_clipped_grid_filename_template"].format(
-                res=resolution
-            )
+            clipped_destination = output_dir / cfg[
+                "output_clipped_grid_filename_template"
+            ].format(res=resolution)
             _build_h3_grid_layer(
                 waters=waters,
                 resolution=resolution,
                 output_dir=output_dir,
                 output_grid_filename_template=cfg["output_grid_filename_template"],
-                output_clipped_grid_filename_template=cfg["output_clipped_grid_filename_template"],
+                output_clipped_grid_filename_template=cfg[
+                    "output_clipped_grid_filename_template"
+                ],
                 buffer_m=configured_buffer,
                 fill_simplify_tolerance=fill_tolerance,
                 clip_simplify_tolerance=clip_tolerance,
@@ -497,7 +514,9 @@ def build_h3_grid_layers(
                 }
             ],
             source_completeness="complete",
-            metadata={"geometry_role": "multi-resolution full and water-clipped support"},
+            metadata={
+                "geometry_role": "multi-resolution full and water-clipped support"
+            },
         )
         publisher.stage_manifest(output_dir / "h3_geometry_manifest.json", manifest)
         publisher.publish()
@@ -522,7 +541,9 @@ def build_full_counting_universes(
     if waters.empty:
         raise ValueError("Water geometry is empty after AOI clipping")
     if output_root.exists() and not force:
-        raise FileExistsError(f"Full counting universes exist; pass --force: {output_root}")
+        raise FileExistsError(
+            f"Full counting universes exist; pass --force: {output_root}"
+        )
     producer = "environment.seascape.spatial_support.h3_geometry.build"
     input_checksum = checksum_path(water_path)
     published_refs: list[ArtifactRef] = []
@@ -539,7 +560,9 @@ def build_full_counting_universes(
             published_refs.append(
                 ArtifactRef(
                     kind="domain",
-                    dataset_id=(f"environment.seascape.h3_full_counting_universe_r{resolution}"),
+                    dataset_id=(
+                        f"environment.seascape.h3_full_counting_universe_r{resolution}"
+                    ),
                     path=destination,
                     producer=producer,
                     schema_version="1",
@@ -585,7 +608,9 @@ def build_full_counting_universes(
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+    )
     parser = argparse.ArgumentParser(description="Build H3 grid layers from config.")
     parser.add_argument(
         "--config",

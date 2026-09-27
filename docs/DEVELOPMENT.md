@@ -14,6 +14,7 @@ reusable behavior in toolkit helpers. Do not introduce application imports or si
 | Change | Appropriate checks |
 | --- | --- |
 | Documentation only | Verify file links and command names; inspect diff; run `git diff --check` |
+| Formatting only | `ruff format --check src tests scripts`, full offline suite and an AST comparison ignoring location metadata |
 | Calculation or loader | Focused family tests, meaningful synthetic fixtures and applicable scientific contracts |
 | CLI, configuration or package layout | Standalone-package tests, command help, build dry run and wheel installation |
 | Publication or orchestration | Workflow/publication tests, dependency ordering and reuse/failure cases |
@@ -33,6 +34,20 @@ The [CI workflow](../.github/workflows/ci.yml) defines Python 3.11 and 3.14 jobs
 is not evidence it ran. The offline suite includes tests that skip without regional materialized
 products; report skips separately from passed checks. Do not infer live provider availability,
 map rendering, a full regional rebuild or application compatibility from unit tests.
+
+Formatting uses the existing Ruff defaults and Python 3.11 target in `pyproject.toml`. Contributor
+and CI format checks cover all Python under `src/`, `tests/` and `scripts/`, with no additional
+generated-code exclusions:
+
+```sh
+ruff format src tests scripts
+ruff format --check src tests scripts
+```
+
+Keep formatter changes separate from lint autofixes, import reordering, API/type changes and
+scientific edits. For a broad formatting change, compare parsed ASTs before/after with location
+metadata ignored, investigate any difference, and run the full suite. Source-byte changes alter
+package code identity and can invalidate recorded resume state; retain those existing checks.
 
 ## Clean consumer acceptance
 

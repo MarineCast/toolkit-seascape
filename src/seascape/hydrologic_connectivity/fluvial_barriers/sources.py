@@ -76,7 +76,9 @@ def validate_feature_table(frame: pd.DataFrame, resolution: int) -> None:
     if missing:
         raise ValueError(f"Fluvial-barrier feature table is missing columns: {missing}")
     if frame.empty or frame["H3_INDEX"].isna().any() or not frame["H3_INDEX"].is_unique:
-        raise ValueError("Fluvial-barrier features require one non-null row per H3 cell.")
+        raise ValueError(
+            "Fluvial-barrier features require one non-null row per H3 cell."
+        )
     if not frame["H3_RESOLUTION"].eq(resolution).all():
         raise ValueError(f"Fluvial-barrier table contains non-r{resolution} rows.")
     for column in [
@@ -85,7 +87,9 @@ def validate_feature_table(frame: pd.DataFrame, resolution: int) -> None:
         "WATER_NETWORK_DISTANCE_TO_BARRIER_AFFECTED_MOUTH_M",
     ]:
         if (pd.to_numeric(frame[column], errors="coerce").dropna() < 0).any():
-            raise ValueError(f"Fluvial-barrier non-negative metric is negative: {column}")
+            raise ValueError(
+                f"Fluvial-barrier non-negative metric is negative: {column}"
+            )
     if (
         not pd.to_numeric(frame["PASSAGE_STATUS_COVERAGE_FRAC"], errors="coerce")
         .dropna()
@@ -146,7 +150,9 @@ def _processing(config_path: str | Path) -> tuple[dict[str, Any], Path]:
     processing = _mapping(section.get("processing"), f"{SECTION_NAME}.processing")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     for key in (
         "deduplication_tolerance_m",
@@ -165,7 +171,9 @@ def _value(row: pd.Series, *names: str) -> Any:
         if name in row.index:
             value = row[name]
             return None if value is None or pd.isna(value) else value
-    normalized = {re.sub(r"[^a-z0-9]", "", str(column).casefold()): column for column in row.index}
+    normalized = {
+        re.sub(r"[^a-z0-9]", "", str(column).casefold()): column for column in row.index
+    }
     for name in names:
         column = normalized.get(re.sub(r"[^a-z0-9]", "", name.casefold()))
         if column is not None:
@@ -344,7 +352,9 @@ def _normalize_pscis(path: Path, name: str, source: Mapping[str, Any]):
         if item.geometry is None or item.geometry.is_empty:
             continue
         properties = _properties(item, frame.geometry.name)
-        source_id = _value(item, "STREAM_CROSSING_ID", "ASSESSMENT_ID", "OBJECTID") or position
+        source_id = (
+            _value(item, "STREAM_CROSSING_ID", "ASSESSMENT_ID", "OBJECTID") or position
+        )
         raw_type = " ".join(
             filter(
                 None,
@@ -382,7 +392,9 @@ def _normalize_pscis(path: Path, name: str, source: Mapping[str, Any]):
                 barrier_type=_barrier_type(raw_type),
                 subtype=raw_type,
                 origin=(
-                    "ANTHROPOGENIC" if _barrier_type(raw_type) != "NATURAL_BARRIER" else "NATURAL"
+                    "ANTHROPOGENIC"
+                    if _barrier_type(raw_type) != "NATURAL_BARRIER"
+                    else "NATURAL"
                 ),
                 passage_status=passage,
                 passable_fraction=fraction,
@@ -429,7 +441,8 @@ def _normalize_obstacles(path: Path, name: str, source: Mapping[str, Any]):
         rows.append(
             _record(
                 source_name=name,
-                source_id=_value(item, "FISH_OBSTACLE_POINT_ID", "OBJECTID") or position,
+                source_id=_value(item, "FISH_OBSTACLE_POINT_ID", "OBJECTID")
+                or position,
                 jurisdiction="BC",
                 barrier_type=_barrier_type(raw_type, default="NATURAL_BARRIER"),
                 subtype=raw_type,
@@ -472,7 +485,9 @@ def _normalize_dams(path: Path, name: str, source: Mapping[str, Any]):
         rows.append(
             _record(
                 source_name=name,
-                source_id=_value(item, "WRIS_DP_SYSID", "DAM_ID", "DAM_NUMBER", "OBJECTID")
+                source_id=_value(
+                    item, "WRIS_DP_SYSID", "DAM_ID", "DAM_NUMBER", "OBJECTID"
+                )
                 or position,
                 jurisdiction="BC",
                 barrier_type="DAM",
@@ -509,7 +524,9 @@ def _normalize_tide_gates(path: Path, name: str, source: Mapping[str, Any]):
         works_type = (_clean(_value(item, "WORKS_TYPE_APPURT")) or "").upper()
         flood_gate = _clean(_value(item, "FLOOD_BOX_GATE_TYPE"))
         outlet_gate = _clean(_value(item, "OUTLET_POINT_GATE_TYPE"))
-        if works_type != "FLOODBOX" and not (works_type == "OUTLET POINT" and outlet_gate):
+        if works_type != "FLOODBOX" and not (
+            works_type == "OUTLET POINT" and outlet_gate
+        ):
             continue
         properties = _properties(item, frame.geometry.name)
         subtype = flood_gate or outlet_gate or "gate type unmapped"
@@ -565,7 +582,8 @@ def _normalize_wdfw(path: Path, name: str, source: Mapping[str, Any]):
         rows.append(
             _record(
                 source_name=name,
-                source_id=_value(item, "SiteRecordID", "SiteId", "OBJECTID") or position,
+                source_id=_value(item, "SiteRecordID", "SiteId", "OBJECTID")
+                or position,
                 jurisdiction="WA",
                 barrier_type=barrier_type,
                 subtype=raw_type,
@@ -611,7 +629,9 @@ def _normalize_wa_tidal(path: Path, name: str, source: Mapping[str, Any]):
         impact = _value(item, "Tidal_Connectivity_Impacts")
         impact_text = (_clean(impact) or "").casefold()
         passage = (
-            "BLOCKED" if any(word in impact_text for word in ("complete", "blocked")) else "UNKNOWN"
+            "BLOCKED"
+            if any(word in impact_text for word in ("complete", "blocked"))
+            else "UNKNOWN"
         )
         rows.append(
             _record(
@@ -651,16 +671,25 @@ def _normalize_usgs(path: Path, name: str, source: Mapping[str, Any]):
             continue
         properties = _properties(item, frame.geometry.name)
         raw_type = " ".join(
-            str(value) for key, value in properties.items() if "type" in str(key).casefold()
+            str(value)
+            for key, value in properties.items()
+            if "type" in str(key).casefold()
         )
         combined = f"{raw_type} {' '.join(map(str, properties.values()))}".casefold()
-        if "rapid" in combined and not any(word in combined for word in ("waterfall", "falls")):
+        if "rapid" in combined and not any(
+            word in combined for word in ("waterfall", "falls")
+        ):
             continue
         rows.append(
             _record(
                 source_name=name,
                 source_id=_value(
-                    item, "feature id", "OBJECTID", "Permanent_Identifier", "GNIS_ID", "ID"
+                    item,
+                    "feature id",
+                    "OBJECTID",
+                    "Permanent_Identifier",
+                    "GNIS_ID",
+                    "ID",
                 )
                 or position,
                 jurisdiction="WA",
@@ -733,7 +762,9 @@ def load_source_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
             continue
         path = download.raw_dir / str(source["raw_filename"])
         if not path.exists():
-            raise FileNotFoundError(f"Fluvial-barrier source not found: {path}. Run download.py.")
+            raise FileNotFoundError(
+                f"Fluvial-barrier source not found: {path}. Run download.py."
+            )
         normalizer = NORMALIZERS.get(name)
         if normalizer is None:
             raise ValueError(f"No fluvial-barrier normalizer is registered for {name}.")
@@ -784,18 +815,28 @@ def deduplicate_inventory(frame: Any, tolerance_m: float):
             candidates = spatial_index.query(
                 row.geometry.buffer(float(tolerance_m)), predicate="intersects"
             )
-            candidate_indices = [int(group.index[int(position)]) for position in candidates]
+            candidate_indices = [
+                int(group.index[int(position)]) for position in candidates
+            ]
             matches = [
-                candidate for candidate in candidate_indices if candidate in canonical_indices
+                candidate
+                for candidate in candidate_indices
+                if candidate in canonical_indices
             ]
             if matches:
                 distances = [
-                    (float(projected.loc[candidate].geometry.distance(row.geometry)), candidate)
+                    (
+                        float(projected.loc[candidate].geometry.distance(row.geometry)),
+                        candidate,
+                    )
                     for candidate in matches
                 ]
                 distance, canonical_index = min(
                     distances,
-                    key=lambda item: (item[0], str(result.loc[item[1], "SOURCE_RECORD_ID"])),
+                    key=lambda item: (
+                        item[0],
+                        str(result.loc[item[1], "SOURCE_RECORD_ID"]),
+                    ),
                 )
                 canonical_id = str(result.loc[canonical_index, "CANONICAL_BARRIER_ID"])
                 result.loc[index, "IS_CANONICAL"] = False
@@ -804,7 +845,9 @@ def deduplicate_inventory(frame: Any, tolerance_m: float):
                 relationship = "OVERLAPPING_SOURCE_RECORD"
             else:
                 canonical_indices.add(int(index))
-                digest = hashlib.sha1(str(row["SOURCE_RECORD_ID"]).encode("utf-8")).hexdigest()[:16]
+                digest = hashlib.sha1(
+                    str(row["SOURCE_RECORD_ID"]).encode("utf-8")
+                ).hexdigest()[:16]
                 canonical_id = f"FLUVIAL_BARRIER_{digest}"
                 result.loc[index, "CANONICAL_BARRIER_ID"] = canonical_id
                 distance = 0.0

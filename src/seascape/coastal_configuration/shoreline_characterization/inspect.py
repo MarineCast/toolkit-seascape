@@ -18,7 +18,9 @@ from seascape.core.config.presentation import (
 from .build import CLASS_TOKENS, load_shoreline_config
 
 LOGGER = logging.getLogger(__name__)
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/coastal_configuration")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/coastal_configuration"
+)
 MAP_FILENAME = "shoreline_characterization.html"
 
 
@@ -34,7 +36,9 @@ def build_shoreline_characterization_map(
     config = load_shoreline_config(config_path)
     settings = load_presentation_settings(presentation_config_path)
     source = (
-        Path(inventory_path).expanduser().resolve() if inventory_path else config.inventory_path
+        Path(inventory_path).expanduser().resolve()
+        if inventory_path
+        else config.inventory_path
     )
     if not source.exists():
         raise FileNotFoundError(f"Shoreline inventory Parquet not found: {source}")
@@ -72,9 +76,14 @@ def build_shoreline_characterization_map(
             continue
         selected["geometry"] = selected.geometry.simplify(0.0002)
         folium.GeoJson(
-            selected[["SEGMENT_ID", "SOURCE_DATASET", "RAW_CLASSIFICATION", "geometry"]],
+            selected[
+                ["SEGMENT_ID", "SOURCE_DATASET", "RAW_CLASSIFICATION", "geometry"]
+            ],
             name=token.title(),
-            style_function=lambda _feature, color=colors[token]: {"color": color, "weight": 2},
+            style_function=lambda _feature, color=colors[token]: {
+                "color": color,
+                "weight": 2,
+            },
             tooltip=folium.GeoJsonTooltip(
                 fields=["SEGMENT_ID", "SOURCE_DATASET", "RAW_CLASSIFICATION"]
             ),
@@ -86,10 +95,14 @@ def build_shoreline_characterization_map(
             "license: {license}. {warning} {restrictions}</li>".format(
                 name=escape(name),
                 attribution=escape(str(source.get("attribution") or "not documented")),
-                observation=escape(str(source.get("observation_date") or "not documented")),
+                observation=escape(
+                    str(source.get("observation_date") or "not documented")
+                ),
                 license=escape(str(source.get("license") or "not documented")),
                 warning=escape(str(source.get("source_completeness_warning") or "")),
-                restrictions=escape(str(source.get("redistribution_restrictions") or "")),
+                restrictions=escape(
+                    str(source.get("redistribution_restrictions") or "")
+                ),
             )
         )
     source_panel = """
@@ -119,7 +132,9 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="config/data/environment_seascape.yaml")
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--input", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()

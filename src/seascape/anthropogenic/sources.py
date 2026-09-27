@@ -134,7 +134,9 @@ def validate_feature_table(frame: pd.DataFrame, resolution: int) -> None:
     for column in PRESENCE_COLUMNS:
         values = set(frame[column].dropna().astype(float).unique())
         if not values.issubset({0.0, 1.0}):
-            raise ValueError(f"Anthropogenic presence is not three-state encoded: {column}")
+            raise ValueError(
+                f"Anthropogenic presence is not three-state encoded: {column}"
+            )
     for column in [
         *DISTANCE_FEATURES,
         "OVERWATER_STRUCTURE_DENSITY_PER_KM2",
@@ -163,9 +165,13 @@ def validate_confidence_table(
         )
     missing = sorted(required.difference(frame.columns))
     if missing:
-        raise ValueError(f"Anthropogenic confidence table is missing columns: {missing}")
+        raise ValueError(
+            f"Anthropogenic confidence table is missing columns: {missing}"
+        )
     if frame.empty or frame["H3_INDEX"].isna().any() or not frame["H3_INDEX"].is_unique:
-        raise ValueError("Anthropogenic confidence requires one non-null row per H3 cell.")
+        raise ValueError(
+            "Anthropogenic confidence requires one non-null row per H3 cell."
+        )
     if not frame["H3_RESOLUTION"].eq(int(resolution)).all():
         raise ValueError(f"Anthropogenic confidence contains non-r{resolution} rows.")
     if set(frame["H3_INDEX"].astype(str)) != set(feature_cells.astype(str)):
@@ -302,7 +308,11 @@ def _osm_geometry(element: Mapping[str, Any], area_expected: bool) -> Any | None
         ]
         if len(coordinates) < 2:
             return None
-        if area_expected and len(coordinates) >= 4 and coordinates[0] == coordinates[-1]:
+        if (
+            area_expected
+            and len(coordinates) >= 4
+            and coordinates[0] == coordinates[-1]
+        ):
             return make_valid(Polygon(coordinates))
         return LineString(coordinates)
     if element.get("type") == "relation":
@@ -330,7 +340,12 @@ def _normalize_osm(path: Path, source_name: str, source: Mapping[str, Any]):
 
     document = json.loads(path.read_text(encoding="utf-8"))
     rows: list[dict[str, Any]] = []
-    area_classes = {"dredged_channel", "disposal_site", "aquaculture", "artificial_reef"}
+    area_classes = {
+        "dredged_channel",
+        "disposal_site",
+        "aquaculture",
+        "artificial_reef",
+    }
     for element in document.get("elements", []):
         tags = element.get("tags") or {}
         classes = classify_osm_tags(tags)
@@ -346,9 +361,13 @@ def _normalize_osm(path: Path, source_name: str, source: Mapping[str, Any]):
                     source_feature_id=element_id,
                     jurisdiction="CROSS_BORDER",
                     feature_class=feature_class,
-                    feature_subtype=str(tags.get("seamark:shoreline_construction:category") or "")
+                    feature_subtype=str(
+                        tags.get("seamark:shoreline_construction:category") or ""
+                    )
                     or None,
-                    evidence_class=str(source.get("evidence_class", "volunteered_mapping")),
+                    evidence_class=str(
+                        source.get("evidence_class", "volunteered_mapping")
+                    ),
                     source_priority=10,
                     confidence_class=1,
                     geometry_precision_class="community_mapped_geometry",
@@ -357,7 +376,9 @@ def _normalize_osm(path: Path, source_name: str, source: Mapping[str, Any]):
                     and geometry.geom_type in {"Polygon", "MultiPolygon"},
                     structure_count=1.0 if feature_class in OVERWATER_CLASSES else 0.0,
                     observation_year=(
-                        int(str(element["timestamp"])[:4]) if element.get("timestamp") else None
+                        int(str(element["timestamp"])[:4])
+                        if element.get("timestamp")
+                        else None
                     ),
                     properties={
                         "osm_type": element.get("type"),
@@ -369,7 +390,9 @@ def _normalize_osm(path: Path, source_name: str, source: Mapping[str, Any]):
                 )
             )
     if not rows:
-        raise ValueError(f"OSM source produced no recognized anthropogenic records: {path}")
+        raise ValueError(
+            f"OSM source produced no recognized anthropogenic records: {path}"
+        )
     return gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
 
 
@@ -405,9 +428,13 @@ def _normalize_wa_shorezone(path: Path, source_name: str, source: Mapping[str, A
         if geometry is None or geometry.is_empty:
             continue
         source_id = str(item[id_column])
-        raw_fraction = pd.to_numeric(pd.Series([item[fraction_column]]), errors="coerce").iloc[0]
+        raw_fraction = pd.to_numeric(
+            pd.Series([item[fraction_column]]), errors="coerce"
+        ).iloc[0]
         fraction = (
-            float(np.clip(raw_fraction / 100.0, 0.0, 1.0)) if pd.notna(raw_fraction) else None
+            float(np.clip(raw_fraction / 100.0, 0.0, 1.0))
+            if pd.notna(raw_fraction)
+            else None
         )
         properties = item.drop(labels=[frame.geometry.name]).to_dict()
         rows.append(
@@ -496,7 +523,9 @@ def _normalize_bc_shorezone(path: Path, source_name: str, source: Mapping[str, A
     form_column = _column(frame, "FORM")
     rep_type_column = _column(frame, "REP_TYPE_NAME")
     if id_column is None or form_column is None:
-        raise ValueError("BC ShoreZone source is missing its unit identifier or FORM field.")
+        raise ValueError(
+            "BC ShoreZone source is missing its unit identifier or FORM field."
+        )
     form_classes = {
         "a": "pier",
         "b": "breakwater",
@@ -520,7 +549,11 @@ def _normalize_bc_shorezone(path: Path, source_name: str, source: Mapping[str, A
             if rep_type_column and pd.notna(item[rep_type_column])
             else ""
         )
-        man_made = representative in {"man-made", "man made", "manmade"} or form.startswith("A")
+        man_made = representative in {
+            "man-made",
+            "man made",
+            "manmade",
+        } or form.startswith("A")
         properties = item.drop(labels=[frame.geometry.name]).to_dict()
         project_code = str(properties.get("PROJECT_CODE") or "").strip().upper()
         mapped = project_code != "UNMAPD" and representative not in {
@@ -588,7 +621,9 @@ def _normalize_spatial_class(
         geometry = item.geometry
         if geometry is None or geometry.is_empty:
             continue
-        source_id = str(item[id_column] if id_column and pd.notna(item[id_column]) else position)
+        source_id = str(
+            item[id_column] if id_column and pd.notna(item[id_column]) else position
+        )
         properties = item.drop(labels=[frame.geometry.name]).to_dict()
         rows.append(
             _record(
@@ -601,7 +636,9 @@ def _normalize_spatial_class(
                     else "BC"
                 ),
                 feature_class=feature_class,
-                feature_subtype=str(properties.get("OBJNAM") or properties.get("Name") or "")
+                feature_subtype=str(
+                    properties.get("OBJNAM") or properties.get("Name") or ""
+                )
                 or None,
                 evidence_class=str(source.get("evidence_class")),
                 source_priority=50,
@@ -620,7 +657,9 @@ def _normalized_column_name(value: str) -> str:
 
 
 def _find_csv_column(frame: pd.DataFrame, candidates: tuple[str, ...]) -> str | None:
-    normalized = {_normalized_column_name(str(value)): str(value) for value in frame.columns}
+    normalized = {
+        _normalized_column_name(str(value)): str(value) for value in frame.columns
+    }
     for candidate in candidates:
         candidate = _normalized_column_name(candidate)
         if candidate in normalized:
@@ -635,20 +674,33 @@ def _normalize_aquaculture_csv(path: Path, source_name: str, source: Mapping[str
     import geopandas as gpd
 
     frame = pd.read_csv(path, encoding="utf-8-sig")
-    latitude = _find_csv_column(frame, ("latitude", "site latitude", "facility latitude"))
-    longitude = _find_csv_column(frame, ("longitude", "site longitude", "facility longitude"))
+    latitude = _find_csv_column(
+        frame, ("latitude", "site latitude", "facility latitude")
+    )
+    longitude = _find_csv_column(
+        frame, ("longitude", "site longitude", "facility longitude")
+    )
     if latitude is None or longitude is None:
-        raise ValueError(f"Aquaculture CSV lacks latitude/longitude columns: {list(frame.columns)}")
+        raise ValueError(
+            f"Aquaculture CSV lacks latitude/longitude columns: {list(frame.columns)}"
+        )
     identifier = _find_csv_column(
         frame,
-        ("licence number", "license number", "facility reference number", "facility id"),
+        (
+            "licence number",
+            "license number",
+            "facility reference number",
+            "facility id",
+        ),
     )
     lon = pd.to_numeric(frame[longitude], errors="coerce")
     lat = pd.to_numeric(frame[latitude], errors="coerce")
     valid = lon.between(-180, 180) & lat.between(-90, 90)
     rows: list[dict[str, Any]] = []
     for position in frame.index[valid]:
-        source_id = str(frame.loc[position, identifier]) if identifier else str(position)
+        source_id = (
+            str(frame.loc[position, identifier]) if identifier else str(position)
+        )
         properties = frame.loc[position].to_dict()
         rows.append(
             _record(
@@ -667,7 +719,9 @@ def _normalize_aquaculture_csv(path: Path, source_name: str, source: Mapping[str
             )
         )
     if not rows:
-        raise ValueError(f"Aquaculture CSV contains no valid coordinate records: {path}")
+        raise ValueError(
+            f"Aquaculture CSV contains no valid coordinate records: {path}"
+        )
     return gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
 
 
@@ -690,11 +744,17 @@ def normalize_anthropogenic_inventory(frame: Any):
         raise ValueError("Anthropogenic RECORD_ID values must be unique and non-null.")
     if not frame["CONFIDENCE_CLASS"].astype(int).between(0, 3).all():
         raise ValueError("Anthropogenic confidence classes must be in [0, 3].")
-    if not frame["ARMORING_FRACTION_ESTIMATE"].dropna().astype(float).between(0, 1).all():
+    if (
+        not frame["ARMORING_FRACTION_ESTIMATE"]
+        .dropna()
+        .astype(float)
+        .between(0, 1)
+        .all()
+    ):
         raise ValueError("Armoring fraction estimates must be null or in [0, 1].")
-    frame["OBSERVATION_YEAR"] = pd.to_numeric(frame["OBSERVATION_YEAR"], errors="coerce").astype(
-        "Int16"
-    )
+    frame["OBSERVATION_YEAR"] = pd.to_numeric(
+        frame["OBSERVATION_YEAR"], errors="coerce"
+    ).astype("Int16")
     frame["SOURCE_PRIORITY"] = frame["SOURCE_PRIORITY"].astype("int16")
     frame["CONFIDENCE_CLASS"] = frame["CONFIDENCE_CLASS"].astype("int8")
     frame["STRUCTURE_COUNT"] = pd.to_numeric(frame["STRUCTURE_COUNT"], errors="raise")
@@ -730,7 +790,9 @@ def deduplicate_inventory(frame: Any, tolerance_m: float):
         spatial_index = authoritative.sindex
         for index, row in iter_frame_records(volunteered):
             candidates = list(
-                spatial_index.query(row.geometry.buffer(tolerance_m), predicate="intersects")
+                spatial_index.query(
+                    row.geometry.buffer(tolerance_m), predicate="intersects"
+                )
             )
             if not candidates:
                 continue
@@ -778,7 +840,9 @@ def load_anthropogenic_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
             continue
         normalizer = str(source.get("normalizer", "")).strip()
         if normalizer not in dispatch:
-            raise ValueError(f"Unsupported anthropogenic normalizer {normalizer!r} for {name}.")
+            raise ValueError(
+                f"Unsupported anthropogenic normalizer {normalizer!r} for {name}."
+            )
         frame = dispatch[normalizer](path, name, source)
         if frame.empty:
             raise ValueError(f"Anthropogenic source normalized to no records: {name}")
@@ -796,7 +860,9 @@ def load_anthropogenic_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
         network = load_water_network_config(config_path)
         territorial = gpd.read_parquet(network.water_polygon_path).to_crs("EPSG:6933")
         canada = union_all(
-            territorial.loc[territorial["NAME"].astype(str).eq("CANADA")].geometry.to_numpy()
+            territorial.loc[
+                territorial["NAME"].astype(str).eq("CANADA")
+            ].geometry.to_numpy()
         )
         united_states = union_all(
             territorial.loc[
@@ -804,10 +870,16 @@ def load_anthropogenic_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
                 & territorial["AREA"].astype(str).eq("CONTIGUOUS")
             ].geometry.to_numpy()
         )
-        points = combined.loc[cross_border].to_crs("EPSG:6933").geometry.representative_point()
+        points = (
+            combined.loc[cross_border]
+            .to_crs("EPSG:6933")
+            .geometry.representative_point()
+        )
         canada_distance = points.distance(canada).to_numpy(dtype="float64")
         us_distance = points.distance(united_states).to_numpy(dtype="float64")
         combined.loc[cross_border, "JURISDICTION"] = np.where(
             canada_distance <= us_distance, "BC", "WA"
         )
-    return deduplicate_inventory(combined, float(processing["deduplication_tolerance_m"]))
+    return deduplicate_inventory(
+        combined, float(processing["deduplication_tolerance_m"])
+    )

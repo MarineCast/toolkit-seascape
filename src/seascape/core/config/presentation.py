@@ -33,7 +33,9 @@ class PresentationSettings:
             return self.color_maps[name]
         except KeyError as exc:
             available = ", ".join(sorted(self.color_maps))
-            raise KeyError(f"Unknown color map {name!r}; available maps: {available}") from exc
+            raise KeyError(
+                f"Unknown color map {name!r}; available maps: {available}"
+            ) from exc
 
     def export_path(self, *parts: str | Path) -> Path:
         """Build a path beneath the configured export root."""
@@ -50,7 +52,9 @@ def _mapping(value: Any, name: str) -> dict[str, Any]:
 def _color(value: Any, name: str) -> str:
     color = str(value)
     if not _HEX_COLOR.fullmatch(color):
-        raise ValueError(f"Presentation setting {name!r} must be a six-digit hex color.")
+        raise ValueError(
+            f"Presentation setting {name!r} must be a six-digit hex color."
+        )
     return color
 
 
@@ -64,7 +68,9 @@ def load_presentation_settings(
         raise FileNotFoundError(f"Presentation settings not found: {path}")
     raw = dict(ConfigDocument.load(path).data)
 
-    configured_root = Path(str(raw.get("base_export_directory", "outputs"))).expanduser()
+    configured_root = Path(
+        str(raw.get("base_export_directory", "outputs"))
+    ).expanduser()
     export_root = (
         configured_root.resolve()
         if configured_root.is_absolute()
@@ -92,12 +98,16 @@ def load_presentation_settings(
         raise ValueError("Presentation setting 'basemap.tile_layer' cannot be empty.")
     configured_attribution = basemap.get("attribution")
     attribution = (
-        str(configured_attribution).strip() if configured_attribution not in (None, "") else None
+        str(configured_attribution).strip()
+        if configured_attribution not in (None, "")
+        else None
     )
 
     default_zoom = int(raw.get("default_zoom", 4))
     if not 0 <= default_zoom <= 22:
-        raise ValueError("Presentation setting 'default_zoom' must be between 0 and 22.")
+        raise ValueError(
+            "Presentation setting 'default_zoom' must be between 0 and 22."
+        )
 
     return PresentationSettings(
         base_export_directory=export_root,

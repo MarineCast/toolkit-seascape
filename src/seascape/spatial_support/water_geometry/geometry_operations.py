@@ -37,7 +37,9 @@ def clean_connected_lines(
 ) -> gpd.GeoDataFrame:
     """Snap and merge linework while optionally removing discovered rings."""
 
-    merged = linemerge(snap(unary_union(frame.geometry), unary_union(frame.geometry), tolerance))
+    merged = linemerge(
+        snap(unary_union(frame.geometry), unary_union(frame.geometry), tolerance)
+    )
     if merged.geom_type == "LineString":
         geometries = [merged]
     elif merged.geom_type == "MultiLineString":
@@ -60,7 +62,8 @@ def round_geometry_coordinates(geometry: Any, precision: int = 4):
 
     def rounded(coordinates: Any) -> list[tuple[float, ...]]:
         return [
-            tuple(round(value, precision) for value in coordinate) for coordinate in coordinates
+            tuple(round(value, precision) for value in coordinate)
+            for coordinate in coordinates
         ]
 
     if geometry.geom_type == "Point":
@@ -77,7 +80,9 @@ def round_geometry_coordinates(geometry: Any, precision: int = 4):
             [Point(*value) for value in rounded([p.coords[0] for p in geometry.geoms])]
         )
     if geometry.geom_type == "MultiLineString":
-        return MultiLineString([LineString(rounded(part.coords)) for part in geometry.geoms])
+        return MultiLineString(
+            [LineString(rounded(part.coords)) for part in geometry.geoms]
+        )
     if geometry.geom_type == "MultiPolygon":
         return MultiPolygon(
             [
@@ -123,11 +128,15 @@ def connect_lines_by_endpoints(
     merged_lines = []
     for component in nx.connected_components(graph):
         merged = linemerge(unary_union(frame.loc[list(component), "geometry"]))
-        merged_lines.extend(merged.geoms if merged.geom_type == "MultiLineString" else [merged])
+        merged_lines.extend(
+            merged.geoms if merged.geom_type == "MultiLineString" else [merged]
+        )
     return gpd.GeoDataFrame(geometry=merged_lines, crs=frame.crs).reset_index(drop=True)
 
 
-def smooth_coastline(frame: gpd.GeoDataFrame, tolerance: float = 0.001) -> gpd.GeoDataFrame:
+def smooth_coastline(
+    frame: gpd.GeoDataFrame, tolerance: float = 0.001
+) -> gpd.GeoDataFrame:
     """Round, connect, and measure coastline components deterministically."""
 
     result = frame.copy()
@@ -153,7 +162,9 @@ def closed_lines(frame: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return frame.loc[frame.geometry.map(lambda geometry: geometry.is_ring)].copy()
 
 
-def connect_lines_to_polygon(line1: LineString, line2: LineString, tolerance: float = 1e-9):
+def connect_lines_to_polygon(
+    line1: LineString, line2: LineString, tolerance: float = 1e-9
+):
     """Connect two oriented lines when one orientation forms a closed ring."""
 
     first = list(line1.coords)
@@ -195,7 +206,9 @@ def polygonize_boundary_cycle(
         raise ValueError("Boundary linework must be nonempty and have a CRS.")
     if snap_tolerance_m <= 0:
         raise ValueError("Boundary snap tolerance must be positive.")
-    projected = lines.to_crs(projected_crs).explode(index_parts=False).reset_index(drop=True)
+    projected = (
+        lines.to_crs(projected_crs).explode(index_parts=False).reset_index(drop=True)
+    )
     projected = projected.loc[
         projected.geometry.notna()
         & ~projected.geometry.is_empty
@@ -273,7 +286,9 @@ def polygonize_boundary_cycle(
         key=lambda item: (-item[0], item[1]),
     )
     if len(scored) > 1 and scored[1][0] >= scored[0][0] * 0.5:
-        raise ValueError("Boundary linework produced multiple comparable closed cycles.")
+        raise ValueError(
+            "Boundary linework produced multiple comparable closed cycles."
+        )
     component = scored[0][2]
     selected = sorted(
         int(data["line_index"])
@@ -287,14 +302,20 @@ def polygonize_boundary_cycle(
         line_coordinates[-1] = cluster_point[find(2 * line_index + 1)]
         snapped_lines.append(LineString(line_coordinates))
     candidates = [
-        candidate for candidate in polygonize(unary_union(snapped_lines)) if candidate.is_valid
+        candidate
+        for candidate in polygonize(unary_union(snapped_lines))
+        if candidate.is_valid
     ]
     if not candidates:
         raise ValueError("Closed boundary graph could not be polygonized.")
-    candidates.sort(key=lambda candidate: (-candidate.area, candidate.bounds, candidate.wkb_hex))
+    candidates.sort(
+        key=lambda candidate: (-candidate.area, candidate.bounds, candidate.wkb_hex)
+    )
     if len(candidates) > 1 and candidates[1].area >= candidates[0].area * 0.5:
         raise ValueError("Boundary linework produced multiple comparable polygons.")
-    polygon = gpd.GeoSeries([candidates[0]], crs=projected_crs).to_crs(lines.crs).iloc[0]
+    polygon = (
+        gpd.GeoSeries([candidates[0]], crs=projected_crs).to_crs(lines.crs).iloc[0]
+    )
     if polygon.is_empty or not polygon.is_valid:
         raise ValueError("Polygonized boundary is empty or invalid after reprojection.")
     return polygon

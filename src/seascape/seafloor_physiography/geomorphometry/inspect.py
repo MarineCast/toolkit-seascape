@@ -23,7 +23,9 @@ from seascape.utils.vector_inspect import finite_number as _finite
 from .build import GeomorphometryConfig, load_geomorphometry_config, output_columns
 
 LOGGER = logging.getLogger(__name__)
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/seafloor_physiography")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/seafloor_physiography"
+)
 GEOMORPHOMETRY_MAP_FILENAME = "geomorphometry.html"
 
 
@@ -192,7 +194,8 @@ def _feature(
     cell = str(row["H3_INDEX"])
     geometry = mapping(cell_to_polygon(cell))
     geometry["coordinates"] = [
-        [[round(x, 6), round(y, 6)] for x, y in ring] for ring in geometry["coordinates"]
+        [[round(x, 6), round(y, 6)] for x, y in ring]
+        for ring in geometry["coordinates"]
     ]
     properties: dict[str, object] = {
         "H3_INDEX": cell,
@@ -215,7 +218,11 @@ def inspect_geomorphometry(
 
     config = load_geomorphometry_config(config_path)
     settings = load_presentation_settings(presentation_config_path)
-    source = Path(parquet_path).expanduser().resolve() if parquet_path else config.output_path
+    source = (
+        Path(parquet_path).expanduser().resolve()
+        if parquet_path
+        else config.output_path
+    )
     destination = (
         Path(output_path).expanduser().resolve()
         if output_path
@@ -249,7 +256,9 @@ def inspect_geomorphometry(
         for bounds in [_scale(frame[metric], kind)]
     }
 
-    centroids = frame["H3_INDEX"].astype(str).map(lambda cell: cell_to_polygon(cell).centroid)
+    centroids = (
+        frame["H3_INDEX"].astype(str).map(lambda cell: cell_to_polygon(cell).centroid)
+    )
     map_options: dict[str, object] = {
         "location": [
             float(centroids.map(lambda point: point.y).mean()),
@@ -265,8 +274,8 @@ def inspect_geomorphometry(
     map_ = folium.Map(**map_options)
     map_name = map_.get_name()
     script = f"""
-    const geomorphometryData = {json.dumps(feature_collection, separators=(',', ':'))};
-    const geomorphometryScales = {json.dumps(scales, separators=(',', ':'))};
+    const geomorphometryData = {json.dumps(feature_collection, separators=(",", ":"))};
+    const geomorphometryScales = {json.dumps(scales, separators=(",", ":"))};
     function geomorphometryHexRgb(hex) {{
       const value = hex.replace('#', '');
       return [parseInt(value.slice(0,2),16), parseInt(value.slice(2,4),16), parseInt(value.slice(4,6),16)];
@@ -312,7 +321,12 @@ def inspect_geomorphometry(
         "{% macro script(this, kwargs) %}" + script + "{% endmacro %}"
     )
     map_.add_child(layer_script)
-    bounds = frame["H3_INDEX"].astype(str).map(cell_to_polygon).map(lambda polygon: polygon.bounds)
+    bounds = (
+        frame["H3_INDEX"]
+        .astype(str)
+        .map(cell_to_polygon)
+        .map(lambda polygon: polygon.bounds)
+    )
     map_.fit_bounds(
         [
             [min(item[1] for item in bounds), min(item[0] for item in bounds)],

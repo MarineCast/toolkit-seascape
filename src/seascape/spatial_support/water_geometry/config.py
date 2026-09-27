@@ -31,8 +31,12 @@ def load_water_geometry_config(config_path: str | Path) -> dict[str, Any]:
         water_geometry.get("build", {}),
         "water_geometry.build",
     )
-    download = require_mapping(water_geometry.get("download", {}), "water_geometry.download")
-    base_dir = (project_root() / Path(raw.get("base_directory", ".")).expanduser()).resolve()
+    download = require_mapping(
+        water_geometry.get("download", {}), "water_geometry.download"
+    )
+    base_dir = (
+        project_root() / Path(raw.get("base_directory", ".")).expanduser()
+    ).resolve()
     output_dir = resolve_project_path(
         water_geometry.get(
             "processed_out_dir",

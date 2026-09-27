@@ -63,7 +63,9 @@ class DatasetSpec:
     def path(self, *, data_root: Path, artifact_root: Path, output_root: Path) -> Path:
         return Path(
             self.path_template.format(
-                data_root=data_root, artifact_root=artifact_root, output_root=output_root
+                data_root=data_root,
+                artifact_root=artifact_root,
+                output_root=output_root,
             )
         )
 
@@ -80,7 +82,9 @@ class ValidationReport:
 
     def require_valid(self) -> None:
         if not self.valid:
-            raise ValueError("; ".join(self.errors) or f"Invalid dataset: {self.dataset_id}")
+            raise ValueError(
+                "; ".join(self.errors) or f"Invalid dataset: {self.dataset_id}"
+            )
 
 
 @dataclass(frozen=True)

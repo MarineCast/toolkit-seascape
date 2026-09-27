@@ -81,23 +81,33 @@ def aggregate_r8_to_r6(
             "ARTIFICIAL_REEF_PRESENCE": (
                 1.0 if rows["ARTIFICIAL_REEF_PRESENCE"].eq(1.0).any() else np.nan
             ),
-            "AQUACULTURE_PRESENCE": (1.0 if rows["AQUACULTURE_PRESENCE"].eq(1.0).any() else np.nan),
+            "AQUACULTURE_PRESENCE": (
+                1.0 if rows["AQUACULTURE_PRESENCE"].eq(1.0).any() else np.nan
+            ),
             "WATER_COMPONENT_ID": support.loc[str(parent), "WATER_COMPONENT_ID"],
             "NETWORK_CONNECTOR_METHOD": support.loc[str(parent), "CONNECTOR_METHOD"],
-            "NETWORK_CONNECTOR_DISTANCE_M": support.loc[str(parent), "CONNECTOR_DISTANCE_M"],
+            "NETWORK_CONNECTOR_DISTANCE_M": support.loc[
+                str(parent), "CONNECTOR_DISTANCE_M"
+            ],
             "NETWORK_DISTANCE_QC_REASON": support.loc[str(parent), "GRAPH_QC_REASON"],
         }
         for column in distance_columns:
             row[column] = rows[column].min(skipna=True)
             qc_column = column.removesuffix("_M") + "_QC_REASON"
-            row[qc_column] = None if rows[column].notna().any() else _pipe_union(rows[qc_column])
+            row[qc_column] = (
+                None if rows[column].notna().any() else _pipe_union(rows[qc_column])
+            )
         for column in (
             "OVERWATER_STRUCTURE_COUNT_WITHIN_5KM",
             "OVERWATER_STRUCTURE_DENSITY_PER_KM2",
         ):
             valid = rows[column].notna()
             row[column] = (
-                float(np.average(rows.loc[valid, column].astype(float), weights=weights[valid]))
+                float(
+                    np.average(
+                        rows.loc[valid, column].astype(float), weights=weights[valid]
+                    )
+                )
                 if valid.any()
                 else np.nan
             )
@@ -117,7 +127,9 @@ def aggregate_r8_to_r6(
     confidence_frame = pd.DataFrame(confidence_rows)
     missing_qc = set(qc_columns).difference(feature_frame.columns)
     if missing_qc:
-        raise AssertionError(f"R6 feature aggregation omitted distance QC: {sorted(missing_qc)}")
+        raise AssertionError(
+            f"R6 feature aggregation omitted distance QC: {sorted(missing_qc)}"
+        )
     validate_feature_table(feature_frame, 6)
     validate_confidence_table(confidence_frame, 6, feature_frame["H3_INDEX"])
     return feature_frame, confidence_frame

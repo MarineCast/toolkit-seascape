@@ -12,7 +12,10 @@ import numpy as np
 import pandas as pd
 from shapely.geometry import box
 
-from seascape.core.geo.geometry import normalize_polygonal_geometry, safe_polygonal_union
+from seascape.core.geo.geometry import (
+    normalize_polygonal_geometry,
+    safe_polygonal_union,
+)
 
 
 def expanded_bbox_polygon(bbox: Mapping[str, float], distance_km: float):
@@ -150,7 +153,9 @@ def align_to_model_support(
             f"Canonical model support is missing requested columns: {missing_support_columns}"
         )
     unknown = sorted(
-        set(features["H3_INDEX"].astype(str)).difference(support["H3_INDEX"].astype(str))
+        set(features["H3_INDEX"].astype(str)).difference(
+            support["H3_INDEX"].astype(str)
+        )
     )
     if unknown:
         raise ValueError(
@@ -162,7 +167,9 @@ def align_to_model_support(
     right["H3_INDEX"] = right["H3_INDEX"].astype(str)
     output = left.merge(right, on="H3_INDEX", how="left", validate="one_to_one")
     if h3_cell_set_hash(output["H3_INDEX"]) != h3_cell_set_hash(support["H3_INDEX"]):
-        raise ValueError(f"{feature_label} alignment changed the canonical H3 cell set.")
+        raise ValueError(
+            f"{feature_label} alignment changed the canonical H3 cell set."
+        )
     return output
 
 
@@ -190,7 +197,9 @@ def water_neighborhood_lookup(
     ].copy()
     selected["SOURCE_H3_INDEX"] = selected["SOURCE_H3_INDEX"].astype(str)
     selected["TARGET_H3_INDEX"] = selected["TARGET_H3_INDEX"].astype(str)
-    selected = selected.sort_values(["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"])
+    selected = selected.sort_values(
+        ["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"]
+    )
     return {
         str(source): tuple(group["TARGET_H3_INDEX"].astype(str))
         for source, group in selected.groupby("SOURCE_H3_INDEX", sort=True)

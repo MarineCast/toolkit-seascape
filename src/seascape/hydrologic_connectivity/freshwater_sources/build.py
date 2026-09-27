@@ -87,7 +87,9 @@ def load_river_mouth_build_config(
     processing = _mapping(section.get("processing"), "freshwater_sources.processing")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     download = load_freshwater_download_config(path)
     processed_dir = _resolve(processing["processed_directory"], base_dir)
@@ -96,7 +98,9 @@ def load_river_mouth_build_config(
         raise ValueError("freshwater_sources.processing.h3_resolution must be 8.")
 
     positive = {
-        "mouth_coast_tolerance_m": float(processing.get("mouth_coast_tolerance_m", 1_500)),
+        "mouth_coast_tolerance_m": float(
+            processing.get("mouth_coast_tolerance_m", 1_500)
+        ),
         "hydrorivers_match_distance_m": float(
             processing.get("hydrorivers_match_distance_m", 5_000)
         ),
@@ -106,19 +110,32 @@ def load_river_mouth_build_config(
         "mouth_width_polygon_match_distance_m": float(
             processing.get("mouth_width_polygon_match_distance_m", 300)
         ),
-        "default_stream_mouth_width_m": float(processing.get("default_stream_mouth_width_m", 2)),
-        "river_mouth_pressure_decay_km": float(processing.get("river_mouth_pressure_decay_km", 5)),
+        "default_stream_mouth_width_m": float(
+            processing.get("default_stream_mouth_width_m", 2)
+        ),
+        "river_mouth_pressure_decay_km": float(
+            processing.get("river_mouth_pressure_decay_km", 5)
+        ),
     }
     if any(value <= 0 for value in positive.values()):
         raise ValueError("River-mouth distance and width settings must be positive.")
     sample_distances = tuple(
-        sorted({float(value) for value in processing.get("mouth_width_sample_distances_m", ())})
+        sorted(
+            {
+                float(value)
+                for value in processing.get("mouth_width_sample_distances_m", ())
+            }
+        )
     )
     if not sample_distances or any(value <= 0 for value in sample_distances):
-        raise ValueError("mouth_width_sample_distances_m must contain positive distances.")
+        raise ValueError(
+            "mouth_width_sample_distances_m must contain positive distances."
+        )
     pressure_decay_km = positive["river_mouth_pressure_decay_km"]
     if not pressure_decay_km.is_integer():
-        raise ValueError("river_mouth_pressure_decay_km must be a positive whole kilometer.")
+        raise ValueError(
+            "river_mouth_pressure_decay_km must be a positive whole kilometer."
+        )
 
     raw_paths = {source.name: source.raw_path for source in download.arcgis_sources}
     return RiverMouthBuildConfig(
@@ -136,8 +153,12 @@ def load_river_mouth_build_config(
         mouth_coast_tolerance_m=positive["mouth_coast_tolerance_m"],
         hydrorivers_match_distance_m=positive["hydrorivers_match_distance_m"],
         mouth_width_sample_distances_m=sample_distances,
-        mouth_width_cross_section_length_m=positive["mouth_width_cross_section_length_m"],
-        mouth_width_polygon_match_distance_m=positive["mouth_width_polygon_match_distance_m"],
+        mouth_width_cross_section_length_m=positive[
+            "mouth_width_cross_section_length_m"
+        ],
+        mouth_width_polygon_match_distance_m=positive[
+            "mouth_width_polygon_match_distance_m"
+        ],
         default_stream_mouth_width_m=positive["default_stream_mouth_width_m"],
         river_mouth_pressure_decay_km=int(pressure_decay_km),
     )
@@ -163,16 +184,21 @@ def _read_vector(path: Path, *, bbox_value: Mapping[str, float] | None = None):
     import geopandas as gpd
 
     if not path.exists():
-        raise FileNotFoundError(f"River source not found: {path}. Run download.py first.")
+        raise FileNotFoundError(
+            f"River source not found: {path}. Run download.py first."
+        )
     read_bbox = None
     if bbox_value is not None:
-        read_bbox = tuple(bbox_value[key] for key in ("min_lon", "min_lat", "max_lon", "max_lat"))
+        read_bbox = tuple(
+            bbox_value[key] for key in ("min_lon", "min_lat", "max_lon", "max_lat")
+        )
     frame = gpd.read_file(path, bbox=read_bbox)
     if frame.crs is None:
         raise ValueError(f"River source has no CRS: {path}")
     frame = frame.to_crs("EPSG:4326")
     frame.columns = [
-        str(column).upper() if column != frame.geometry.name else column for column in frame
+        str(column).upper() if column != frame.geometry.name else column
+        for column in frame
     ]
     if frame.geometry.name != "geometry":
         frame = frame.rename_geometry("geometry")
@@ -213,7 +239,9 @@ def _load_water(config: RiverMouthBuildConfig):
         )
     water = gpd.read_parquet(config.water_polygon_path)
     if water.crs is None:
-        raise ValueError(f"Canonical marine-water geometry has no CRS: {config.water_polygon_path}")
+        raise ValueError(
+            f"Canonical marine-water geometry has no CRS: {config.water_polygon_path}"
+        )
     model_box = box(
         config.bbox["min_lon"],
         config.bbox["min_lat"],
@@ -223,7 +251,9 @@ def _load_water(config: RiverMouthBuildConfig):
     target = safe_polygonal_union(water.to_crs("EPSG:4326"), clip_geometry=model_box)
     if target.is_empty:
         raise ValueError("Canonical marine-water geometry is empty in the model area.")
-    projected = gpd.GeoSeries([target], crs="EPSG:4326").to_crs(config.projected_crs).iloc[0]
+    projected = (
+        gpd.GeoSeries([target], crs="EPSG:4326").to_crs(config.projected_crs).iloc[0]
+    )
     return target, projected
 
 
@@ -236,7 +266,9 @@ def _bc_terminal_segments(frame: Any):
     if candidate.empty:
         return candidate
     route = candidate.get("BLUE_LINE_KEY", candidate.get("OBJECTID")).astype("string")
-    fallback = pd.Series(candidate.index.astype(str), index=candidate.index, dtype="string")
+    fallback = pd.Series(
+        candidate.index.astype(str), index=candidate.index, dtype="string"
+    )
     candidate["_ROUTE"] = route.fillna(fallback)
     measure = pd.to_numeric(candidate.get("DOWNSTREAM_ROUTE_MEASURE"), errors="coerce")
     candidate["_MEASURE"] = measure.fillna(np.inf)
@@ -273,7 +305,10 @@ def _outlet_points(lines: Any, projected_water: Any, config: RiverMouthBuildConf
     projected["_MOUTH_AT_END"] = mouth_at_end
     projected["COAST_DISTANCE_M"] = np.where(mouth_at_end, end_distance, start_distance)
     projected.geometry = gpd.GeoSeries(
-        [ends.iloc[i] if mouth_at_end[i] else starts.iloc[i] for i in range(len(projected))],
+        [
+            ends.iloc[i] if mouth_at_end[i] else starts.iloc[i]
+            for i in range(len(projected))
+        ],
         index=projected.index,
         crs=config.projected_crs,
     )
@@ -309,7 +344,9 @@ def _mouth_frame(
                 "MOUTH_WIDTH_METHOD": "configured_default_line_only_width",
                 "COAST_DISTANCE_M": float(row["COAST_DISTANCE_M"]),
                 **classification,
-                "_WIDTH_KEY": _text(row.get(width_key_column)) if width_key_column else None,
+                "_WIDTH_KEY": _text(row.get(width_key_column))
+                if width_key_column
+                else None,
                 "_TERMINAL_LINE": row["_TERMINAL_LINE"],
                 "_MOUTH_AT_END": bool(row["_MOUTH_AT_END"]),
                 "geometry": row["geometry"],
@@ -360,7 +397,9 @@ def _build_mouths(
     )
     hydrorivers = frames["hydrorivers"]
     hydro_terminal = pd.to_numeric(hydrorivers.get("NEXT_DOWN"), errors="coerce").eq(0)
-    hydro_exorheic = pd.to_numeric(hydrorivers.get("ENDORHEIC"), errors="coerce").fillna(0).eq(0)
+    hydro_exorheic = (
+        pd.to_numeric(hydrorivers.get("ENDORHEIC"), errors="coerce").fillna(0).eq(0)
+    )
     hydro = _mouth_frame(
         hydrorivers.loc[hydro_terminal & hydro_exorheic],
         dataset="HYDRORIVERS_V10",
@@ -376,7 +415,9 @@ def _build_mouths(
         crs=config.projected_crs,
     )
     if mouths.empty:
-        raise ValueError("No river mouths were found next to the canonical marine water.")
+        raise ValueError(
+            "No river mouths were found next to the canonical marine water."
+        )
     mouths = _deduplicate_hydrorivers(mouths, config)
     mouths = _apply_mouth_widths(
         mouths,
@@ -384,7 +425,9 @@ def _build_mouths(
         frames["us_river_polygons"],
         config,
     )
-    return mouths.sort_values(["SOURCE_DATASET", "RIVER_MOUTH_ID"]).reset_index(drop=True)
+    return mouths.sort_values(["SOURCE_DATASET", "RIVER_MOUTH_ID"]).reset_index(
+        drop=True
+    )
 
 
 def _build_h3_features(
@@ -397,13 +440,19 @@ def _build_h3_features(
 
     cells = support["H3_INDEX"].astype(str).sort_values().tolist()
     if not cells:
-        raise ValueError("No H3 cells overlap canonical marine water in the model area.")
+        raise ValueError(
+            "No H3 cells overlap canonical marine water in the model area."
+        )
     if any(h3.get_resolution(cell) != config.h3_resolution for cell in cells):
-        raise ValueError("River-mouth target support contains an unexpected H3 resolution.")
+        raise ValueError(
+            "River-mouth target support contains an unexpected H3 resolution."
+        )
     _, _, target_x, target_y = project_h3_centers(cells, config.projected_crs)
     target_xy = np.column_stack((target_x, target_y))
     projected_mouths = mouths.to_crs(config.projected_crs).reset_index(drop=True)
-    mouth_xy = np.column_stack((projected_mouths.geometry.x, projected_mouths.geometry.y))
+    mouth_xy = np.column_stack(
+        (projected_mouths.geometry.x, projected_mouths.geometry.y)
+    )
     distance, nearest_position = cKDTree(mouth_xy).query(target_xy)
     nearest = projected_mouths.iloc[nearest_position].reset_index(drop=True)
     pressure_column, weighted_pressure_column = pressure_columns(config)
@@ -419,7 +468,9 @@ def _build_h3_features(
             "H3_INDEX": cells,
             "DISTANCE_TO_RIVER_MOUTH_M": distance,
             "NEAREST_RIVER_MOUTH_ID": nearest["RIVER_MOUTH_ID"].astype("string"),
-            "NEAREST_RIVER_MOUTH_WIDTH_M": pd.to_numeric(nearest["MOUTH_WIDTH_M"], errors="coerce"),
+            "NEAREST_RIVER_MOUTH_WIDTH_M": pd.to_numeric(
+                nearest["MOUTH_WIDTH_M"], errors="coerce"
+            ),
             pressure_column: unweighted_pressure,
             weighted_pressure_column: width_weighted_pressure,
         }
@@ -434,7 +485,9 @@ def _build_h3_features(
     if not np.isfinite(pressure_values).all() or np.any(pressure_values < 0):
         raise ValueError("Mapped river-mouth pressure must be finite and nonnegative.")
     if np.any(width_weighted_pressure + 1e-12 < unweighted_pressure):
-        raise ValueError("Width-weighted pressure cannot be lower than unweighted pressure.")
+        raise ValueError(
+            "Width-weighted pressure cannot be lower than unweighted pressure."
+        )
     return (
         align_to_model_support(
             support,
@@ -537,12 +590,17 @@ def build_river_mouths(
             ),
             "summaries": {
                 pressure_column: _numeric_summary(features[pressure_column]),
-                weighted_pressure_column: _numeric_summary(features[weighted_pressure_column]),
+                weighted_pressure_column: _numeric_summary(
+                    features[weighted_pressure_column]
+                ),
             },
         },
         "source_counts": {
             str(key): int(value)
-            for key, value in mouths["SOURCE_DATASET"].value_counts().sort_index().items()
+            for key, value in mouths["SOURCE_DATASET"]
+            .value_counts()
+            .sort_index()
+            .items()
         },
         "h3_columns": output_columns(config),
     }

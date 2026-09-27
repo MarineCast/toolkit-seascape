@@ -30,7 +30,9 @@ def main() -> int:
     parser.add_argument("--overwrite", action="store_true", default=None)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
-    outputs, manifest = download_anthropogenic_sources(args.config, overwrite=args.overwrite)
+    outputs, manifest = download_anthropogenic_sources(
+        args.config, overwrite=args.overwrite
+    )
     for path in [*outputs, manifest]:
         print(path)
     return 0

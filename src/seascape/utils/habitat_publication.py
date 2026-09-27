@@ -57,7 +57,9 @@ def build_habitat_products(
     radius_operator = load_radius_sum_operator(config_path)
     network = load_water_network_config(config_path)
     if radius_operator.radius_m != config.marine_buffer_m:
-        raise ValueError("Habitat marine_buffer_m must match the canonical radius-sum operator.")
+        raise ValueError(
+            "Habitat marine_buffer_m must match the canonical radius-sum operator."
+        )
     r8_features, r8_confidence = build_r8_tables(
         inventory,
         support_r8,
@@ -76,11 +78,17 @@ def build_habitat_products(
         )
     crosswalk = pd.read_parquet(config.parent_child_path)
     selected = set(r8_features["H3_INDEX"].astype(str))
-    crosswalk = crosswalk.loc[crosswalk["CHILD_H3_INDEX"].astype(str).isin(selected)].copy()
-    selected_parents = set(crosswalk["PARENT_H3_INDEX"].astype(str))
-    support_r6 = support_r6.loc[support_r6["H3_INDEX"].astype(str).isin(selected_parents)].copy()
     crosswalk = crosswalk.loc[
-        crosswalk["PARENT_H3_INDEX"].astype(str).isin(set(support_r6["H3_INDEX"].astype(str)))
+        crosswalk["CHILD_H3_INDEX"].astype(str).isin(selected)
+    ].copy()
+    selected_parents = set(crosswalk["PARENT_H3_INDEX"].astype(str))
+    support_r6 = support_r6.loc[
+        support_r6["H3_INDEX"].astype(str).isin(selected_parents)
+    ].copy()
+    crosswalk = crosswalk.loc[
+        crosswalk["PARENT_H3_INDEX"]
+        .astype(str)
+        .isin(set(support_r6["H3_INDEX"].astype(str)))
     ].copy()
     aggregation_children = set(crosswalk["CHILD_H3_INDEX"].astype(str))
     omitted_children = len(r8_features) - len(aggregation_children)
@@ -90,8 +98,12 @@ def build_habitat_products(
             omitted_children,
         )
     r6_features, r6_confidence = aggregate_r8_to_r6(
-        r8_features.loc[r8_features["H3_INDEX"].astype(str).isin(aggregation_children)].copy(),
-        r8_confidence.loc[r8_confidence["H3_INDEX"].astype(str).isin(aggregation_children)].copy(),
+        r8_features.loc[
+            r8_features["H3_INDEX"].astype(str).isin(aggregation_children)
+        ].copy(),
+        r8_confidence.loc[
+            r8_confidence["H3_INDEX"].astype(str).isin(aggregation_children)
+        ].copy(),
         crosswalk,
         support_r6,
         prefix=config.prefix,
@@ -127,7 +139,9 @@ def build_habitat_products(
             "license": source.get("license") or "See authoritative source terms",
             "attribution": source.get("attribution") or name,
             "observation_period": source.get("observation_period"),
-            "source_url": source.get("url", source.get("layer_url", source.get("dataset_url"))),
+            "source_url": source.get(
+                "url", source.get("layer_url", source.get("dataset_url"))
+            ),
         }
         if raw_path is not None:
             record["path"] = str(raw_path)
@@ -136,7 +150,9 @@ def build_habitat_products(
                 record["checksum"] = checksum_artifact(raw_path)
         sources.append(record)
     declared_status = (
-        str(source_completeness.get("status", "")).strip().lower() if source_completeness else ""
+        str(source_completeness.get("status", "")).strip().lower()
+        if source_completeness
+        else ""
     )
     manifest = build_manifest(
         dataset_family=f"environment.seascape.{config.section_name}",
@@ -155,9 +171,12 @@ def build_habitat_products(
             )
         ],
         attribution=[
-            {"text": source["attribution"], "license": source["license"]} for source in sources
+            {"text": source["attribution"], "license": source["license"]}
+            for source in sources
         ],
-        source_completeness=("partial" if declared_status not in {"", "complete"} else "complete"),
+        source_completeness=(
+            "partial" if declared_status not in {"", "complete"} else "complete"
+        ),
         metadata={
             "radius_operator_lineage": {
                 "path": str(network.radius_sum_operator_path),

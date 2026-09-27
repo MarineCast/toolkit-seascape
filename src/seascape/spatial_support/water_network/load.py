@@ -56,7 +56,9 @@ def _manifest(config: WaterNetworkConfig) -> dict[str, Any]:
 
 def _verify_artifact(path: Path, payload: dict[str, Any]) -> None:
     resolved = path.resolve()
-    artifact_root = Path(os.environ.get("SEASCAPE_CANDIDATE_ROOT", project_root())).resolve()
+    artifact_root = Path(
+        os.environ.get("SEASCAPE_CANDIDATE_ROOT", project_root())
+    ).resolve()
     matches = [
         artifact
         for artifact in payload["artifacts"]
@@ -112,9 +114,9 @@ def load_water_support(
         raise ValueError("bbox_buffer_m requires bbox.")
     if bbox is not None and bbox_buffer_m:
         transformer = Transformer.from_crs("EPSG:4326", "EPSG:6933", always_xy=True)
-        buffered_aoi = transform_geometry(transformer.transform, box(*map(float, bbox))).buffer(
-            float(bbox_buffer_m)
-        )
+        buffered_aoi = transform_geometry(
+            transformer.transform, box(*map(float, bbox))
+        ).buffer(float(bbox_buffer_m))
         x_values, y_values = transformer.transform(
             frame["REPRESENTATIVE_POINT_LONGITUDE"].to_numpy(),
             frame["REPRESENTATIVE_POINT_LATITUDE"].to_numpy(),
@@ -159,11 +161,15 @@ def load_model_area_support(
     if resolution == 6 and {6, 8}.issubset(config.resolutions):
         child_path = config.model_support_path(8)
         if not child_path.exists():
-            raise FileNotFoundError(f"Canonical R8 model-area support not found: {child_path}")
+            raise FileNotFoundError(
+                f"Canonical R8 model-area support not found: {child_path}"
+            )
         if verify_checksum:
             _verify_artifact(child_path, payload)
         children = pd.read_parquet(child_path, columns=["H3_INDEX"])
-        expected = {cell_to_parent(str(cell), 6) for cell in children["H3_INDEX"].astype(str)}
+        expected = {
+            cell_to_parent(str(cell), 6) for cell in children["H3_INDEX"].astype(str)
+        }
         observed = set(support["H3_INDEX"].astype(str))
         if observed != expected:
             missing = sorted(expected.difference(observed))[:5]
@@ -225,7 +231,9 @@ def load_water_neighborhoods(
 
 def _csr(support: pd.DataFrame, edges: pd.DataFrame, resolution: int) -> WaterGraph:
     node_cells = sorted(
-        set(edges["SOURCE_H3_INDEX"].astype(str)).union(edges["TARGET_H3_INDEX"].astype(str))
+        set(edges["SOURCE_H3_INDEX"].astype(str)).union(
+            edges["TARGET_H3_INDEX"].astype(str)
+        )
     )
     positions = {cell: index for index, cell in enumerate(node_cells)}
     adjacency: list[list[tuple[int, float]]] = [[] for _ in node_cells]
@@ -288,7 +296,9 @@ def load_water_graph(
     full_support = (
         support
         if bbox is None and component_id is None
-        else load_water_support(resolution, config_path, verify_checksum=verify_checksum)
+        else load_water_support(
+            resolution, config_path, verify_checksum=verify_checksum
+        )
     )
     validate_edges(edges, full_support, resolution)
     selected = set(support["H3_INDEX"].astype(str))
@@ -298,7 +308,9 @@ def load_water_graph(
         & edges["TARGET_H3_INDEX"].isin(selected)
     ].copy()
     if edges.empty:
-        raise ValueError(f"Selected canonical H3 r{resolution} graph has no valid edges.")
+        raise ValueError(
+            f"Selected canonical H3 r{resolution} graph has no valid edges."
+        )
     return _csr(support, edges, resolution)
 
 
@@ -327,7 +339,9 @@ def load_radius_sum_operator(
         source_support_cells=source_support["H3_INDEX"].astype(str).tolist(),
     )
     if operator.radius_m != config.canonical_radius_m:
-        raise ValueError("Configured and materialized radius-operator distances disagree.")
+        raise ValueError(
+            "Configured and materialized radius-operator distances disagree."
+        )
     return operator
 
 
@@ -342,12 +356,17 @@ def load_reachable_water_area(
     payload = _manifest(config)
     path = config.reachable_water_area_path
     if not path.exists():
-        raise FileNotFoundError(f"Canonical reachable-water-area derivative not found: {path}")
+        raise FileNotFoundError(
+            f"Canonical reachable-water-area derivative not found: {path}"
+        )
     if verify_checksum:
         _verify_artifact(path, payload)
     frame = pd.read_parquet(path)
     support = load_model_area_support(8, config_path, verify_checksum=verify_checksum)
-    if frame["H3_INDEX"].astype(str).tolist() != support["H3_INDEX"].astype(str).tolist():
+    if (
+        frame["H3_INDEX"].astype(str).tolist()
+        != support["H3_INDEX"].astype(str).tolist()
+    ):
         raise ValueError("Reachable-water-area support order is noncanonical.")
     values = frame["REACHABLE_WATER_AREA_WITHIN_5KM_M2"].to_numpy(dtype="float64")
     if not np.isfinite(values).all() or (values < 0).any():
@@ -380,7 +399,9 @@ def multi_source_shortest_paths(
             owners[position] = int(owner)
             heapq.heappush(queue, (initial, int(owner), position))
     if not queue:
-        raise ValueError("No shortest-path source belongs to the selected canonical graph.")
+        raise ValueError(
+            "No shortest-path source belongs to the selected canonical graph."
+        )
     while queue:
         current, owner, position = heapq.heappop(queue)
         if current > distances[position] + 1e-9 or owner != owners[position]:
@@ -430,7 +451,11 @@ def attach_points_to_graph(
         zip(longitudes, latitudes, strict=True)
     ):
         point = Point(float(longitude), float(latitude))
-        entry = point if water_geometry.covers(point) else nearest_points(point, water_geometry)[1]
+        entry = (
+            point
+            if water_geometry.covers(point)
+            else nearest_points(point, water_geometry)[1]
+        )
         _azimuth, _back_azimuth, source_distance = geod.inv(
             float(longitude), float(latitude), float(entry.x), float(entry.y)
         )
@@ -465,9 +490,13 @@ def attach_points_to_graph(
                 outside_tolerance_m=passability_tolerance_m,
                 prepared_water=prepared_water,
             )
-            evaluated.append((distance, str(graph.cells[graph_position]), fraction, passable))
+            evaluated.append(
+                (distance, str(graph.cells[graph_position]), fraction, passable)
+            )
         evaluated.sort(key=lambda value: (value[0], value[1]))
-        within = [value for value in evaluated if value[0] <= graph_connector_max_distance_m]
+        within = [
+            value for value in evaluated if value[0] <= graph_connector_max_distance_m
+        ]
         accepted = next((value for value in within if value[3]), None)
         if accepted is None:
             closest = within[0] if within else (evaluated[0] if evaluated else None)

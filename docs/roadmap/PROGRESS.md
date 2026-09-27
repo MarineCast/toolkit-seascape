@@ -1,6 +1,6 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-05; SS-03 hosted acceptance pending.
+Implemented scope: SS-00 through SS-06; SS-03 hosted acceptance pending.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
@@ -14,7 +14,8 @@ Working branch: `feature/seascape-first-run-demo`. No remote mutations.
 | SS-03 | blocked | Implementation/local macOS passed; hosted Linux/macOS matrix not_run |
 | SS-04 | passed | Read-only input preflight; 34 new regressions; guarded runtime-only wheel acceptance |
 | SS-05 | passed | CLI-only guidance/debug, side-effect contracts, 29 regressions; runtime-only wheel acceptance |
-| SS-06–SS-11 | not_run | SS-06 is next; hosted SS-03 acceptance remains pending before integration |
+| SS-06 | passed | Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped |
+| SS-07–SS-11 | not_run | SS-07 is next; hosted SS-03 acceptance remains pending before integration |
 
 ## SS-00 baseline
 
@@ -452,3 +453,82 @@ Scientific behavior changed: **no**; formulas, defaults, product/release schemas
 contracts and scientific/release gates retained. No unrelated tracked changes existed. Existing
 configurations, canonical/retained products, notebook, ignored cache and siblings preserved.
 Next: **SS-06**, repository-wide formatting only. Stop before SS-06. Remote changes: **none**.
+
+## SS-06 formatting baseline
+
+**passed** (local implementation/acceptance). Base `818df353a418ee3ec963466228c6589851599e72`;
+current commit is the SS-06 commit containing this record. Clean starting tree; preserved
+`feature/seascape-first-run-demo`. SS-00 prerequisite complete; source edits were serialized.
+Rechecked existing Ruff configuration, CI gates, source-byte code identity and prior acceptance
+limits. Used Ruff **0.16.9**, existing defaults/Python 3.11 target, without additional exclusions.
+
+Formatted **124 Python files** under `src/`, `tests/`, `scripts/`; no lint autofixes, import
+reordering, symbol/type changes, moves or algorithm edits. All **209 Python ASTs** match exactly
+after ignoring location metadata (including `TypeIgnore.lineno`), retaining type comments and
+string/docstring values. All **56 protected file hashes** match, including configuration, resources,
+schemas and notebook. All 209 files also parse with Python 3.14's `feature_version=(3,11)`;
+this is syntax evidence, not execution on Python 3.11. CI and contributor instructions now enforce
+`ruff format --check src tests scripts`. A structural YAML comparison confirms the CI format
+command is the only workflow change; other test/scientific/security/consumer gates are retained.
+
+Exact verification commands (owning checkout, except copied helpers run from `E`):
+
+```sh
+D=/tmp/seascape-roadmap-dev/bin
+R=/tmp/seascape-ss04-evidence/consumer/bin
+E=/tmp/seascape-ss06-evidence
+F=/Users/tylerstevenson/Documents/Code_Repos/MarineCast
+$D/ruff format src tests scripts
+$D/python $E/verify_format.py
+$D/ruff format --check src tests scripts
+$D/ruff check src tests scripts
+$D/python -m mypy
+$D/python -m pytest -q
+$D/python -m build --no-isolation --outdir $E/distributions
+$D/python scripts/check_distribution.py --sdist $E/distributions/toolkit_seascape-0.1.0.tar.gz --wheel $E/distributions/toolkit_seascape-0.1.0-py3-none-any.whl --output $E/distribution.json
+$R/python -m pip install --force-reinstall --no-deps $E/distributions/toolkit_seascape-0.1.0-py3-none-any.whl
+$R/python -m pip check
+$R/python $E/consumer_guard.py --forbid-root $F --script $E/check_installed_package.py -- --snapshot $E/installed.json
+$R/python $E/check_demo.py --workspace $E/demo-workspace --forbid-root $F
+$D/python scripts/environment_snapshot.py --output $E/environment
+$D/pip-audit --disable-pip --no-deps --strict -r $E/environment.txt
+gitleaks dir $E/tracked-scan --redact --no-banner
+gitleaks git . --redact --no-banner --log-opts=--all
+git diff --check
+```
+
+Commands above exited **0**. Full suite: **322 passed / 0 failed / 3 skipped**, 65 warnings.
+Two feature-catalog and one network-consumer test skip because materialized regional artifacts
+are absent. No new tests or changed assertions; test ASTs are identical. Full format check:
+230 files already formatted (209 tracked Python files); existing four-module mypy and bug lint
+passed. Initial `ruff format --check src tests scripts` exited **1**, reporting 124 files needing
+formatting; corrected by the formatter. One inspection command ended with a stray `/ tmp`
+(exit **126**, read-only typo); expected absent old evidence-path probes were not acceptance.
+
+Wheel built from sdist and inspected (9 required files, 5 resources). SHA-256: wheel
+`cc60508ccc2c7db7115cba67b38b7cf90dc86bcd391cb89f1b50b2a1b259bb21`, sdist
+`5f55b80dbbf99be8a74084d2fe61976f34196eade487688e13d496b3165d42e4`.
+Reused isolated runtime-only SS-04 consumer after force-reinstalling this wheel; no inherited
+packages, pytest or Jupyter dependencies. Guarded **163 module imports** and **14 demo checks**
+passed; synthetic artifacts only in `E/demo-workspace/.seascape/demo`. Guards establish Python
+checkout/outbound/child-process denial, not an OS/native firewall. Dependency audit found no known
+vulnerabilities. Python 3.14.6/macOS ARM64; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1.
+
+Evidence: `/tmp/seascape-ss06-evidence/` (command ledger, before/after ASTs, `verification-final.json`,
+protected hashes, scope/CI verification, changed-file inventory and test/build/runtime/security logs).
+Broad `gitleaks dir . --redact --no-banner --report-format json --report-path
+/tmp/seascape-ss06-evidence/gitleaks-tree.json` exited **1** on the same untouched ignored
+`graphify-out/cache/stat-index.json:1` documentation-hash finding. Broad scan **failed**; tracked
+source/history passed. No cache deletion, allowlist or weakened gate. Hosted SS-03 Linux/macOS
+checks remain **not_run** (remote updates unauthorized). Notebook assessed: unchanged file and
+production API ASTs; no edit or repeated headless run. Live acquisition, regional rebuilds,
+downstream integration and human release acceptance remain **not_run**.
+
+Changed files: 124 Python files (complete inventory in evidence), `.github/workflows/ci.yml`,
+`AGENTS.md`, `docs/DEVELOPMENT.md`, `docs/environments/README.md`, this progress record.
+Behavior/API/scientific changes: **none**. Source bytes/code identity change, so existing resume
+state may invalidate; validation is preserved. Ruff remains range-declared; version reproducibility
+and broader lint/typing belong to SS-07. No unrelated tracked changes existed. Existing configs,
+canonical products, retained releases, notebook, ignored cache and siblings preserved.
+Next: **SS-07**, static checks and environment reproducibility. Stop before SS-07.
+Remote changes: **none**.

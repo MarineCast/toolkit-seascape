@@ -116,7 +116,9 @@ def test_parent_shoreline_fractions_are_recomputed_from_child_lengths() -> None:
     assert result["ROCKY_SHORE_FRAC"] == pytest.approx(0.5)
 
 
-def test_inspector_uses_shared_presentation_and_output_routing(monkeypatch, tmp_path) -> None:
+def test_inspector_uses_shared_presentation_and_output_routing(
+    monkeypatch, tmp_path
+) -> None:
     inventory = gpd.GeoDataFrame(
         {
             "SEGMENT_ID": ["segment"],
@@ -129,7 +131,9 @@ def test_inspector_uses_shared_presentation_and_output_routing(monkeypatch, tmp_
     )
     inventory_path = tmp_path / "inventory.parquet"
     inventory.to_parquet(inventory_path, index=False)
-    expected = tmp_path / "maps" / shoreline_inspect.MAP_EXPORT_SUBDIRECTORY / "result.html"
+    expected = (
+        tmp_path / "maps" / shoreline_inspect.MAP_EXPORT_SUBDIRECTORY / "result.html"
+    )
     settings = PresentationSettings(
         base_export_directory=tmp_path / "maps",
         color_maps={"default": ("#000000", "#ffffff")},

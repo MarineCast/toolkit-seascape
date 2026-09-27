@@ -28,7 +28,10 @@ from shapely.geometry import LinearRing, LineString, MultiLineString, box
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.geo.geometry import normalize_polygonal_geometry, safe_polygonal_union
+from seascape.core.geo.geometry import (
+    normalize_polygonal_geometry,
+    safe_polygonal_union,
+)
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
 )
@@ -97,13 +100,17 @@ def load_shoreline_proximity_config(
     processing = _mapping(section.get("processing"), "shoreline_proximity.processing")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     resolution = int(processing.get("h3_resolution", 8))
     if resolution != 8:
         raise ValueError("shoreline_proximity.processing.h3_resolution must be 8.")
     network_context_buffer_km = float(processing.get("network_context_buffer_km", 35.0))
-    shoreline_seed_distance_m = float(processing.get("shoreline_seed_distance_m", 650.0))
+    shoreline_seed_distance_m = float(
+        processing.get("shoreline_seed_distance_m", 650.0)
+    )
     open_ocean_radius_km = float(processing.get("open_ocean_radius_km", 25.0))
     open_ocean_bearings = int(processing.get("open_ocean_bearings", 16))
     if network_context_buffer_km <= 0.0:
@@ -134,7 +141,9 @@ def _spatial_support(config: ShorelineProximityConfig):
     import geopandas as gpd
 
     if not config.water_polygon_path.exists():
-        raise FileNotFoundError(f"Canonical water geometry not found: {config.water_polygon_path}")
+        raise FileNotFoundError(
+            f"Canonical water geometry not found: {config.water_polygon_path}"
+        )
     if not config.land_polygon_path.exists():
         raise FileNotFoundError(f"Land polygons not found: {config.land_polygon_path}")
     water = gpd.read_parquet(config.water_polygon_path)
@@ -167,7 +176,9 @@ def _spatial_support(config: ShorelineProximityConfig):
     context_land = normalize_polygonal_geometry(guarded_land.intersection(context_box))
     shoreline = guarded_land.boundary.intersection(context_box)
     if shoreline.is_empty:
-        raise ValueError("No shoreline boundary intersects the configured analysis context.")
+        raise ValueError(
+            "No shoreline boundary intersects the configured analysis context."
+        )
     return target_water, context_water, context_box, context_land, shoreline
 
 
@@ -187,7 +198,9 @@ def _shoreline_distances(
 ) -> np.ndarray:
     import geopandas as gpd
 
-    projected = gpd.GeoSeries([shoreline], crs="EPSG:4326").to_crs(projected_crs).iloc[0]
+    projected = (
+        gpd.GeoSeries([shoreline], crs="EPSG:4326").to_crs(projected_crs).iloc[0]
+    )
     parts = _line_parts(projected)
     if not parts:
         raise ValueError("Projected shoreline contains no line geometry.")
@@ -234,7 +247,9 @@ def _open_ocean_indices(
         ]
         output[index] = float(np.mean(fractions))
         if (index + 1) % 5_000 == 0:
-            LOGGER.info("Calculated open-ocean index for %d/%d cells", index + 1, len(cells))
+            LOGGER.info(
+                "Calculated open-ocean index for %d/%d cells", index + 1, len(cells)
+            )
     return np.clip(output, 0.0, 1.0)
 
 
@@ -246,14 +261,20 @@ def build_shoreline_proximity(
     import h3
 
     config = load_shoreline_proximity_config(config_path)
-    target_water, context_water, context_box, context_land, shoreline = _spatial_support(config)
+    target_water, context_water, context_box, context_land, shoreline = (
+        _spatial_support(config)
+    )
     target_support = load_model_area_support(config.h3_resolution, config_path)
     target_cells = target_support["H3_INDEX"].astype(str).tolist()
     if not target_cells:
-        raise ValueError("No water-supported H3 cells overlap the configured model area.")
+        raise ValueError(
+            "No water-supported H3 cells overlap the configured model area."
+        )
     if any(h3.get_resolution(cell) != config.h3_resolution for cell in target_cells):
         raise ValueError("Target water support contains an unexpected H3 resolution.")
-    target_lat, target_lon, target_x, target_y = _cell_centers(target_cells, config.projected_crs)
+    target_lat, target_lon, target_x, target_y = _cell_centers(
+        target_cells, config.projected_crs
+    )
     target_shoreline_distance = _shoreline_distances(
         shoreline,
         target_x,
@@ -267,11 +288,17 @@ def build_shoreline_proximity(
     )
     context_cells = graph.cells.astype(str).tolist()
     graph_support = graph.support.set_index("H3_INDEX").loc[context_cells]
-    context_lon = graph_support["REPRESENTATIVE_POINT_LONGITUDE"].to_numpy(dtype="float64")
-    context_lat = graph_support["REPRESENTATIVE_POINT_LATITUDE"].to_numpy(dtype="float64")
+    context_lon = graph_support["REPRESENTATIVE_POINT_LONGITUDE"].to_numpy(
+        dtype="float64"
+    )
+    context_lat = graph_support["REPRESENTATIVE_POINT_LATITUDE"].to_numpy(
+        dtype="float64"
+    )
     from pyproj import Transformer
 
-    transformer = Transformer.from_crs("EPSG:4326", config.projected_crs, always_xy=True)
+    transformer = Transformer.from_crs(
+        "EPSG:4326", config.projected_crs, always_xy=True
+    )
     context_x, context_y = transformer.transform(context_lon, context_lat)
     context_x = np.asarray(context_x, dtype="float64")
     context_y = np.asarray(context_y, dtype="float64")
@@ -286,7 +313,9 @@ def build_shoreline_proximity(
         context_y,
         config.projected_crs,
     )
-    seed_positions = np.flatnonzero(context_shoreline_distance <= config.shoreline_seed_distance_m)
+    seed_positions = np.flatnonzero(
+        context_shoreline_distance <= config.shoreline_seed_distance_m
+    )
     context_network_distance, _owners = multi_source_shortest_paths(
         graph,
         [
@@ -294,7 +323,9 @@ def build_shoreline_proximity(
             for index in seed_positions
         ],
     )
-    mapped, connector_distance, mapping_reasons = target_graph_mapping(graph, target_cells)
+    mapped, connector_distance, mapping_reasons = target_graph_mapping(
+        graph, target_cells
+    )
     target_network_distance = np.full(len(target_cells), np.nan, dtype="float64")
     mapped_to_graph = mapped >= 0
     reachable = np.zeros(len(target_cells), dtype=bool)
@@ -308,8 +339,12 @@ def build_shoreline_proximity(
         target_network_distance[reachable], target_shoreline_distance[reachable]
     )
     missing_reason = ~reachable & pd.isna(mapping_reasons)
-    mapping_reasons[missing_reason & mapped_to_graph] = "no_reachable_shoreline_seed_in_component"
-    mapping_reasons[missing_reason & ~mapped_to_graph] = "unreachable_from_shoreline_seed"
+    mapping_reasons[missing_reason & mapped_to_graph] = (
+        "no_reachable_shoreline_seed_in_component"
+    )
+    mapping_reasons[missing_reason & ~mapped_to_graph] = (
+        "unreachable_from_shoreline_seed"
+    )
     target_open_ocean = _open_ocean_indices(
         target_cells,
         target_lat,
@@ -327,11 +362,15 @@ def build_shoreline_proximity(
                 "SHORELINE_DISTANCE_M": target_shoreline_distance,
                 "WATER_NETWORK_DISTANCE_M": target_network_distance,
                 "OPEN_OCEAN_INDEX": target_open_ocean,
-                "WATER_COMPONENT_ID": nullable_string_values(target_lineage["WATER_COMPONENT_ID"]),
+                "WATER_COMPONENT_ID": nullable_string_values(
+                    target_lineage["WATER_COMPONENT_ID"]
+                ),
                 "NETWORK_CONNECTOR_METHOD": nullable_string_values(
                     target_lineage["CONNECTOR_METHOD"]
                 ),
-                "NETWORK_CONNECTOR_DISTANCE_M": target_lineage["CONNECTOR_DISTANCE_M"].tolist(),
+                "NETWORK_CONNECTOR_DISTANCE_M": target_lineage[
+                    "CONNECTOR_DISTANCE_M"
+                ].tolist(),
                 "NETWORK_DISTANCE_QC_REASON": nullable_string_values(mapping_reasons),
             }
         )
@@ -349,7 +388,9 @@ def build_shoreline_proximity(
         .sort("H3_INDEX")
     )
     if output["H3_INDEX"].n_unique() != output.height:
-        raise ValueError("Shoreline-proximity output contains duplicate H3_INDEX values.")
+        raise ValueError(
+            "Shoreline-proximity output contains duplicate H3_INDEX values."
+        )
     numeric = output.select(pl.selectors.numeric()).to_numpy()
     if np.isinf(numeric).any():
         raise ValueError("Shoreline-proximity output contains infinite values.")

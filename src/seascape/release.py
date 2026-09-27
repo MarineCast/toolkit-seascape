@@ -533,7 +533,8 @@ def _product_release_records(
 
 def _release_file(path: Path) -> bool:
     return (
-        path.is_file() and not path.name.endswith(".lock")
+        path.is_file()
+        and not path.name.endswith(".lock")
         and not {".staging", ".transactions"}.intersection(path.parts)
     )
 
@@ -558,7 +559,8 @@ def publish_candidate_release(
     family_manifests = {
         str(path.relative_to(candidate)): checksum_path(path)
         for path in sorted(processed.rglob("*manifest*.json"))
-        if _release_file(path) and path.name != SEASCAPE_RELEASE_MANIFEST
+        if _release_file(path)
+        and path.name != SEASCAPE_RELEASE_MANIFEST
         and "biogenic_habitat/eelgrass" not in str(path)
     }
     governed = {
@@ -617,9 +619,7 @@ def publish_candidate_release(
         "storage_root": f".seascape/releases/{release_id}",
         "built_at_utc": datetime.now(UTC).isoformat(),
         "artifact_release_passed": True,
-        "feature_eligibility_complete": bool(
-            audit.get("feature_eligibility_complete")
-        ),
+        "feature_eligibility_complete": bool(audit.get("feature_eligibility_complete")),
         "family_manifest_checksums": family_manifests,
         "governed_artifacts": governed_checksums,
         "artifact_checksums": artifact_checksums,
@@ -664,7 +664,9 @@ def publish_candidate_release(
             if {k: v for k, v in existing.items() if k != "built_at_utc"} != {
                 k: v for k, v in release_payload.items() if k != "built_at_utc"
             }:
-                raise ValueError("Existing release generation has conflicting identity.")
+                raise ValueError(
+                    "Existing release generation has conflicting identity."
+                )
             for relative in generation_files - {release_relative}:
                 source = candidate / relative
                 if not source.is_file():
@@ -672,7 +674,9 @@ def publish_candidate_release(
                 if not (generation / relative).is_file() or checksum_path(
                     generation / relative
                 ) != checksum_path(source):
-                    raise ValueError(f"Existing release generation checksum mismatch: {relative}")
+                    raise ValueError(
+                        f"Existing release generation checksum mismatch: {relative}"
+                    )
             # An idempotent publication retains its original creation metadata.
             atomic_write_json(release_path, existing, overwrite=True)
         else:
@@ -688,8 +692,12 @@ def publish_candidate_release(
                 with destination.open("rb") as handle:
                     os.fsync(handle.fileno())
             for directory in sorted(
-                [staged_generation, *(path for path in staged_generation.rglob("*") if path.is_dir())],
-                key=lambda path: len(path.parts), reverse=True,
+                [
+                    staged_generation,
+                    *(path for path in staged_generation.rglob("*") if path.is_dir()),
+                ],
+                key=lambda path: len(path.parts),
+                reverse=True,
             ):
                 descriptor = os.open(directory, os.O_RDONLY)
                 try:

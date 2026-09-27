@@ -46,10 +46,14 @@ class PublishedArtifact:
         payload["path"] = path or str(self.path)
         payload["schema"] = list(self.schema)
         payload["h3_resolutions"] = list(self.h3_resolutions)
-        return {key: value for key, value in payload.items() if value not in (None, (), [])}
+        return {
+            key: value for key, value in payload.items() if value not in (None, (), [])
+        }
 
 
-class TransactionalFamilyPublisher(AbstractContextManager["TransactionalFamilyPublisher"]):
+class TransactionalFamilyPublisher(
+    AbstractContextManager["TransactionalFamilyPublisher"]
+):
     """Stage and recoverably promote a related set of filesystem artifacts.
 
     Promotion uses durable journals and per-destination backups because replacing
@@ -134,7 +138,10 @@ class TransactionalFamilyPublisher(AbstractContextManager["TransactionalFamilyPu
                 os.replace(backup, destination)
             elif not item.get("had_destination") and (
                 item.get("promoted")
-                or (destination.exists() and not Path(str(item.get("candidate", ""))).exists())
+                or (
+                    destination.exists()
+                    and not Path(str(item.get("candidate", ""))).exists()
+                )
             ):
                 cls._remove_path(destination)
         for parent in touched_parents:
@@ -154,13 +161,17 @@ class TransactionalFamilyPublisher(AbstractContextManager["TransactionalFamilyPu
         transactions = parent / ".transactions"
         if not transactions.exists():
             return
-        for directory in sorted(path for path in transactions.iterdir() if path.is_dir()):
+        for directory in sorted(
+            path for path in transactions.iterdir() if path.is_dir()
+        ):
             journal = directory / "journal.json"
             if not journal.exists():
                 # Before the initial journal, no destination rename is allowed.
                 # Nonempty orphan backups still require manual reconstruction.
                 if any(path.is_file() for path in directory.rglob("*")):
-                    raise RuntimeError(f"Recovery evidence has no journal; preserved: {directory}")
+                    raise RuntimeError(
+                        f"Recovery evidence has no journal; preserved: {directory}"
+                    )
                 shutil.rmtree(directory)
                 continue
             try:
@@ -174,7 +185,12 @@ class TransactionalFamilyPublisher(AbstractContextManager["TransactionalFamilyPu
                 for item in payload["items"]:
                     if not all(
                         key in item
-                        for key in ("destination", "backup", "candidate", "had_destination")
+                        for key in (
+                            "destination",
+                            "backup",
+                            "candidate",
+                            "had_destination",
+                        )
                     ):
                         raise ValueError("Incomplete publication journal item")
                 if payload["phase"] != "committed":
@@ -218,7 +234,9 @@ class TransactionalFamilyPublisher(AbstractContextManager["TransactionalFamilyPu
         """Stage the transaction's terminal manifest."""
 
         if any(item["terminal"] for item in self._items.values()):
-            raise ValueError("Only one terminal manifest may be staged per transaction.")
+            raise ValueError(
+                "Only one terminal manifest may be staged per transaction."
+            )
         return self.stage_path(destination, terminal=True)
 
     def candidate_path(self, destination: str | Path) -> Path:
@@ -250,7 +268,9 @@ class TransactionalFamilyPublisher(AbstractContextManager["TransactionalFamilyPu
         size_bytes = (
             candidate.stat().st_size
             if candidate.is_file()
-            else sum(item.stat().st_size for item in candidate.rglob("*") if item.is_file())
+            else sum(
+                item.stat().st_size for item in candidate.rglob("*") if item.is_file()
+            )
         )
         return PublishedArtifact(
             path=final,
@@ -283,12 +303,16 @@ class TransactionalFamilyPublisher(AbstractContextManager["TransactionalFamilyPu
             raise TypeError("stage_parquet requires to_parquet() or write_parquet().")
         return staged
 
-    def stage_manifest(self, destination: str | Path, payload: Mapping[str, Any]) -> Path:
+    def stage_manifest(
+        self, destination: str | Path, payload: Mapping[str, Any]
+    ) -> Path:
         staged = self.stage_manifest_path(destination)
         atomic_write_json(staged, dict(payload), overwrite=True)
         return staged
 
-    def write_manifest(self, destination: str | Path, payload: Mapping[str, Any]) -> Path:
+    def write_manifest(
+        self, destination: str | Path, payload: Mapping[str, Any]
+    ) -> Path:
         """Write a manifest directly for legacy callers already outside promotion.
 
         New producers should call :meth:`stage_manifest` before :meth:`publish`
@@ -301,13 +325,19 @@ class TransactionalFamilyPublisher(AbstractContextManager["TransactionalFamilyPu
         if self._ownership is None:
             raise RuntimeError("Publication requires exclusive context ownership")
         missing = [
-            item["candidate"] for item in self._items.values() if not item["candidate"].exists()
+            item["candidate"]
+            for item in self._items.values()
+            if not item["candidate"].exists()
         ]
         if missing:
             raise FileNotFoundError(f"Staged artifact is missing: {missing[0]}")
-        terminals = [destination for destination, item in self._items.items() if item["terminal"]]
+        terminals = [
+            destination for destination, item in self._items.items() if item["terminal"]
+        ]
         if len(terminals) > 1:
-            raise ValueError("A publication transaction may have at most one terminal manifest.")
+            raise ValueError(
+                "A publication transaction may have at most one terminal manifest."
+            )
         ordered = sorted(self._items.items(), key=lambda pair: pair[1]["terminal"])
         if self.transaction.exists():
             raise RuntimeError(f"Unrecovered transaction evidence: {self.transaction}")

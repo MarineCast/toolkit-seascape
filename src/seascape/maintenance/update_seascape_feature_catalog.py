@@ -103,7 +103,7 @@ PRODUCTS: dict[str, ProductSpec] = {
             "data/processed/domain/environmental_layer/seascape/coastal_configuration/"
             "shoreline_characterization/SHORELINE_CHARACTERIZATION_RES_{resolution}.parquet"
         ),
-        "seascape.coastal_configuration." "shoreline_characterization.build",
+        "seascape.coastal_configuration.shoreline_characterization.build",
         null_policy=(
             "Fractions are null without classified shoreline; disconnected network distances "
             "remain null with a QC reason."

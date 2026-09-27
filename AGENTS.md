@@ -142,7 +142,10 @@ Global skill defaults do not override repository scope or code-only extraction. 
 ## Review-hardening checks
 
 Install `.[test,quality]`, then run `ruff check src tests scripts`, `python -m mypy`, and
-`ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py`.
+`ruff format --check src tests scripts`. Use `ruff format src tests scripts` for formatting;
+keep lint autofixes, import reordering and semantic edits in separate changes. The format gate
+covers all Python in those paths with the existing Ruff defaults and Python 3.11 target;
+there are no additional generated-code exclusions. Mypy retains its four configured modules.
 Run installed-wheel imports using `scripts/check_installed_package.py` from outside the checkout.
 Capture the runtime/test closure with `scripts/environment_snapshot.py --output /tmp/seascape-env`
 and audit it with `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-env.txt`.

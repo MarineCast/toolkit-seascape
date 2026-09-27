@@ -47,7 +47,10 @@ def _legacy_status(workspace: Path) -> tuple[dict[str, Any], list[str]]:
     if not path.is_file():
         raise FileNotFoundError(f"Legacy Seascape release manifest not found: {path}")
     release = json.loads(path.read_text(encoding="utf-8"))
-    if release.get("schema_version") != 1 or release.get("artifact_release_passed") is not True:
+    if (
+        release.get("schema_version") != 1
+        or release.get("artifact_release_passed") is not True
+    ):
         raise ValueError("Legacy source must have an audited schema-1 release manifest")
     mismatches: list[str] = []
     for relative, expected in release.get("family_manifest_checksums", {}).items():
@@ -85,7 +88,10 @@ def _validated_table(
         raise ValueError(f"Null or invalid H3_INDEX in {path}")
     if len(keys) != len(set(keys)):
         raise ValueError(f"Duplicate H3_INDEX in {path}")
-    if any(not h3.is_valid_cell(key) or h3.get_resolution(key) != resolution for key in keys):
+    if any(
+        not h3.is_valid_cell(key) or h3.get_resolution(key) != resolution
+        for key in keys
+    ):
         raise ValueError(f"Invalid or wrong-resolution H3_INDEX in {path}")
     if "H3_RESOLUTION" in table.column_names:
         actual = set(table.column("H3_RESOLUTION").to_pylist())
@@ -137,15 +143,23 @@ def build_metric_matrix(
         source_validation = "legacy_structural_only"
     else:
         if catalog_path is not None:
-            raise ValueError("A validated release uses its own archived feature catalog")
+            raise ValueError(
+                "A validated release uses its own archived feature catalog"
+            )
         support = resolve_product(
-            workspace=root, product="h3_marine_support", resolution=selected_resolutions[0]
+            workspace=root,
+            product="h3_marine_support",
+            resolution=selected_resolutions[0],
         )
         release_id = support.release_id
         generation = root / ".seascape/releases" / release_id
         catalog_file = generation / "config/feature_catalog.yaml"
-        release = json.loads((generation / _RELEASE_MANIFEST).read_text(encoding="utf-8"))
-        if release.get("release_id") != release_id or not isinstance(release.get("products"), dict):
+        release = json.loads(
+            (generation / _RELEASE_MANIFEST).read_text(encoding="utf-8")
+        )
+        if release.get("release_id") != release_id or not isinstance(
+            release.get("products"), dict
+        ):
             raise ValueError("Invalid archived Seascape release product index")
         for dataset_id, record in release["products"].items():
             if record.get("resolution") is None:
@@ -167,13 +181,22 @@ def build_metric_matrix(
     for resolution in selected_resolutions:
         support_keys: list[str] | None = None
         output_columns: dict[str, pa.ChunkedArray | pa.Array] = {}
-        for product_id in ("h3_marine_support", *sorted(set(products) - {"h3_marine_support"})):
+        for product_id in (
+            "h3_marine_support",
+            *sorted(set(products) - {"h3_marine_support"}),
+        ):
             product = products[product_id]
             relative = product.get("collection", {}).get("paths", {}).get(resolution)
             if relative is None:
                 continue
-            if not isinstance(relative, str) or Path(relative).is_absolute() or ".." in Path(relative).parts:
-                raise ValueError(f"Invalid catalog collection path for {product_id}: {relative}")
+            if (
+                not isinstance(relative, str)
+                or Path(relative).is_absolute()
+                or ".." in Path(relative).parts
+            ):
+                raise ValueError(
+                    f"Invalid catalog collection path for {product_id}: {relative}"
+                )
             if legacy_unverified:
                 path = (root / relative).resolve()
                 if not path.is_relative_to(root):
@@ -196,18 +219,27 @@ def build_metric_matrix(
                 dataset_id = artifact.dataset_id
                 checksum = artifact.checksum
                 if artifact.grain != ("H3_INDEX",):
-                    raise ValueError(f"Unexpected grain for {dataset_id}: {artifact.grain}")
+                    raise ValueError(
+                        f"Unexpected grain for {dataset_id}: {artifact.grain}"
+                    )
                 generation = root / ".seascape/releases" / str(release_id)
                 if path.relative_to(generation) != Path(relative):
-                    raise ValueError(f"Release path disagrees with catalog for {dataset_id}")
+                    raise ValueError(
+                        f"Release path disagrees with catalog for {dataset_id}"
+                    )
             if destination == path:
                 raise ValueError("Matrix output cannot replace an input table")
             features = product.get("features", {})
             if not isinstance(features, dict):
                 raise ValueError(f"Invalid feature mapping for {product_id}")
             for column, feature in features.items():
-                if resolution in feature.get("collection_paths", {}) and feature["collection_paths"][resolution] != relative:
-                    raise ValueError(f"Feature path disagrees with product path: {product_id}.{column}")
+                if (
+                    resolution in feature.get("collection_paths", {})
+                    and feature["collection_paths"][resolution] != relative
+                ):
+                    raise ValueError(
+                        f"Feature path disagrees with product path: {product_id}.{column}"
+                    )
             selected = sorted(
                 column
                 for column, feature in features.items()
@@ -229,7 +261,9 @@ def build_metric_matrix(
                 if name in output_columns:
                     raise ValueError(f"Duplicate matrix column: {name}")
                 values = table.column(column)
-                if pa.types.is_dictionary(values.type) or pa.types.is_string(values.type):
+                if pa.types.is_dictionary(values.type) or pa.types.is_string(
+                    values.type
+                ):
                     values = values.cast(pa.large_string())
                 output_columns[name] = values
                 feature = features[column]
@@ -241,7 +275,9 @@ def build_metric_matrix(
                         "unit": feature.get("unit"),
                         "role": feature.get("role"),
                         "variable_kind": feature.get("variable_kind"),
-                        "available_resolutions": feature.get("available_resolutions", []),
+                        "available_resolutions": feature.get(
+                            "available_resolutions", []
+                        ),
                         "source_types_by_resolution": {},
                     },
                 )
@@ -270,8 +306,12 @@ def build_metric_matrix(
         "grain": ["H3_INDEX", "H3_RESOLUTION"],
         "source_validation": source_validation,
         "source_release_id": release_id,
-        "legacy_release_schema": legacy_release.get("schema_version") if legacy_release else None,
-        "legacy_model_policy_complete": legacy_release.get("model_policy_complete") if legacy_release else None,
+        "legacy_release_schema": legacy_release.get("schema_version")
+        if legacy_release
+        else None,
+        "legacy_model_policy_complete": legacy_release.get("model_policy_complete")
+        if legacy_release
+        else None,
         "legacy_family_manifest_mismatches": family_mismatches,
         "catalog_checksum": catalog_checksum,
         "resolutions": selected_resolutions,
@@ -287,7 +327,10 @@ def build_metric_matrix(
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
-        dir=destination.parent, prefix=f".{destination.name}.", suffix=".tmp", delete=False
+        dir=destination.parent,
+        prefix=f".{destination.name}.",
+        suffix=".tmp",
+        delete=False,
     ) as handle:
         temporary = Path(handle.name)
     try:

@@ -35,10 +35,16 @@ def _read_h3_geometry(path: Path, resolution: int) -> gpd.GeoDataFrame:
     required = {"H3_INDEX", "H3_RESOLUTION", "geometry"}
     missing = sorted(required.difference(frame.columns))
     if missing:
-        raise ValueError(f"H3 resolution {resolution} geometry is missing columns: {missing}")
-    frame = frame.loc[frame.geometry.notna() & ~frame.geometry.is_empty].to_crs("EPSG:4326")
+        raise ValueError(
+            f"H3 resolution {resolution} geometry is missing columns: {missing}"
+        )
+    frame = frame.loc[frame.geometry.notna() & ~frame.geometry.is_empty].to_crs(
+        "EPSG:4326"
+    )
     if frame.empty:
-        raise ValueError(f"H3 resolution {resolution} contains no mappable geometry: {path}")
+        raise ValueError(
+            f"H3 resolution {resolution} contains no mappable geometry: {path}"
+        )
     observed = set(frame["H3_RESOLUTION"].dropna().astype(int).unique())
     if observed != {resolution}:
         raise ValueError(
@@ -99,7 +105,9 @@ def inspect_h3_water_geometry(
     ).add_to(h3_map)
     folium.LayerControl(collapsed=False).add_to(h3_map)
     h3_map.get_root().header.add_child(
-        folium.Element(f"<title>Seascape Toolkit H3 Resolution {resolution} Water Geometry</title>")
+        folium.Element(
+            f"<title>Seascape Toolkit H3 Resolution {resolution} Water Geometry</title>"
+        )
     )
     destination = save_vector_map(h3_map, destination)
     LOGGER.info("Saved H3 water-geometry inspection map: %s", destination)

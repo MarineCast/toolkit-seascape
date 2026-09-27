@@ -135,7 +135,9 @@ def _expanded_bbox(bbox: Mapping[str, float], distance_km: float) -> dict[str, f
 
     latitude = (bbox["min_lat"] + bbox["max_lat"]) / 2.0
     latitude_padding = distance_km / 110.574
-    longitude_padding = distance_km / (111.320 * max(math.cos(math.radians(latitude)), 0.1))
+    longitude_padding = distance_km / (
+        111.320 * max(math.cos(math.radians(latitude)), 0.1)
+    )
     return {
         "min_lon": bbox["min_lon"] - longitude_padding,
         "min_lat": bbox["min_lat"] - latitude_padding,
@@ -156,16 +158,22 @@ def load_freshwater_download_config(
     sources = _mapping(download.get("sources"), "freshwater_sources.download.sources")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     raw_dir = _resolve(download["raw_dir"], base_dir)
     context_buffer_km = float(download.get("context_buffer_km", 250.0))
     tile_degrees = float(download.get("arcgis_query_tile_degrees", 1.0))
     timeout = float(download.get("request_timeout_seconds", 180.0))
     if context_buffer_km <= 0.0:
-        raise ValueError("freshwater_sources.download.context_buffer_km must be positive.")
+        raise ValueError(
+            "freshwater_sources.download.context_buffer_km must be positive."
+        )
     if timeout <= 0.0:
-        raise ValueError("freshwater_sources.download.request_timeout_seconds must be positive.")
+        raise ValueError(
+            "freshwater_sources.download.request_timeout_seconds must be positive."
+        )
     if not 0.1 <= tile_degrees <= 5.0:
         raise ValueError("arcgis_query_tile_degrees must be between 0.1 and 5 degrees.")
 
@@ -180,8 +188,12 @@ def load_freshwater_download_config(
                 raw_path=raw_dir / str(source["raw_filename"]),
                 where=str(source.get("where", "1=1")),
                 fields=fields,
-                context_buffer_km=float(source.get("context_buffer_km", context_buffer_km)),
-                query_tile_degrees=float(source.get("query_tile_degrees", tile_degrees)),
+                context_buffer_km=float(
+                    source.get("context_buffer_km", context_buffer_km)
+                ),
+                query_tile_degrees=float(
+                    source.get("query_tile_degrees", tile_degrees)
+                ),
             )
         )
     if any(source.context_buffer_km <= 0.0 for source in arcgis_sources):
@@ -216,8 +228,12 @@ def _response_json(response: requests.Response, context: str) -> dict[str, Any]:
     return payload
 
 
-def _query_parameters(source: ArcGISSource, bbox: Mapping[str, float]) -> dict[str, Any]:
-    envelope = ",".join(str(bbox[key]) for key in ("min_lon", "min_lat", "max_lon", "max_lat"))
+def _query_parameters(
+    source: ArcGISSource, bbox: Mapping[str, float]
+) -> dict[str, Any]:
+    envelope = ",".join(
+        str(bbox[key]) for key in ("min_lon", "min_lat", "max_lon", "max_lat")
+    )
     return {
         "f": "json",
         "where": source.where,
@@ -300,7 +316,10 @@ def _download_arcgis_geojson(
         with source.raw_path.open(encoding="utf-8") as existing:
             count = len(json.load(existing).get("features", []))
         LOGGER.info(
-            "Using existing %s extract (%d features): %s", source.name, count, source.raw_path
+            "Using existing %s extract (%d features): %s",
+            source.name,
+            count,
+            source.raw_path,
         )
         return source.raw_path, count
 
@@ -325,11 +344,15 @@ def _download_arcgis_geojson(
             "returnM": "false",
             "outSR": "4326",
         }
-        response = session.get(f"{source.layer_url}/query", params=params, timeout=timeout)
+        response = session.get(
+            f"{source.layer_url}/query", params=params, timeout=timeout
+        )
         geojson = _response_json(response, f"{source.name} feature query")
         batch = geojson.get("features")
         if not isinstance(batch, list):
-            raise RuntimeError(f"{source.name} query did not return a GeoJSON feature list.")
+            raise RuntimeError(
+                f"{source.name} query did not return a GeoJSON feature list."
+            )
         features.extend(batch)
         downloaded = min(start + len(chunk), len(object_ids))
         if downloaded % 10_000 == 0 or downloaded == len(object_ids):
@@ -355,7 +378,10 @@ def _download_arcgis_geojson(
     document = {
         "type": "FeatureCollection",
         "name": source.name,
-        "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}},
+        "crs": {
+            "type": "name",
+            "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"},
+        },
         "features": features,
     }
     partial = source.raw_path.with_suffix(source.raw_path.suffix + ".part")
@@ -365,7 +391,12 @@ def _download_arcgis_geojson(
         partial.replace(source.raw_path)
     finally:
         partial.unlink(missing_ok=True)
-    LOGGER.info("Saved %s extract (%d features): %s", source.name, len(features), source.raw_path)
+    LOGGER.info(
+        "Saved %s extract (%d features): %s",
+        source.name,
+        len(features),
+        source.raw_path,
+    )
     return source.raw_path, len(features)
 
 
@@ -406,7 +437,9 @@ def _extract_zip(archive_path: Path, destination: Path, *, overwrite: bool) -> P
     if not zipfile.is_zipfile(archive_path):
         raise RuntimeError(f"HydroRIVERS download is not a ZIP archive: {archive_path}")
     destination.mkdir(parents=True, exist_ok=True)
-    temporary = Path(tempfile.mkdtemp(prefix="hydrorivers_extract_", dir=destination.parent))
+    temporary = Path(
+        tempfile.mkdtemp(prefix="hydrorivers_extract_", dir=destination.parent)
+    )
     try:
         with zipfile.ZipFile(archive_path) as archive:
             for member in archive.infolist():
@@ -415,7 +448,9 @@ def _extract_zip(archive_path: Path, destination: Path, *, overwrite: bool) -> P
                     temporary.resolve() not in member_path.parents
                     and member_path != temporary.resolve()
                 ):
-                    raise RuntimeError(f"Unsafe path in HydroRIVERS archive: {member.filename}")
+                    raise RuntimeError(
+                        f"Unsafe path in HydroRIVERS archive: {member.filename}"
+                    )
             archive.extractall(temporary)
         extracted_shapefiles = sorted(temporary.rglob("*.shp"))
         if len(extracted_shapefiles) != 1:
@@ -454,7 +489,9 @@ def download_freshwater_sources(
         timeout=config.request_timeout_seconds,
         overwrite=overwrite,
     )
-    extracted = _extract_zip(archive, config.hydrorivers_extract_dir, overwrite=overwrite)
+    extracted = _extract_zip(
+        archive, config.hydrorivers_extract_dir, overwrite=overwrite
+    )
 
     outputs: list[Path] = [archive, extracted]
     records: dict[str, int] = {}

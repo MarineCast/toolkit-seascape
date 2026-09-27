@@ -42,13 +42,16 @@ CLASS_WEIGHTS = {
 }
 
 
-def _derive(features: pd.DataFrame, confidence: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def _derive(
+    features: pd.DataFrame, confidence: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     evidence_total = sum(
         pd.to_numeric(features[f"{SUBSTRATE_PREFIX}_{name}_FRAC"], errors="raise")
         for name in CLASS_WEIGHTS
     )
     index = sum(
-        pd.to_numeric(features[f"{SUBSTRATE_PREFIX}_{name}_FRAC"], errors="raise") * weight
+        pd.to_numeric(features[f"{SUBSTRATE_PREFIX}_{name}_FRAC"], errors="raise")
+        * weight
         for name, weight in CLASS_WEIGHTS.items()
     )
     index = index.where(evidence_total > 0)
@@ -105,7 +108,9 @@ def build_bottom_hardness(
     config_path: str | Path = DEFAULT_CONFIG_PATH,
 ) -> tuple[Path, Path, Path, Path, Path]:
     config = load_habitat_surface_config(SECTION_NAME, PREFIX, config_path)
-    substrate = load_habitat_surface_config(SUBSTRATE_SECTION, SUBSTRATE_PREFIX, config_path)
+    substrate = load_habitat_surface_config(
+        SUBSTRATE_SECTION, SUBSTRATE_PREFIX, config_path
+    )
     input_paths = [
         substrate.feature_path(8),
         substrate.confidence_path(8),
@@ -155,7 +160,9 @@ def build_bottom_hardness(
                 "license": "Inherited dbSEABED source terms; see substrate manifest",
             }
         ],
-        upstream_artifacts=[{"path": str(path), "checksum": _sha256(path)} for path in input_paths],
+        upstream_artifacts=[
+            {"path": str(path), "checksum": _sha256(path)} for path in input_paths
+        ],
         attribution=[
             {
                 "text": "Derived from dbSEABED interpolated substrate composition",

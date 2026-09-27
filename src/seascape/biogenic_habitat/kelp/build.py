@@ -78,7 +78,9 @@ def _records(
     )
     return gpd.GeoDataFrame(
         {
-            "RECORD_ID": [f"{source_dataset}:{value}:{index}" for index, value in enumerate(ids)],
+            "RECORD_ID": [
+                f"{source_dataset}:{value}:{index}" for index, value in enumerate(ids)
+            ],
             "HABITAT_TYPE": "floating_kelp",
             "SOURCE_DATASET": source_dataset,
             "SOURCE_FEATURE_ID": ids.to_numpy(),
@@ -231,7 +233,9 @@ def load_kelp_inventory(
     shorezone = _read_optional(_source_path(config, "wa_dnr_shorezone_floating_kelp"))
     if shorezone is not None:
         values = shorezone["FLOATKELP"].astype(str).str.upper()
-        shorezone = shorezone.loc[values.isin(["CONTINUOUS", "PATCHY", "ABSENT"])].copy()
+        shorezone = shorezone.loc[
+            values.isin(["CONTINUOUS", "PATCHY", "ABSENT"])
+        ].copy()
         status = np.where(
             shorezone["FLOATKELP"].astype(str).str.upper().eq("ABSENT"),
             "absent",
@@ -289,7 +293,10 @@ def build_kelp_habitat(
         allow_generalized_only=allow_generalized_only,
     )
     annual_available = bool(
-        inventory["SOURCE_DATASET"].astype(str).str.fullmatch(r"WA_DNR_FLOATING_KELP_\d{4}").any()
+        inventory["SOURCE_DATASET"]
+        .astype(str)
+        .str.fullmatch(r"WA_DNR_FLOATING_KELP_\d{4}")
+        .any()
     )
     return build_habitat_products(
         inventory,
@@ -299,7 +306,9 @@ def build_kelp_habitat(
             "required_source": "wa_dnr_annual_floating_kelp",
             "annual_observations_available": annual_available,
             "allow_generalized_only": allow_generalized_only,
-            "status": ("complete" if annual_available else "generalized_only_explicit_override"),
+            "status": (
+                "complete" if annual_available else "generalized_only_explicit_override"
+            ),
             "included_source_datasets": sorted(
                 set(inventory["SOURCE_DATASET"].dropna().astype(str))
             ),

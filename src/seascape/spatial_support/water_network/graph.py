@@ -189,7 +189,9 @@ def _build_edges(
     if buffer["SOURCE_H3_INDEX"]:
         frames.append(pd.DataFrame(buffer))
     if not frames:
-        raise ValueError(f"Canonical H3 r{resolution} graph has no neighbor candidates.")
+        raise ValueError(
+            f"Canonical H3 r{resolution} graph has no neighbor candidates."
+        )
     LOGGER.info("Evaluated H3 r%d water edges: %d", resolution, processed)
     return pd.concat(frames, ignore_index=True)
 
@@ -201,15 +203,17 @@ def _assign_components(support: pd.DataFrame, edges: pd.DataFrame) -> None:
     union_find = _UnionFind(len(cells))
     degree = np.zeros(len(cells), dtype=np.int32)
     valid = edges["EDGE_IS_WATER_PASSABLE"].astype(bool)
-    for source, target in edges.loc[valid, ["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]].itertuples(
-        index=False
-    ):
+    for source, target in edges.loc[
+        valid, ["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]
+    ].itertuples(index=False):
         source_index = positions[str(source)]
         target_index = positions[str(target)]
         union_find.union(source_index, target_index)
         degree[source_index] += 1
         degree[target_index] += 1
-    LOGGER.info("Unioned valid water edges in %.1fs", time.perf_counter() - stage_started)
+    LOGGER.info(
+        "Unioned valid water edges in %.1fs", time.perf_counter() - stage_started
+    )
     stage_started = time.perf_counter()
     node_indices = np.flatnonzero(degree > 0)
     roots = np.fromiter(
@@ -232,7 +236,8 @@ def _assign_components(support: pd.DataFrame, edges: pd.DataFrame) -> None:
     support.loc[graph_nodes, "GRAPH_CONNECTION_STATUS"] = "graph_node"
     support["WATER_COMPONENT_ID"] = pd.Categorical(component_values)
     LOGGER.info(
-        "Derived deterministic water components in %.1fs", time.perf_counter() - stage_started
+        "Derived deterministic water components in %.1fs",
+        time.perf_counter() - stage_started,
     )
     stage_started = time.perf_counter()
     component_series = pd.Series(component_values, index=cells, dtype="string")
@@ -242,7 +247,9 @@ def _assign_components(support: pd.DataFrame, edges: pd.DataFrame) -> None:
     edges["TARGET_WATER_COMPONENT_ID"] = pd.Categorical(
         edges["TARGET_H3_INDEX"].map(component_series)
     )
-    LOGGER.info("Mapped edge component lineage in %.1fs", time.perf_counter() - stage_started)
+    LOGGER.info(
+        "Mapped edge component lineage in %.1fs", time.perf_counter() - stage_started
+    )
 
 
 def _build_connectors(
@@ -305,7 +312,9 @@ def _build_connectors(
             )
             candidates.append((float(distance), target_cell, target_position))
         candidates.sort(key=lambda value: (value[0], value[1]))
-        within = [candidate for candidate in candidates if candidate[0] <= maximum_distance]
+        within = [
+            candidate for candidate in candidates if candidate[0] <= maximum_distance
+        ]
         evaluated: list[tuple[float, str, int, float, bool]] = []
         accepted: tuple[float, str, int, float, bool] | None = None
         for distance, target_cell, target_position in within:
@@ -339,7 +348,9 @@ def _build_connectors(
             distance, target_cell, target_position, fraction, _passable = accepted
             component = str(components.iloc[target_position])
             support.at[source_position, "WATER_COMPONENT_ID"] = component
-            support.at[source_position, "GRAPH_CONNECTION_STATUS"] = "terminal_connector"
+            support.at[source_position, "GRAPH_CONNECTION_STATUS"] = (
+                "terminal_connector"
+            )
             support.at[source_position, "CONNECTOR_TARGET_H3_INDEX"] = target_cell
             support.at[source_position, "CONNECTOR_METHOD"] = CONNECTOR_METHOD
             support.at[source_position, "CONNECTOR_DISTANCE_M"] = distance
@@ -353,13 +364,19 @@ def _build_connectors(
             row_passable = True
         else:
             closest = evaluated[0] if evaluated else None
-            row_target = closest[1] if closest else (candidates[0][1] if candidates else None)
-            row_distance = closest[0] if closest else (candidates[0][0] if candidates else np.nan)
+            row_target = (
+                closest[1] if closest else (candidates[0][1] if candidates else None)
+            )
+            row_distance = (
+                closest[0] if closest else (candidates[0][0] if candidates else np.nan)
+            )
             row_fraction = closest[3] if closest else np.nan
             row_component = None
             row_passable = False
             row_reason = (
-                "connector_crosses_land" if within else "no_graph_node_within_connector_limit"
+                "connector_crosses_land"
+                if within
+                else "no_graph_node_within_connector_limit"
             )
             support.at[source_position, "GRAPH_QC_REASON"] = row_reason
         rows.append(
@@ -387,7 +404,9 @@ def _build_connectors(
     return pd.DataFrame(rows)
 
 
-def _crosswalk(support_by_resolution: dict[int, pd.DataFrame], config: WaterNetworkConfig):
+def _crosswalk(
+    support_by_resolution: dict[int, pd.DataFrame], config: WaterNetworkConfig
+):
     if 6 not in support_by_resolution or 8 not in support_by_resolution:
         return None
     parent = support_by_resolution[6].set_index("H3_INDEX")
@@ -418,7 +437,9 @@ def _crosswalk(support_by_resolution: dict[int, pd.DataFrame], config: WaterNetw
     frame["PARENT_WATER_FRACTION"] = (
         frame["PARENT_H3_INDEX"].map(parent["WATER_FRACTION"]).fillna(0.0)
     )
-    frame["PARENT_WATER_COMPONENT_ID"] = frame["PARENT_H3_INDEX"].map(parent["WATER_COMPONENT_ID"])
+    frame["PARENT_WATER_COMPONENT_ID"] = frame["PARENT_H3_INDEX"].map(
+        parent["WATER_COMPONENT_ID"]
+    )
     return frame.sort_values("CHILD_H3_INDEX").reset_index(drop=True)
 
 
@@ -446,7 +467,9 @@ def _build_neighborhoods(
         adjacency[left].append((right, weight))
         adjacency[right].append((left, weight))
     if not connectors.empty:
-        accepted = connectors.loc[connectors["CONNECTOR_IS_WATER_PASSABLE"].astype(bool)]
+        accepted = connectors.loc[
+            connectors["CONNECTOR_IS_WATER_PASSABLE"].astype(bool)
+        ]
         for source, target, distance in accepted[
             ["H3_INDEX", "TARGET_H3_INDEX", "CONNECTOR_DISTANCE_M"]
         ].itertuples(index=False):
@@ -478,7 +501,10 @@ def _build_neighborhoods(
                 known_hops = best_hops.get(neighbor)
                 known_distance = best_distance.get(neighbor, math.inf)
                 replace = known_hops is None or candidate_hops < known_hops
-                tie = candidate_hops == known_hops and candidate_distance < known_distance - 1e-9
+                tie = (
+                    candidate_hops == known_hops
+                    and candidate_distance < known_distance - 1e-9
+                )
                 if replace or tie:
                     best_hops[neighbor] = candidate_hops
                     best_distance[neighbor] = candidate_distance
@@ -495,7 +521,9 @@ def _build_neighborhoods(
                     "MINIMUM_HOP_COUNT": hops,
                     "NETWORK_DISTANCE_M": best_distance[target_position],
                     "CONNECTIVITY_STATUS": (
-                        "self_only" if hops == 0 and len(best_hops) == 1 else "reachable"
+                        "self_only"
+                        if hops == 0 and len(best_hops) == 1
+                        else "reachable"
                     ),
                     "QC_REASON": (
                         None

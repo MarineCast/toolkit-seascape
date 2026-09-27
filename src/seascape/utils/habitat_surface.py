@@ -68,13 +68,17 @@ def _composition_metrics(
         )
     composition_indices = set(composition.index)
     selected_pairs = pairs.loc[pairs["index_right"].isin(composition_indices)]
-    cell_positions = {str(cell): index for index, cell in enumerate(cells["H3_INDEX"].astype(str))}
+    cell_positions = {
+        str(cell): index for index, cell in enumerate(cells["H3_INDEX"].astype(str))
+    }
     for cell, cell_pairs in selected_pairs.groupby("H3_INDEX", sort=False):
         cell_position = cell_positions[str(cell)]
         cell_geometry = cells.geometry.iloc[cell_position]
         fragments = []
         for record_index in cell_pairs["index_right"]:
-            fragment = cell_geometry.intersection(inventory.geometry.iloc[int(record_index)])
+            fragment = cell_geometry.intersection(
+                inventory.geometry.iloc[int(record_index)]
+            )
             patch_area = float(fragment.area)
             if fragment.is_empty or patch_area <= 0:
                 continue
@@ -129,8 +133,12 @@ def _record_metrics(
     confidence_rows: list[dict[str, Any]] = []
     observed["H3_INDEX"] = observed["H3_INDEX"].astype(str)
     mapped["H3_INDEX"] = mapped["H3_INDEX"].astype(str)
-    by_cell = {str(cell): rows for cell, rows in observed.groupby("H3_INDEX", sort=False)}
-    mapped_by_cell = {str(cell): rows for cell, rows in mapped.groupby("H3_INDEX", sort=False)}
+    by_cell = {
+        str(cell): rows for cell, rows in observed.groupby("H3_INDEX", sort=False)
+    }
+    mapped_by_cell = {
+        str(cell): rows for cell, rows in mapped.groupby("H3_INDEX", sort=False)
+    }
     present_cells = set(
         mapped.loc[mapped["OBSERVATION_STATUS"].eq("present"), "H3_INDEX"].astype(str)
     )
@@ -169,15 +177,22 @@ def _record_metrics(
                 }
             )
             latest_year = max(years) if years else None
-            latest = rows.loc[rows["OBSERVATION_YEAR"].eq(latest_year)] if years else rows
+            latest = (
+                rows.loc[rows["OBSERVATION_YEAR"].eq(latest_year)] if years else rows
+            )
             has_present = bool(latest["OBSERVATION_STATUS"].eq("present").any())
-            has_absent = bool(not has_present and latest["OBSERVATION_STATUS"].eq("absent").any())
+            has_absent = bool(
+                not has_present and latest["OBSERVATION_STATUS"].eq("absent").any()
+            )
             first_year = min(years) if years else pd.NA
             last_year = max(years) if years else pd.NA
             years_surveyed = len(years)
             years_observed = len(observed_years)
             has_explicit_dated_absence = bool(
-                (rows["OBSERVATION_STATUS"].eq("absent") & rows["OBSERVATION_YEAR"].notna()).any()
+                (
+                    rows["OBSERVATION_STATUS"].eq("absent")
+                    & rows["OBSERVATION_YEAR"].notna()
+                ).any()
             )
             source_persistence = rows["SOURCE_PERSISTENCE_RATIO"].dropna()
             if years_surveyed and has_explicit_dated_absence:
@@ -190,7 +205,10 @@ def _record_metrics(
                 persistence = np.nan
                 persistence_basis = None
             recent = bool(
-                any(reference_year - 4 <= year <= reference_year for year in observed_years)
+                any(
+                    reference_year - 4 <= year <= reference_year
+                    for year in observed_years
+                )
             )
             recency = reference_year - max(observed_years) if observed_years else np.nan
             feature_rows.append(
@@ -215,9 +233,15 @@ def _record_metrics(
         )
         sources = sorted(set(metadata_rows["SOURCE_DATASET"].dropna().astype(str)))
         methods = sorted(set(metadata_rows["SURVEY_METHOD"].dropna().astype(str)))
-        spatial = sorted(set(metadata_rows["SPATIAL_PRECISION_CLASS"].dropna().astype(str)))
-        temporal = sorted(set(metadata_rows["TEMPORAL_PRECISION_CLASS"].dropna().astype(str)))
-        evidence_modes = sorted(set(metadata_rows["OBSERVED_VS_MODELED"].dropna().astype(str)))
+        spatial = sorted(
+            set(metadata_rows["SPATIAL_PRECISION_CLASS"].dropna().astype(str))
+        )
+        temporal = sorted(
+            set(metadata_rows["TEMPORAL_PRECISION_CLASS"].dropna().astype(str))
+        )
+        evidence_modes = sorted(
+            set(metadata_rows["OBSERVED_VS_MODELED"].dropna().astype(str))
+        )
         confidence_rows.append(
             {
                 "H3_INDEX": cell,
@@ -229,7 +253,9 @@ def _record_metrics(
                 "TEMPORAL_PRECISION_CLASS": "|".join(temporal) or None,
                 "OBSERVED_VS_MODELED": "|".join(evidence_modes) or None,
                 "CONFIDENCE": (
-                    int(metadata_rows["CONFIDENCE_CLASS"].max()) if not metadata_rows.empty else 0
+                    int(metadata_rows["CONFIDENCE_CLASS"].max())
+                    if not metadata_rows.empty
+                    else 0
                 ),
             }
         )
@@ -257,7 +283,9 @@ def _surveyed_fraction(
         return np.zeros(len(cells), dtype="float64")
     surveyed_area = np.zeros(len(cells), dtype="float64")
     selected_pairs = pairs.loc[pairs["index_right"].isin(set(survey.index))]
-    cell_positions = {str(cell): index for index, cell in enumerate(cells["H3_INDEX"].astype(str))}
+    cell_positions = {
+        str(cell): index for index, cell in enumerate(cells["H3_INDEX"].astype(str))
+    }
     for cell, cell_pairs in selected_pairs.groupby("H3_INDEX", sort=False):
         cell_position = cell_positions[str(cell)]
         cell_geometry = cells.geometry.iloc[cell_position]
@@ -309,8 +337,12 @@ def habitat_network_metrics(
         zip(source_positions, source_connectors, strict=True)
     ):
         if position >= 0 and np.isfinite(connector):
-            dijkstra_sources.append((str(graph.cells[int(position)]), float(connector), owner))
-    target_positions, target_connectors, target_reasons = target_graph_mapping(graph, target_cells)
+            dijkstra_sources.append(
+                (str(graph.cells[int(position)]), float(connector), owner)
+            )
+    target_positions, target_connectors, target_reasons = target_graph_mapping(
+        graph, target_cells
+    )
     distance = np.full(len(target_cells), np.nan, dtype="float64")
     qc = np.empty(len(target_cells), dtype=object)
     if dijkstra_sources:
@@ -355,7 +387,9 @@ def habitat_network_metrics(
         radius_sum = np.zeros(len(target_cells), dtype="float64")
     else:
         if radius_operator.cells.astype(str).tolist() != target_cells:
-            raise ValueError("Radius operator and habitat target support order disagree.")
+            raise ValueError(
+                "Radius operator and habitat target support order disagree."
+            )
         area_values = area_by_cell.reindex(target_cells).to_numpy(dtype="float64")
         eligible = np.isfinite(area_values) & (area_values > 0)
         radius_sum = radius_operator.apply(area_values, eligible_sources=eligible)
@@ -364,7 +398,11 @@ def habitat_network_metrics(
 
 def _prefixed(frame: pd.DataFrame, prefix: str, keep: set[str]) -> pd.DataFrame:
     return frame.rename(
-        columns={column: f"{prefix}_{column}" for column in frame.columns if column not in keep}
+        columns={
+            column: f"{prefix}_{column}"
+            for column in frame.columns
+            if column not in keep
+        }
     )
 
 
@@ -383,7 +421,9 @@ def build_r8_tables(
 
     inventory = normalize_inventory(inventory)
     target_cells = support["H3_INDEX"].astype(str).tolist()
-    cells_projected, inventory_projected, pairs = _spatial_pairs(cells, inventory, equal_area_crs)
+    cells_projected, inventory_projected, pairs = _spatial_pairs(
+        cells, inventory, equal_area_crs
+    )
     composition = _composition_metrics(
         cells_projected, inventory_projected, pairs, support
     ).set_index("H3_INDEX")
@@ -392,7 +432,9 @@ def build_r8_tables(
     )
     records = records.set_index("H3_INDEX")
     confidence = confidence.set_index("H3_INDEX")
-    surveyed_fraction = _surveyed_fraction(cells_projected, inventory_projected, pairs, support)
+    surveyed_fraction = _surveyed_fraction(
+        cells_projected, inventory_projected, pairs, support
+    )
     confidence["SURVEYED_AREA_FRAC"] = surveyed_fraction
     confidence["UNMAPPED_AREA"] = surveyed_fraction < 1.0 - 1e-9
 

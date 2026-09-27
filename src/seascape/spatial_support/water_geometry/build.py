@@ -44,8 +44,14 @@ from .source_assembly import (
 from .source_assembly import clip_us_water_lines as get_us_waters
 
 SOURCE_ATTRIBUTION = {
-    "ca_regions_path": ("Fisheries and Oceans Canada", "Open Government Licence - Canada"),
-    "wsdot_shorelines_path": ("Washington State Department of Transportation", "Public data"),
+    "ca_regions_path": (
+        "Fisheries and Oceans Canada",
+        "Open Government Licence - Canada",
+    ),
+    "wsdot_shorelines_path": (
+        "Washington State Department of Transportation",
+        "Public data",
+    ),
     "ws_marine_shoreline_type_path": (
         "NOAA Northwest Fisheries Science Center",
         "United States Government work",
@@ -62,7 +68,9 @@ def get_us_water_shapes(us_waters, us_coastline):
     us_waters_pacific_border = build_us_waters_boundary(us_waters)
 
     # 2. US - Pacific Border (Contiguous)
-    us_waters_pacific_border_contiguous = get_us_waters(us_waters_pacific_border, "CONTIGUOUS")
+    us_waters_pacific_border_contiguous = get_us_waters(
+        us_waters_pacific_border, "CONTIGUOUS"
+    )
 
     # 3. US - Simplify Geometry and Clean Border
     us_waters_pacific_border_contiguous = clean_connect_lines_fast(
@@ -73,7 +81,9 @@ def get_us_water_shapes(us_waters, us_coastline):
     us_waters_pacific_border_alaska = get_us_waters(us_waters_pacific_border, "ALASKA")
 
     # 5. US - Simplify Geometry and Clean Border
-    us_waters_pacific_border_alaska = clean_connect_lines_fast(us_waters_pacific_border_alaska)
+    us_waters_pacific_border_alaska = clean_connect_lines_fast(
+        us_waters_pacific_border_alaska
+    )
 
     # 6.  Full Pacific Coastline
     us_coastline_pacific = build_us_coastline(us_coastline)
@@ -87,25 +97,34 @@ def get_us_water_shapes(us_waters, us_coastline):
 
 # Get US Contiguous Waters
 def get_us_contiguous(
-    us_coastline_pacific, us_waters_pacific_border_contiguous, wsdot_shorelines, ws_marine_shoreline
+    us_coastline_pacific,
+    us_waters_pacific_border_contiguous,
+    wsdot_shorelines,
+    ws_marine_shoreline,
 ):
     ## US - Pacific Border (Contiguous)
     us_coastline_pacific_contiguous = get_us_waters(us_coastline_pacific, "CONTIGUOUS")
 
     ## US -  Simplify Geometry and Smooth (Contiguous)
-    us_coastline_pacific_contiguous = get_smoothed_coastline(us_coastline_pacific_contiguous)
+    us_coastline_pacific_contiguous = get_smoothed_coastline(
+        us_coastline_pacific_contiguous
+    )
 
     # Get Territorial Waters Polygon - Get Coast Line
     us_coastline_pacific_contiguous = us_coastline_pacific_contiguous.explode()
     us_coastline_pacific_contiguous_cs = us_coastline_pacific_contiguous[
-        us_coastline_pacific_contiguous["length"] == us_coastline_pacific_contiguous["length"].max()
+        us_coastline_pacific_contiguous["length"]
+        == us_coastline_pacific_contiguous["length"].max()
     ]
 
     # Get Island Polygons from Coastlines
     us_coastline_pacific_contiguous_is = us_coastline_pacific_contiguous[
-        us_coastline_pacific_contiguous["length"] < us_coastline_pacific_contiguous["length"].max()
+        us_coastline_pacific_contiguous["length"]
+        < us_coastline_pacific_contiguous["length"].max()
     ]
-    us_coastline_pacific_contiguous_is = find_closed_lines(us_coastline_pacific_contiguous_is)
+    us_coastline_pacific_contiguous_is = find_closed_lines(
+        us_coastline_pacific_contiguous_is
+    )
 
     us_coastline_pacific_contiguous_is = linestrings_to_polygons_if_closed(
         us_coastline_pacific_contiguous_is
@@ -132,7 +151,9 @@ def get_us_contiguous(
 
     # Clip Out Islands
     islands_union = unary_union(us_coastline_pacific_contiguous_is.geometry)
-    us_waters_continguous["geometry"] = us_waters_continguous.geometry.difference(islands_union)
+    us_waters_continguous["geometry"] = us_waters_continguous.geometry.difference(
+        islands_union
+    )
 
     # Get Bounds of Contiguous US to Fill In Areas
     us_waters_continguous_exterior = us_waters_continguous.explode()
@@ -149,7 +170,9 @@ def get_us_contiguous(
     )
     point_edwards_water = wsdot_shorelines.clip(point_edwards)
     point_edwards = point_edwards.difference(point_edwards_water).reset_index()
-    us_waters_continguous = us_waters_continguous.difference(point_edwards).reset_index()
+    us_waters_continguous = us_waters_continguous.difference(
+        point_edwards
+    ).reset_index()
     us_waters_continguous.columns = ["", "geometry"]
     us_waters_continguous = us_waters_continguous[["geometry"]]
 
@@ -170,7 +193,13 @@ def get_us_contiguous(
 
     # Add WSDOT Corrections
     us_waters_continguous = pd.concat(
-        [us_waters_continguous, wsdot_shorelines_add, puget_bbox, sequim_bbox, everett_bbox]
+        [
+            us_waters_continguous,
+            wsdot_shorelines_add,
+            puget_bbox,
+            sequim_bbox,
+            everett_bbox,
+        ]
     )
     us_waters_continguous = gpd.GeoDataFrame(
         us_waters_continguous, geometry="geometry", crs="EPSG:4326"
@@ -178,17 +207,23 @@ def get_us_contiguous(
     us_waters_continguous = us_waters_continguous.dissolve()
 
     islands_puget_bbox = box(-122.80, 48.3000, -120.1000, 48.750)
-    islands_puget_bbox = gpd.GeoDataFrame(geometry=[islands_puget_bbox], crs="EPSG:4326")
+    islands_puget_bbox = gpd.GeoDataFrame(
+        geometry=[islands_puget_bbox], crs="EPSG:4326"
+    )
     islands_puget_bbox = wsdot_shorelines.clip(islands_puget_bbox)
 
     ws_marine_shoreline = ws_marine_shoreline.clip(islands_puget_bbox)
     ws_marine_shoreline = ws_marine_shoreline.dissolve().explode()
     ws_marine_shoreline = get_smoothed_coastline(ws_marine_shoreline, tolerance=2)
     ws_marine_shoreline = linestrings_to_polygons_if_closed(ws_marine_shoreline)
-    ws_marine_shoreline = ws_marine_shoreline[ws_marine_shoreline.geometry.type == "Polygon"]
+    ws_marine_shoreline = ws_marine_shoreline[
+        ws_marine_shoreline.geometry.type == "Polygon"
+    ]
     ws_marine_shoreline = ws_marine_shoreline.dissolve()
 
-    us_waters_continguous["geometry"] = us_waters_continguous.difference(ws_marine_shoreline)
+    us_waters_continguous["geometry"] = us_waters_continguous.difference(
+        ws_marine_shoreline
+    )
     us_waters_continguous["NAME"] = "UNITED_STATES"
     us_waters_continguous["AREA"] = "CONTIGUOUS"
     us_waters_continguous["TYPE"] = "TERRITORIAL"
@@ -211,12 +246,14 @@ def get_alaska_waters(
     # Get Territorial Waters Polygon - Get Coast Line
     us_coastline_pacific_alaska = us_coastline_pacific_alaska.explode()
     us_coastline_pacific_alaska_cs = us_coastline_pacific_alaska[
-        us_coastline_pacific_alaska["length"] == us_coastline_pacific_alaska["length"].max()
+        us_coastline_pacific_alaska["length"]
+        == us_coastline_pacific_alaska["length"].max()
     ]
 
     # Get Island Polygons from Coastlines
     us_coastline_pacific_alaska_is = us_coastline_pacific_alaska[
-        us_coastline_pacific_alaska["length"] < us_coastline_pacific_alaska["length"].max()
+        us_coastline_pacific_alaska["length"]
+        < us_coastline_pacific_alaska["length"].max()
     ]
     us_coastline_pacific_alaska_is = find_closed_lines(us_coastline_pacific_alaska_is)
     us_coastline_pacific_alaska_is = linestrings_to_polygons_if_closed(
@@ -231,16 +268,20 @@ def get_alaska_waters(
     # Make the box
     beringia_box = box(min_lon, min_lat, max_lon, max_lat)
     beringia_gdf = gpd.GeoDataFrame(
-        {"name": ["Beringia + Alaska to Canada"]}, geometry=[beringia_box], crs="EPSG:4326"
+        {"name": ["Beringia + Alaska to Canada"]},
+        geometry=[beringia_box],
+        crs="EPSG:4326",
     )
 
     # Filter to Southern Alaska
     us_waters_pacific_border_alaska = us_waters_pacific_border_alaska.dissolve()
-    us_waters_pacific_border_alaska["geometry"] = us_waters_pacific_border_alaska.difference(
-        beringia_gdf.geometry
+    us_waters_pacific_border_alaska["geometry"] = (
+        us_waters_pacific_border_alaska.difference(beringia_gdf.geometry)
     )
 
-    us_waters_alaska = pd.concat([us_coastline_pacific_alaska_cs, us_waters_pacific_border_alaska])
+    us_waters_alaska = pd.concat(
+        [us_coastline_pacific_alaska_cs, us_waters_pacific_border_alaska]
+    )
     us_waters_alaska = us_waters_alaska.dissolve()
     us_waters_alaska = us_waters_alaska.explode()
 
@@ -256,8 +297,12 @@ def get_alaska_waters(
     us_waters_alaska = gpd.GeoDataFrame(geometry=[alaska_poly], crs="EPSG:4326")
 
     # Add Back in Islands
-    us_coastline_pacific_alaska_is = us_coastline_pacific_alaska_is[["geometry"]].dissolve()
-    us_coastline_pacific_alaska_is["geometry"] = us_coastline_pacific_alaska_is.buffer(0)
+    us_coastline_pacific_alaska_is = us_coastline_pacific_alaska_is[
+        ["geometry"]
+    ].dissolve()
+    us_coastline_pacific_alaska_is["geometry"] = us_coastline_pacific_alaska_is.buffer(
+        0
+    )
 
     us_waters_alaska_ = us_waters_alaska.copy()
     us_waters_alaska_["geometry"] = us_waters_alaska_.buffer(0)
@@ -270,8 +315,12 @@ def get_alaska_waters(
         us_coastline_pacific_alaska_is.dissolve()
     )
 
-    us_waters_alaska_ = pd.concat([us_waters_alaska_, us_coastline_pacific_alaska_is_outside])
-    us_waters_alaska = gpd.GeoDataFrame(us_waters_alaska_, geometry="geometry", crs="EPSG:4326")
+    us_waters_alaska_ = pd.concat(
+        [us_waters_alaska_, us_coastline_pacific_alaska_is_outside]
+    )
+    us_waters_alaska = gpd.GeoDataFrame(
+        us_waters_alaska_, geometry="geometry", crs="EPSG:4326"
+    )
     us_waters_alaska = us_waters_alaska.dissolve()
     us_waters_alaska = us_waters_alaska[["geometry"]]
     us_waters_alaska["NAME"] = "UNITED_STATES"
@@ -295,7 +344,9 @@ def get_ca_waters(ca_waters, tz_canada):
     maxx, maxy = -122.00, 60.50
 
     bc_bbox = box(minx, miny, maxx, maxy)
-    bc_bbox = gpd.GeoDataFrame({"name": ["British Columbia"]}, geometry=[bc_bbox], crs="EPSG:4326")
+    bc_bbox = gpd.GeoDataFrame(
+        {"name": ["British Columbia"]}, geometry=[bc_bbox], crs="EPSG:4326"
+    )
 
     tz_new = tz_canada.explode(index_parts=False).to_crs("EPSG:3347")
     tz_new["geometry"] = tz_new.buffer(1000.0)
@@ -367,16 +418,23 @@ def collect_all_waters(
         data_paths = resolve_water_geometry_paths(config_dict)
 
     # 2. Open Data
-    us_waters, us_coastline, wsdot_shorelines, ws_marine_shoreline, ca_waters, tz_canada = (
-        open_water_geometry_sources(data_paths)
-    )
+    (
+        us_waters,
+        us_coastline,
+        wsdot_shorelines,
+        ws_marine_shoreline,
+        ca_waters,
+        tz_canada,
+    ) = open_water_geometry_sources(data_paths)
 
     ####################################################
 
     # 3. Get US Waters
-    us_coastline_pacific, us_waters_pacific_border_contiguous, us_waters_pacific_border_alaska = (
-        get_us_water_shapes(us_waters, us_coastline)
-    )
+    (
+        us_coastline_pacific,
+        us_waters_pacific_border_contiguous,
+        us_waters_pacific_border_alaska,
+    ) = get_us_water_shapes(us_waters, us_coastline)
 
     # 4. Get Alaskan Waters
     us_waters_alaska = get_alaska_waters(
@@ -399,7 +457,9 @@ def collect_all_waters(
     ####################################################
 
     # All Waters
-    all_waters = finalize_water_polygons(us_waters_continguous, us_waters_alaska, bc_waters)
+    all_waters = finalize_water_polygons(
+        us_waters_continguous, us_waters_alaska, bc_waters
+    )
     all_waters = _clip_to_bbox(all_waters, config_dict["bbox"])
 
     # m = all_waters[all_waters.AREA == "ALASKA"].explore(color="#20ABAD", tiles="CartoDB positron")
@@ -427,7 +487,9 @@ def build_water_geometry(
     if skip_download:
         data_paths = resolve_water_geometry_paths(config)
         missing = [
-            f"{name}: {path}" for name, path in data_paths.items() if not Path(path).exists()
+            f"{name}: {path}"
+            for name, path in data_paths.items()
+            if not Path(path).exists()
         ]
         if missing:
             raise FileNotFoundError(
@@ -488,11 +550,15 @@ def build_water_geometry(
             source_completeness="complete",
             metadata={
                 "distance_crs": "EPSG:3338",
-                "alaska_boundary_snap_tolerance_m": config["alaska_boundary_snap_tolerance_m"],
+                "alaska_boundary_snap_tolerance_m": config[
+                    "alaska_boundary_snap_tolerance_m"
+                ],
                 "consumed_source_names": sorted(CONSUMED_WATER_GEOMETRY_SOURCE_NAMES),
             },
         )
-        publisher.stage_manifest(output_path.parent / "water_geometry_manifest.json", manifest)
+        publisher.stage_manifest(
+            output_path.parent / "water_geometry_manifest.json", manifest
+        )
         publisher.publish()
     return output_path
 

@@ -62,12 +62,16 @@ def test_local_anomaly_uses_only_water_connected_neighbors() -> None:
     assert np.isnan(anomaly[2])
 
 
-def test_parent_depth_fractions_are_recomputed_from_summed_child_counts(tmp_path) -> None:
+def test_parent_depth_fractions_are_recomputed_from_summed_child_counts(
+    tmp_path,
+) -> None:
     import h3
 
     parent = h3.latlng_to_cell(48.5, -123.2, 6)
     children = sorted(h3.cell_to_children(parent, 8))[:2]
-    count_columns = [f"BATHYMETRY_PIXEL_COUNT_{token}_M" for token, _lower, _upper in DEPTH_BANDS_M]
+    count_columns = [
+        f"BATHYMETRY_PIXEL_COUNT_{token}_M" for token, _lower, _upper in DEPTH_BANDS_M
+    ]
     child = pd.DataFrame({"H3_INDEX": children})
     for index, column in enumerate(count_columns, start=1):
         child[column] = [index, index + 1]
@@ -83,7 +87,9 @@ def test_parent_depth_fractions_are_recomputed_from_summed_child_counts(tmp_path
 
     recompute_parent_depth_bands(child_path, parent_path, parent_resolution=6)
     rebuilt = pd.read_parquet(parent_path).iloc[0]
-    expected_total = sum((index + index + 1) for index in range(1, len(count_columns) + 1))
+    expected_total = sum(
+        (index + index + 1) for index in range(1, len(count_columns) + 1)
+    )
     assert rebuilt["BATHYMETRY_PIXEL_COUNT"] == expected_total
     assert sum(
         rebuilt[f"BATHYMETRY_FRAC_{token}_M"] for token, _, _ in DEPTH_BANDS_M

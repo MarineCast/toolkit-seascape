@@ -56,7 +56,9 @@ def normalize_inventory(frame: Any) -> Any:
         "modeled_potential",
     }
     if not set(frame["EVIDENCE_CLASS"].dropna()).issubset(allowed_evidence):
-        raise ValueError("Habitat evidence class must be direct, generalized, or modeled.")
+        raise ValueError(
+            "Habitat evidence class must be direct, generalized, or modeled."
+        )
     allowed_mode = {"observed", "modeled"}
     if not set(frame["OBSERVED_VS_MODELED"].dropna()).issubset(allowed_mode):
         raise ValueError("OBSERVED_VS_MODELED must contain only observed or modeled.")
@@ -73,14 +75,14 @@ def normalize_inventory(frame: Any) -> Any:
     )
     if not frame["SOURCE_PERSISTENCE_RATIO"].dropna().between(0.0, 1.0).all():
         raise ValueError("Source persistence ratios must be null or in [0, 1].")
-    frame["CONFIDENCE_CLASS"] = pd.to_numeric(frame["CONFIDENCE_CLASS"], errors="raise").astype(
-        "int8"
-    )
+    frame["CONFIDENCE_CLASS"] = pd.to_numeric(
+        frame["CONFIDENCE_CLASS"], errors="raise"
+    ).astype("int8")
     if not frame["CONFIDENCE_CLASS"].between(0, 3).all():
         raise ValueError("Habitat confidence classes must be integers in [0, 3].")
-    frame["OBSERVATION_YEAR"] = pd.to_numeric(frame["OBSERVATION_YEAR"], errors="coerce").astype(
-        "Int16"
-    )
+    frame["OBSERVATION_YEAR"] = pd.to_numeric(
+        frame["OBSERVATION_YEAR"], errors="coerce"
+    ).astype("Int16")
     for column in (
         "HABITAT_TYPE",
         "SOURCE_DATASET",

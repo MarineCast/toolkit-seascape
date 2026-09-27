@@ -47,9 +47,9 @@ def test_width_and_constriction_mechanisms_preserve_local_narrows() -> None:
 
 def test_sill_candidates_require_relief_width_and_constriction(tmp_path) -> None:
     bathymetry_path = tmp_path / "bathymetry.parquet"
-    pd.DataFrame({"H3_INDEX": ["a", "b", "c"], "BATHYMETRY": [30.0, 10.0, 30.0]}).to_parquet(
-        bathymetry_path, index=False
-    )
+    pd.DataFrame(
+        {"H3_INDEX": ["a", "b", "c"], "BATHYMETRY": [30.0, 10.0, 30.0]}
+    ).to_parquet(bathymetry_path, index=False)
     config = SimpleNamespace(
         bathymetry_path=bathymetry_path,
         sill_neighborhood_rings=1,

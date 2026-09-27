@@ -31,7 +31,9 @@ from .build import (
 
 LOGGER = logging.getLogger(__name__)
 
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/hydrologic_connectivity")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/hydrologic_connectivity"
+)
 MAP_FILENAME = "estuarine_connectivity.html"
 SOURCE_COLORS = {
     "BC_PECP_DATABASIN": "#00A6A6",
@@ -43,14 +45,17 @@ def _h3_feature(row: Mapping[str, Any]) -> dict[str, Any]:
     cell = str(row["H3_INDEX"])
     geometry = mapping(cell_to_polygon(cell))
     geometry["coordinates"] = [
-        [[round(x, 6), round(y, 6)] for x, y in ring] for ring in geometry["coordinates"]
+        [[round(x, 6), round(y, 6)] for x, y in ring]
+        for ring in geometry["coordinates"]
     ]
     return {
         "type": "Feature",
         "properties": {
             "H3_INDEX": cell,
             "STRAIGHT_DISTANCE_M": round(float(row["DISTANCE_TO_ESTUARY_M"]), 3),
-            "MARINE_DISTANCE_M": round(float(row["WATER_NETWORK_DISTANCE_TO_ESTUARY_M"]), 3),
+            "MARINE_DISTANCE_M": round(
+                float(row["WATER_NETWORK_DISTANCE_TO_ESTUARY_M"]), 3
+            ),
         },
         "geometry": geometry,
     }
@@ -79,13 +84,17 @@ def _load_map_inputs(config_path: str | Path):
     features = pd.read_parquet(config.feature_path)
     estuaries = gpd.read_parquet(config.estuary_path)
     if list(features.columns) != FEATURE_COLUMNS:
-        raise ValueError(f"Unexpected estuary-distance schema: {list(features.columns)}")
+        raise ValueError(
+            f"Unexpected estuary-distance schema: {list(features.columns)}"
+        )
     if list(estuaries.columns) != ESTUARY_COLUMNS:
         raise ValueError(f"Unexpected mapped-estuary schema: {list(estuaries.columns)}")
     if features.empty or not features["H3_INDEX"].is_unique:
         raise ValueError("Estuary-distance product must contain one row per H3 cell.")
     if estuaries.empty or estuaries.crs is None:
-        raise ValueError("Mapped estuary locations must be nonempty and retain CRS metadata.")
+        raise ValueError(
+            "Mapped estuary locations must be nonempty and retain CRS metadata."
+        )
     return config, features, estuaries.to_crs("EPSG:4326")
 
 
@@ -157,13 +166,13 @@ def inspect_estuarine_connectivity(
     map_ = folium.Map(**map_options)
     map_name = map_.get_name()
     script = f"""
-    const estuaryDistanceH3 = {json.dumps(h3_data, separators=(',', ':'))};
-    const mappedEstuaryPoints = {json.dumps(estuary_data, separators=(',', ':'))};
+    const estuaryDistanceH3 = {json.dumps(h3_data, separators=(",", ":"))};
+    const mappedEstuaryPoints = {json.dumps(estuary_data, separators=(",", ":"))};
     const estuaryDistanceColors = {
-        json.dumps(list(settings.color_map()), separators=(',', ':'))
+        json.dumps(list(settings.color_map()), separators=(",", ":"))
     };
-    const estuarySourceColors = {json.dumps(SOURCE_COLORS, separators=(',', ':'))};
-    const estuaryMetricSpecs = {json.dumps(metric_specs, separators=(',', ':'))};
+    const estuarySourceColors = {json.dumps(SOURCE_COLORS, separators=(",", ":"))};
+    const estuaryMetricSpecs = {json.dumps(metric_specs, separators=(",", ":"))};
 
     function estuaryHexRgb(hex) {{
       const value = hex.replace('#', '');
@@ -249,7 +258,9 @@ def inspect_estuarine_connectivity(
     L.control.layers({{}}, estuaryOverlays, {{collapsed: true}}).addTo({map_name});
     """
     element = MacroElement()
-    element._template = Template("{% macro script(this, kwargs) %}" + script + "{% endmacro %}")
+    element._template = Template(
+        "{% macro script(this, kwargs) %}" + script + "{% endmacro %}"
+    )
     map_.add_child(element)
     note = """
     <div style="position:fixed;bottom:28px;left:10px;z-index:9999;background:white;
@@ -267,7 +278,9 @@ def inspect_estuarine_connectivity(
             [config.bbox["max_lat"], config.bbox["max_lon"]],
         ]
     )
-    map_.get_root().header.add_child(folium.Element("<title>Seascape Toolkit Distance to Estuary</title>"))
+    map_.get_root().header.add_child(
+        folium.Element("<title>Seascape Toolkit Distance to Estuary</title>")
+    )
     destination.parent.mkdir(parents=True, exist_ok=True)
     map_.save(destination)
     LOGGER.info(
@@ -282,7 +295,9 @@ def inspect_estuarine_connectivity(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--output")
     args = parser.parse_args()
     logging.basicConfig(

@@ -27,7 +27,9 @@ def nhd_feature_type(value: Any) -> int | None:
     code = finite_number(value)
     if code is not None:
         return int(code)
-    normalized = (clean_optional_text(value) or "").lower().replace("/", "").replace(" ", "")
+    normalized = (
+        (clean_optional_text(value) or "").lower().replace("/", "").replace(" ", "")
+    )
     return {"streamriver": 460, "artificialpath": 558}.get(normalized)
 
 

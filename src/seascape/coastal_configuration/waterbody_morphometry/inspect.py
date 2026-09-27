@@ -21,7 +21,9 @@ from seascape.utils.vector_inspect import h3_metric_feature
 from .build import OUTPUT_COLUMNS, load_waterbody_morphometry_config
 
 LOGGER = logging.getLogger(__name__)
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/coastal_configuration")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/coastal_configuration"
+)
 WATERBODY_MAP_FILENAME = "waterbody_morphometry.html"
 
 
@@ -107,7 +109,11 @@ def inspect_waterbody_morphometry(
 
     config = load_waterbody_morphometry_config(config_path)
     settings = load_presentation_settings(presentation_config_path)
-    source = Path(parquet_path).expanduser().resolve() if parquet_path else config.output_path
+    source = (
+        Path(parquet_path).expanduser().resolve()
+        if parquet_path
+        else config.output_path
+    )
     destination = (
         Path(output_path).expanduser().resolve()
         if output_path
@@ -152,8 +158,8 @@ def inspect_waterbody_morphometry(
     map_ = folium.Map(**map_options)
     map_name = map_.get_name()
     script = f"""
-    const morphometryData = {json.dumps(feature_collection, separators=(',', ':'))};
-    const morphometryScales = {json.dumps(scales, separators=(',', ':'))};
+    const morphometryData = {json.dumps(feature_collection, separators=(",", ":"))};
+    const morphometryScales = {json.dumps(scales, separators=(",", ":"))};
     function morphometryHexRgb(hex) {{
       const value = hex.replace('#', '');
       return [parseInt(value.slice(0,2),16), parseInt(value.slice(2,4),16), parseInt(value.slice(4,6),16)];
@@ -220,7 +226,9 @@ def inspect_waterbody_morphometry(
             "<style>.leaflet-control-layers-expanded{max-height:75vh;overflow-y:auto;}</style>"
         )
     )
-    bounds = [polygon.bounds for polygon in map(cell_to_polygon, frame["H3_INDEX"].to_list())]
+    bounds = [
+        polygon.bounds for polygon in map(cell_to_polygon, frame["H3_INDEX"].to_list())
+    ]
     map_.fit_bounds(
         [
             [min(item[1] for item in bounds), min(item[0] for item in bounds)],

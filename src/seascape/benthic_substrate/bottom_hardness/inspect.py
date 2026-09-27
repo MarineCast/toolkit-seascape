@@ -48,7 +48,9 @@ def inspect_bottom_hardness(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--resolution", type=int, choices=(6, 8), default=6)
     parser.add_argument("--output")
     args = parser.parse_args()

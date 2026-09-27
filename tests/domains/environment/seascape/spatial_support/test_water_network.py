@@ -59,7 +59,9 @@ def network_config():
 
 
 def test_water_path_rejects_island_and_accepts_open_channel():
-    water = box(-123.3, 48.0, -123.0, 48.3).difference(box(-123.16, 48.0, -123.14, 48.2))
+    water = box(-123.3, 48.0, -123.0, 48.3).difference(
+        box(-123.16, 48.0, -123.14, 48.2)
+    )
     _distance, blocked_fraction, blocked = water_path_metrics(
         -123.25,
         48.1,
@@ -85,7 +87,9 @@ def test_water_path_rejects_island_and_accepts_open_channel():
 
 
 def test_directional_fetch_stops_at_peninsula():
-    water = box(-123.3, 48.0, -123.0, 48.3).difference(box(-123.16, 48.0, -123.14, 48.2))
+    water = box(-123.3, 48.0, -123.0, 48.3).difference(
+        box(-123.16, 48.0, -123.14, 48.2)
+    )
     blocked = directional_water_fraction(-123.25, 48.1, 90.0, 20_000.0, water)
     clear = directional_water_fraction(-123.25, 48.25, 90.0, 10_000.0, water)
     assert 0.0 < blocked < 1.0
@@ -125,17 +129,23 @@ def test_hierarchy_only_parent_is_retained_without_fake_graph_connector(network_
     assert support.loc[0, "WATER_AREA_M2"] == 0
     assert bool(support.loc[0, "IS_HIERARCHY_ONLY_PARENT"])
     assert support.loc[0, "GRAPH_CONNECTION_STATUS"] == "disconnected"
-    assert support.loc[0, "GRAPH_QC_REASON"] == ("hierarchy_parent_without_geometric_water_overlap")
+    assert support.loc[0, "GRAPH_QC_REASON"] == (
+        "hierarchy_parent_without_geometric_water_overlap"
+    )
 
 
 def test_small_support_graph_contract_and_determinism(network_config):
     water = box(-123.2, 48.4, -123.1, 48.5)
-    full, clipped, support = _build_geometry_and_base_support(water, water, 8, network_config)
+    full, clipped, support = _build_geometry_and_base_support(
+        water, water, 8, network_config
+    )
     edges = _build_edges(support, water, 8, network_config)
     _assign_components(support, edges)
     connectors = _build_connectors(support, water, 8, network_config)
     support = support.sort_values("H3_INDEX").reset_index(drop=True)
-    edges = edges.sort_values(["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]).reset_index(drop=True)
+    edges = edges.sort_values(["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]).reset_index(
+        drop=True
+    )
     connectors = connectors.sort_values("H3_INDEX").reset_index(drop=True)
 
     validate_geometry_products(full, clipped, 8)
@@ -180,8 +190,12 @@ def test_small_support_graph_contract_and_determinism(network_config):
     shuffled = edges.sample(frac=1.0, random_state=7).reset_index(drop=True)
     _assign_components(rebuilt, shuffled)
     graph_cells = support.loc[support["GRAPH_DEGREE"] > 0, "H3_INDEX"]
-    expected = support.set_index("H3_INDEX").loc[graph_cells, "WATER_COMPONENT_ID"].to_dict()
-    observed = rebuilt.set_index("H3_INDEX").loc[graph_cells, "WATER_COMPONENT_ID"].to_dict()
+    expected = (
+        support.set_index("H3_INDEX").loc[graph_cells, "WATER_COMPONENT_ID"].to_dict()
+    )
+    observed = (
+        rebuilt.set_index("H3_INDEX").loc[graph_cells, "WATER_COMPONENT_ID"].to_dict()
+    )
     assert observed == expected
 
 
@@ -192,7 +206,9 @@ def test_offline_water_mask_support_to_bathymetry_fixture(tmp_path, network_conf
     from rasterio.transform import from_bounds
 
     water = box(-123.2, 48.4, -123.1, 48.5)
-    _full, _clipped, support = _build_geometry_and_base_support(water, water, 8, network_config)
+    _full, _clipped, support = _build_geometry_and_base_support(
+        water, water, 8, network_config
+    )
     edges = _build_edges(support, water, 8, network_config)
     _assign_components(support, edges)
     connectors = _build_connectors(support, water, 8, network_config)
@@ -256,7 +272,9 @@ def test_component_id_is_lexicographically_smallest_cell():
 
 def test_csr_is_symmetric_and_shortest_paths_are_deterministic(network_config):
     water = box(-123.2, 48.4, -123.1, 48.5)
-    _full, _clipped, support = _build_geometry_and_base_support(water, water, 8, network_config)
+    _full, _clipped, support = _build_geometry_and_base_support(
+        water, water, 8, network_config
+    )
     edges = _build_edges(support, water, 8, network_config)
     _assign_components(support, edges)
     valid = edges.loc[edges["EDGE_IS_WATER_PASSABLE"]]
@@ -274,7 +292,9 @@ def test_csr_is_symmetric_and_shortest_paths_are_deterministic(network_config):
 
 def test_target_mapping_never_uses_unbounded_nearest_cell(network_config):
     water = box(-123.2, 48.4, -123.1, 48.5)
-    _full, _clipped, support = _build_geometry_and_base_support(water, water, 8, network_config)
+    _full, _clipped, support = _build_geometry_and_base_support(
+        water, water, 8, network_config
+    )
     edges = _build_edges(support, water, 8, network_config)
     _assign_components(support, edges)
     connectors = _build_connectors(support, water, 8, network_config)
@@ -288,9 +308,9 @@ def test_target_mapping_never_uses_unbounded_nearest_cell(network_config):
         distances[terminal.to_numpy()],
         support.loc[terminal, "CONNECTOR_DISTANCE_M"].to_numpy(),
     )
-    assert set(connectors.loc[connectors["CONNECTOR_IS_WATER_PASSABLE"], "H3_INDEX"]).issubset(
-        set(support.loc[terminal, "H3_INDEX"])
-    )
+    assert set(
+        connectors.loc[connectors["CONNECTOR_IS_WATER_PASSABLE"], "H3_INDEX"]
+    ).issubset(set(support.loc[terminal, "H3_INDEX"]))
     assert reasons.shape == positions.shape
 
 
@@ -317,7 +337,9 @@ def test_h8_to_h6_crosswalk_uses_h3_parent(network_config):
         8: supports[8],
     }
     dry_parent_crosswalk = _crosswalk(pruned_supports, network_config)
-    dry_rows = dry_parent_crosswalk.loc[dry_parent_crosswalk["PARENT_H3_INDEX"] == dry_parent]
+    dry_rows = dry_parent_crosswalk.loc[
+        dry_parent_crosswalk["PARENT_H3_INDEX"] == dry_parent
+    ]
     assert not dry_rows["PARENT_IN_MARINE_SUPPORT"].any()
     assert (dry_rows["PARENT_WATER_AREA_M2"] == 0.0).all()
     assert dry_rows["PARENT_WATER_COMPONENT_ID"].isna().all()
@@ -340,7 +362,9 @@ def test_manifest_checksum_mismatch_fails_closed(tmp_path):
         _verify_artifact(artifact, payload)
 
 
-def test_manifest_relative_artifact_resolves_against_candidate_root(tmp_path, monkeypatch):
+def test_manifest_relative_artifact_resolves_against_candidate_root(
+    tmp_path, monkeypatch
+):
     artifact = tmp_path / "data/processed/artifact.parquet"
     artifact.parent.mkdir(parents=True)
     artifact.write_bytes(b"candidate")

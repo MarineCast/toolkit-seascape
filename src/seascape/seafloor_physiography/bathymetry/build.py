@@ -96,16 +96,21 @@ def load_h3_cells(config: BathymetryConfig) -> list[str]:
 
     if not config.h3_grid_path.exists():
         raise FileNotFoundError(
-            "Canonical model-area support is required before bathymetry: " f"{config.h3_grid_path}"
+            "Canonical model-area support is required before bathymetry: "
+            f"{config.h3_grid_path}"
         )
     cells = _cells_from_existing_grid(config)
     source = config.h3_grid_path
     if not cells:
-        raise ValueError(f"No H3 cells found in the configured model area using {source}.")
+        raise ValueError(
+            f"No H3 cells found in the configured model area using {source}."
+        )
     import h3
 
     unexpected = sorted(
-        {int(h3.get_resolution(cell)) for cell in cells}.difference({config.h3_resolution})
+        {int(h3.get_resolution(cell)) for cell in cells}.difference(
+            {config.h3_resolution}
+        )
     )
     if unexpected:
         raise ValueError(
@@ -120,14 +125,20 @@ def load_h3_cells(config: BathymetryConfig) -> list[str]:
     return cells
 
 
-def _pixel_centers(transform: Any, shape: tuple[int, int]) -> tuple[np.ndarray, np.ndarray]:
+def _pixel_centers(
+    transform: Any, shape: tuple[int, int]
+) -> tuple[np.ndarray, np.ndarray]:
     rows, columns = np.indices(shape, dtype=float)
-    longitudes = transform.c + (columns + 0.5) * transform.a + (rows + 0.5) * transform.b
+    longitudes = (
+        transform.c + (columns + 0.5) * transform.a + (rows + 0.5) * transform.b
+    )
     latitudes = transform.f + (columns + 0.5) * transform.d + (rows + 0.5) * transform.e
     return latitudes, longitudes
 
 
-def _latlngs_to_h3(latitudes: np.ndarray, longitudes: np.ndarray, resolution: int) -> list[str]:
+def _latlngs_to_h3(
+    latitudes: np.ndarray, longitudes: np.ndarray, resolution: int
+) -> list[str]:
     import h3
 
     return [
@@ -159,8 +170,12 @@ def _local_depth_anomaly(
     missing = sorted(required.difference(neighborhoods.columns))
     if missing:
         raise ValueError(f"Water-neighborhood table is missing columns: {missing}")
-    selected = neighborhoods.loc[neighborhoods["MINIMUM_HOP_COUNT"].between(1, neighborhood_rings)]
-    targets_by_source = selected.groupby("SOURCE_H3_INDEX", sort=False)["TARGET_H3_INDEX"].agg(list)
+    selected = neighborhoods.loc[
+        neighborhoods["MINIMUM_HOP_COUNT"].between(1, neighborhood_rings)
+    ]
+    targets_by_source = selected.groupby("SOURCE_H3_INDEX", sort=False)[
+        "TARGET_H3_INDEX"
+    ].agg(list)
     for index, cell in enumerate(cells):
         focal_depth = depth_by_cell.get(cell)
         if focal_depth is None:
@@ -231,11 +246,17 @@ def _isobath_crossings(
             out=fraction,
             where=np.abs(denominator) > np.finfo("float64").eps,
         )
-        crossing_lat = first_lat[crossing] + fraction * (second_lat[crossing] - first_lat[crossing])
-        crossing_lon = first_lon[crossing] + fraction * (second_lon[crossing] - first_lon[crossing])
+        crossing_lat = first_lat[crossing] + fraction * (
+            second_lat[crossing] - first_lat[crossing]
+        )
+        crossing_lon = first_lon[crossing] + fraction * (
+            second_lon[crossing] - first_lon[crossing]
+        )
         crossing_parts.append(np.column_stack((crossing_lon, crossing_lat)))
     if not crossing_parts:
-        raise ValueError(f"GEBCO raster does not cross the configured {level_m:g} m isobath.")
+        raise ValueError(
+            f"GEBCO raster does not cross the configured {level_m:g} m isobath."
+        )
     return np.concatenate(crossing_parts, axis=0)
 
 
@@ -277,7 +298,9 @@ def _distance_to_isobaths(
         crossing_points = np.column_stack((crossing_x, crossing_y))
         crossing_points = crossing_points[np.isfinite(crossing_points).all(axis=1)]
         if crossing_points.size == 0:
-            raise ValueError(f"No projectable crossings found for the {level_m:g} m isobath.")
+            raise ValueError(
+                f"No projectable crossings found for the {level_m:g} m isobath."
+            )
         nearest_distance, _nearest_index = cKDTree(crossing_points).query(
             cell_points,
             workers=-1,
@@ -322,7 +345,9 @@ def _aggregate_raster(
     in_grid = np.fromiter((cell in cell_set for cell in pixel_cells), dtype=bool)
     selected_cells = np.asarray(pixel_cells, dtype=object)[in_grid]
     if selected_cells.size == 0:
-        raise ValueError("No marine GEBCO pixels overlap the configured water H3 cells.")
+        raise ValueError(
+            "No marine GEBCO pixels overlap the configured water H3 cells."
+        )
 
     depth = marine_depth[marine][in_grid]
     if bathymetry_sign == "negative_elevation":
@@ -347,7 +372,9 @@ def _aggregate_raster(
     }
     for quantile in depth_quantiles:
         aggregations[_quantile_column(quantile)] = (
-            lambda values, selected_quantile=quantile: values.quantile(selected_quantile)
+            lambda values, selected_quantile=quantile: values.quantile(
+                selected_quantile
+            )
         )
     grouped = samples.groupby("H3_INDEX", sort=False, observed=True)["BATHYMETRY"].agg(
         **aggregations
@@ -358,7 +385,8 @@ def _aggregate_raster(
     grouped = grouped.join(band_counts, how="left")
     for token, _lower, _upper in DEPTH_BANDS_M:
         grouped[f"BATHYMETRY_FRAC_{token}_M"] = (
-            grouped[f"BATHYMETRY_PIXEL_COUNT_{token}_M"] / grouped["BATHYMETRY_PIXEL_COUNT"]
+            grouped[f"BATHYMETRY_PIXEL_COUNT_{token}_M"]
+            / grouped["BATHYMETRY_PIXEL_COUNT"]
         )
     grouped["BATHYMETRY_RANGE"] = grouped["BATHYMETRY_MAX"] - grouped["BATHYMETRY_MIN"]
     result = pd.DataFrame({"H3_INDEX": cells}).merge(
@@ -390,7 +418,9 @@ def build_bathymetry_parquet(
 ) -> Path:
     """Aggregate GEBCO depth and direct depth summaries into configured H3 cells."""
 
-    source = Path(raster_path).expanduser().resolve() if raster_path else config.raw_path
+    source = (
+        Path(raster_path).expanduser().resolve() if raster_path else config.raw_path
+    )
     if not source.exists():
         raise FileNotFoundError(f"GEBCO GeoTIFF not found: {source}")
     cells = load_h3_cells(config)

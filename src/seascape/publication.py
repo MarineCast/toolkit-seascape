@@ -30,7 +30,10 @@ def _same_filesystem(first: Path, second: Path) -> bool:
             candidate = candidate.parent
         return candidate
 
-    return os.stat(existing_ancestor(first)).st_dev == os.stat(existing_ancestor(second)).st_dev
+    return (
+        os.stat(existing_ancestor(first)).st_dev
+        == os.stat(existing_ancestor(second)).st_dev
+    )
 
 
 class TransactionalSeascapePublisher(TransactionalFamilyPublisher):
@@ -41,7 +44,9 @@ class TransactionalSeascapePublisher(TransactionalFamilyPublisher):
         self._release_lock: Any | None = None
 
     def stage_path(self, destination: str | Path, *, terminal: bool = False) -> Path:
-        return super().stage_path(validate_candidate_destination(destination), terminal=terminal)
+        return super().stage_path(
+            validate_candidate_destination(destination), terminal=terminal
+        )
 
     def _publishes_canonical_seascape(self) -> bool:
         if os.environ.get("SEASCAPE_CANDIDATE_ROOT"):
@@ -111,7 +116,11 @@ class SeascapeSnapshot(AbstractContextManager["SeascapeSnapshot"]):
 
     def resolve(self, path: str | Path) -> Path:
         candidate = Path(path)
-        return candidate.resolve() if candidate.is_absolute() else self.canonical_root / candidate
+        return (
+            candidate.resolve()
+            if candidate.is_absolute()
+            else self.canonical_root / candidate
+        )
 
     def read_json(self, path: str | Path) -> dict[str, Any]:
         payload = json.loads(self.resolve(path).read_text(encoding="utf-8"))
@@ -147,9 +156,13 @@ class SeascapeReleasePublisher(AbstractContextManager["SeascapeReleasePublisher"
         self.canonical_root = Path(canonical_root).resolve()
         self.candidate_root = Path(candidate_root).resolve()
         if not _same_filesystem(self.canonical_root, self.candidate_root):
-            raise ValueError("Seascape publication requires a same-filesystem candidate root.")
+            raise ValueError(
+                "Seascape publication requires a same-filesystem candidate root."
+            )
         self.lock_path = self.canonical_root / SEASCAPE_RELEASE_LOCK
-        self.publisher = TransactionalFamilyPublisher(self.canonical_root, run_id=run_id)
+        self.publisher = TransactionalFamilyPublisher(
+            self.canonical_root, run_id=run_id
+        )
         self._handle: Any | None = None
 
     def __enter__(self) -> "SeascapeReleasePublisher":
@@ -159,7 +172,9 @@ class SeascapeReleasePublisher(AbstractContextManager["SeascapeReleasePublisher"
         self.publisher.__enter__()
         return self
 
-    def stage_candidate(self, relative_path: str | Path, *, manifest: bool = False) -> Path:
+    def stage_candidate(
+        self, relative_path: str | Path, *, manifest: bool = False
+    ) -> Path:
         """Copy a candidate into transaction staging for recoverable promotion."""
 
         relative = Path(relative_path)

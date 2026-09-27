@@ -85,7 +85,9 @@ SHAPE_INDEX_COLUMNS = [
 def ring_output_columns(rings: tuple[int, ...]) -> list[str]:
     """Return deterministic scale-qualified output columns."""
 
-    return [template.format(ring=ring) for ring in rings for template in PER_RING_TEMPLATES]
+    return [
+        template.format(ring=ring) for ring in rings for template in PER_RING_TEMPLATES
+    ]
 
 
 def output_columns(rings: tuple[int, ...]) -> list[str]:
@@ -137,12 +139,16 @@ def load_geomorphometry_config(
     require_positive_down_config(raw)
     bathymetry = _mapping(raw.get("bathymetry"), "bathymetry")
     bathymetry_source = _mapping(bathymetry.get("source"), "bathymetry.source")
-    bathymetry_processing = _mapping(bathymetry.get("processing"), "bathymetry.processing")
+    bathymetry_processing = _mapping(
+        bathymetry.get("processing"), "bathymetry.processing"
+    )
     section = _mapping(raw.get("geomorphometry"), "geomorphometry")
     processing = _mapping(section.get("processing"), "geomorphometry.processing")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
 
     resolution = int(processing.get("h3_resolution", 8))
@@ -154,7 +160,11 @@ def load_geomorphometry_config(
             "geomorphometry.processing.ruggedness_algorithm must be 'wilson' "
             "for the bathymetric product."
         )
-    rings = tuple(sorted({int(value) for value in processing.get("neighborhood_rings", [1, 2, 4])}))
+    rings = tuple(
+        sorted(
+            {int(value) for value in processing.get("neighborhood_rings", [1, 2, 4])}
+        )
+    )
     neighbor_ring = int(processing.get("neighbor_ring", 1))
     if not rings or min(rings) < 1 or neighbor_ring not in rings:
         raise ValueError(
@@ -163,11 +173,15 @@ def load_geomorphometry_config(
         )
     quantile = float(processing.get("slope_upper_quantile", 0.90))
     if quantile != 0.90:
-        raise ValueError("slope_upper_quantile must be 0.90 for the stable Q90 column contract.")
+        raise ValueError(
+            "slope_upper_quantile must be 0.90 for the stable Q90 column contract."
+        )
     openness_radius = int(processing.get("openness_radius_rings", max(rings)))
     openness_sectors = int(processing.get("openness_bearing_sectors", 12))
     if openness_radius < 1 or openness_sectors < 4:
-        raise ValueError("Openness radius must be positive and use at least four sectors.")
+        raise ValueError(
+            "Openness radius must be positive and use at least four sectors."
+        )
     curvature_scale = float(processing.get("curvature_index_scale_per_m", 0.0002))
     if curvature_scale <= 0.0:
         raise ValueError("curvature_index_scale_per_m must be positive.")
@@ -181,7 +195,9 @@ def load_geomorphometry_config(
             processing.get("bathymetry_path", bathymetry_processing["processed_path"]),
             base_dir,
         ),
-        native_raster_path=_resolve(processing.get("native_raster_path", default_raster), base_dir),
+        native_raster_path=_resolve(
+            processing.get("native_raster_path", default_raster), base_dir
+        ),
         native_resolution_arc_seconds=float(
             processing.get(
                 "native_resolution_arc_seconds",
@@ -209,7 +225,9 @@ def _projected_centers(cells: pd.Series, crs: str) -> dict[str, tuple[float, flo
         {"H3_INDEX": cells.astype(str)}, geometry=geometry, crs="EPSG:4326"
     ).to_crs(crs)
     centers = frame.geometry.centroid
-    return dict(zip(frame["H3_INDEX"], zip(centers.x, centers.y, strict=True), strict=True))
+    return dict(
+        zip(frame["H3_INDEX"], zip(centers.x, centers.y, strict=True), strict=True)
+    )
 
 
 def _plane_coefficients(
@@ -220,7 +238,10 @@ def _plane_coefficients(
     center_x = float(np.mean([centers[cell][0] for cell in cells]))
     center_y = float(np.mean([centers[cell][1] for cell in cells]))
     design = np.asarray(
-        [[centers[cell][0] - center_x, centers[cell][1] - center_y, 1.0] for cell in cells]
+        [
+            [centers[cell][0] - center_x, centers[cell][1] - center_y, 1.0]
+            for cell in cells
+        ]
     )
     values = np.asarray([depths[cell] for cell in cells])
     return np.linalg.lstsq(design, values, rcond=None)[0]
@@ -232,7 +253,9 @@ def _plane_metrics(
     depths: Mapping[str, float],
     centers: Mapping[str, tuple[float, float]],
 ) -> tuple[float, float]:
-    gradient_x, gradient_y, _intercept = _plane_coefficients([center, *neighbors], depths, centers)
+    gradient_x, gradient_y, _intercept = _plane_coefficients(
+        [center, *neighbors], depths, centers
+    )
     magnitude = math.hypot(float(gradient_x), float(gradient_y))
     slope = math.degrees(math.atan(magnitude))
     aspect = (
@@ -254,7 +277,8 @@ def _quadratic_curvatures(
     center_x, center_y = centers[center]
     cells = [center, *neighbors]
     distances = [
-        math.hypot(centers[cell][0] - center_x, centers[cell][1] - center_y) for cell in neighbors
+        math.hypot(centers[cell][0] - center_x, centers[cell][1] - center_y)
+        for cell in neighbors
     ]
     scale = float(np.mean(distances))
     if not math.isfinite(scale) or scale <= 0.0:
@@ -294,9 +318,11 @@ def _quadratic_curvatures(
 def validate_native_raster_header(raster) -> None:
     """Check the existing native-slope support contract without reading pixels."""
     if raster.count != 1 or raster.crs is None or raster.crs.to_epsg() != 4326:
-        raise ValueError("Native GEBCO slope input must be a one-band EPSG:4326 raster.")
+        raise ValueError(
+            "Native GEBCO slope input must be a one-band EPSG:4326 raster."
+        )
     transform = raster.transform
-    if (transform.b != 0 or transform.d != 0 or transform.a <= 0 or transform.e >= 0):
+    if transform.b != 0 or transform.d != 0 or transform.a <= 0 or transform.e >= 0:
         raise ValueError("Native slope requires an unrotated north-up raster.")
     if min(raster.height, raster.width) < 3:
         raise ValueError("Native slope requires at least three rows and columns.")
@@ -321,13 +347,17 @@ def _native_raster_slope_summary(
         transform = raster.transform
 
     rows, columns = np.indices(elevation.shape)
-    longitudes, latitudes = rasterio.transform.xy(transform, rows, columns, offset="center")
+    longitudes, latitudes = rasterio.transform.xy(
+        transform, rows, columns, offset="center"
+    )
     latitudes = np.asarray(latitudes, dtype="float64").reshape(elevation.shape)
     longitudes = np.asarray(longitudes, dtype="float64").reshape(elevation.shape)
     marine = np.isfinite(elevation) & (elevation < 0.0)
     latitude_step_m = abs(float(transform.e)) * 110_574.0
     longitude_step_m = (
-        abs(float(transform.a)) * 111_320.0 * np.maximum(np.cos(np.deg2rad(latitudes)), 0.1)
+        abs(float(transform.a))
+        * 111_320.0
+        * np.maximum(np.cos(np.deg2rad(latitudes)), 0.1)
     )
     # Central differences require marine support on both sides. Raster edges
     # retain numpy's one-sided stencil; land and nodata never contribute.
@@ -341,13 +371,17 @@ def _native_raster_slope_summary(
     pixel_cells = np.fromiter(
         (
             h3.latlng_to_cell(float(latitude), float(longitude), resolution)
-            for latitude, longitude in zip(valid_latitudes, valid_longitudes, strict=True)
+            for latitude, longitude in zip(
+                valid_latitudes, valid_longitudes, strict=True
+            )
         ),
         dtype=object,
         count=len(valid_latitudes),
     )
     in_target = np.fromiter(
-        (cell in target_cells for cell in pixel_cells), dtype=bool, count=len(pixel_cells)
+        (cell in target_cells for cell in pixel_cells),
+        dtype=bool,
+        count=len(pixel_cells),
     )
     samples = pd.DataFrame(
         {
@@ -356,7 +390,9 @@ def _native_raster_slope_summary(
         }
     )
     if samples.empty:
-        raise ValueError("No native-raster slope pixels overlap the H3 bathymetry universe.")
+        raise ValueError(
+            "No native-raster slope pixels overlap the H3 bathymetry universe."
+        )
     return (
         samples.groupby("H3_INDEX", observed=True)["NATIVE_SLOPE"]
         .agg(
@@ -390,7 +426,10 @@ def _detrended_roughness(
     center_x = float(np.mean([centers[cell][0] for cell in cells]))
     center_y = float(np.mean([centers[cell][1] for cell in cells]))
     design = np.asarray(
-        [[centers[cell][0] - center_x, centers[cell][1] - center_y, 1.0] for cell in cells]
+        [
+            [centers[cell][0] - center_x, centers[cell][1] - center_y, 1.0]
+            for cell in cells
+        ]
     )
     values = np.asarray([depths[cell] for cell in cells])
     coefficients = np.linalg.lstsq(design, values, rcond=None)[0]
@@ -406,7 +445,8 @@ def _circular_aspect_metrics(
     valid = [
         cell
         for cell in cells
-        if math.isfinite(slopes.get(cell, math.nan)) and math.isfinite(aspects.get(cell, math.nan))
+        if math.isfinite(slopes.get(cell, math.nan))
+        and math.isfinite(aspects.get(cell, math.nan))
     ]
     if not valid:
         return math.nan, math.nan, math.nan
@@ -429,7 +469,8 @@ def _vector_ruggedness(
     valid = [
         cell
         for cell in cells
-        if math.isfinite(slopes.get(cell, math.nan)) and math.isfinite(aspects.get(cell, math.nan))
+        if math.isfinite(slopes.get(cell, math.nan))
+        and math.isfinite(aspects.get(cell, math.nan))
     ]
     if not valid:
         return math.nan
@@ -438,7 +479,9 @@ def _vector_ruggedness(
     x = np.sin(slope_radians) * np.sin(aspect_radians)
     y = np.sin(slope_radians) * np.cos(aspect_radians)
     z = np.cos(slope_radians)
-    resultant = math.sqrt(float(np.mean(x)) ** 2 + float(np.mean(y)) ** 2 + float(np.mean(z)) ** 2)
+    resultant = math.sqrt(
+        float(np.mean(x)) ** 2 + float(np.mean(y)) ** 2 + float(np.mean(z)) ** 2
+    )
     return float(np.clip(1.0 - resultant, 0.0, 1.0))
 
 
@@ -506,7 +549,9 @@ def _derive_metrics(
     for cell in cells:
         row = rows[cell]
         row["H3_INDEX"] = cell
-        row["NATIVE_RASTER_RESOLUTION_ARC_SECONDS"] = config.native_resolution_arc_seconds
+        row["NATIVE_RASTER_RESOLUTION_ARC_SECONDS"] = (
+            config.native_resolution_arc_seconds
+        )
         if cell not in depths:
             continue
         neighbors = _neighbors(cell, config.neighbor_ring, depths, neighborhood_lookups)
@@ -529,7 +574,9 @@ def _derive_metrics(
                 row["NORTHNESS"] = math.cos(math.radians(aspect))
             row["SURFACE_AREA_RATIO_FROM_SLOPE"] = 1.0 / math.cos(math.radians(slope))
         if len(neighbors) >= 5:
-            legacy, general, profile, plan = _quadratic_curvatures(cell, neighbors, depths, centers)
+            legacy, general, profile, plan = _quadratic_curvatures(
+                cell, neighbors, depths, centers
+            )
             row["CURVATURE"] = legacy
             row["GENERAL_CURVATURE"] = general
             row["PROFILE_CURVATURE"] = profile
@@ -562,11 +609,15 @@ def _derive_metrics(
             row[f"LOCAL_RELIEF_RING_{ring}_M"] = float(np.max(deviations))
             row[f"DEPTH_RANGE_RING_{ring}_M"] = float(np.ptp(all_depths))
             row[f"DEPTH_STD_RING_{ring}_M"] = float(np.std(all_depths))
-            row[f"DEPTH_MAD_RING_{ring}_M"] = float(np.median(np.abs(all_depths - median_depth)))
+            row[f"DEPTH_MAD_RING_{ring}_M"] = float(
+                np.median(np.abs(all_depths - median_depth))
+            )
             row[f"NEIGHBORHOOD_ROUGHNESS_RING_{ring}_M"] = _detrended_roughness(
                 neighborhood, depths, centers
             )
-            valid_slopes = np.asarray([slopes[item] for item in neighborhood if item in slopes])
+            valid_slopes = np.asarray(
+                [slopes[item] for item in neighborhood if item in slopes]
+            )
             if len(valid_slopes):
                 row[f"SLOPE_MEAN_RING_{ring}"] = float(np.mean(valid_slopes))
                 row[f"SLOPE_Q90_RING_{ring}"] = float(
@@ -598,7 +649,9 @@ def _derive_metrics(
         row["NEGATIVE_OPENNESS_DEG"] = negative
         row["OPENNESS_SECTOR_COVERAGE"] = coverage
         if tpi_z_values:
-            row["RIDGE_INDEX"] = float(np.clip(max(max(tpi_z_values), 0.0), 0.0, 3.0) / 3.0)
+            row["RIDGE_INDEX"] = float(
+                np.clip(max(max(tpi_z_values), 0.0), 0.0, 3.0) / 3.0
+            )
             row["VALLEY_INDEX"] = float(
                 np.clip(max(max(-value for value in tpi_z_values), 0.0), 0.0, 3.0) / 3.0
             )
@@ -629,7 +682,9 @@ def build_geomorphometry(
 
     config = load_geomorphometry_config(config_path)
     if not config.bathymetry_path.exists():
-        raise FileNotFoundError(f"Bathymetry Parquet not found: {config.bathymetry_path}")
+        raise FileNotFoundError(
+            f"Bathymetry Parquet not found: {config.bathymetry_path}"
+        )
     bathymetry = pd.read_parquet(config.bathymetry_path)
     missing = sorted({"H3_INDEX", "BATHYMETRY"}.difference(bathymetry.columns))
     if missing:
@@ -651,7 +706,8 @@ def build_geomorphometry(
         config_path,
     )
     neighborhood_lookups = {
-        hops: water_neighborhood_lookup(neighborhoods, maximum_hops=hops) for hops in required_hops
+        hops: water_neighborhood_lookup(neighborhoods, maximum_hops=hops)
+        for hops in required_hops
     }
     result = _derive_metrics(source, config, neighborhood_lookups)
     native_slope = _native_raster_slope_summary(
@@ -660,9 +716,9 @@ def build_geomorphometry(
         config.h3_resolution,
         config.slope_upper_quantile,
     )
-    result = result.drop(columns=["SLOPE_MEAN_NATIVE_RASTER", "SLOPE_Q90_NATIVE_RASTER"]).merge(
-        native_slope, on="H3_INDEX", how="left", validate="one_to_one"
-    )
+    result = result.drop(
+        columns=["SLOPE_MEAN_NATIVE_RASTER", "SLOPE_Q90_NATIVE_RASTER"]
+    ).merge(native_slope, on="H3_INDEX", how="left", validate="one_to_one")
     columns = output_columns(config.neighborhood_rings)
     result = result[columns]
     if result["H3_INDEX"].nunique() != len(result):
