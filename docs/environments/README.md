@@ -68,7 +68,10 @@ exception behavior. Dynamic YAML and demo/export metadata stay open mappings at 
 CI retains tests, installed-wheel/notebook checks and security audits. Its quality matrix uses an
 unconstrained Linux Python 3.11 solve and the constrained macOS Python 3.14 ARM64 baseline; the
 constrained job compares the observed closure/native versions. Each saves and audits runtime,
-test and quality dependencies. Hosted execution remains **not_run** until actual run evidence
-exists; macOS runner OS versions differ from this local baseline. Neither local success nor a
-configured matrix establishes Linux compatibility. Gitleaks history and broad tree gates remain
-enabled; the untouched ignored Graphify hash finding remains a failed broad local scan, not waived.
+test and quality dependencies. [Hosted run 36322829881](https://github.com/MarineCast/toolkit-seascape/actions/runs/36322829881)
+passed all nine jobs on commit `6ddd5ca`, including Linux 3.11/3.14 consumers and macOS 3.14 ARM64.
+Its constrained macOS quality job reproduced the dependency/native baseline on Python 3.14.7,
+macOS 14.8.9; these differ from the recorded local interpreter patch/OS. See the progress record
+for observed versions and exact acceptance limits. A configured matrix alone is not execution
+evidence. Hosted Gitleaks history/tree gates passed; the untouched ignored Graphify hash finding
+remains a failed broad local scan, not waived.

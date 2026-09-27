@@ -1,23 +1,24 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-07; SS-03 hosted acceptance pending.
+Implemented scope: SS-00 through SS-07; SS-03 hosted acceptance passed.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
-Working branch: `feature/seascape-first-run-demo`. No remote mutations.
-Current next action: close SS-03 hosted acceptance; SS-08 prerequisites are not yet satisfied.
+Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
+on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
+Current next action: SS-08; its SS-03/SS-05 prerequisites are now satisfied.
 
 | Task | Status | Evidence / next gap |
 | --- | --- | --- |
 | SS-00 | passed | Baseline classified; notebook PASS (12 code cells, no errors) |
 | SS-01 | passed | 21 regressions, runtime-only guarded wheel demo; full suite 241 passed / 3 skipped |
 | SS-02 | passed | Portable copied notebook; 7 regressions; full suite 248 passed / 3 skipped |
-| SS-03 | blocked | Implementation/local macOS passed; hosted matrix not_run; remote absence reverified 2026-09-27 |
+| SS-03 | passed | All three hosted consumer cases passed; run 36322829881, tested commit 6ddd5ca |
 | SS-04 | passed | Read-only input preflight; 34 new regressions; guarded runtime-only wheel acceptance |
 | SS-05 | passed | CLI-only guidance/debug, side-effect contracts, 29 regressions; runtime-only wheel acceptance |
 | SS-06 | passed | Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped |
 | SS-07 | passed | Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed |
-| SS-08–SS-11 | not_run | SS-08 is next, pending hosted SS-03 acceptance |
+| SS-08–SS-11 | not_run | SS-08 is next; stop before implementing it in the SS-03 closure |
 
 ## SS-00 baseline
 
@@ -687,3 +688,58 @@ Changed: this progress record only. Behavior/API/scientific changes: **none**. N
 starting changes; production source, CI, tests, configs, resources, notebooks, products/releases,
 ignored caches and sibling repositories preserved. Evidence: `/tmp/seascape-ss03-recheck-evidence/`.
 Next: finish **SS-03 hosted acceptance**, then **SS-08**; stop before SS-08. Remote changes: **none**.
+
+## SS-03 hosted acceptance closure — passed
+
+User explicitly authorized the feature-branch push to test SS-03 and publish the local code
+changes to Git. Preserved all earlier commits on `feature/seascape-repository-organization-updates`.
+Base/tested commit **`6ddd5ca7d4ce25b229bf0dd50bbd3e3708afc7f8`**; current commit is this documentation
+handoff. Clean starting tree. No new production, CI, configuration, test or scientific changes.
+This result supersedes the earlier blocked SS-03 entries without relabeling those historical runs.
+
+[Run 36322829881](https://github.com/MarineCast/toolkit-seascape/actions/runs/36322829881), triggered by
+push on September 27, completed **success**: **9/9 jobs**. Inspected job conclusions and decoded
+logs; consumer environment JSON and expected-exit results are printed in those logs. All three
+consumer jobs built/inspected an sdist and its wheel, passed **16/16 consumer steps**, verified
+**163 installed modules**, and asserted the observed interpreter/system/architecture:
+
+| Actual consumer | GDAL / PROJ / GEOS | Job ID |
+| --- | --- | --- |
+| Ubuntu 24.04.5, Linux x86_64, Python 3.11.16 | 3.10.3 / 9.5.1 / 3.13.1 | 108629839889 |
+| Ubuntu 24.04.5, Linux x86_64, Python 3.14.7 | 3.12.4 / 9.8.1 / 3.13.1 | 108629839917 |
+| macOS 14.8.9, Darwin arm64, Python 3.14.7 | 3.12.4 / 9.8.1 / 3.13.1 | 108629839834 |
+
+Each consumer installed the wheel with dependencies in a fresh, non-inherited runtime environment;
+pip/import/resource/help/init/dry-run/demo checks passed before test/notebook extras. Four expected
+negative probes per case exited **1** with required markers (missing Rasterio, source import,
+missing packaged resource, attempted outbound activity); these are successful rejection tests,
+not concealed failures. Runtime demo, copied external tests and copied notebook steps exited **0**.
+Python process guards do not claim OS/native isolation or regional scientific validity.
+
+Both Linux full-suite jobs: **328 passed / 0 failed / 3 skipped**, 65 warnings each. Skips remain
+two feature-catalog and one network-consumer test requiring absent materialized regional products.
+The separate notebook job passed. Both quality jobs passed lint, 231-file format checks,
+12-module mypy, dependency checks and advisory audits (no known vulnerabilities). The constrained
+macOS job compared dependency/native versions successfully; interpreter patch/OS differences
+from the local baseline are recorded above. Hosted Gitleaks history and broad fresh-checkout
+scans passed. Earlier local ignored-cache findings remain historical failed scans, not waived.
+
+Exact commands/actions: `git push --set-upstream origin feature/seascape-repository-organization-updates`
+(exit **0**); `git rev-parse HEAD origin/feature/seascape-repository-organization-updates`
+(exit **0**, matching SHA). Read-only GitHub run/jobs/logs/artifacts requests succeeded. Executed
+CI commands are retained verbatim in `.github/workflows/ci.yml` and the downloaded decoded job logs.
+Documentation reference checks, `git diff --check`, commit and documentation push exited **0**.
+No additional local pytest/build/notebook execution was needed for this documentation-only closure.
+
+Five non-expired Actions artifacts exist: three consumer bundles and two scientific-environment
+snapshots. Recorded IDs/digests/expiry in `/tmp/seascape-ss03-hosted-evidence/run-36322829881.json`;
+decoded logs are `job-<id>.log` there. Artifact ZIP contents were not downloaded: nested copied-test
+counts and figure visual QA are not newly claimed. Reports/logs/distributions remain available in
+Actions artifacts. Native versions and all 16 expected-exit results were verified from job logs.
+
+Changed: this record, `docs/environments/README.md`, `docs/DEVELOPMENT.md`. Behavior/API/scientific
+changes: **none**. No unrelated starting edits; source, CI, tests, configs, resources, notebooks,
+canonical/retained products, ignored caches and siblings preserved. Remote changes: authorized
+feature-branch pushes only; no PR, merge, tag, settings change, package publication or dataset
+acquisition. Live/regional/downstream/human release acceptance remain **not_run**.
+Next: **SS-08**, now eligible; stop before SS-08.
