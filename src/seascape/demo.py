@@ -6,24 +6,26 @@ regional spatial support, audit a whole release, or publish canonical products.
 
 from __future__ import annotations
 
+import fcntl
+import json
+import os
+import platform
+import sys
+import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from importlib.metadata import version
 from importlib.resources import files
-import fcntl
-import json
-import os
 from pathlib import Path
-import platform
-import sys
-import time
+from typing import TypedDict
 
 import h3
 import numpy as np
 import pandas as pd
 import rasterio
-from rasterio.transform import from_bounds
 import yaml
+from rasterio.transform import from_bounds
 
 from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.artifacts.contracts import atomic_write_json, atomic_write_text
@@ -64,8 +66,14 @@ class DemoResult:
     metadata: dict[str, object]
 
 
+class _Fixture(TypedDict):
+    cells: list[str]
+    controls: dict[str, str]
+    flat_count: int
+
+
 @contextmanager
-def _environment(root: Path):
+def _environment(root: Path) -> Iterator[None]:
     updates = {
         "SEASCAPE_WORKSPACE": str(root),
         "SEASCAPE_CANDIDATE_ROOT": str(root),
@@ -118,7 +126,7 @@ def _check_destination(root: Path, overwrite: bool) -> None:
             raise DemoWorkspaceError(f"Unreviewed publication state: {path}")
 
 
-def _prepare_fixture(root: Path) -> dict[str, object]:
+def _prepare_fixture(root: Path) -> _Fixture:
     """Reuse the validation notebook's 48x48 negative-elevation fixture recipe.
 
     Controls add constant depth, exact sea level (excluded by the production
@@ -237,7 +245,7 @@ def _prepare_fixture(root: Path) -> dict[str, object]:
     }
 
 
-def _validate(root: Path, fixture: dict[str, object]) -> dict[str, bool]:
+def _validate(root: Path, fixture: _Fixture) -> dict[str, bool]:
     output = pd.read_parquet(root / _FILES[4])
     manifest = json.loads((root / _FILES[5]).read_text())
     validate_manifest(manifest, project_root=root, verify_artifacts=True)

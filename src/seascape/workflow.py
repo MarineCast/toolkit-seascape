@@ -19,6 +19,8 @@ from typing import Any
 
 import yaml
 
+from seascape.core.artifacts.checksums import checksum_path
+from seascape.core.code_identity import package_code_identity
 from seascape.core.config.data import DOMAIN_CONFIG_KEYS, load_data_config
 from seascape.core.config.document import ConfigDocument
 from seascape.core.config.paths import (
@@ -26,8 +28,6 @@ from seascape.core.config.paths import (
     resolve_config_include,
     resolve_config_path,
 )
-from seascape.core.artifacts.checksums import checksum_path
-from seascape.core.code_identity import package_code_identity
 
 StageRunner = Callable[["DomainBuildContext"], Any]
 

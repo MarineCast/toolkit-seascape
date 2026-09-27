@@ -12,8 +12,8 @@ import pandas as pd
 from shapely.geometry import Polygon, box
 from shapely.ops import unary_union
 
-from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.core.artifacts.checksums import checksum_path
+from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.publication import (
     TransactionalSeascapePublisher,
 )

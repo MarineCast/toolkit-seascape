@@ -13,10 +13,10 @@ from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
 from seascape.core.artifacts import ArtifactRef
+from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.geo.distance import haversine_distance_m
 from seascape.core.geo.geometry import (
     buffer_meters,

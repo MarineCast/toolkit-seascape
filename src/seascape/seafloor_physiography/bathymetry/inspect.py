@@ -571,6 +571,7 @@ def build_bathymetry_map(
 def main() -> int:
     """Inspect an existing bathymetry product without rebuilding it."""
     import argparse
+
     from .pipeline import load_bathymetry_config
 
     parser = argparse.ArgumentParser(description=__doc__)

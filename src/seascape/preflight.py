@@ -6,20 +6,25 @@ pixel values, feature coverage, checksums, resume identity, or release approval.
 
 from __future__ import annotations
 
-from contextlib import contextmanager
-from dataclasses import dataclass, fields
 import importlib
 import os
-from pathlib import Path
 import re
-from typing import Any
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
+from dataclasses import dataclass, fields
+from pathlib import Path
+from typing import Any, Literal, NotRequired, TypedDict
 
 import yaml
 
 from seascape.core.config.data import _preview_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.utils.config import resolve_project_path
-from seascape.workflow import plan_domain_layer_build, _render_candidate_config
+from seascape.workflow import (
+    DomainBuildStage,
+    _render_candidate_config,
+    plan_domain_layer_build,
+)
 
 LIMITATIONS = [
     "Local configuration, path/readability and geospatial headers only; no source acquisition or producer execution.",
@@ -45,6 +50,49 @@ class Contract:
     checks: list[str]
 
 
+CheckStatus = Literal[
+    "ready",
+    "invalid",
+    "unverified",
+    "missing_external",
+    "generated_by_plan",
+    "not_applicable",
+]
+
+
+class PreflightCheck(TypedDict):
+    stage: str
+    name: str
+    status: CheckStatus
+    required: bool
+    path: str | None
+    performed: list[str]
+    corrective_action: str
+
+
+class PreflightStage(TypedDict):
+    name: str
+    dependencies: list[str]
+    action: str
+    outputs: list[str]
+    configured_outputs: NotRequired[list[str]]
+
+
+class PreflightReport(TypedDict):
+    """Schema-1 read-only readiness; not scientific or release approval."""
+
+    schema_version: int
+    status: Literal["not_run", "ready", "failed"]
+    inspection_level: str
+    workspace: str
+    config: str
+    candidate_root: str | None
+    publication_requested: bool
+    stages: list[PreflightStage]
+    checks: list[PreflightCheck]
+    limitations: list[str]
+
+
 def _safe(value: Any) -> str:
     text = str(value)
     # Do not emit credential-bearing remote locations, even in rejected paths.
@@ -58,13 +106,13 @@ def _safe(value: Any) -> str:
 def _check(
     stage: str,
     name: str,
-    status: str,
+    status: CheckStatus,
     *,
     required: bool = True,
     path: Path | None = None,
     action: str = "",
     performed: list[str] | None = None,
-) -> dict:
+) -> PreflightCheck:
     return {
         "stage": stage,
         "name": name,
@@ -77,7 +125,7 @@ def _check(
 
 
 @contextmanager
-def _common_environment(workspace: Path):
+def _common_environment(workspace: Path) -> Iterator[None]:
     """Match the common document that execution freezes in the candidate."""
     common = workspace / "config/common.yaml"
     previous = os.environ.get("SEASCAPE_COMMON_CONFIG")
@@ -92,7 +140,7 @@ def _common_environment(workspace: Path):
             os.environ["SEASCAPE_COMMON_CONFIG"] = previous
 
 
-def _network_inputs(path: Path, resolutions=(6, 8)) -> list[Input]:
+def _network_inputs(path: Path, resolutions: Iterable[int] = (6, 8)) -> list[Input]:
     from seascape.spatial_support.water_network.config import load_water_network_config
 
     c = load_water_network_config(path)
@@ -113,7 +161,7 @@ def _network_inputs(path: Path, resolutions=(6, 8)) -> list[Input]:
     return result
 
 
-def _contract(stage, path: Path, raw: dict) -> Contract:
+def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contract:
     """Adapters call the existing family loaders; selection stays in workflow.py."""
     name = stage.name
     inputs: list[Input] = []
@@ -340,11 +388,11 @@ def _contract(stage, path: Path, raw: dict) -> Contract:
         "fluvial-barriers",
         "anthropogenic",
     }:
-        from seascape.utils.habitat_configuration import load_habitat_surface_config
-        from seascape.utils.habitat_acquisition import load_habitat_download_config
         from seascape.spatial_support.water_network.config import (
             load_water_network_config,
         )
+        from seascape.utils.habitat_acquisition import load_habitat_download_config
+        from seascape.utils.habitat_configuration import load_habitat_surface_config
 
         module = {
             "seascape-substrate-classification": "benthic_substrate.classification",
@@ -469,7 +517,7 @@ def _contract(stage, path: Path, raw: dict) -> Contract:
     return Contract(inputs, outputs, checks)
 
 
-def _inspect(item: Input, stage: str, generated: dict[Path, str]) -> dict:
+def _inspect(item: Input, stage: str, generated: dict[Path, str]) -> PreflightCheck:
     path = item.path.resolve()
     if path in generated:
         return _check(
@@ -566,18 +614,18 @@ def _inspect(item: Input, stage: str, generated: dict[Path, str]) -> dict:
 
 def preflight_build(
     *,
-    config_path="config/data/project.yaml",
-    only=(),
-    skip=(),
-    candidate_root=None,
-    publish=False,
-    resume=False,
-    overwrite=False,
-    check_inputs=True,
-) -> dict:
+    config_path: str | Path = "config/data/project.yaml",
+    only: Iterable[str] = (),
+    skip: Iterable[str] = (),
+    candidate_root: str | Path | None = None,
+    publish: bool = False,
+    resume: bool = False,
+    overwrite: bool = False,
+    check_inputs: bool = True,
+) -> PreflightReport:
     """Report selected prerequisites without writes, hashes, downloads or builders."""
     only, skip = tuple(only), tuple(skip)
-    report = {
+    report: PreflightReport = {
         "schema_version": 1,
         "status": "not_run",
         "inspection_level": "local configuration/path and GeoTIFF header; vector/Parquet readability only",
@@ -746,7 +794,7 @@ def preflight_build(
     return report
 
 
-def print_preflight(report: dict) -> None:
+def print_preflight(report: PreflightReport) -> None:
     print(
         f"Preflight: {report['status'].upper()} (configuration/path/header checks only)"
     )

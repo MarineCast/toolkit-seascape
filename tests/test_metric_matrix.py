@@ -10,8 +10,8 @@ import pyarrow.parquet as pq
 import pytest
 import yaml
 
-from seascape.metric_matrix import build_metric_matrix
 from seascape.core.artifacts.checksums import checksum_path
+from seascape.metric_matrix import build_metric_matrix
 
 
 def _fixture(

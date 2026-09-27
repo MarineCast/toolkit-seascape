@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import shutil
 import os
 import re
 import runpy
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -18,9 +18,9 @@ import pandas as pd
 import yaml
 
 from seascape.core.artifacts import atomic_write_json
-from seascape.core.config.paths import project_root
 from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.code_identity import package_code_identity
+from seascape.core.config.paths import project_root
 from seascape.core.data.registry import DATASETS
 from seascape.governance.feature_eligibility import (
     seascape_catalog_subset,

@@ -215,6 +215,7 @@ def download_gebco_geotiff(
 
 def main() -> int:
     import argparse
+
     from .pipeline import load_bathymetry_config
 
     parser = argparse.ArgumentParser(description=__doc__)

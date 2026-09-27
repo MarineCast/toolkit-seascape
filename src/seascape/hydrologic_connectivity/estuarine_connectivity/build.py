@@ -33,11 +33,9 @@ from seascape.spatial_support.water_network.load import (
 )
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.config import require_mapping as _mapping
 from seascape.utils.config import resolve_project_path as _resolve
 from seascape.utils.spatial import project_h3_centers

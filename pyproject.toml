@@ -20,7 +20,7 @@ dependencies = [
 [project.optional-dependencies]
 build = ["build>=1.2", "setuptools>=80", "wheel"]
 test = ["pytest>=8"]
-quality = ["ruff>=0.9", "mypy>=1.15", "pip-audit>=2.9"]
+quality = ["ruff>=0.9", "mypy>=1.15", "pip-audit>=2.9", "pip>=26.2"]
 notebook = [
   "ipykernel>=6",
   "jupyterlab>=4",
@@ -44,14 +44,34 @@ addopts = "-ra --import-mode=importlib"
 target-version = "py311"
 
 [tool.ruff.lint]
-# Bug-oriented baseline across all production code and tests, not a formatting rewrite.
-select = ["E9", "F63", "F7", "F82"]
+# Selected correctness, unused-name and import rules across source/tests/scripts.
+select = ["E9", "F63", "F7", "F82", "F401", "F841", "F811", "F601", "F602", "B006", "I001"]
 
 [tool.mypy]
 python_version = "3.11"
-files = ["src/seascape/products.py", "src/seascape/core/geo/crs.py", "src/seascape/core/artifacts/confinement.py", "src/seascape/seafloor_physiography/depth.py"]
+files = [
+  "src/seascape/products.py",
+  "src/seascape/core/geo/crs.py",
+  "src/seascape/core/artifacts/confinement.py",
+  "src/seascape/seafloor_physiography/depth.py",
+  "src/seascape/demo.py",
+  "src/seascape/cli.py",
+  "src/seascape/_cli_diagnostics.py",
+  "src/seascape/preflight.py",
+  "src/seascape/core/config/document.py",
+  "src/seascape/core/config/data.py",
+  "src/seascape/core/config/paths.py",
+  "src/seascape/metric_matrix.py",
+]
 follow_imports = "skip"
 ignore_missing_imports = true
 check_untyped_defs = true
 disallow_untyped_defs = true
 warn_unused_ignores = true
+
+# NumPy ships Python 3.12+ stub syntax in the exercised Python 3.14 environment.
+# Keep the project target at 3.11; only this external array implementation is opaque.
+[[tool.mypy.overrides]]
+module = ["numpy", "numpy.*"]
+follow_imports = "skip"
+follow_imports_for_stubs = true

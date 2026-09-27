@@ -12,8 +12,8 @@ from typing import Any
 import pandas as pd
 
 from seascape.core.artifacts import TransactionalFamilyPublisher
-from seascape.core.config.paths import project_root
 from seascape.core.artifacts.confinement import validate_candidate_destination
+from seascape.core.config.paths import project_root
 
 SEASCAPE_RELEASE_MANIFEST = "seascape_release_manifest.json"
 SEASCAPE_RELEASE_LOCK = ".seascape-release.lock"

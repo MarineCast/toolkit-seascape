@@ -47,9 +47,9 @@ from seascape.utils.habitat_raster import (
     sample_raster_bilinear,
 )
 from seascape.utils.habitat_surface import (
-    habitat_network_metrics,
     _record_metrics,
     build_r8_tables,
+    habitat_network_metrics,
 )
 
 

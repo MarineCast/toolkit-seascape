@@ -104,23 +104,50 @@ jobs:
       - run: git diff --exit-code
 
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, python: '3.11', arch: x64, constraints: ''}
+          - {os: macos-14, python: '3.14', arch: arm64, constraints: docs/environments/quality-python314-macos-arm64.txt}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - run: python -m pip install '.[test,quality]'
+          python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.arch }}
+      - name: Solve unconstrained or reproduce the compatible baseline
+        env:
+          CONSTRAINTS: ${{ matrix.constraints }}
+        run: |
+          if [ -n "$CONSTRAINTS" ]; then
+            python -m pip install -c "$CONSTRAINTS" '.[test,quality]'
+          else
+            python -m pip install '.[test,quality]'
+          fi
       - run: python -m pip check
       - run: ruff check src tests scripts
       - run: ruff format --check src tests scripts
       - run: python -m mypy
-      - run: python scripts/environment_snapshot.py --output /tmp/seascape-environment
+      - run: python scripts/environment_snapshot.py --extra test --extra quality --output /tmp/seascape-environment
+      - name: Check baseline dependency and native versions
+        if: matrix.constraints != ''
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected = json.loads(Path("docs/environments/quality-python314-macos-arm64.json").read_text())
+          observed = json.loads(Path("/tmp/seascape-environment.json").read_text())
+          for key in ("dependencies", "extras", "machine", "python_implementation", "gdal", "proj", "geos"):
+              assert expected[key] == observed[key], f"Baseline mismatch: {key}"
+          assert expected["python"].split(".")[:2] == observed["python"].split(".")[:2]
+          PY
       - run: pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-environment.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: scientific-environment
+          name: scientific-environment-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.arch }}
           path: /tmp/seascape-environment.*
 
   secrets:

@@ -14,8 +14,6 @@ import numpy as np
 import pandas as pd
 from shapely import area, intersection, union_all
 
-from seascape.core.config.data import load_data_config
-from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.benthic_substrate.bottom_hardness.build import (
     PREFIX as HARDNESS_PREFIX,
 )
@@ -28,6 +26,8 @@ from seascape.benthic_substrate.classification.build import (
 from seascape.benthic_substrate.classification.download import (
     SECTION_NAME as SUBSTRATE_SECTION,
 )
+from seascape.core.config.data import load_data_config
+from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
 )
@@ -41,11 +41,9 @@ from seascape.spatial_support.water_network.radius_operator import (
 )
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.config import require_mapping as _mapping
 from seascape.utils.config import resolve_project_path as _resolve
 from seascape.utils.habitat_acquisition import (

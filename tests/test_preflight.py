@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import replace
 import json
 import os
-from pathlib import Path
 import socket
+from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 import pytest
 import rasterio
-from rasterio.transform import from_origin
 import yaml
+from rasterio.transform import from_origin
 
 from seascape.cli import initialize_workspace, main
 from seascape.core.config.data import load_data_config

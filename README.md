@@ -25,6 +25,9 @@ python -m pytest -q
 For a regular installation, use `python -m pip install .` or install a built wheel. Editable
 installation is optional. Source data and generated products are not included in the package.
 
+The [environment and static-check guide](docs/environments/README.md) records the tested
+constraints baseline, unconstrained solve, tool versions and typing scope.
+
 ## First offline result
 
 After installing from this source or a locally built wheel, run:

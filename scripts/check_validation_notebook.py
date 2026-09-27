@@ -13,14 +13,14 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path
 import sys
 import tempfile
+from pathlib import Path
 
 import nbformat
-from nbclient import NotebookClient
 from jupyter_client import KernelManager
 from jupyter_client.kernelspec import KernelSpecManager
+from nbclient import NotebookClient
 
 _GUARD = """import json, os, socket, sys
 from pathlib import Path

@@ -25,8 +25,8 @@ from shapely.geometry.polygon import orient
 from shapely.prepared import prep
 from shapely.strtree import STRtree
 
-from seascape.core.config.paths import project_root
 from seascape.core.artifacts.checksums import checksum_path
+from seascape.core.config.paths import project_root
 from seascape.core.geo.geometry import safe_polygonal_union
 from seascape.core.geo.h3 import (
     cell_to_latlng,

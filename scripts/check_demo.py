@@ -12,9 +12,9 @@ import importlib.abc
 import importlib.util
 import json
 import os
-from pathlib import Path
 import socket
 import sys
+from pathlib import Path
 
 
 class RuntimeImports(importlib.abc.MetaPathFinder):

@@ -16,9 +16,9 @@ import pandas as pd
 from shapely import points
 from shapely.strtree import STRtree
 
+from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.publication import (
     TransactionalSeascapePublisher,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import importlib
 import importlib.abc
 import importlib.metadata as metadata
@@ -10,7 +11,6 @@ import pkgutil
 import platform
 import sys
 from pathlib import Path
-import argparse
 
 REQUIRED_FILES = (
     "products.py",

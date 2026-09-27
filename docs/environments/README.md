@@ -1,24 +1,74 @@
-# Validated environment baseline
+# Validated environments and static checks
 
-`python314-macos-arm64.txt` records exact installed versions in the runtime/test dependency closure;
-the companion JSON records Python/platform and Rasterio/GDAL, PyProj/PROJ and Shapely/GEOS versions.
-This is an observed macOS Python 3.14 baseline, not a universal lock or a claim of Linux equivalence.
-Library dependency declarations keep compatible ranges; `urllib3` is now declared directly.
+`quality-python314-macos-arm64.txt` is the SS-07 reproducibility baseline for the installed
+runtime/test/quality closure. Its JSON records CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4,
+PROJ 9.8.1 and GEOS 3.13.1. Fresh isolated constrained and unconstrained wheel installations
+were exercised locally. The constrained closure/native versions matched; the unconstrained
+solve selected platformdirs 4.12.0 instead of the pinned 4.11.15, with the same native versions.
+Ruff 0.16.9,
+mypy 2.3.1, pip-audit 2.10.1 and pip 26.2.1 are part of this baseline.
+The quality extra requires pip >=26.2 after its expanded closure audit identified
+PYSEC-2026-3721 in bootstrap pip 26.1.2; the fixed version is audited, not ignored. This is tested compatibility on
+that platform, not proof that every declared lower bound or another OS works. Package metadata
+retains dependency ranges. The earlier `python314-macos-arm64.{txt,json}` is historical
+runtime/test evidence and is preserved, rather than silently replaced.
 
-Regenerate from the environment used for validation:
+To reproduce on a compatible Python 3.14 ARM64 macOS platform (use an explicit wheel path):
 
 ```sh
-python scripts/environment_snapshot.py --output docs/environments/python314-macos-arm64
+python3.14 -m venv /tmp/seascape-quality
+/tmp/seascape-quality/bin/python -m pip install \
+  -c docs/environments/quality-python314-macos-arm64.txt \
+  '/absolute/path/toolkit_seascape-0.1.0-py3-none-any.whl[test,quality]'
+/tmp/seascape-quality/bin/python -m pip check
+/tmp/seascape-quality/bin/ruff check src tests scripts
+/tmp/seascape-quality/bin/ruff format --check src tests scripts
+/tmp/seascape-quality/bin/python -m mypy
+/tmp/seascape-quality/bin/python -m pytest -q
+/tmp/seascape-quality/bin/python scripts/environment_snapshot.py \
+  --extra test --extra quality --output /tmp/seascape-quality-environment
+/tmp/seascape-quality/bin/pip-audit --disable-pip --no-deps --strict \
+  -r /tmp/seascape-quality-environment.txt
 ```
 
-Use the text file as pip constraints (`-c`) when reproducing on a compatible platform. Availability
-of binary wheels and native libraries still matters. CI separately solves Python 3.11/3.14 on Linux;
-it saves its own scientific environment snapshot and audits the installed runtime/test closure.
+Run source checks from this checkout; run the existing installed-package/demo helpers from
+outside it. The demo's runtime-only acceptance environment remains separate and has no
+pytest/Jupyter packages. Constraints do not install dependencies or supply native libraries.
+Compare snapshots before claiming reproduction: dependencies, extras, interpreter/minor version,
+architecture and GDAL/PROJ/GEOS must match; OS/patch differences require separate recorded evidence.
+Use a new venv and omit `-c` to exercise the unconstrained solve during release preparation.
+Regenerate a baseline only after both solves and applicable checks pass; review version changes
+and audit the new closure. Never force an obsolete vulnerable pin to make reproduction pass.
 
-Install `.[test,quality]` for Ruff, mypy and pip-audit. Ruff's bug and formatting checks cover
-`src/`, `tests/` and `scripts/` (`ruff format --check src tests scripts`). Strict function-annotation
-checks retain the four hardened boundary modules configured in `pyproject.toml`; broader typing
-remains incremental. The formatting baseline was exercised with Ruff 0.16.9 on macOS ARM64;
-this records the tested tool version, without adding a new dependency pin.
-Gitleaks scans Git history and current files; dependency auditing requires network access and fails
-when it cannot complete. A clean scan does not establish absence of all vulnerabilities or secrets.
+The snapshot defaults to runtime plus `test`; repeated `--extra` selects explicit project extras
+and follows transitive extras/markers, failing for missing active distributions. Evidence stores
+names/versions, platform/architecture and native versions. It omits executable/install paths,
+direct package URLs and compiler build paths. Invalid version strings produce a sanitized error.
+Review evidence before sharing; logs can contain private paths or rejected package locations.
+
+Ruff checks all Python under `src/`, `tests/` and `scripts/`: syntax/control-flow baseline
+`E9,F63,F7,F82`, unused imports/locals `F401,F841`, redefinitions/duplicate keys
+`F811,F601,F602`, mutable defaults `B006`, and import order `I001`. Formatting uses the existing
+defaults/Python 3.11 target. No new per-file exclusions or rule suppressions were added.
+
+Mypy checks these **12 modules**, with annotated functions, checked bodies and unused-ignore warnings:
+
+- `products.py`, `core/geo/crs.py`, `core/artifacts/confinement.py`, `seafloor_physiography/depth.py`
+- `demo.py`, `cli.py`, `_cli_diagnostics.py`, `preflight.py`
+- `core/config/document.py`, `core/config/data.py`, `core/config/paths.py`, `metric_matrix.py`
+
+The project syntax/type target remains Python 3.11. Existing skipped imports/missing external
+stubs remain explicit limits; this is not strict typing of the whole scientific implementation.
+Only NumPy's external stubs also use `follow_imports_for_stubs = true`: its exercised release
+contains Python 3.12+ stub syntax that mypy cannot parse against the 3.11 target. This narrow
+dependency boundary makes array internals opaque; it does not suppress errors in project modules.
+Preflight dictionaries now have concrete schema-1 types, without changing serialized reports or
+exception behavior. Dynamic YAML and demo/export metadata stay open mappings at their boundaries.
+
+CI retains tests, installed-wheel/notebook checks and security audits. Its quality matrix uses an
+unconstrained Linux Python 3.11 solve and the constrained macOS Python 3.14 ARM64 baseline; the
+constrained job compares the observed closure/native versions. Each saves and audits runtime,
+test and quality dependencies. Hosted execution remains **not_run** until actual run evidence
+exists; macOS runner OS versions differ from this local baseline. Neither local success nor a
+configured matrix establishes Linux compatibility. Gitleaks history and broad tree gates remain
+enabled; the untouched ignored Graphify hash finding remains a failed broad local scan, not waived.

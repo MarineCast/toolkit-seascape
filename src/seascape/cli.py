@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import argparse
-from importlib.resources import files
-import os
-from pathlib import Path
 import importlib
 import json
+import os
 import sys
 import traceback
+from importlib.resources import files
+from importlib.resources.abc import Traversable
+from pathlib import Path
 
 from seascape._cli_diagnostics import (
     EXPECTED_TYPES,
@@ -61,7 +62,7 @@ DOWNLOAD_FAMILIES = (
 def initialize_workspace(root: Path) -> None:
     """Copy packaged configuration and governance templates without overwriting files."""
 
-    def copy_tree(source, destination):
+    def copy_tree(source: Traversable, destination: Path) -> None:
         for item in source.iterdir():
             path = destination / item.name
             if item.is_dir():
@@ -173,7 +174,7 @@ def main(argv: list[str] | None = None) -> int:
             from seascape.demo import DemoWorkspaceError, run_demo
 
             try:
-                result = run_demo(project_root(), overwrite=args.overwrite)
+                demo_result = run_demo(project_root(), overwrite=args.overwrite)
             except DemoWorkspaceError as exc:
                 if args.debug:
                     traceback.print_exception(exc, file=sys.stderr)
@@ -184,10 +185,10 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
             print("Synthetic software acceptance: PASS (not a regional release)")
             for path in (
-                result.parquet_path,
-                result.manifest_path,
-                result.report_path,
-                *result.figure_paths,
+                demo_result.parquet_path,
+                demo_result.manifest_path,
+                demo_result.report_path,
+                *demo_result.figure_paths,
             ):
                 print(path)
             return 0
@@ -203,7 +204,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "export-metric-matrix":
             from seascape.metric_matrix import build_metric_matrix
 
-            result = build_metric_matrix(
+            matrix_result = build_metric_matrix(
                 workspace=project_root(),
                 output=args.output,
                 resolutions=tuple(args.resolution or (6, 8)),
@@ -212,8 +213,8 @@ def main(argv: list[str] | None = None) -> int:
                 overwrite=args.overwrite,
             )
             print(
-                f"{result.path}\t{result.row_count} H3 cells\t"
-                f"{result.field_count} catalog fields\t{result.source_validation}"
+                f"{matrix_result.path}\t{matrix_result.row_count} H3 cells\t"
+                f"{matrix_result.field_count} catalog fields\t{matrix_result.source_validation}"
             )
             return 0
         from seascape.workflow import DOMAIN_LAYER_STAGES, run_domain_layer_build

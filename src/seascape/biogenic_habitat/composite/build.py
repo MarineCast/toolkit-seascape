@@ -10,7 +10,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from seascape.core.config.paths import project_root
 from seascape.benthic_substrate.classification.build import (
     PREFIX as SUBSTRATE_PREFIX,
 )
@@ -31,13 +30,12 @@ from seascape.biogenic_habitat.seagrass.build import (
 from seascape.biogenic_habitat.seagrass.download import (
     SECTION_NAME as SEAGRASS_SECTION,
 )
+from seascape.core.config.paths import project_root
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.habitat_configuration import (
     load_habitat_surface_config,
 )

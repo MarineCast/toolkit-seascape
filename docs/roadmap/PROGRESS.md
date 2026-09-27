@@ -1,6 +1,6 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-06; SS-03 hosted acceptance pending.
+Implemented scope: SS-00 through SS-07; SS-03 hosted acceptance pending.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
@@ -15,7 +15,8 @@ Working branch: `feature/seascape-first-run-demo`. No remote mutations.
 | SS-04 | passed | Read-only input preflight; 34 new regressions; guarded runtime-only wheel acceptance |
 | SS-05 | passed | CLI-only guidance/debug, side-effect contracts, 29 regressions; runtime-only wheel acceptance |
 | SS-06 | passed | Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped |
-| SS-07–SS-11 | not_run | SS-07 is next; hosted SS-03 acceptance remains pending before integration |
+| SS-07 | passed | Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed |
+| SS-08–SS-11 | not_run | SS-08 is next, pending hosted SS-03 acceptance |
 
 ## SS-00 baseline
 
@@ -532,3 +533,113 @@ and broader lint/typing belong to SS-07. No unrelated tracked changes existed. E
 canonical products, retained releases, notebook, ignored cache and siblings preserved.
 Next: **SS-07**, static checks and environment reproducibility. Stop before SS-07.
 Remote changes: **none**.
+
+## SS-07 static checks and reproducibility
+
+**passed** (local SS-07 implementation/static/reproducibility acceptance; broad tree secret scan
+still **failed**). Base `7f2832e086e5dda513ebf5bd207a56d38fa0dbd5`; current commit is the SS-07
+commit containing this record. Clean starting tree; retained `feature/seascape-first-run-demo`.
+Reverified SS-06, current package/CI gates, public interfaces and snapshot traversal against source.
+
+Added narrow Ruff `F401,F841,F811,F601,F602,B006,I001` rules, preserving prior rules and formatting.
+Corrected 52 import-order findings and two unused test imports; no exclusions/suppressions added.
+Mypy now checks 12 documented interface modules, retaining product/CRS/confinement/depth targets.
+Added demo fixture and preflight schema-1 types, generator/resource-copy annotations, and separate
+CLI result locals. Existing exception, serialized report, scientific/product/release contracts stay
+unchanged. Only external NumPy stubs are skipped explicitly: installed stubs contain Python 3.12+
+syntax incompatible with the retained 3.11 type target. Existing imported-code/missing-stub limits
+remain documented; scientific array internals are not claimed strictly typed.
+
+Extended the existing snapshot's explicit extras/marker traversal, including transitive extras,
+cycles and missing-active-distribution failure. It records versions/native/platform evidence,
+omitting package URLs, executable/install/compiler paths; invalid versions raise a sanitized error.
+Six new regressions cover closure, extras, cycles, markers, privacy and failure. Added separate
+runtime/test/quality constraints/JSON; retained historical evidence and runtime metadata ranges.
+CI quality now exercises Linux 3.11 unconstrained and macOS ARM64 3.14 constrained installs, compares
+baseline closure/native versions, and audits both quality closures. Other CI jobs/settings are
+structurally unchanged. The expanded audit found bootstrap pip 26.1.2 affected by
+`PYSEC-2026-3721` (two advisory rows, one package). Added **quality-only** `pip>=26.2`, upgraded to
+26.2.1, rebuilt and exercised two new isolated installs; final audits have no known vulnerabilities.
+No vulnerability exclusions, vulnerable downgrades or new runtime dependencies.
+
+Exact final acceptance commands, in this checkout unless noted:
+
+```sh
+D=/tmp/seascape-roadmap-dev/bin
+R=/tmp/seascape-ss04-evidence/consumer/bin
+E=/tmp/seascape-ss07-evidence
+F=/Users/tylerstevenson/Documents/Code_Repos/MarineCast
+$D/python scripts/environment_snapshot.py --extra test --extra quality --output docs/environments/quality-python314-macos-arm64
+$D/python -m build --no-isolation --outdir $E/final-distributions
+$D/python -m venv $E/baseline
+$D/python -m venv $E/range
+$E/baseline/bin/python -m pip install --cache-dir $E/pip-cache --retries 1 -c docs/environments/quality-python314-macos-arm64.txt "$E/final-distributions/toolkit_seascape-0.1.0-py3-none-any.whl[test,quality]"
+$E/range/bin/python -m pip install --cache-dir $E/pip-cache-unconstrained --retries 1 "$E/final-distributions/toolkit_seascape-0.1.0-py3-none-any.whl[test,quality]"
+# Each command below ran in both baseline and range; actual argv/exits are in *-commands.json.
+for V in "$E/baseline/bin" "$E/range/bin"; do
+  "$V/python" -m pip check
+  "$V/ruff" check src tests scripts
+  "$V/ruff" format --check src tests scripts
+  "$V/python" -m mypy
+  "$V/python" -m pytest -q
+  "$V/python" scripts/environment_snapshot.py --extra test --extra quality --output "$E/$(basename "$(dirname "$V")")-environment"
+  "$V/pip-audit" --disable-pip --no-deps --strict -r "$E/$(basename "$(dirname "$V")")-environment.txt"
+done
+$D/python scripts/check_distribution.py --sdist $E/final-distributions/toolkit_seascape-0.1.0.tar.gz --wheel $E/final-distributions/toolkit_seascape-0.1.0-py3-none-any.whl --output $E/final-distribution.json
+$R/python -m pip install --no-cache-dir --force-reinstall --no-deps $E/final-distributions/toolkit_seascape-0.1.0-py3-none-any.whl
+$R/python -m pip check
+# Copied helpers below ran from E, outside checkout; source/overrides cleared by the helpers.
+$R/python $E/consumer_guard.py --forbid-root $F --script $E/check_installed_package.py -- --snapshot $E/final-installed.json
+$R/python $E/check_demo.py --workspace $E/final-demo-workspace --forbid-root $F
+gitleaks dir $E/tracked-scan --redact --no-banner
+gitleaks git . --redact --no-banner --log-opts=--all
+git diff --check
+```
+
+Final commands above exited **0**. Each final installed-wheel suite: **328 passed / 0 failed /
+3 skipped**, 65 warnings (baseline 96.44s; range 101.27s). Two feature-catalog and one network test
+require absent regional artifacts. Initial development full suite also 328/0/3; focused suite
+**103/0/0**. Static checks: 231 formatted files; 12 typed modules. Both isolated environments use
+CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1, Ruff 0.16.9,
+mypy 2.3.1, pip-audit 2.10.1 and pip 26.2.1. Exact constrained snapshot matches the tracked baseline;
+range solve differs only in platformdirs **4.12.0 vs 4.11.15**. No inherited site packages.
+Quality environments intentionally include pytest; separate reused runtime-only consumer has
+no pytest/Jupyter packages. Guarded **163 imports** and **14 demo checks** pass on the final wheel;
+no network attempts, two denied font-discovery child attempts. Synthetic artifacts stay in
+`E/final-demo-workspace/.seascape/demo`. Guards are Python-level denial, not a native/OS firewall.
+
+Final sdist SHA-256 `79b0a3951d131ac3f071588ec7d8390d6c678ce583eb27b01eebd4e121fca67b`;
+wheel `ac3c4a2959b34acfa66e4b8d867e812dd5dd1f241558f61ae02760afcdbc6b21`.
+Distribution inspection passed (9 required files, 5 resources). Reviewed 45 import-only changed
+Python ASTs with imports removed; other source changes are annotations/types and CLI local names.
+14 protected config/resource/notebook files match HEAD; tracked Python parses with 3.11 syntax
+(which is not execution on 3.11). Notebook assessed: unchanged notebook/public runtime behavior;
+no edit or repeated Jupyter run. Source-byte/resume identities may change; validators retained.
+
+Failures retained in evidence: exploratory unused/import lint exit **1** (54 findings), initial
+expanded mypy exit **2** (NumPy stub syntax), then exit **1** (five CLI result-type errors), corrected;
+first constrained install exit **1** (sandbox PyPI DNS; network-enabled retry passed); initial
+closure-equality probe exit **1** (expected unconstrained platformdirs drift, corrected comparison).
+Initial pre-security constrained/range audits exited **1**, then final fresh fixed installs/audits
+passed. One helper-copy/import batch ran from the wrong cwd and exited **2** (missing copied helper);
+corrected owning-cwd copy and outside-cwd acceptance passed. A patch-tool invocation was rejected
+for duplicate operations on one file before any edit; corrected. These are not passed checks.
+
+`gitleaks dir . --redact --no-banner --report-format json --report-path
+/tmp/seascape-ss07-evidence/gitleaks-tree.json` exited **1**: the same untouched ignored
+`graphify-out/cache/stat-index.json:1` generic-api-key documentation-hash finding. Broad scan
+**failed**; tracked-tree/history scans passed. No cache deletion/allowlist/gate weakening. Hosted
+Linux/macOS acceptance and new quality matrix remain **not_run**: remote changes unauthorized.
+Live data, regional builds, downstream integration and human usability/release trials **not_run**.
+
+Changed files: 59 files; complete inventory in `E/changed-files.txt`. Functional/type/tooling
+changes: `pyproject.toml`, CI, `scripts/environment_snapshot.py`, `src/seascape/{cli,demo,preflight}.py`,
+`core/config/data.py`, new `tests/test_environment_snapshot.py`, new quality constraints/JSON,
+`AGENTS.md`, `README.md`, environment guide and this progress record. Remaining Python changes are
+import cleanup only. Evidence: `/tmp/seascape-ss07-evidence/` (final per-environment command JSON/logs,
+solve/native snapshots/difference, full/audit/build/distribution/runtime/security/scope evidence).
+Behavior/API: stronger static contracts and reproducible development tooling; snapshot gains
+explicit extras and sanitized evidence; runtime Python APIs, CLI outputs and report schemas retained.
+Scientific behavior changed: **no**. No unrelated starting edits existed; configs, packaged
+resources, canonical/retained products, notebook, ignored cache and siblings preserved.
+Next: **SS-08**, pending hosted SS-03 prerequisite; stop before SS-08. Remote changes: **none**.

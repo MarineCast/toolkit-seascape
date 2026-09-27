@@ -48,7 +48,7 @@ def test_workspace_init_is_portable_and_preserves_edits(tmp_path, monkeypatch):
     documentation = workspace / "docs/products.md"
     assert config.is_file()
     assert documentation.is_file()
-    from seascape.maintenance.update_seascape_docs import START_MARKER, END_MARKER
+    from seascape.maintenance.update_seascape_docs import END_MARKER, START_MARKER
 
     assert documentation.read_text().count(START_MARKER) == 1
     assert documentation.read_text().count(END_MARKER) == 1

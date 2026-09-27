@@ -251,6 +251,7 @@ def test_generation_is_rolled_back_when_canonical_promotion_fails(
     tmp_path, monkeypatch
 ):
     import os
+
     from seascape.release import publish_candidate_release
 
     workspace, candidate = tmp_path / "workspace", tmp_path / "candidate"

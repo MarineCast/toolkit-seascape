@@ -5,9 +5,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import tarfile
 import zipfile
+from pathlib import Path
 
 from check_installed_package import REQUIRED_FILES
 

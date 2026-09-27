@@ -5,7 +5,6 @@ from __future__ import annotations
 import fcntl
 import json
 import os
-from pathlib import Path
 import sys
 from types import SimpleNamespace
 
@@ -16,8 +15,8 @@ from pyproj.exceptions import CRSError
 from seascape import cli, metric_matrix, workflow
 from seascape.core.artifacts import TransactionalFamilyPublisher
 from seascape.core.config.document import ConfigDocument
-from seascape.release import publish_candidate_release
 from seascape.publication import SeascapeReleasePublisher
+from seascape.release import publish_candidate_release
 from seascape.seafloor_physiography.bathymetry import load_bathymetry_config
 
 

@@ -7,8 +7,6 @@ import pandas as pd
 import pytest
 from shapely.geometry import LineString, box
 
-from seascape.core.config.presentation import PresentationSettings
-from seascape.core.geo.h3 import cell_to_children, latlng_to_cell
 from seascape.coastal_configuration.shoreline_characterization import (
     inspect as shoreline_inspect,
 )
@@ -18,6 +16,8 @@ from seascape.coastal_configuration.shoreline_characterization.build import (
     _aggregate_lengths,
     recompute_parent_shoreline_lengths,
 )
+from seascape.core.config.presentation import PresentationSettings
+from seascape.core.geo.h3 import cell_to_children, latlng_to_cell
 
 
 def test_shoreline_fractions_use_classified_length_and_allow_overlap() -> None:

@@ -6,8 +6,6 @@ import pandas as pd
 import pyarrow.parquet as pq
 import pytest
 
-from seascape.core.config.paths import project_root
-from seascape.core.data.registry import DATASETS
 from seascape.coastal_configuration.exposure_and_enclosure.build import (
     OUTPUT_COLUMNS as EXPOSURE_COLUMNS,
 )
@@ -17,17 +15,17 @@ from seascape.coastal_configuration.shoreline_proximity.build import (
 from seascape.coastal_configuration.waterbody_morphometry.build import (
     OUTPUT_COLUMNS as MORPHOMETRY_COLUMNS,
 )
+from seascape.core.config.paths import project_root
+from seascape.core.data.registry import DATASETS
 from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
     BC_SOURCE,
+    US_SOURCE,
 )
 from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
     ESTUARY_COLUMNS as MAPPED_ESTUARY_COLUMNS,
 )
 from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
     FEATURE_COLUMNS as ESTUARY_COLUMNS,
-)
-from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
-    US_SOURCE,
 )
 from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
     _validate as validate_estuarine_connectivity,

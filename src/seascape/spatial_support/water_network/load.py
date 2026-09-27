@@ -19,8 +19,8 @@ from shapely.ops import nearest_points
 from shapely.ops import transform as transform_geometry
 from shapely.prepared import prep
 
-from seascape.core.config.paths import project_root
 from seascape.core.artifacts.checksums import checksum_path
+from seascape.core.config.paths import project_root
 from seascape.core.geo.h3 import cell_to_parent
 
 from .config import DEFAULT_CONFIG_PATH, WaterNetworkConfig, load_water_network_config

@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import pyarrow as pa
+
 from .contracts import (
     DatasetFormat,
     DatasetId,

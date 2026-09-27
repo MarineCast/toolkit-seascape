@@ -29,11 +29,9 @@ from seascape.utils.acquisition import (
 )
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.config import resolve_project_path as _resolve
 from seascape.utils.surface import (
     load_surface_config as load_habitat_surface_config,

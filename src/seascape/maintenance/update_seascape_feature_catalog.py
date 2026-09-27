@@ -822,8 +822,10 @@ def build_catalog(root: Path) -> dict[str, Any]:
 
 def main() -> int:
     import argparse
-    import yaml
     from contextlib import nullcontext
+
+    import yaml
+
     from seascape.publication import SeascapeSnapshot
 
     parser = argparse.ArgumentParser(description=__doc__)

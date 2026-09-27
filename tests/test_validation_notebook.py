@@ -7,8 +7,8 @@ extra; these lightweight tests also run in the ordinary runtime + test environme
 from __future__ import annotations
 
 import ast
-from copy import deepcopy
 import json
+from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace
 

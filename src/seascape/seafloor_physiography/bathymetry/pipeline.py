@@ -10,11 +10,11 @@ from typing import Any, Mapping
 
 import pandas as pd
 
+from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.core.config.presentation import DEFAULT_PRESENTATION_CONFIG_PATH
-from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.publication import (
     TransactionalSeascapePublisher,

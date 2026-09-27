@@ -12,12 +12,12 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import time
 import venv
+from pathlib import Path
 
 
 def accept(wheel: Path, source: Path, output: Path, forbidden: Path) -> int:

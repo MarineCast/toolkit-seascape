@@ -14,9 +14,9 @@ import pandas as pd
 from scipy.spatial import cKDTree
 from shapely.geometry import Point, box
 
+from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.geo.geometry import safe_polygonal_union
 from seascape.spatial_support.water_network import (
     load_model_area_support,

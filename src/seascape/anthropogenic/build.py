@@ -36,11 +36,9 @@ from seascape.utils.acquisition import (
 )
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.surface import (
     load_cell_geometry as _load_cell_geometry,
 )

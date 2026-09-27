@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from copy import deepcopy
@@ -18,7 +18,7 @@ _PREVIEW_CONFIG: ContextVar[tuple[Path, dict[str, Any]] | None] = ContextVar(
 
 
 @contextmanager
-def _preview_data_config(path: Path, data: dict[str, Any]):
+def _preview_data_config(path: Path, data: dict[str, Any]) -> Iterator[None]:
     """Let existing read-only loaders inspect a rendered config without writing it.
 
     The override is confined to this execution context and one resolved entry point;

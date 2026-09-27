@@ -5,12 +5,12 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tarfile
 import zipfile
+from pathlib import Path
 
 import pytest
 
