@@ -1,16 +1,17 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-09; SS-10 blocked-runbook preparation complete.
-SS-11 candidate review/handoff prepared; owner gates remain pending.
-SS-03 hosted acceptance passed; the SS-10 real-data gate remains unsatisfied.
+Implemented scope: SS-00 through SS-10; the approved PILOT-01 exploratory family gate passed.
+SS-11 candidate review/handoff prepared; human and owner gates remain pending.
+SS-03 hosted acceptance passed; no complete audited regional release is claimed.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
 on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
-Current next action: owner resolution of SS-11's human trial, version policy, classic protection
-and release authorization gates. FIX-01 corrects future GEBCO rights; SS-10 execution still requires
-valid support inputs and approved disposable-workspace publication/resource scope. No SS-12.
+Current next task: ACCEPT-01, continuing SS-11's unavailable human trial and owner version,
+classic-protection, merge and release decisions. FIX-01/FIX-02/VERIFY-01 remain passed.
+PILOT-01 used approved cached inputs and explicitly exploratory support; canonical water inputs
+remain unavailable. No SS-12 started.
 
 | Task | Status | Evidence / next gap |
 | --- | --- | --- |
@@ -24,11 +25,13 @@ valid support inputs and approved disposable-workspace publication/resource scop
 | SS-07 | passed | Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed |
 | SS-08 | passed | Analytic/matrix/publication evidence; local and hosted 352 passed / 3 skipped; run 36324502530, 9/9 jobs |
 | SS-09 | passed | Three journeys, guarded source quickstart, docs drift checks; local/hosted 368 passed / 3 skipped; run 36327449869, 9/9 jobs |
-| SS-10 | blocked | Checked bounded runbook and read-only preflight; no producer/publication/real-data QA; see below |
+| SS-10 | passed, bounded exploratory scope | PILOT-01: two fresh cached-input realizations, exact keyed comparison, measured caps and six inspected maps; no whole release |
 | SS-11 | blocked | Exact candidate software checks passed; handoff prepared; human/version/admin/release-owner gates pending |
 | FIX-01 | passed | Future GEBCO rights corrected; 32 focused tests; retained fixture/data bytes preserved |
 | FIX-02 | passed | 113 focused regressions; safe detail, original debug, unchanged gates |
-| VERIFY-01 | passed | Corrected 50675db; local package acceptance and 9/9 hosted jobs; pilot/human gates open |
+| VERIFY-01 | passed | Corrected 50675db; local package acceptance and 9/9 hosted jobs; dated evidence preserved |
+| PILOT-01 | passed, bounded exploratory scope | Installed package 232ac30 at execution HEAD 5d9faaf; two R6/R8 family realizations; see final evidence below |
+| ACCEPT-01 | pending | No unfamiliar tester; owner decisions and authorization remain outstanding |
 
 ## SS-00 baseline
 
@@ -1254,3 +1257,80 @@ Manual Mac unlock is requested; no credential is requested in chat. No push succ
 CI claim. A docs-only closure records these facts; feature push can retry after unlock. No merge,
 tag, registry/settings changes or data upload. PILOT-01 real execution and ACCEPT-01 remain pending
 as stated above; do not infer either approval from successful software checks.
+
+
+## PILOT-01 execution — passed within approved exploratory scope (September 27)
+
+User approved the exact prepared plan with “Let's do it”; the original plan and its approval hash
+are retained in `/private/tmp/seascape-pilot-01-readiness/{pilot-plan,execution-approval}.json`.
+Started clean at execution HEAD `5d9faaf83aaccffe61a7eb97acd27c01ec6c62a7`; same feature branch.
+Production used the installed wheel for tested code `232ac308f7f2229c2f4047ab9fe204d95b8a6bf9`
+(SHA-256 `79abf3642b3b2b2dab2189f036648b45743a22e7829295a0d02b0b79c0b5e3a7`), with all 190
+installed/source package files reverified byte-identical. Research helper/configs were read from
+this checkout. No source downloads, sibling changes or science implementation edits.
+
+Two new owned roots `/private/tmp/seascape-pilot-01-20260927/replicate-{1,2}` now contain actual
+exploratory mask/H3/network/bathymetry family publications and offline figures. Same source pins,
+bounds, H3 R6/R8 and production scientific settings. Four schema-3 family manifests per run pass
+existing artifact/lineage validators; support, edges, neighborhoods, radius operator and reachable
+area pass their existing consumer validators. Canonical preflight remains failed on its six missing
+inputs; it was not made READY. No complete release audit/promotion, retained release change or
+real-data upload. All 46 original cache files / 22,717,798 bytes remain byte-identical.
+
+Each run has 4,660 R8 cells (4,384 mean-depth values / 276 nulls) and 134 R6 cells (127 values /
+7 nulls). R8 means span 1–354 m; R6 means 1.7647058824–243.4271844660 m, positive down. Source
+24,024 pixels: 18,478 negative elevations, 5,515 positive, 31 zero and zero nodata; 18,226 marine
+samples assigned to selected support in each run. Copies retain EPSG:4326, native affine/alignment,
+meters, source vertical EPSG:5831 and nodata -32767. Header identity is not vertical-datum accuracy
+or survey-coverage certification. Depth bands preserve observed zero versus unavailable null;
+fractions sum to 1 within absolute 1e-12 and existing parent-band recomputation is exact.
+One R6 boundary cell `8628d1047ffffff` has null direct mean but one child-derived composition
+sample: production point-assignment helpers verify that its R8 child `8828d10425fffff` maps to
+that hierarchical parent while the same pixel maps directly to R6 `8628d1057ffffff`. This is the
+existing direct-mean / child-composition support distinction; no fill, relabeling or formula change.
+
+All 23 Parquet tables match exactly by their declared H3 keys, including numeric/null values and
+geometry. The NPZ radius operator and scientific configuration also match exactly. Of 24 recorded
+product artifacts, 22 match byte checksums; `H3_GRIDS_6` and `H3_GRIDS_8` differ only in physical
+row order from the existing threaded producer. Key-sorted Arrow values including original geometry
+WKB and schema metadata match exactly. Both raw identities remain separately verified/recorded;
+no claim of universally bit-identical products. Path/time/run-ID/config-hash differences are retained,
+with only workspace paths normalized for config/source comparisons. No scientific values normalized.
+
+| Measured realization | Producer phases including preparation | Complete attempt / completion | Sampled aggregate peak RSS | Final owned workspace |
+| --- | --- | --- | --- | --- |
+| 1 | 13.3264 s | Initial 16.0276 s ended on report serialization; acceptance-only retry 2.6996 s; completion including intervention 115.5035 s | 446,021,632 bytes | 17,387,048 bytes |
+| 2 | 10.8242 s | 13.5285 s, all phases exit 0 | 444,366,848 bytes | 17,387,323 bytes |
+
+Original deadline retained for run-1 reporting retry; no cap termination. All stayed below the
+approved 600 s / 2 GiB sampled process-tree RSS / 256 MiB workspace / 32 MiB inputs including
+extraction / four workers. RSS/disk sampled every 0.25 s; each phase also retains macOS
+`/usr/bin/time -l` maximum RSS in bytes. Sampler can miss peaks/overshoot, not a hard OS memory
+reservation. Shared machine/OS/filesystem caches limit timing comparison and regional extrapolation.
+Python socket/child guard and `PROJ_NETWORK=OFF` used; no acquisition, but no OS/native network
+firewall or network-byte metering claim. Actually inspected all six source/R8/R6 PNGs with
+`view_image`: north-up extent, positive-up source versus positive-down means, meters/legend,
+coarse shoreline alignment and gray unavailable support. Cartographic coastline generalization is
+visible; no legal/navigation/model readiness or coastal accuracy claim. No live tile/CDN map opened.
+
+Exact commands/exits and phase argv are in `commands.json`, `replicate-*-resources*.json` and
+`HANDOFF_EXECUTION.md` under the evidence root; summary, hashes, QC and visual record in
+`execution-summary.json`, `repeatability.json`, `additional-acceptance.json`,
+`parent-availability-evidence.json` and `visual-inspection.json`. Execution command used the existing
+recorder and installed interpreter: `python run.py real-replicate-N python bounded.py <approved-root>`.
+First aggregate exit 1 was pandas-NA JSON serialization in the one-off evidence script after all
+producer phases exited 0; reporting-only correction/retry exits 0, failed logs retained. Initial
+comparison exit 1 used relative source paths as absolute; next extra byte-identity comparison exit 1
+exposed physical row order. Final comparison exits 0 after exact Arrow proof and explicit distinct
+byte identities. Additional availability check exit 1 assumed R6 mean/composition shared support;
+corrected check uses the actual documented distinction and production-helper evidence, exit 0.
+No production validator relaxed and no scientific values corrected to force PASS.
+
+Authorized feature push exits 0 (`8eaae5f` → `5d9faaf`), remote independently verified. First retry's
+automatic permission review timed out before its command ran; direct retry succeeded.
+[Hosted run 36352109541](https://github.com/MarineCast/toolkit-seascape/actions/runs/36352109541)
+is completed/success, all nine jobs on exact execution HEAD: Linux 3.11/3.14 tests and consumers, macOS consumer, both quality jobs, source notebook and secrets. Prior full suite 410 passed/3 regional
+skips and installed-wheel 175 external tests remain identified at the tested package revision; no
+redundant source suite or packaging rebuild for this docs-only execution closure. No remote merge,
+tag, registry/settings or data publication. Stop after PILOT-01; next ACCEPT-01 remains pending on
+its actual unfamiliar-human evidence and owner decisions, not implied by this pilot or software CI.

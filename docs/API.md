@@ -79,6 +79,13 @@ The supported bathymetry facade is `seascape.seafloor_physiography.bathymetry`:
 - `build_bathymetry_parquet(config, raster_path=...)` returns the written `Path`; it requires
   configured support inputs and does not alone publish a complete family/release manifest.
 
+Coarser bathymetry exports retain direct raster sampling for means/quantiles; parent depth-band
+counts/fractions (including the exported pixel-count total) are recomputed from child composition.
+H3 hierarchical parenting and direct coarser point assignment can differ at cell boundaries, so a
+null R6 mean can coexist with an available child-derived composition count. Keep these support
+semantics and missingness separate; do not fill a missing mean from the count. See the
+[observed pilot boundary case](pilots/san-juan.md#acceptance-and-measured-envelope).
+
 When a selected water mask has `water_geometry_manifest.json`, H3/support and bathymetry
 builders verify its artifact identity before publication and retain its source/completeness and
 manifest lineage. Explicit exploratory support stays model-ineligible in additive

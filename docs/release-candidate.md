@@ -11,7 +11,8 @@ only and is not substituted for this tested artifact. Earlier SS-11 evidence rem
 
 **Decision: software acceptance supports review of an offline research candidate. Hold public
 release approval.** Human usability, version-policy approval and classic branch-protection review
-remain pending. [SS-10](pilots/san-juan.md) remains blocked; no real-data gate, regional scientific
+remain pending. The [PILOT-01 follow-up](pilots/san-juan.md) passed its approved exploratory bathymetry/support gate;
+no complete regional scientific
 certification or production-readiness claim is made. A feature push is not merge/tag/package/data
 publication permission.
 
@@ -61,14 +62,14 @@ must provide nonempty support and a separate safe destination.
 
 Synthetic software checks do not validate survey coverage, source vertical-datum accuracy,
 regional coastlines, every product's science, downstream predictive usefulness or model readiness.
-Three materialized-product tests skip without regional inputs. No live acquisition, regional
-rebuild/comparison, real-data numerical/visual QA, whole real-data release audit, redistribution,
+Three materialized-product tests still skip in a clean checkout. The approved PILOT-01 follow-up
+now has two real-data R6/R8 family builds, exact keyed comparisons and inspected offline maps.
+No live acquisition, full regional-domain rebuild, whole real-data release audit, redistribution,
 downstream application integration or Windows-native publication ran in this review.
 
 FIX-01 corrects future GEBCO source/attribution rights metadata; historical manifests keep their
-original labels. VERIFY-01 supplies corrected-candidate software evidence only. A future real-data
-run still needs valid canonical support or explicitly validated
-exploratory support, and approved disposable-workspace publication/resource scope. Retained
+original labels. VERIFY-01 supplies corrected-candidate software evidence only. The approved PILOT-01 run uses explicitly validated exploratory support; canonical inputs remain
+missing. Any future run needs separately agreed source/workspace/resource/publication scope. Retained
 manifests must not be rewritten. The Python offline guard does not firewall native extensions.
 The unfamiliar-user trial is **pending**: the owner confirmed no unfamiliar tester is available.
 Automated fresh-install simulations are separate evidence, not a human usability study.
@@ -109,7 +110,7 @@ that visual evidence does not establish real-data QA.
 | --- | --- | --- |
 | Exact candidate and software gates | Local checks and nine hosted jobs on the named candidate; skip/guard boundaries explicit in progress | Review the intended diff; any code/version/package change requires equivalent gates on its exact commit |
 | Unfamiliar-user acceptance | Owner confirms no tester; automated wheel/source-install simulations only | Have a new user follow README, locate Parquet/report/figures, explain synthetic provenance and null/zero, and report confusing steps |
-| Real-data claims | SS-10 blocked runbook/preflight, not execution | Resolve its gates before making real-data claims; otherwise label the release offline research only |
+| Real-data claims | Approved PILOT-01 two-run exploratory bathymetry/support gate passed; exact keys/values, resources and six inspected maps | Limit claims to that source/support/extent; no complete release, survey/navigation or model certification |
 | Version policy | Existing `0.1.0`; policy/tags absent | Approve policy and final release version; rebuild if metadata changes |
 | Rules and merge policy | Ruleset inventory including parents and public effective `main` rules both returned empty arrays; classic protection read returned integration 403 | Authorized maintainer must inspect classic protection and effective UI settings; do not infer no protection from 403 |
 | Merge | Repository metadata enables squash, merge commits and rebase; auto-merge disabled | Select the intended merge strategy and exact commit under reviewed policy; none was performed |
@@ -136,8 +137,15 @@ when the maintainer reviews requirements. Do not turn missing human/data/admin e
 There is no SS-12. The next action is owner resolution of these explicit gates, not automatic
 promotion, unbounded source acquisition or another toolkit implementation.
 
-PILOT-01 continuation prepares the existing exploratory route with verified future mask lineage
-and explicit exploratory support versions; see the [pilot runbook](pilots/san-juan.md) and
-[progress record](roadmap/PROGRESS.md). This follow-up does not replace the immutable VERIFY-01
-candidate evidence above. Local pilot workspace/resource/family-publication approval remains
-pending; no real-data numerical, resource or regional map acceptance is claimed.
+PILOT-01 follow-up passed on execution HEAD `5d9faaf` with the installed wheel for tested code
+`232ac308f7f2229c2f4047ab9fe204d95b8a6bf9` (wheel SHA-256
+`79abf3642b3b2b2dab2189f036648b45743a22e7829295a0d02b0b79c0b5e3a7`). Its source/metadata
+readiness, full-suite 410 passed/3 existing regional skips and isolated 175-test consumer checks
+were verified in preparation; all nine hosted jobs passed execution HEAD. This supplements the
+immutable VERIFY-01 candidate evidence above. See the [pilot runbook](pilots/san-juan.md) and
+[progress record](roadmap/PROGRESS.md). Twenty-three keyed Parquet tables and the radius operator
+repeat exactly; two full-grid Parquet byte hashes differ only in physical row ordering. One R6
+boundary cell retains null direct mean with child-derived composition support. No science/public
+signature/schema/gate change, complete release certification or owner release action. The human
+trial remains pending. Existing README installation pin and candidate-selection/version policy
+were not changed by this pilot.
