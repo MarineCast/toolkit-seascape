@@ -18,7 +18,7 @@ Current next action: SS-09. Stop before documentation consolidation in this SS-0
 | SS-05 | passed | CLI-only guidance/debug, side-effect contracts, 29 regressions; runtime-only wheel acceptance |
 | SS-06 | passed | Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped |
 | SS-07 | passed | Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed |
-| SS-08 | passed | Analytic gradient acceptance, matrix/publication regressions, 352 passed / 3 skipped; clean wheel 16/16 steps |
+| SS-08 | passed | Analytic/matrix/publication evidence; local and hosted 352 passed / 3 skipped; run 36324502530, 9/9 jobs |
 | SS-09–SS-11 | not_run | SS-09 is next; no documentation consolidation or real-data pilot performed |
 
 ## SS-00 baseline
@@ -815,9 +815,16 @@ checks are in `distribution-report.json`; portable execution/logs/notebook in `a
 The three skips remain the two feature-catalog checks and one network-consumer check requiring
 absent regional artifacts. No new skips. Prior broad ignored-cache Gitleaks finding is not waived
 or relabeled passed; that scan was not repeated. Real acquisition, regional equality/accuracy,
-downstream integration, visual figure QA and human onboarding trials **not_run**. New task hosted
-results, if run after the authorized feature push, are separate from these local acceptance claims.
+downstream integration, visual figure QA and human onboarding trials **not_run**.
+Hosted [run 36324502530](https://github.com/MarineCast/toolkit-seascape/actions/runs/36324502530)
+passed **9/9 jobs** on implementation commit `aace671d74c565b4f141805dbe66505fb055f239`:
+Linux Python 3.11 and 3.14 each **352 passed / 3 skipped**, 69 warnings; all three clean consumer
+cases (Linux 3.11/3.14, macOS ARM64 3.14) **16/16 expected-exit steps**; notebook, both quality
+jobs and history/tree secret scans passed. Decoded job logs and exact tested SHA are in
+`/tmp/seascape-ss08-evidence/hosted/`. Hosted copied-test counts/artifact interiors were not
+downloaded or inspected; their executed steps passed. This progress-only closure changes no code.
 Initial unrelated tracked changes: none; configs, canonical/retained products, caches and sibling
 repositories preserved. Files: demo/matrix APIs, consumer helper, three contract test files plus
 test-package marker, demo/matrix guides, notebook explanation and this record.
-Next: **SS-09**. Stop before SS-09; no merge, tag, package publication, settings or dataset changes.
+Remote actions: normal authorized feature push of implementation and this progress closure;
+no merge, tag, package publication, settings or dataset changes. Next: **SS-09**; stop before it.
