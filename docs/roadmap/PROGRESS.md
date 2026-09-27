@@ -19,7 +19,7 @@ Current next action: SS-10 requires explicit approved source/bounds/network/reso
 | SS-06 | passed | Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped |
 | SS-07 | passed | Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed |
 | SS-08 | passed | Analytic/matrix/publication evidence; local and hosted 352 passed / 3 skipped; run 36324502530, 9/9 jobs |
-| SS-09 | passed (local; hosted pending) | Three journeys, guarded source quickstart, docs drift checks; 368 passed / 3 skipped |
+| SS-09 | passed | Three journeys, guarded source quickstart, docs drift checks; local/hosted 368 passed / 3 skipped; run 36327449869, 9/9 jobs |
 | SS-10–SS-11 | not_run | SS-10 needs approved inputs/network/resource scope; no pilot or release review performed |
 
 ## SS-00 baseline
@@ -831,10 +831,10 @@ Remote actions: normal authorized feature push of implementation and this progre
 no merge, tag, package publication, settings or dataset changes. Next: **SS-09**; stop before it.
 
 
-## SS-09 three user journeys — local acceptance passed; hosted pending
+## SS-09 three user journeys — acceptance passed
 
-September 27. Base `0d307de978c98358af6dbfce31a034dc80bed91c`; this record's containing
-implementation commit identifies current work on `feature/seascape-repository-organization-updates`.
+September 27. Base `0d307de978c98358af6dbfce31a034dc80bed91c`; implementation
+`3022ace6b6a868c65e56f0efb6ddf8a9f84bb9d9` on `feature/seascape-repository-organization-updates`.
 Clean starting tree. Re-read owner/ancestor instructions, roadmap/progress and actual CLI/config,
 preflight, packaging and publication fixtures. SS-08 closure run **36324758385** was rechecked
 `completed/success`; no reset, source acquisition or prior task reimplementation.
@@ -907,4 +907,23 @@ this record. Unrelated work, configurations, canonical products, retained releas
 and notebook bytes are preserved; no sibling edits. Next: **SS-10**, requiring explicit approved
 inputs, AOI, network and resource limits. Stop before it. Feature-branch commit/push use the user's
 existing authorization and message `Repository Organization Updates`; no merge/tag/package
-publication/settings/data changes. Hosted verification is pending, not claimed passed.
+publication/settings/data changes. Hosted evidence is recorded below.
+
+
+SS-09 implementation **`3022ace6b6a868c65e56f0efb6ddf8a9f84bb9d9`** was committed and pushed
+with message `Repository Organization Updates` (both commands exit 0). GitHub run
+[36327449869](https://github.com/MarineCast/toolkit-seascape/actions/runs/36327449869) completed
+**success, 9/9 jobs**. Linux Python 3.11.16 and 3.14.7 each ran **368 passed / 3 skipped / 69 warnings**,
+and doc checks each reported 39 documents / 139 local links / 26 stages. All three consumers
+completed **16 expected-exit wheel steps plus all 12 source-quickstart lines with 15 demo checks**:
+Linux x86_64 3.11.16 (GDAL 3.10.3 / PROJ 9.5.1 / GEOS 3.13.1), Linux x86_64 3.14.7 and
+macOS ARM64 3.14.7 (GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1). Both quality jobs, original notebook
+and history/working-tree secret scan jobs passed. Hosted copied-test/notebook steps passed;
+their artifact ZIPs were not downloaded, so their internal counts are not separately asserted here.
+Actual run/jobs JSON, five decoded job logs and `hosted-acceptance-summary.json` are under the
+evidence root. Local `gitleaks git . --redact --no-banner --log-opts=--all` also returned 0 (22 commits).
+The current handoff commit is this evidence record's containing documentation-only commit; its
+identity, final status and remote synchronization are saved in `final-git-state.json`.
+Documentation-only closure checks: `python scripts/check_docs.py` and `git diff --check` both
+returned 0; no Python/scientific implementation changed after the successful hosted run.
+No real-data or SS-10 work was performed. The existing feature-branch push authorization was reused.

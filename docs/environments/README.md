@@ -2,7 +2,9 @@
 
 ## Tested platforms
 
-The [SS-08 implementation run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36324502530)
+The [SS-09 implementation run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36327449869)
+passed all nine jobs on `3022ace`, including the documented source-install quickstart on all three
+consumer platforms. Prior [SS-08 implementation run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36324502530)
 and [progress closure run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36324758385)
 passed all nine jobs on `aace671` and `0d307de`, respectively. These are observed environments,
 not a guarantee for all dependency lower bounds, OS versions or architectures.
@@ -11,11 +13,13 @@ not a guarantee for all dependency lower bounds, OS versions or architectures.
 | --- | --- |
 | Linux x86_64, Python 3.11 / 3.14 | Full offline suite and clean runtime-first wheel consumers; copied contracts/notebook |
 | macOS ARM64, Python 3.14 | Clean runtime-first wheel consumer and constrained quality/native baseline |
-| Local macOS 26.6.2 ARM64, CPython 3.14.6 | SS-08 full suite/clean consumer; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1 |
+| Local macOS 26.6.2 ARM64, CPython 3.14.6 | SS-09 full suite/clean consumer/source quickstart; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1 |
 | Native Windows | Not supported for the existing POSIX publication locks; no Windows acceptance claimed |
 
-Linux 3.11/3.14 each ran 352 tests with three absent-regional-artifact skips. All three hosted
-consumer cases completed 16 expected-exit steps. Real sources, regional scientific accuracy,
+In SS-09, Linux 3.11.16/3.14.7 each ran 368 tests with three absent-regional-artifact skips. All three
+hosted consumer cases completed 16 expected-exit wheel steps and the documented source quickstart
+(12 shell lines, 15 demo checks). Linux 3.11 used GDAL 3.10.3 / PROJ 9.5.1 / GEOS 3.13.1;
+Linux/macOS 3.14.7 used GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1. Real sources, regional scientific accuracy,
 downstream integration and unfamiliar-human onboarding are separate, unrun gates.
 
 ## Reproducibility baseline
