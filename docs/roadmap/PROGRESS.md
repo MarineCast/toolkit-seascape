@@ -1240,3 +1240,17 @@ fresh tracked-tree scans all exit 0. Ignored-cache broad-scan finding remains hi
 explicitly; no cleanup/allowlist/gate change. Final docs checker exits 0 (41 documents/154 local
 links/26 stages), documentation tests 16 passed. No current-run source quickstart or regional
 producer/visual acceptance claim; previous VERIFY-01 evidence remains identified separately.
+
+Tested package/source commit **`232ac308f7f2229c2f4047ab9fe204d95b8a6bf9`**, message
+`Repository Organization Updates`. Exact 190 packaged files match that commit. All 274 other
+tracked files and the 46-file / 22,717,798-byte original cache remain byte-identical; both proposed
+real-pilot roots still absent. Exact commands and full handoff are in the evidence root's
+`commands.json`, `HANDOFF.md`, `preservation.json`, distribution and consumer reports.
+Authorized `git push origin feature/seascape-repository-organization-updates` could not complete:
+observed `git-credential-osxkeychain` waiting, native UI inventory confirms Mac locked and automatic
+unlock unavailable. Only that task's Git/helper descendants were terminated; child Git exit -15
+(SIGTERM), recorder shell exit 241. Remote branch was read-only verified still at `8eaae5f`.
+Manual Mac unlock is requested; no credential is requested in chat. No push success or new hosted
+CI claim. A docs-only closure records these facts; feature push can retry after unlock. No merge,
+tag, registry/settings changes or data upload. PILOT-01 real execution and ACCEPT-01 remain pending
+as stated above; do not infer either approval from successful software checks.
