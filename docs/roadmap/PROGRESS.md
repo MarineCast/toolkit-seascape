@@ -8,7 +8,7 @@ SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset)
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
 on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
-Current next action: VERIFY-01 corrected-candidate acceptance, then owner resolution of SS-11's human trial, version policy, classic protection
+Current next action: owner resolution of SS-11's human trial, version policy, classic protection
 and release authorization gates. FIX-01 corrects future GEBCO rights; SS-10 execution still requires
 valid support inputs and approved disposable-workspace publication/resource scope. No SS-12.
 
@@ -28,7 +28,7 @@ valid support inputs and approved disposable-workspace publication/resource scop
 | SS-11 | blocked | Exact candidate software checks passed; handoff prepared; human/version/admin/release-owner gates pending |
 | FIX-01 | passed | Future GEBCO rights corrected; 32 focused tests; retained fixture/data bytes preserved |
 | FIX-02 | passed | 113 focused regressions; safe detail, original debug, unchanged gates |
-| VERIFY-01 | not_run | Corrected-candidate package/hosted checks pending |
+| VERIFY-01 | passed | Corrected 50675db; local package acceptance and 9/9 hosted jobs; pilot/human gates open |
 
 ## SS-00 baseline
 
@@ -1120,3 +1120,50 @@ unused field, both corrected without weakening validation. Text/JSON/debug tests
 paths, YAML/include/reference/Q90, secrets, legacy fields and unexpected exceptions. Actual Q90
 JSON exit 1 supplies the workflow example. Notebook stays unchanged: its existing production-demo
 thin-client coverage remains appropriate; copied installed-wheel execution follows in VERIFY-01.
+
+
+VERIFY-01 tested **`50675db2bef48d3e48de56ec02a5c98a992808ca`**. Separate fixes:
+`f98a36b` (metadata), `9755f94` (diagnostics). README pins immutable `9755f94`, containing both
+fixes; all 189 package files at that revision and the tested child match the new wheel exactly.
+The child adds the pin and two existing test modules to external consumer acceptance. No notebook
+refactor or scientific change. A later repository-docs-only closure refers to this exact candidate.
+Evidence root: `/tmp/seascape-review-fixes-evidence`; `{name}.command.json` stores exact argv,
+cwd, cleared environment and exit code; matching stdout/stderr, consumer/quickstart reports and
+nine decoded hosted logs retain details. Debug reproduction logs stay private, excluded from Git.
+Development CPython 3.14.6 / macOS 26.6.2 ARM64; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1.
+
+| Executed check (from owner checkout unless helper specifies outside cwd) | Exit / actual result |
+| --- | --- |
+| `python -m pytest -q tests/test_demo.py tests/domains/environment/seascape/test_bathymetry_contracts.py tests/test_preflight.py tests/test_cli_diagnostics.py tests/test_documentation.py tests/test_consumer_acceptance.py tests/test_products.py tests/test_metric_matrix.py tests/test_review_regressions.py tests/test_workflow.py` | 0; 216 passed / 0 failed / 0 skipped, 93 warnings (`verify-focused`) |
+| `python -m pytest -q` | 0; 398 passed / 0 failed / 3 skipped, 99 warnings (`verify-suite`) |
+| `ruff check src tests scripts`; `ruff format --check src tests scripts`; `python -m mypy` | 0 each; 235 formatted files, 12 typed modules |
+| `python scripts/check_docs.py`; `python -m pip check`; `git diff --check` | 0 each; 41 docs/152 local links/26 stages, external URLs offline/not checked |
+| `python scripts/environment_snapshot.py --extra test --extra quality --output /tmp/seascape-review-fixes-evidence/environment` | 0; exact test/quality/native closure captured |
+| `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-review-fixes-evidence/environment.txt` | 0; no known vulnerabilities |
+| Existing isolated build interpreter `python -m pip check`, then `python -m build --outdir /tmp/seascape-review-fixes-evidence/distributions` | 0 each; isolated sdist then wheel from sdist, setuptools 84.0.0/wheel 0.48.0 backends |
+| Guarded installed-wheel exact metadata comparison (one-off controlled-fixture check) | 0; both 2026/2025 branches exactly preserve all 153 keyed rows/values/nulls, source checksum and H3 R8. Initial attempts exit 1 on the existing `/tmp` symlink safeguard and an incorrect check-script key; corrected to resolved fresh workspace and actual `h3_resolutions`; no producer-code change |
+| Existing `scripts/check_distribution.py --sdist ... --wheel ... --output .../distribution-report.json` | 0; 9 required files / 5 resources; 189 package source files byte-matched independently |
+| Existing `scripts/check_consumer_install.py --wheel ... --source <owner> --forbid-root <MarineCast> --output .../consumer` | 0; runtime-only first, 163 imports/15 demo checks; 4 negative cases expected exit 1; extras later; 175 external tests / 0 failed / 0 skipped; copied notebook 15 production/16 notebook checks, 2 embedded figures, no acquisition/network attempts |
+| Existing `scripts/check_quickstart.py --sdist ... --source <owner> --forbid-root <MarineCast> --output .../quickstart` | 0; marked source install/demo/init/stages/dry-run, 15 demo checks |
+| Gitleaks 8.30.1 `git . --redact --no-banner --log-opts=--all`; `dir <fresh tracked-tree> --redact --no-banner` | 0 each; no leaks. Ignored local Graphify cache broad-scan finding remains historical; no cache deletion/allowlist change or claim that local ignored-tree scan passed |
+| `git push origin feature/seascape-repository-organization-updates` | 0; authorized ec78b57 → 50675db |
+| [Hosted run 36345268484](https://github.com/MarineCast/toolkit-seascape/actions/runs/36345268484) | success, 9/9 jobs; both Linux full suites 398 passed/3 regional skips. Linux consumers 3.11.16/3.14.7 x86_64; macOS consumer 3.14.7 ARM64; two quality/audit jobs, copied/source notebooks, source quickstarts and clean-checkout broad secret/history scans passed |
+
+Three regional skips remain `test_feature_catalog.py:107/:130` and
+`test_network_consumer_contracts.py:207`: materialized regional artifacts are absent from a clean
+checkout. No added skip/validation relaxation. Dependency installs use network; guarded Python
+computation forbids checkout access/outbound/source acquisition/children, not an OS/native firewall.
+New runtime demo report and both figures actually inspected: explicit SYNTHETIC, elevation/depth
+in meters, H3 R8, unavailable gray; 153 cells. No real-data numerical/map acceptance implied.
+Artifact identities are in `candidate-artifacts.json` and the current release note. All 46 original
+cache files (22,717,798 bytes), configs, canonical/retained products and other tracked files outside
+the 14 intended changes remain byte-identical. Retained publisher-created fixture bytes are also
+regression-tested. No sibling changes, reset, acquisition, merge, tag, registry/settings/data upload.
+
+Stop after VERIFY-01. **PILOT-01** still needs valid canonical inputs or the existing explicitly
+validated exploratory support route; source/bounds/R6/R8 identities; approved fresh workspace,
+resource and local-family-publication scope; two executed realizations with numerical/provenance,
+wall/storage/memory and inspected-map evidence. Future rights correction removes only that blocker.
+**ACCEPT-01** still needs an unfamiliar user's install/demo/output/units-resolution/provenance/null
+trial (owner confirmed none available), observed friction, owner version/merge/release decisions and
+classic-protection review (prior integration 403, not proof of no protection). Neither gate passed.

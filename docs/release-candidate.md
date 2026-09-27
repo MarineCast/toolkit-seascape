@@ -1,10 +1,13 @@
 # Offline research candidate and maintainer handoff
 
-SS-11 review, September 27, 2026. Tested source commit:
-**`ee41524b92ea6a6ef643488f903a1d69248e6d8b`**, on
-`feature/seascape-repository-organization-updates`. The subsequent handoff commit changes
-documentation only; it is not silently substituted for this tested artifact identity.
-See [progress and exact commands](roadmap/PROGRESS.md#ss-11-release-candidate-review--owner-gates-pending).
+VERIFY-01 review, September 27, 2026. Tested source commit:
+**`50675db2bef48d3e48de56ec02a5c98a992808ca`**, on
+`feature/seascape-repository-organization-updates`. FIX-01 (`f98a36b`) and FIX-02 (`9755f94`)
+are separate commits. README installs immutable `9755f94f4ae50957f5c1af5316afb3e3cda26e54`,
+which contains both fixes; the tested child adds external-wheel regressions and that README pin,
+with identical package source bytes. The subsequent handoff changes repository documentation
+only and is not substituted for this tested artifact. Earlier SS-11 evidence remains dated in
+[progress and exact commands](roadmap/PROGRESS.md#focused-review-fixes-september-27).
 
 **Decision: software acceptance supports review of an offline research candidate. Hold public
 release approval.** Human usability, version-policy approval and classic branch-protection review
@@ -31,7 +34,10 @@ publication permission.
 
 The runtime consumer no longer inherits development packages or source-tree imports. Missing
 dependencies/resources and attempted outbound calls fail tested acceptance cases. CLI errors
-have actionable diagnostics and optional debug traces. Regressions cover analytic terrain cases,
+have actionable diagnostics and optional debug traces. Future GEBCO manifests now carry
+public-domain terms and source acknowledgement consistently; historical manifests retain their
+original labels. Caught preflight failures retain safe reason/type, document/setting context and
+original unfiltered debug tracebacks on stderr, including alongside JSON. Regressions cover analytic terrain cases,
 H3 alignment/missingness, retained-release identity, failure/recovery/resume boundaries and
 matrix exports. Formatting was separated from semantic changes during the roadmap.
 Matrix export now rejects empty support and destinations that alias an input catalog, canonical
@@ -42,7 +48,11 @@ manifest or retained generation, preserving valid existing outputs on failure.
 The toolkit remains independently installable, Python 3.11+, with the declared geospatial runtime.
 Demo, preflight and CLI diagnostics are additive. Existing configuration defaults, public producer
 APIs, canonical products and retained releases were preserved. No formula, threshold, units,
-depth sign, CRS/datum, nodata, H3 support, schema or release gate was changed for this milestone.
+depth sign, CRS/datum, nodata, H3 support or release gate changed. Source/attribution metadata
+intentionally changes for future GEBCO outputs; optional `terms_url` uses the existing manifest
+contract. Schema-1 preflight adds optional `detail`/`error_type` while retaining required fields
+and statuses. Unknown provider rights remain explicitly unverified; synthetic licensing stays
+unchanged. Code identity and future manifest/release hashes may change; resume validation is retained.
 New failure diagnostics do not relax validation. Matrix signatures and physical output values
 are unchanged, but formerly accepted invalid empty/unsafe exports now raise `ValueError`; callers
 must provide nonempty support and a separate safe destination.
@@ -56,8 +66,8 @@ rebuild/comparison, real-data numerical/visual QA, whole real-data release audit
 downstream application integration or Windows-native publication ran in this review.
 
 FIX-01 corrects future GEBCO source/attribution rights metadata; historical manifests keep their
-original labels. The corrected code requires VERIFY-01 evidence before replacing the dated
-candidate above. A future real-data run still needs valid canonical support or explicitly validated
+original labels. VERIFY-01 supplies corrected-candidate software evidence only. A future real-data
+run still needs valid canonical support or explicitly validated
 exploratory support, and approved disposable-workspace publication/resource scope. Retained
 manifests must not be rewritten. The Python offline guard does not firewall native extensions.
 The unfamiliar-user trial is **pending**: the owner confirmed no unfamiliar tester is available.
@@ -65,26 +75,33 @@ Automated fresh-install simulations are separate evidence, not a human usability
 
 ## Version and artifacts
 
-Package metadata already declares **`0.1.0`**. No versioning policy or repository tags were found
-during this review. Retain `0.1.0` as the tested candidate's base version; approval of the public
+Package metadata already declares **`0.1.0`**. The prior SS-11 review found no declared
+versioning policy; local tags remain empty. Retain `0.1.0` as the tested candidate's base version; approval of the public
 version and any prerelease designation is blocked on the maintainer's policy decision. No new
 version was assigned, no tag created and no registry release assumed. If the owner chooses a
 different version, commit it and rebuild/revalidate that exact commit before release.
 
-The local sdist and its wheel were built with a fresh isolated build environment, then checked
+The local sdist and its wheel were rebuilt using the existing isolated build environment, with
+fresh isolated backend environments for both archive steps, then checked
 for metadata and all required resources. The wheel's package bytes match the candidate source;
 neither archive contains source datasets, retained products or graph caches. Artifact hashes:
 
 | Artifact | SHA-256 |
 | --- | --- |
-| `toolkit_seascape-0.1.0.tar.gz` | `a7ba7fa13feb35a6f6c5c244bf05629b6c6e925f3ff6ebe134e3a2727abea8bd` |
-| `toolkit_seascape-0.1.0-py3-none-any.whl` | `463aa070c2a4d5d22d8383eb55b66b3bc4b453b13c78dbce78cdc7248c062df3` |
+| `toolkit_seascape-0.1.0.tar.gz` | `bcde19c639eb073432682fa0c456ba216ac6f72e9dd9b8d041b5724b5729fdc4` |
+| `toolkit_seascape-0.1.0-py3-none-any.whl` | `37a255153795e5a815113608f7b8949d49ad10a94b7e12dbf2b3812dd99ed4d3` |
 
 These are local candidate assets, not uploaded release assets. Hosted consumers independently
 built and tested distributions from the same immutable commit; that is not a transfer of this
 local wheel to Linux. Archive-byte equality across independent builds is not asserted. The
-[candidate CI run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36329187229)
-completed successfully with nine jobs. Its decoded logs and local reports are referenced in progress.
+[candidate CI run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36345268484)
+completed successfully with **nine jobs** on the exact corrected commit. Local gates passed: **398 tests / 3 expected
+regional skips**, **175 external-wheel tests**, runtime-only demo (15 checks), copied notebook
+(15 production / 16 notebook checks), static/docs/dependency/secret checks. Its decoded logs and
+local reports are referenced in progress. Linux consumer interpreters were 3.11.16/3.14.7
+x86_64; macOS consumer was 3.14.7 ARM64. The documented source-install quickstart also passed
+locally and in all three hosted consumer jobs. Both new synthetic figures were inspected;
+that visual evidence does not establish real-data QA.
 
 ## Maintainer go/no-go checklist
 
@@ -113,7 +130,7 @@ notebook-validation
 secrets
 ```
 
-The empty ruleset/effective-rule responses are current observations, not authorization to change
+The empty ruleset/effective-rule responses are prior SS-11 observations, not authorization to change
 settings or proof that classic protection is absent. Retain all applicable software/security checks
 when the maintainer reviews requirements. Do not turn missing human/data/admin evidence into PASS.
 There is no SS-12. The next action is owner resolution of these explicit gates, not automatic
