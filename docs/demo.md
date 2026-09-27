@@ -44,9 +44,15 @@ level (0 m); this demo does not reinterpret that input as measured marine depth.
 
 Acceptance requires nonempty support and valid depths, exact unique keys/resolution, 2016 eligible
 marine pixels, finite-or-null numerics, sign/CRS/nodata, complete depth-band fractions, known constant
-values, required synthetic provenance, and real family/input/upstream checksums. The 5 m control
+and gradient values, required synthetic provenance, and real family/input/upstream checksums. The 5 m control
 uses 1e-6 m absolute tolerance; fractional partitions use 1e-12, with no relative tolerance. Values
 and keys repeat exactly in the tested environment; timestamps/run IDs and plotting bytes need not.
+For the interior gradient control, pixel-center H3 membership is explicitly checked: row 24,
+columns 22–26; rows 25–26, columns 21–26; and row 27, column 24. These 18 pixels have
+row sum 453 and column sum 426. From `depth(r,c) = 5 + (145*c + 80*r)/47`, their mean
+is `5680/47` m, minimum `5280/47` m, maximum `6085/47` m, and range `805/47` m.
+The 3e-5 m absolute tolerance (no relative tolerance) accommodates rounding during the float32
+raster construction, including subtraction of two extrema. It does not assert real-world accuracy.
 Family `source_completeness=complete` refers only to these generated inputs. No regional survey,
 provider availability, genuine water network, real-world accuracy, whole-release audit or downstream
 application acceptance is established. Ordinary configs, canonical products and retained releases

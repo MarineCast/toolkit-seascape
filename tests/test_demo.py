@@ -41,11 +41,17 @@ def test_normal_run_nonempty_expected_values_and_provenance(result):
     assert report["checks"] and all(report["checks"].values())
     frame = pd.read_parquet(result.parquet_path).set_index("H3_INDEX")
     flat = frame.loc[report["controls"]["flat"]]
-    assert flat["BATHYMETRY"] == pytest.approx(5.0, abs=1e-6)
+    assert flat["BATHYMETRY"] == pytest.approx(5.0, abs=1e-6, rel=0)
     assert flat["BATHYMETRY_STD"] == 0.0
     assert flat["BATHYMETRY_RANGE"] == 0.0
     assert flat["BATHYMETRY_FRAC_0_10_M"] == 1.0
     assert flat["BATHYMETRY_FRAC_10_30_M"] == 0.0
+    gradient = frame.loc[report["controls"]["gradient"]]
+    assert gradient["BATHYMETRY_PIXEL_COUNT"] == 18
+    assert gradient["BATHYMETRY"] == pytest.approx(5680 / 47, abs=3e-5, rel=0)
+    assert gradient["BATHYMETRY_MIN"] == pytest.approx(5280 / 47, abs=3e-5, rel=0)
+    assert gradient["BATHYMETRY_MAX"] == pytest.approx(6085 / 47, abs=3e-5, rel=0)
+    assert gradient["BATHYMETRY_RANGE"] == pytest.approx(805 / 47, abs=3e-5, rel=0)
     assert frame["BATHYMETRY_PIXEL_COUNT"].sum() == 2016
     for name in ("sea_level", "nodata", "outside"):
         assert pd.isna(frame.loc[report["controls"][name], "BATHYMETRY"])
@@ -221,6 +227,41 @@ def test_empty_or_all_null_output_cannot_pass(result, monkeypatch):
     assert not checks["nonempty_valid_depth"]
     assert not checks["known_constant_depth_m"]
     assert not checks["valid_depth_band_partition"]
+
+
+@pytest.mark.parametrize(
+    "column", ["BATHYMETRY", "BATHYMETRY_RANGE", "BATHYMETRY_PIXEL_COUNT"]
+)
+def test_demo_rejects_corrupted_gradient_values(result, monkeypatch, column):
+    frame = pd.read_parquet(result.parquet_path)
+    controls = json.loads(result.report_path.read_text())["controls"]
+    fixture = {
+        "cells": list(frame["H3_INDEX"]),
+        "controls": controls,
+        "flat_count": int(
+            frame.set_index("H3_INDEX").loc[controls["flat"], "BATHYMETRY_PIXEL_COUNT"]
+        ),
+    }
+    frame.loc[frame["H3_INDEX"] == controls["gradient"], column] += 1
+    monkeypatch.setattr(demo.pd, "read_parquet", lambda path: frame)
+    assert not demo._validate(result.workspace, fixture)["known_gradient_depth_m"]
+
+
+def test_demo_finite_policy_rejects_infinity(result, monkeypatch):
+    frame = pd.read_parquet(result.parquet_path)
+    controls = json.loads(result.report_path.read_text())["controls"]
+    fixture = {
+        "cells": list(frame["H3_INDEX"]),
+        "controls": controls,
+        "flat_count": int(
+            frame.set_index("H3_INDEX").loc[controls["flat"], "BATHYMETRY_PIXEL_COUNT"]
+        ),
+    }
+    frame.loc[frame["H3_INDEX"] == controls["gradient"], "BATHYMETRY"] = np.inf
+    monkeypatch.setattr(demo.pd, "read_parquet", lambda path: frame)
+    checks = demo._validate(result.workspace, fixture)
+    assert not checks["finite_or_null_numeric_values"]
+    assert not checks["positive_down_meters_and_bounds"]
 
 
 def test_synthetic_acquisition_is_rejected(result):

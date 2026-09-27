@@ -83,6 +83,8 @@ def _validated_table(
         *selected,
     ]
     table = pq.read_table(path, columns=columns)
+    if not table.num_rows:
+        raise ValueError(f"Empty H3 support in {path}")
     keys = table.column("H3_INDEX").to_pylist()
     if any(not isinstance(key, str) or not key for key in keys):
         raise ValueError(f"Null or invalid H3_INDEX in {path}")
@@ -170,6 +172,14 @@ def build_metric_matrix(
             released_datasets[key] = dataset_id
         source_validation = "schema3_release_verified"
     catalog = _read_catalog(catalog_file)
+    if destination in {catalog_file.resolve(), (root / _RELEASE_MANIFEST).resolve()}:
+        raise ValueError(
+            "Matrix output cannot replace an input catalog or release manifest"
+        )
+    # Retained products and governed metadata are immutable, including older
+    # generations and files not selected at the requested resolution.
+    if destination.is_relative_to((root / ".seascape/releases").resolve()):
+        raise ValueError("Matrix output cannot replace an input release generation")
     catalog_checksum = checksum_path(catalog_file)
     products = catalog["products"]
     if "h3_marine_support" not in products:

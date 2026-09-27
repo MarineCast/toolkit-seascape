@@ -35,6 +35,13 @@ from seascape.utils.artifacts import atomic_write_parquet, validate_manifest
 _RESOLUTION = 8
 _BOUNDS = (-123.20, 48.40, -123.10, 48.50)
 _OWNER = "toolkit-seascape synthetic demo v1\n"
+# Pixel-center membership for the interior gradient control, independent of
+# production aggregation. d(r,c) = 5 + (145*c + 80*r)/47 meters.
+_GRADIENT_PIXELS = (
+    *((24, column) for column in range(22, 27)),
+    *((row, column) for row in (25, 26) for column in range(21, 27)),
+    (27, 24),
+)
 _FILES = (
     "config/demo.yaml",
     "input/synthetic_bathymetry.tif",
@@ -227,6 +234,7 @@ def _prepare_fixture(root: Path) -> _Fixture:
     )
     controls = {
         "flat": str(pixel_cells[6, 6]),
+        "gradient": str(pixel_cells[24, 24]),
         "sea_level": str(pixel_cells[6, 42]),
         "nodata": str(pixel_cells[42, 42]),
         "outside": outside_cell,
@@ -238,6 +246,11 @@ def _prepare_fixture(root: Path) -> _Fixture:
             raise AssertionError(
                 f"Synthetic control cell is not wholly inside {name} patch"
             )
+    if (
+        tuple(map(tuple, np.argwhere(pixel_cells == controls["gradient"])))
+        != _GRADIENT_PIXELS
+    ):
+        raise AssertionError("Synthetic gradient control pixel membership changed")
     return {
         "cells": cells,
         "controls": controls,
@@ -268,6 +281,7 @@ def _validate(root: Path, fixture: _Fixture) -> dict[str, bool]:
     indexed = output.set_index("H3_INDEX")
     controls = fixture["controls"]
     flat = indexed.loc[controls["flat"]]
+    gradient = indexed.loc[controls["gradient"]]
     depths = output["BATHYMETRY"].dropna()
     fractions = output.filter(regex=r"^BATHYMETRY_FRAC_")
     valid_fractions = fractions.loc[output["BATHYMETRY"].notna()]
@@ -281,6 +295,14 @@ def _validate(root: Path, fixture: _Fixture) -> dict[str, bool]:
         and output["H3_INDEX"].map(h3.get_resolution).eq(_RESOLUTION).all(),
         "known_constant_depth_m": abs(float(flat["BATHYMETRY"]) - 5.0) <= 1e-6
         and flat["BATHYMETRY_PIXEL_COUNT"] == fixture["flat_count"],
+        # 18 pixels, sum(r)=453, sum(c)=426. The mean is 5680/47;
+        # extrema are at (25,21) and (26,26). Allow 3e-5 m for float32
+        # fixture construction/rounding, never relative drift in physical units.
+        "known_gradient_depth_m": gradient["BATHYMETRY_PIXEL_COUNT"] == 18
+        and abs(float(gradient["BATHYMETRY"]) - 5680 / 47) <= 3e-5
+        and abs(float(gradient["BATHYMETRY_MIN"]) - 5280 / 47) <= 3e-5
+        and abs(float(gradient["BATHYMETRY_MAX"]) - 6085 / 47) <= 3e-5
+        and abs(float(gradient["BATHYMETRY_RANGE"]) - 805 / 47) <= 3e-5,
         "observed_zero_statistics": flat["BATHYMETRY_STD"] == 0.0
         and flat["BATHYMETRY_RANGE"] == 0.0
         and flat["BATHYMETRY_FRAC_10_30_M"] == 0.0,

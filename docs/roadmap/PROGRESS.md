@@ -1,12 +1,12 @@
 # Seascape roadmap progress
 
-Implemented scope: SS-00 through SS-07; SS-03 hosted acceptance passed.
+Implemented scope: SS-00 through SS-08; SS-03 hosted acceptance passed.
 [Specification](SEASCAPE_CODEX_ROADMAP.md).
 SS-00 base/current commit: `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4` (no reset).
 Initial state: clean `main`; remote `https://github.com/MarineCast/toolkit-seascape.git`.
 Working branch: `feature/seascape-repository-organization-updates`. Feature-branch pushes authorized
 on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
-Current next action: SS-08; its SS-03/SS-05 prerequisites are now satisfied.
+Current next action: SS-09. Stop before documentation consolidation in this SS-08 execution.
 
 | Task | Status | Evidence / next gap |
 | --- | --- | --- |
@@ -18,7 +18,8 @@ Current next action: SS-08; its SS-03/SS-05 prerequisites are now satisfied.
 | SS-05 | passed | CLI-only guidance/debug, side-effect contracts, 29 regressions; runtime-only wheel acceptance |
 | SS-06 | passed | Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped |
 | SS-07 | passed | Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed |
-| SS-08–SS-11 | not_run | SS-08 is next; stop before implementing it in the SS-03 closure |
+| SS-08 | passed | Analytic gradient acceptance, matrix/publication regressions, 352 passed / 3 skipped; clean wheel 16/16 steps |
+| SS-09–SS-11 | not_run | SS-09 is next; no documentation consolidation or real-data pilot performed |
 
 ## SS-00 baseline
 
@@ -743,3 +744,80 @@ canonical/retained products, ignored caches and siblings preserved. Remote chang
 feature-branch pushes only; no PR, merge, tag, settings change, package publication or dataset
 acquisition. Live/regional/downstream/human release acceptance remain **not_run**.
 Next: **SS-08**, now eligible; stop before SS-08.
+
+## SS-08 scientific, publication and export acceptance — passed
+
+Base `e3e831bfc63ef5578838308b2e82322d26d74dac`; current commit is the SS-08 commit containing
+this record. Branch `feature/seascape-repository-organization-updates`; initial tree clean.
+Rechecked roadmap, progress, root/owner AGENTS, contracts, source and named tests. Read-only
+GitHub lookup reconfirmed prerequisite run `36323147359` succeeded on the base commit.
+SS-03/SS-05 and the SS-07 static boundary are satisfied; no prior implementation repeated.
+
+Contract map: **P** = present at base, **N** = missing evidence added/extended here. All names
+below executed in the focused/full suite; test quantity is not a scientific certification.
+
+| Contract | Named evidence | Classification |
+| --- | --- | --- |
+| Production transformation, family/checksum validation, constant field, nodata/unavailable, observed zero, nonempty support, sign/CRS, explicit synthetic provenance | `test_normal_run_nonempty_expected_values_and_provenance`, `test_empty_or_all_null_output_cannot_pass`, `test_arbitrary_cwd_environment_restoration_and_confinement` | P; first test extended N for gradient |
+| Analytic gradient and finite-value rejection | `test_demo_rejects_corrupted_gradient_values`, `test_demo_finite_policy_rejects_infinity` | N |
+| Keyed row invariance, identical support/cardinality, unique/non-null exact-resolution keys | `test_composite_is_invariant_to_each_input_order`, `test_composite_rejects_incompatible_identity`; matrix `test_matrix_rejects_duplicate_h3_keys`, `test_matrix_rejects_invalid_identity_without_replacing_output`, `test_matrix_row_order_invariance_and_collision_free_field_names` | P composite/duplicate; N matrix boundaries |
+| Depth sign/missingness, metric projected axes, Q90; flat/coastal nodata and controlled plane slope | `test_depth_values_reject_contradiction_and_preserve_missingness`, `test_scientific_configuration_rejects_nonmetric_crs`, `test_terrain_rejects_unsupported_depth_sign_before_io`, `test_q90_schema_rejects_other_quantiles`, `test_native_slope_masks_land_nodata_and_preserves_flat_edges`, `test_native_slope_matches_north_south_plane_including_edges` | P |
+| Actual publication A/B, retained historical A, manifest-last ordering, interrupted recovery/rollback | `test_two_publications_retain_prior_product_and_manifest_bytes`, `test_generation_is_rolled_back_when_canonical_promotion_fails`, `test_release_publisher_promotes_manifest_last`, `test_snapshot_recovers_interrupted_release_before_read`, `test_release_rolls_back_failure_at_each_promotion` | P |
+| Exact resolution, tampering, unsafe paths, invalid release IDs | `test_missing_product_and_resolution_fail_without_fallback`, `test_checksum_mismatch_and_incomplete_release_fail`, `test_historical_release_id_is_validated`, `test_product_resolver_rejects_paths_outside_generation`, `test_matrix_rejects_unsafe_catalog_paths` | P parser checks; N unsafe product/catalog cases |
+| Resume invalidation after included config, package identity and file-backed source changes | `test_resume_invalidates_when_included_domain_config_changes`, `test_resume_invalidates_when_package_code_identity_changes`, `test_resume_invalidates_when_file_backed_source_changes` | P |
+| Export freezes A while actual publisher installs B; table, catalog and checksum metadata cannot mix | `test_matrix_pins_real_publication_during_release_switch` | N, existing pinning passed unchanged |
+| Null/zero, QC/evidence, units, original types, field names, explicit legacy limits | `test_matrix_aligns_by_h3_and_preserves_zero_null_and_qc`, `test_matrix_row_order_invariance_and_collision_free_field_names` | P values/metadata; N shuffled/collision boundaries |
+| Empty support, failed write/replace, existing destinations, aliases/overwrite and retained generations | `test_matrix_rejects_empty_support_without_resolution_column`, `test_matrix_failed_write_preserves_valid_destination`, `test_matrix_output_cannot_replace_input`, release-switch test; `test_existing_export_is_preserved` | N except existing CLI refusal P |
+
+**Reproduced failures and fix:** initial matrix run: **3 failed / 17 passed**, exit 1. Empty tables
+without a resolution column were accepted; overwrite could replace the input catalog or canonical
+release manifest. Export now rejects empty support and those aliases, and cannot write into any
+retained generation. Python signatures, output schema, physical values and exception types remain
+unchanged; these invalid inputs now raise `ValueError`. Initial collection exit 2 was a test fixture
+import error, fixed by making copied tests a package and reusing the existing publisher fixture.
+Initial focused exit 1 (108 passed / 2 failed / 16 fixture errors) exposed an arithmetic mistake in
+the new analytic expectation; corrected the row sum from 452 to 453, without changing calculations.
+
+Demo adds `gradient` to report controls and one real check (15 total), using the original raster,
+production bathymetry API, packaged config and family validator. The 18 interior pixels have
+`sum(row)=453`, `sum(column)=426`; `d=5+(145*c+80*r)/47` gives mean `5680/47`, min `5280/47`,
+max `6085/47`, range `805/47` meters. Absolute 3e-5 m accounts for float32 fixture rounding;
+constant depth retains 1e-6 m and band partitions 1e-12, no relative tolerance. Existing slope
+plane assertions retain NumPy's tolerance for double-precision angular-to-meter arithmetic.
+Same-environment keyed tables repeat exactly; timestamps/run IDs/plotting bytes are not compared.
+The notebook remains a thin client; only its explanation changed. **Scientific behavior changed: no.**
+Publisher tests reuse a test-only pre-audited fixture; they exercise publication/resolution, not
+a full regional audit. The one-family demo is never promoted or labeled a complete release.
+
+Executed commands/results (all from this checkout; exact expanded argv, exit codes and logs in
+`/tmp/seascape-ss08-evidence/commands.json`; consumer subcommands in `acceptance/report.json`):
+
+| Command | Result |
+| --- | --- |
+| `/tmp/seascape-roadmap-dev/bin/python -m pytest -q` | exit 0, **352 passed / 0 failed / 3 skipped**, 69 warnings |
+| Focused `python -m pytest -q` over demo/matrix/products/review/workflow/consumer/publication/release/bathymetry contracts | exit 0, **126 passed**, 29 warnings; exact file list in `focused-final.json` |
+| `ruff check src tests scripts`; `ruff format --check src tests scripts`; `python -m mypy` | exit 0 each; 232 formatted files, 12 checked interface modules |
+| `python -m pip check` | exit 0; no broken requirements |
+| `python -m build --no-isolation --outdir /tmp/seascape-ss08-evidence/distributions` | exit 0; wheel built from sdist, declared provisioned build tools |
+| `python scripts/check_distribution.py --sdist … --wheel … --output …` | exit 0, 9 required files / 5 resources survive; full args in `distribution.json` |
+| `python scripts/check_consumer_install.py --wheel … --source … --forbid-root … --output …` | exit 0, **16/16** expected-exit steps; fresh isolated runtime first, then declared extras |
+| Copied guarded pytest; copied headless notebook | exit 0 each; **83 passed / 0 skipped**, 29 warnings; notebook **15 production / 16 total checks**, 2 embedded figures, no outbound/acquisition attempts |
+| `python scripts/environment_snapshot.py --extra test --extra quality --output /tmp/seascape-ss08-evidence/environment` | exit 0, Python/native/dependency closure recorded |
+| `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-ss08-evidence/environment.txt` | exit 0, no known vulnerabilities; no ignore/downgrade |
+| `gitleaks dir /tmp/seascape-ss08-evidence/tracked-review --redact --no-banner`; `git diff --check` | exit 0 each; tracked/new source scan only, ignored cache preserved |
+
+Environment: fresh consumer and development CPython **3.14.6**, macOS **26.6.2 ARM64**;
+GDAL **3.12.4**, PROJ **9.8.1**, GEOS **3.13.1**. Source/OrcaCast reads, outbound Python activity
+and child processes denied during consumer execution; installations permit declared dependency
+downloads and notebook loopback traffic. No OS firewall claim. Wheel SHA-256 and distribution
+checks are in `distribution-report.json`; portable execution/logs/notebook in `acceptance/`.
+
+The three skips remain the two feature-catalog checks and one network-consumer check requiring
+absent regional artifacts. No new skips. Prior broad ignored-cache Gitleaks finding is not waived
+or relabeled passed; that scan was not repeated. Real acquisition, regional equality/accuracy,
+downstream integration, visual figure QA and human onboarding trials **not_run**. New task hosted
+results, if run after the authorized feature push, are separate from these local acceptance claims.
+Initial unrelated tracked changes: none; configs, canonical/retained products, caches and sibling
+repositories preserved. Files: demo/matrix APIs, consumer helper, three contract test files plus
+test-package marker, demo/matrix guides, notebook explanation and this record.
+Next: **SS-09**. Stop before SS-09; no merge, tag, package publication, settings or dataset changes.

@@ -300,3 +300,28 @@ def test_legacy_mutable_release_requires_republication(tmp_path):
 def test_historical_release_id_is_validated(tmp_path, release_id):
     with pytest.raises(ValueError, match="SHA-256"):
         list_products(workspace=tmp_path, release_id=release_id)
+
+
+@pytest.mark.parametrize("escape", ["absolute", "dotdot", "symlink"])
+def test_product_resolver_rejects_paths_outside_generation(tmp_path, escape):
+    workspace, artifact, manifest = _release_fixture(tmp_path)
+    sentinel = tmp_path / "private.parquet"
+    sentinel.write_bytes(b"not a released product")
+    payload = json.loads(manifest.read_text())
+    value = str(sentinel) if escape == "absolute" else "../../private.parquet"
+    if escape == "symlink":
+        (artifact.parent / "alias.parquet").symlink_to(sentinel)
+        value = str(
+            (artifact.parent / "alias.parquet").relative_to(
+                workspace / payload["storage_root"]
+            )
+        )
+    payload["products"]["environment.seascape.bathymetry_r6"]["path"] = value
+    archived_manifest = (
+        workspace / payload["storage_root"] / manifest.relative_to(workspace)
+    )
+    for path in (manifest, archived_manifest):
+        path.write_text(json.dumps(payload))
+    with pytest.raises(ValueError, match="root-relative|escapes its generation"):
+        resolve_product(workspace=workspace, product="bathymetry", resolution=6)
+    assert sentinel.read_bytes() == b"not a released product"

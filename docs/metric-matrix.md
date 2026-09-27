@@ -33,6 +33,10 @@ for each table, which verifies the release and source artifact checksums. It rej
 missing products, unexpected grain, catalog path disagreements, missing columns,
 duplicate or invalid keys, and support mismatches. The output is written through a
 temporary file and atomically replaced only when `--overwrite` is explicit.
+Support must be nonempty. Even with `--overwrite`, an export cannot replace an input table,
+its catalog, the canonical release manifest, or any retained release generation. Validation,
+serialization and replacement failures preserve an existing destination. Each export freezes
+one release ID before reading its catalog and tables; a concurrent publication cannot mix generations.
 
 ```sh
 seascape --workspace /path/to/seascape-workspace export-metric-matrix \
