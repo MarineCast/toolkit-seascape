@@ -3,7 +3,7 @@
 > Dated historical evidence; follow the [current guide](README.md) and [progress](roadmap/PROGRESS.md)
 > for present behavior and executed checks. Past test/release/integration claims are not new verification.
 
-All P1/P2 findings F01–F12 in the [pre-fix review](../ARCHITECTURE_CODE_REVIEW.md) have local code,
+All P1/P2 findings F01–F12 in the [pre-fix review](https://github.com/MarineCast/toolkit-seascape/blob/9356651883a4239ffae1e4db9e0c1ca5a49887de/ARCHITECTURE_CODE_REVIEW.md) have local code,
 configuration, documentation or CI corrections. This record supersedes that review's implementation
 status, not its historical evidence. Existing unrelated notebook/acquisition/workflow changes were
 preserved. No remote publication, regional dataset rebuild or OrcaCast integration was performed.
