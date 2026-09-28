@@ -20,7 +20,7 @@ The live explorer is a separate research path with explicit acquisition and expl
 | Document | Purpose |
 | --- | --- |
 | [Workflow and operation effects](WORKFLOWS.md) | Planning, processing, inspection, promotion and failure guidance |
-| [Bounded San Juan pilot](pilots/san-juan.md) | Checked configuration and blocked real-data runbook; no measured processing envelope |
+| [Bounded San Juan pilot](pilots/san-juan.md) | Executed exploratory R6/R8 family pilot, measurements and limits; not a complete regional release |
 | [Configuration](CONFIGURATION.md) | Workspace precedence, editable settings, candidate isolation and reuse limits |
 | [Stage input reference](stage-inputs.md) | Default prerequisites generated from the existing planner/preflight metadata |
 | [Python API](API.md) | Supported producers/readers, exceptions and a release-frozen consumer example |
