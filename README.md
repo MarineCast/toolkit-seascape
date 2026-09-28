@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/seascape-underwater-banner.png" alt="Illustrated sunlit kelp and rocky seafloor; decorative banner, not a data product" width="67%">
+</p>
+
 <div align="center">
 
 # Seascape Toolkit
