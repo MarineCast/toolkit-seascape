@@ -59,11 +59,19 @@ def main() -> int:
     check_resources(location.parent)
     from seascape.core.data.registry import DATASETS
 
-    assert len(tuple(DATASETS)) == 77
+    assert len(tuple(DATASETS)) == 105
+    dataset_ids = {dataset.dataset_id for dataset in DATASETS}
     assert {
         "environment.seascape.gebco_tid_r6",
         "environment.seascape.gebco_tid_r8",
-    }.issubset({dataset.dataset_id for dataset in DATASETS})
+        "environment.seascape.outlet_relationships_r8",
+        "environment.seascape.nearshore_deep_components",
+        "environment.seascape.passage_cross_sections",
+        "environment.seascape.mapped_sills",
+        "environment.seascape.gateway_relationships_r8",
+        "environment.seascape.coast_complexity_r8",
+        "environment.seascape.mapped_habitat_mosaic_r8",
+    }.issubset(dataset_ids)
     count = 1
     for module in pkgutil.walk_packages(seascape.__path__, seascape.__name__ + "."):
         importlib.import_module(module.name)
