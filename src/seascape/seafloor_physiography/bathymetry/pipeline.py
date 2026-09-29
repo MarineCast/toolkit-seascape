@@ -439,6 +439,8 @@ def run_pipeline(
                 "neighborhood_semantics": "water_connected_minimum_hops",
                 "scientific_method_version": "direct_pixel_support_v2",
                 "statistic_sampling_support": "all canonical bathymetry statistics and depth-band counts use the same direct pixel-to-resolution assignment",
+                "isobath_distance_method": "marine_only_marching_squares_segments_straight_line_v2",
+                "isobath_distance_limit": "within source crop only; no contour gives null distance and explicit status",
             },
         )
         publisher.stage_manifest(output_dir / "bathymetry_manifest.json", manifest)

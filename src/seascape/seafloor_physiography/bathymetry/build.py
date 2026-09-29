@@ -61,12 +61,20 @@ def _isobath_distance_column(level_m: float) -> str:
     return f"DISTANCE_TO_ISOBATH_{_number_token(level_m)}_M"
 
 
+def _isobath_status_column(level_m: float) -> str:
+    return f"DISTANCE_TO_ISOBATH_{_number_token(level_m)}_STATUS"
+
+
 def _output_columns(
     depth_quantiles: tuple[float, ...],
     isobath_levels_m: tuple[float, ...],
 ) -> list[str]:
     quantile_columns = [_quantile_column(value) for value in depth_quantiles]
-    isobath_columns = [_isobath_distance_column(value) for value in isobath_levels_m]
+    isobath_columns = [
+        column
+        for value in isobath_levels_m
+        for column in (_isobath_distance_column(value), _isobath_status_column(value))
+    ]
     band_columns = [
         column
         for token, _lower, _upper in DEPTH_BANDS_M
@@ -269,11 +277,12 @@ def _distance_to_isobaths(
     isobath_levels_m: tuple[float, ...],
     projected_crs: str,
 ) -> dict[str, np.ndarray]:
-    """Measure H3-center distance to native-raster isobath crossings."""
+    """Measure straight-line H3-center distance to marine-only contour segments."""
 
     import h3
     from pyproj import Transformer
-    from scipy.spatial import cKDTree
+    from shapely import linestrings, points
+    from shapely.strtree import STRtree
 
     from seascape.core.geo.crs import require_metric_crs
 
@@ -284,36 +293,119 @@ def _distance_to_isobaths(
         [longitude for _latitude, longitude in cell_latlngs],
         [latitude for latitude, _longitude in cell_latlngs],
     )
-    cell_points = np.column_stack((cell_x, cell_y))
+    cell_points = points(np.column_stack((cell_x, cell_y)))
 
     distances: dict[str, np.ndarray] = {}
     for level_m in isobath_levels_m:
-        crossings = _isobath_crossings(
+        segments = _isobath_segments(
             contour_depth,
             marine_mask,
             latitudes,
             longitudes,
             level_m,
         )
-        crossing_x, crossing_y = transformer.transform(crossings[:, 0], crossings[:, 1])
-        crossing_points = np.column_stack((crossing_x, crossing_y))
-        crossing_points = crossing_points[np.isfinite(crossing_points).all(axis=1)]
-        if crossing_points.size == 0:
-            raise ValueError(
-                f"No projectable crossings found for the {level_m:g} m isobath."
-            )
-        nearest_distance, _nearest_index = cKDTree(crossing_points).query(
-            cell_points,
-            workers=-1,
-        )
         column = _isobath_distance_column(level_m)
-        distances[column] = nearest_distance.astype("float64", copy=False)
+        if not len(segments):
+            distances[column] = np.full(len(cells), np.nan)
+            distances[_isobath_status_column(level_m)] = np.full(
+                len(cells), "contour_not_found_within_source_crop", dtype=object
+            )
+            continue
+        x, y = transformer.transform(segments[:, :, 0], segments[:, :, 1])
+        projected = np.stack((x, y), axis=-1)
+        projected = projected[np.isfinite(projected).all(axis=(1, 2))]
+        if not len(projected):
+            distances[column] = np.full(len(cells), np.nan)
+            distances[_isobath_status_column(level_m)] = np.full(
+                len(cells), "contour_not_projectable", dtype=object
+            )
+            continue
+        lines = linestrings(projected)
+        tree = STRtree(lines)
+        nearest_indices = tree.nearest(cell_points)
+        distances[column] = np.asarray(
+            [
+                point.distance(lines[int(index)])
+                for point, index in zip(cell_points, nearest_indices, strict=True)
+            ],
+            dtype="float64",
+        )
+        distances[_isobath_status_column(level_m)] = np.full(
+            len(cells), "measured_within_source_crop", dtype=object
+        )
         LOGGER.info(
-            "Measured %s from %d native-raster contour crossings",
+            "Measured %s from %d native-raster contour segments",
             column,
-            len(crossing_points),
+            len(projected),
         )
     return distances
+
+
+def _isobath_segments(
+    contour_depth: np.ndarray,
+    marine_mask: np.ndarray,
+    latitudes: np.ndarray,
+    longitudes: np.ndarray,
+    level_m: float,
+) -> np.ndarray:
+    """Marching squares with no segment through a land/nodata corner."""
+
+    if min(contour_depth.shape) < 2:
+        return np.empty((0, 2, 2), dtype="float64")
+    corners = (
+        contour_depth[:-1, :-1],
+        contour_depth[:-1, 1:],
+        contour_depth[1:, 1:],
+        contour_depth[1:, :-1],
+    )
+    marine_corners = (
+        marine_mask[:-1, :-1],
+        marine_mask[:-1, 1:],
+        marine_mask[1:, 1:],
+        marine_mask[1:, :-1],
+    )
+    valid = np.logical_and.reduce(
+        [marine & np.isfinite(depth) for marine, depth in zip(marine_corners, corners)]
+    )
+    signs = [depth >= level_m for depth in corners]
+    crossing = [signs[index] != signs[(index + 1) % 4] for index in range(4)]
+    candidates = np.argwhere(valid & np.logical_or.reduce(crossing))
+    segments: list[np.ndarray] = []
+    for row, column in candidates:
+        values = [float(depth[row, column]) for depth in corners]
+        positions = [
+            np.asarray(
+                [longitudes[row + dy, column + dx], latitudes[row + dy, column + dx]],
+                dtype="float64",
+            )
+            for dy, dx in ((0, 0), (0, 1), (1, 1), (1, 0))
+        ]
+        edges: dict[int, np.ndarray] = {}
+        for index in range(4):
+            other = (index + 1) % 4
+            if (values[index] >= level_m) == (values[other] >= level_m):
+                continue
+            fraction = (level_m - values[index]) / (values[other] - values[index])
+            edges[index] = positions[index] + fraction * (
+                positions[other] - positions[index]
+            )
+        if len(edges) == 2:
+            pairings = [tuple(edges)]
+        elif len(edges) == 4:
+            # Asymptotic decider: isolate corners opposite the bilinear center.
+            center_high = sum(values) / 4 >= level_m
+            pairings = (
+                [(0, 1), (2, 3)]
+                if (values[0] >= level_m) == center_high
+                else [(0, 3), (1, 2)]
+            )
+        else:
+            continue
+        for first, second in pairings:
+            segment = np.stack((edges[first], edges[second]))
+            if np.linalg.norm(segment[1] - segment[0]) > 0:
+                segments.append(segment)
+    return np.stack(segments) if segments else np.empty((0, 2, 2), dtype="float64")
 
 
 def _aggregate_raster(
