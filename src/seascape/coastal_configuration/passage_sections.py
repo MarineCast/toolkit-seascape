@@ -74,7 +74,9 @@ def measure_passage_section(
     if not 0 <= along_axis_m <= centerline.length:
         raise ValueError("Section position is outside the centerline")
     start = centerline.interpolate(max(0, along_axis_m - tangent_scale_m / 2))
-    end = centerline.interpolate(min(centerline.length, along_axis_m + tangent_scale_m / 2))
+    end = centerline.interpolate(
+        min(centerline.length, along_axis_m + tangent_scale_m / 2)
+    )
     dx, dy = end.x - start.x, end.y - start.y
     norm = math.hypot(dx, dy)
     if norm <= 0:
@@ -105,7 +107,9 @@ def measure_passage_section(
     for part in wet:
         count = max(1, math.ceil(part.length / sample_step_m))
         distances = [part.length * index / count for index in range(count + 1)]
-        values = [depth_at(*part.interpolate(distance).coords[0]) for distance in distances]
+        values = [
+            depth_at(*part.interpolate(distance).coords[0]) for distance in distances
+        ]
         run = 0.0
         for index in range(count):
             a, b = values[index : index + 2]
@@ -151,7 +155,14 @@ def sill_candidates(
     depth. Candidates require separate review before any named-sill assertion.
     """
 
-    required = {"PASSAGE_ID", "ALONG_AXIS_M", "MAX_DEPTH_M", "WET_WIDTH_M", "BANK_STATUS", "BATHYMETRY_STATUS"}
+    required = {
+        "PASSAGE_ID",
+        "ALONG_AXIS_M",
+        "MAX_DEPTH_M",
+        "WET_WIDTH_M",
+        "BANK_STATUS",
+        "BATHYMETRY_STATUS",
+    }
     if required - set(sections):
         raise ValueError(f"Missing section fields: {sorted(required - set(sections))}")
     if min_relief_m <= 0 or min_width_m <= 0:
@@ -162,7 +173,9 @@ def sill_candidates(
     for passage_id, group in sections.groupby("PASSAGE_ID", sort=True):
         ordered = group.sort_values("ALONG_AXIS_M").reset_index(drop=True)
         for index in range(1, len(ordered) - 1):
-            left, middle, right = (ordered.iloc[index + offset] for offset in (-1, 0, 1))
+            left, middle, right = (
+                ordered.iloc[index + offset] for offset in (-1, 0, 1)
+            )
             trio = (left, middle, right)
             if any(
                 row.BANK_STATUS != "complete"
@@ -185,7 +198,9 @@ def sill_candidates(
                     "SILL_CANDIDATE_DEPTH_M": float(middle.MAX_DEPTH_M),
                     "RELIEF_LEFT_M": relief_left,
                     "RELIEF_RIGHT_M": relief_right,
-                    "SUPPORTING_SECTION_POSITIONS_M": [float(row.ALONG_AXIS_M) for row in trio],
+                    "SUPPORTING_SECTION_POSITIONS_M": [
+                        float(row.ALONG_AXIS_M) for row in trio
+                    ],
                     "METHOD": "along_axis_section_max_proxy_v1",
                     "QC": "candidate_requires_bathymetric_saddle_review",
                 }

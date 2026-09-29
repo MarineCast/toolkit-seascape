@@ -320,7 +320,10 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
         ]
         outputs = [
             c.output_dir / "SELECTED_OUTLET_INVENTORY.parquet",
-            *(c.output_dir / f"OUTLET_RELATIONSHIPS_RES_{res}.parquet" for res in c.resolutions),
+            *(
+                c.output_dir / f"OUTLET_RELATIONSHIPS_RES_{res}.parquet"
+                for res in c.resolutions
+            ),
             c.output_dir / "selected_outlets_manifest.json",
         ]
         checks.append(
@@ -342,32 +345,48 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             c.output_dir / "NEARSHORE_DEEP_COMPONENTS.parquet",
             c.output_dir / "SHORELINE_STATIONS.parquet",
             c.output_dir / "SHORELINE_TRANSECTS.parquet",
-            *(c.output_dir / f"NEARSHORE_TRANSITIONS_RES_{res}.parquet" for res in (8, 6)),
+            *(
+                c.output_dir / f"NEARSHORE_TRANSITIONS_RES_{res}.parquet"
+                for res in (8, 6)
+            ),
             c.output_dir / "nearshore_transitions_manifest.json",
         ]
-        checks.append(f"bounded to {c.max_cells} cells, {c.max_transects} transects and {c.max_component_pixels} component raster pixels; raster windows require producer scan")
+        checks.append(
+            f"bounded to {c.max_cells} cells, {c.max_transects} transects and {c.max_component_pixels} component raster pixels; raster windows require producer scan"
+        )
     elif name == "seascape-passage-sections":
         from seascape.coastal_configuration.passage_build import load_passage_config
 
         c = load_passage_config(path)
         inputs = [
             Input("reviewed passage registry", c.registry_path),
-            *(Input("reviewed mapped sill crests", c.mapped_sills_path) for _ in (1,) if c.mapped_sills_path is not None),
+            *(
+                Input("reviewed mapped sill crests", c.mapped_sills_path)
+                for _ in (1,)
+                if c.mapped_sills_path is not None
+            ),
             Input("canonical water polygon", c.water_path),
             Input("R8 clipped water support", c.clipped_r8_path),
             Input("native bathymetry raster", c.depth_raster_path),
         ]
         outputs = [
-            *(c.output_dir / filename for filename in (
-                "PASSAGE_INVENTORY.parquet", "PASSAGE_CROSS_SECTIONS.parquet",
-                "SILL_CANDIDATES.parquet", "H3_PASSAGE_ASSOCIATIONS_RES_8.parquet",
-                "H3_PASSAGE_ASSOCIATIONS_RES_6.parquet",
-                "passage_sections_manifest.json",
-            )),
+            *(
+                c.output_dir / filename
+                for filename in (
+                    "PASSAGE_INVENTORY.parquet",
+                    "PASSAGE_CROSS_SECTIONS.parquet",
+                    "SILL_CANDIDATES.parquet",
+                    "H3_PASSAGE_ASSOCIATIONS_RES_8.parquet",
+                    "H3_PASSAGE_ASSOCIATIONS_RES_6.parquet",
+                    "passage_sections_manifest.json",
+                )
+            ),
         ]
         if c.mapped_sills_path is not None:
             outputs.append(c.output_dir / "MAPPED_SILLS.parquet")
-        checks.append(f"bounded to {c.max_passages} passages, {c.max_sections} sections, {c.max_sills} mapped sills and {c.max_cells} association cells")
+        checks.append(
+            f"bounded to {c.max_passages} passages, {c.max_sections} sections, {c.max_sills} mapped sills and {c.max_cells} association cells"
+        )
     elif name == "seascape-geographic-gateways":
         from seascape.coastal_configuration.gateway_build import load_gateway_config
 
@@ -376,20 +395,29 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             Input("reviewed gateway geometry", c.registry_path),
             Input("water-valid graph attachments", c.attachments_path),
             *_network_inputs(path, c.resolutions),
-            *(Input(name, value) for name, value in (
-                ("route configuration", c.routes_path),
-                ("basin registry", c.basins_path),
-                ("corridor registry", c.corridors_path),
-            ) if value is not None),
+            *(
+                Input(name, value)
+                for name, value in (
+                    ("route configuration", c.routes_path),
+                    ("basin registry", c.basins_path),
+                    ("corridor registry", c.corridors_path),
+                )
+                if value is not None
+            ),
         ]
         outputs = [
             c.output_dir / "GATEWAY_INVENTORY.parquet",
             c.output_dir / "GATEWAY_ATTACHMENTS.parquet",
-            *(c.output_dir / f"GATEWAY_RELATIONSHIPS_RES_{res}.parquet" for res in c.resolutions),
+            *(
+                c.output_dir / f"GATEWAY_RELATIONSHIPS_RES_{res}.parquet"
+                for res in c.resolutions
+            ),
             c.output_dir / "GATEWAY_ROUTE_DIAGNOSTICS.parquet",
             c.output_dir / "geographic_gateways_manifest.json",
         ]
-        checks.append(f"bounded to {c.max_cells} cells and {c.max_pairs} cell/gateway pairs")
+        checks.append(
+            f"bounded to {c.max_cells} cells and {c.max_pairs} cell/gateway pairs"
+        )
     elif name == "seascape-coast-complexity":
         from seascape.coastal_configuration.coast_complexity_build import (
             load_coast_complexity_config,
@@ -409,7 +437,9 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             *(c.output_dir / f"COAST_COMPLEXITY_RES_{res}.parquet" for res in (8, 6)),
             c.output_dir / "coast_complexity_manifest.json",
         ]
-        checks.append(f"bounded to {c.max_cells} cells, {c.max_coast_segments} source segments and {c.max_headland_candidates} candidates")
+        checks.append(
+            f"bounded to {c.max_cells} cells, {c.max_coast_segments} source segments and {c.max_headland_candidates} candidates"
+        )
     elif name == "seascape-mapped-habitat-mosaic":
         from seascape.biogenic_habitat.mosaic_build import load_mosaic_config
 
@@ -417,19 +447,28 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
         inputs = [
             Input("normalized mapped habitat", c.inventory_path),
             Input("R8 clipped marine support", c.marine_r8_path),
-            *(Input("tidal-frame intertidal support", c.intertidal_support_path) for _ in (1,) if c.intertidal_support_path is not None),
+            *(
+                Input("tidal-frame intertidal support", c.intertidal_support_path)
+                for _ in (1,)
+                if c.intertidal_support_path is not None
+            ),
         ]
         outputs = [
-            *(c.output_dir / filename for filename in (
-                "NORMALIZED_MAPPED_HABITAT_INVENTORY.parquet",
-                "MAPPED_HABITAT_SUPPORT_RES_8.parquet",
-                "MAPPED_HABITAT_SUPPORT_RES_6.parquet",
-                "MAPPED_HABITAT_MOSAIC_RES_8.parquet",
-                "MAPPED_HABITAT_MOSAIC_RES_6.parquet",
-                "mapped_habitat_mosaic_manifest.json",
-            )),
+            *(
+                c.output_dir / filename
+                for filename in (
+                    "NORMALIZED_MAPPED_HABITAT_INVENTORY.parquet",
+                    "MAPPED_HABITAT_SUPPORT_RES_8.parquet",
+                    "MAPPED_HABITAT_SUPPORT_RES_6.parquet",
+                    "MAPPED_HABITAT_MOSAIC_RES_8.parquet",
+                    "MAPPED_HABITAT_MOSAIC_RES_6.parquet",
+                    "mapped_habitat_mosaic_manifest.json",
+                )
+            ),
         ]
-        checks.append(f"bounded to {c.max_cells} cells and {c.max_records} source records")
+        checks.append(
+            f"bounded to {c.max_cells} cells and {c.max_records} source records"
+        )
     elif name == "seascape-shoreline-characterization":
         from seascape.coastal_configuration.shoreline_characterization.build import (
             load_shoreline_config,

@@ -37,7 +37,9 @@ def shoreline_sinuosity(line: LineString) -> float | None:
     return float(line.length / chord)
 
 
-def _segments(line: LineString, support: BaseGeometry) -> list[tuple[float, float, float, Point]]:
+def _segments(
+    line: LineString, support: BaseGeometry
+) -> list[tuple[float, float, float, Point]]:
     """Clip source segments to support without introducing H3 boundary angles."""
 
     output = []
@@ -47,7 +49,9 @@ def _segments(line: LineString, support: BaseGeometry) -> list[tuple[float, floa
             continue
         dx, dy = b[0] - a[0], b[1] - a[1]
         angle = math.atan2(dy, dx)
-        output.append((piece.length, math.sin(2 * angle), math.cos(2 * angle), piece.centroid))
+        output.append(
+            (piece.length, math.sin(2 * angle), math.cos(2 * angle), piece.centroid)
+        )
     return output
 
 
@@ -71,7 +75,9 @@ def summarize_coast(
     sin_sum = sum(segment[0] * segment[1] for segment in segments)
     cos_sum = sum(segment[0] * segment[2] for segment in segments)
     concentration = math.hypot(sin_sum, cos_sum) / length if length > 0 else None
-    resolved = concentration is not None and concentration >= minimum_direction_concentration
+    resolved = (
+        concentration is not None and concentration >= minimum_direction_concentration
+    )
     axial = math.degrees(math.atan2(sin_sum, cos_sum) / 2) % 180 if resolved else None
     normal_x = normal_y = 0.0
     normal_weight = 0.0
@@ -84,8 +90,16 @@ def summarize_coast(
             scale = math.hypot(dx, dy)
             nx, ny = -dy / scale, dx / scale
             midpoint = piece.centroid
-            left = water.covers(Point(midpoint.x + nx * normal_probe_m, midpoint.y + ny * normal_probe_m))
-            right = water.covers(Point(midpoint.x - nx * normal_probe_m, midpoint.y - ny * normal_probe_m))
+            left = water.covers(
+                Point(
+                    midpoint.x + nx * normal_probe_m, midpoint.y + ny * normal_probe_m
+                )
+            )
+            right = water.covers(
+                Point(
+                    midpoint.x - nx * normal_probe_m, midpoint.y - ny * normal_probe_m
+                )
+            )
             if left == right:
                 continue
             sign = 1 if left else -1
@@ -93,7 +107,11 @@ def summarize_coast(
             normal_y += sign * ny * piece.length
             normal_weight += piece.length
     normal_bearing = None
-    if normal_weight and math.hypot(normal_x, normal_y) / normal_weight >= minimum_direction_concentration:
+    if (
+        normal_weight
+        and math.hypot(normal_x, normal_y) / normal_weight
+        >= minimum_direction_concentration
+    ):
         normal_bearing = math.degrees(math.atan2(normal_x, normal_y)) % 360
     selected = {}
     censored = []
@@ -148,18 +166,30 @@ def headland_candidates(
         scale = math.hypot(ax + bx, ay + by)
         if scale > 1e-9:
             nx, ny = -(ay + by) / scale, (ax + bx) / scale
-            left_land = land.covers(Point(center.x + nx * side_probe_m, center.y + ny * side_probe_m))
-            right_land = land.covers(Point(center.x - nx * side_probe_m, center.y - ny * side_probe_m))
-            side = 1 if left_land and not right_land else -1 if right_land and not left_land else 0
+            left_land = land.covers(
+                Point(center.x + nx * side_probe_m, center.y + ny * side_probe_m)
+            )
+            right_land = land.covers(
+                Point(center.x - nx * side_probe_m, center.y - ny * side_probe_m)
+            )
+            side = (
+                1
+                if left_land and not right_land
+                else -1
+                if right_land and not left_land
+                else 0
+            )
             if side * turn >= minimum_turn_degrees:
-                output.append({
-                    "HEADLAND_CANDIDATE_ID": f"{source_id}:{position:.3f}m:{smoothing_distance_m:.3f}m",
-                    "SOURCE_COAST_ID": source_id,
-                    "ALONG_COAST_M": position,
-                    "TURN_DEGREES": turn,
-                    "SMOOTHING_DISTANCE_M": smoothing_distance_m,
-                    "GEOMETRY": center,
-                    "METHOD": "land_sided_curvature_candidate_v1",
-                })
+                output.append(
+                    {
+                        "HEADLAND_CANDIDATE_ID": f"{source_id}:{position:.3f}m:{smoothing_distance_m:.3f}m",
+                        "SOURCE_COAST_ID": source_id,
+                        "ALONG_COAST_M": position,
+                        "TURN_DEGREES": turn,
+                        "SMOOTHING_DISTANCE_M": smoothing_distance_m,
+                        "GEOMETRY": center,
+                        "METHOD": "land_sided_curvature_candidate_v1",
+                    }
+                )
         position += station_spacing_m
     return output

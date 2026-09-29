@@ -431,14 +431,16 @@ def register_builtin_datasets():
             primary_key=("H3_INDEX", "H3_RESOLUTION", "PASSAGE_ID"),
         )
     _register(
-        "environment.seascape.gateway_inventory", DatasetLayer.DOMAIN,
+        "environment.seascape.gateway_inventory",
+        DatasetLayer.DOMAIN,
         DatasetFormat.GEOPARQUET,
         "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_INVENTORY.parquet",
         "environment.seascape.coastal_configuration.gateway_build",
         primary_key=("GATEWAY_ID",),
     )
     _register(
-        "environment.seascape.gateway_attachments", DatasetLayer.DOMAIN,
+        "environment.seascape.gateway_attachments",
+        DatasetLayer.DOMAIN,
         DatasetFormat.PARQUET,
         "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_ATTACHMENTS.parquet",
         "environment.seascape.coastal_configuration.gateway_build",
@@ -446,7 +448,8 @@ def register_builtin_datasets():
         primary_key=("GATEWAY_ID", "H3_RESOLUTION", "GRAPH_H3_INDEX"),
     )
     _register(
-        "environment.seascape.gateway_route_diagnostics", DatasetLayer.DOMAIN,
+        "environment.seascape.gateway_route_diagnostics",
+        DatasetLayer.DOMAIN,
         DatasetFormat.PARQUET,
         "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_ROUTE_DIAGNOSTICS.parquet",
         "environment.seascape.coastal_configuration.gateway_build",
@@ -456,7 +459,8 @@ def register_builtin_datasets():
     for resolution in (6, 8):
         _register(
             f"environment.seascape.gateway_relationships_r{resolution}",
-            DatasetLayer.DOMAIN, DatasetFormat.PARQUET,
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
             "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_RELATIONSHIPS_RES_"
             f"{resolution}.parquet",
             "environment.seascape.coastal_configuration.gateway_build",
@@ -467,14 +471,16 @@ def register_builtin_datasets():
             primary_key=("H3_INDEX", "H3_RESOLUTION", "GATEWAY_ID"),
         )
     _register(
-        "environment.seascape.land_component_inventory", DatasetLayer.DOMAIN,
+        "environment.seascape.land_component_inventory",
+        DatasetLayer.DOMAIN,
         DatasetFormat.GEOPARQUET,
         "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/LAND_COMPONENT_INVENTORY.parquet",
         "environment.seascape.coastal_configuration.coast_complexity_build",
         primary_key=("LAND_COMPONENT_ID",),
     )
     _register(
-        "environment.seascape.headland_candidates", DatasetLayer.DOMAIN,
+        "environment.seascape.headland_candidates",
+        DatasetLayer.DOMAIN,
         DatasetFormat.GEOPARQUET,
         "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/HEADLAND_CANDIDATES.parquet",
         "environment.seascape.coastal_configuration.coast_complexity_build",
@@ -483,7 +489,8 @@ def register_builtin_datasets():
     for resolution in (6, 8):
         _register(
             f"environment.seascape.coast_complexity_r{resolution}",
-            DatasetLayer.DOMAIN, DatasetFormat.PARQUET,
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
             "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/COAST_COMPLEXITY_RES_"
             f"{resolution}.parquet",
             "environment.seascape.coastal_configuration.coast_complexity_build",
@@ -494,7 +501,8 @@ def register_builtin_datasets():
             primary_key=("H3_INDEX", "H3_RESOLUTION"),
         )
     _register(
-        "environment.seascape.normalized_mapped_habitat_inventory", DatasetLayer.DOMAIN,
+        "environment.seascape.normalized_mapped_habitat_inventory",
+        DatasetLayer.DOMAIN,
         DatasetFormat.GEOPARQUET,
         "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/NORMALIZED_MAPPED_HABITAT_INVENTORY.parquet",
         "environment.seascape.biogenic_habitat.mosaic_build",
@@ -503,7 +511,8 @@ def register_builtin_datasets():
     for resolution in (6, 8):
         _register(
             f"environment.seascape.mapped_habitat_support_r{resolution}",
-            DatasetLayer.DOMAIN, DatasetFormat.GEOPARQUET,
+            DatasetLayer.DOMAIN,
+            DatasetFormat.GEOPARQUET,
             "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/MAPPED_HABITAT_SUPPORT_RES_"
             f"{resolution}.parquet",
             "environment.seascape.biogenic_habitat.mosaic_build",
@@ -512,7 +521,8 @@ def register_builtin_datasets():
         )
         _register(
             f"environment.seascape.mapped_habitat_mosaic_r{resolution}",
-            DatasetLayer.DOMAIN, DatasetFormat.PARQUET,
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
             "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/MAPPED_HABITAT_MOSAIC_RES_"
             f"{resolution}.parquet",
             "environment.seascape.biogenic_habitat.mosaic_build",

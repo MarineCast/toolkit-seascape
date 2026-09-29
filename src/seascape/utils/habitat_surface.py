@@ -189,7 +189,11 @@ def _composition_metrics(
         )
     water_area = support.set_index("H3_INDEX")["WATER_AREA_M2"].astype("float64")
     output["HABITAT_AREA_M2"] = np.minimum(output["HABITAT_AREA_M2"], water_area)
-    return (output.reset_index(), resolved_geometries) if return_geometries else output.reset_index()
+    return (
+        (output.reset_index(), resolved_geometries)
+        if return_geometries
+        else output.reset_index()
+    )
 
 
 def habitat_topology_for_support(

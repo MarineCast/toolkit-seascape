@@ -58,16 +58,25 @@ def validate_inputs(
         )
     _unique(cells, ["H3_INDEX", "H3_RESOLUTION"], "cells")
     _unique(outlets, ["OUTLET_ID"], "outlets")
-    _unique(
-        outlets, ["SOURCE_ID", "SOURCE_VERSION", "SOURCE_FEATURE_ID"], "outlets"
-    )
-    for column in ("SOURCE_ID", "SOURCE_VERSION", "SOURCE_FEATURE_ID", "SELECTION_PROVENANCE"):
-        if outlets[column].isna().any() or outlets[column].astype(str).str.len().eq(0).any():
+    _unique(outlets, ["SOURCE_ID", "SOURCE_VERSION", "SOURCE_FEATURE_ID"], "outlets")
+    for column in (
+        "SOURCE_ID",
+        "SOURCE_VERSION",
+        "SOURCE_FEATURE_ID",
+        "SELECTION_PROVENANCE",
+    ):
+        if (
+            outlets[column].isna().any()
+            or outlets[column].astype(str).str.len().eq(0).any()
+        ):
             raise ValueError(f"Outlet {column} must be nonempty")
     if not cells["H3_RESOLUTION"].eq(graph.resolution).all():
         raise ValueError("Cell resolution differs from canonical graph resolution")
     for frame, columns in (
-        (cells, ("REPRESENTATIVE_X_M", "REPRESENTATIVE_Y_M", "TARGET_CONNECTOR_DISTANCE_M")),
+        (
+            cells,
+            ("REPRESENTATIVE_X_M", "REPRESENTATIVE_Y_M", "TARGET_CONNECTOR_DISTANCE_M"),
+        ),
         (outlets, ("OUTLET_X_M", "OUTLET_Y_M", "SOURCE_CONNECTOR_DISTANCE_M")),
     ):
         for column in columns:
@@ -123,20 +132,30 @@ def outlet_relationship_chunks(
 
     validate_inputs(cells, outlets, graph)
     if max_pairs < 1 or len(cells) * len(outlets) > max_pairs:
-        raise ValueError(f"Cell/outlet pair budget exceeded: {len(cells) * len(outlets)} > {max_pairs}")
-    if max_search_m is not None and (not math.isfinite(max_search_m) or max_search_m <= 0):
+        raise ValueError(
+            f"Cell/outlet pair budget exceeded: {len(cells) * len(outlets)} > {max_pairs}"
+        )
+    if max_search_m is not None and (
+        not math.isfinite(max_search_m) or max_search_m <= 0
+    ):
         raise ValueError("max_search_m must be positive and finite")
-    ordered_cells = cells.sort_values(["H3_RESOLUTION", "H3_INDEX"]).reset_index(drop=True)
+    ordered_cells = cells.sort_values(["H3_RESOLUTION", "H3_INDEX"]).reset_index(
+        drop=True
+    )
     positions = np.array(
         [graph.cell_to_position[str(node)] for node in ordered_cells["GRAPH_H3_INDEX"]],
         dtype=int,
     )
-    target_connector = ordered_cells["TARGET_CONNECTOR_DISTANCE_M"].to_numpy(dtype=float)
+    target_connector = ordered_cells["TARGET_CONNECTOR_DISTANCE_M"].to_numpy(
+        dtype=float
+    )
     support = graph.support.set_index("H3_INDEX")
     for outlet in outlets.sort_values("OUTLET_ID").itertuples(index=False):
         source_node = graph.cell_to_position[str(outlet.GRAPH_H3_INDEX)]
         source_connector = float(outlet.SOURCE_CONNECTOR_DISTANCE_M)
-        distances = _outlet_distances(graph, source_node, source_connector, max_search_m)
+        distances = _outlet_distances(
+            graph, source_node, source_connector, max_search_m
+        )
         route = distances[positions] + target_connector
         reached = np.isfinite(route)
         if max_search_m is not None:
@@ -151,12 +170,16 @@ def outlet_relationship_chunks(
             np.where(
                 target_components != source_component,
                 "disconnected_within_available_graph",
-                "search_limited" if max_search_m is not None else "disconnected_within_available_graph",
+                "search_limited"
+                if max_search_m is not None
+                else "disconnected_within_available_graph",
             ),
         )
         direct = np.hypot(
-            ordered_cells["REPRESENTATIVE_X_M"].to_numpy(dtype=float) - float(outlet.OUTLET_X_M),
-            ordered_cells["REPRESENTATIVE_Y_M"].to_numpy(dtype=float) - float(outlet.OUTLET_Y_M),
+            ordered_cells["REPRESENTATIVE_X_M"].to_numpy(dtype=float)
+            - float(outlet.OUTLET_X_M),
+            ordered_cells["REPRESENTATIVE_Y_M"].to_numpy(dtype=float)
+            - float(outlet.OUTLET_Y_M),
         )
         direct[~reached] = np.nan
         network = np.where(reached, route, np.nan)
@@ -182,7 +205,9 @@ def outlet_relationship_chunks(
                 "SOURCE_CONNECTOR_DISTANCE_M": source_connector,
                 "TARGET_CONNECTOR_DISTANCE_M": target_connector,
                 "GRAPH_COMPONENT_ID": target_components,
-                "QC_REASON": np.where(inconsistent, "network_shorter_than_direct", None),
+                "QC_REASON": np.where(
+                    inconsistent, "network_shorter_than_direct", None
+                ),
             }
         )
 
@@ -225,7 +250,9 @@ def read_released_outlets(
     return frame.loc[frame["OUTLET_ID"].isin(selected)].copy()
 
 
-def pivot_selected_outlets(frame: pd.DataFrame, outlet_ids: Iterable[str]) -> pd.DataFrame:
+def pivot_selected_outlets(
+    frame: pd.DataFrame, outlet_ids: Iterable[str]
+) -> pd.DataFrame:
     """Wide network-distance view for explicitly chosen IDs only."""
 
     selected = tuple(dict.fromkeys(str(item) for item in outlet_ids))
@@ -239,5 +266,8 @@ def pivot_selected_outlets(frame: pd.DataFrame, outlet_ids: Iterable[str]) -> pd
         columns="OUTLET_ID",
         values="WATER_NETWORK_DISTANCE_M",
     )
-    wide.columns = [f"WATER_NETWORK_DISTANCE_M__OUTLET_{len(str(value))}_{value}" for value in wide.columns]
+    wide.columns = [
+        f"WATER_NETWORK_DISTANCE_M__OUTLET_{len(str(value))}_{value}"
+        for value in wide.columns
+    ]
     return wide.reset_index()

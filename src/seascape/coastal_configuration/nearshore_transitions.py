@@ -41,7 +41,10 @@ class TransectCrossing:
 def _require_metric_raster(raster: rasterio.io.DatasetReader) -> None:
     if raster.crs is None or raster.crs.is_geographic:
         raise ValueError("Nearshore geometry requires a projected raster CRS")
-    if not all(abs(axis.unit_conversion_factor - 1) < 1e-6 for axis in CRS.from_user_input(raster.crs).axis_info[:2]):
+    if not all(
+        abs(axis.unit_conversion_factor - 1) < 1e-6
+        for axis in CRS.from_user_input(raster.crs).axis_info[:2]
+    ):
         raise ValueError("Raster horizontal axes must use metres")
     if raster.count != 1:
         raise ValueError("Expected one positive-down depth band")
@@ -82,14 +85,19 @@ def nearshore_depth_areas(
     left = math.floor(window.col_off)
     top = math.floor(window.row_off)
     window = rasterio.windows.Window(
-        left, top,
+        left,
+        top,
         math.ceil(window.col_off + window.width) - left,
         math.ceil(window.row_off + window.height) - top,
     )
     try:
-        window = window.intersection(rasterio.windows.Window(0, 0, raster.width, raster.height))
+        window = window.intersection(
+            rasterio.windows.Window(0, 0, raster.width, raster.height)
+        )
     except rasterio.errors.WindowError:
-        return NearshoreArea(eligible_area, 0.0, None, None, 0.0, "bathymetry_unavailable")
+        return NearshoreArea(
+            eligible_area, 0.0, None, None, 0.0, "bathymetry_unavailable"
+        )
     depths = raster.read(1, window=window, masked=True)
     transform = raster.window_transform(window)
     valid_area = 0.0
@@ -104,13 +112,17 @@ def nearshore_depth_areas(
                 continue
             x0, y0 = transform * (col, row)
             x1, y1 = transform * (col + 1, row + 1)
-            overlap = eligible.intersection(box(min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)))
+            overlap = eligible.intersection(
+                box(min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
+            )
             area = overlap.area
             valid_area += area
             if depth >= depth_threshold_m:
                 deep_area += area
     if valid_area <= 1e-9:
-        return NearshoreArea(eligible_area, 0.0, None, None, 0.0, "bathymetry_unavailable")
+        return NearshoreArea(
+            eligible_area, 0.0, None, None, 0.0, "bathymetry_unavailable"
+        )
     return NearshoreArea(
         eligible_area,
         valid_area,
@@ -140,25 +152,35 @@ def bounded_deep_target_components(
     """
 
     _require_metric_raster(raster)
-    if max_pixels < 1 or band_width_m <= 0 or depth_threshold_m < 0 or not source_identity:
+    if (
+        max_pixels < 1
+        or band_width_m <= 0
+        or depth_threshold_m < 0
+        or not source_identity
+    ):
         raise ValueError("Invalid bounded deep-component settings")
     band = shoreline.buffer(band_width_m)
     eligible = {
         cell_id: geometry.intersection(water).intersection(band)
         for cell_id, geometry in cells
     }
-    support = unary_union([geometry for geometry in eligible.values() if not geometry.is_empty])
+    support = unary_union(
+        [geometry for geometry in eligible.values() if not geometry.is_empty]
+    )
     if support.is_empty:
         return [], {cell_id: () for cell_id, _ in cells}
     floating = from_bounds(*support.bounds, transform=raster.transform)
     left, top = math.floor(floating.col_off), math.floor(floating.row_off)
     window = rasterio.windows.Window(
-        left, top,
+        left,
+        top,
         math.ceil(floating.col_off + floating.width) - left,
         math.ceil(floating.row_off + floating.height) - top,
     )
     try:
-        window = window.intersection(rasterio.windows.Window(0, 0, raster.width, raster.height))
+        window = window.intersection(
+            rasterio.windows.Window(0, 0, raster.width, raster.height)
+        )
     except rasterio.errors.WindowError:
         return [], {cell_id: () for cell_id, _ in cells}
     if window.width * window.height > max_pixels:
@@ -175,12 +197,22 @@ def bounded_deep_target_components(
         raise ValueError("Depth convention must be positive_down or negative_elevation")
     transform = raster.window_transform(window)
     in_support = geometry_mask(
-        [support], out_shape=values.shape, transform=transform,
-        invert=True, all_touched=False,
+        [support],
+        out_shape=values.shape,
+        transform=transform,
+        invert=True,
+        all_touched=False,
     )
-    labels, count = label(deep & in_support, structure=np.array([
-        [0, 1, 0], [1, 1, 1], [0, 1, 0],
-    ]))
+    labels, count = label(
+        deep & in_support,
+        structure=np.array(
+            [
+                [0, 1, 0],
+                [1, 1, 1],
+                [0, 1, 0],
+            ]
+        ),
+    )
     component_ids: dict[int, str] = {}
     components: list[dict[str, object]] = []
     pixel_area = abs(transform.a * transform.e)
@@ -194,27 +226,37 @@ def bounded_deep_target_components(
             f"c{int(window.col_off) + int(cols.min())}"
         )
         component_ids[number] = component_id
-        components.append({
-            "DEEP_COMPONENT_ID": component_id,
-            "DEPTH_THRESHOLD_M": depth_threshold_m,
-            "PIXEL_COUNT": len(rows),
-            "RASTER_COMPONENT_PIXEL_AREA_M2": len(rows) * pixel_area,
-            "COMPONENT_CONTEXT_STATUS": "selected_support_boundary_censored",
-            "METHOD": "virtual_projected_source_scale_four_neighbor_v1",
-        })
+        components.append(
+            {
+                "DEEP_COMPONENT_ID": component_id,
+                "DEPTH_THRESHOLD_M": depth_threshold_m,
+                "PIXEL_COUNT": len(rows),
+                "RASTER_COMPONENT_PIXEL_AREA_M2": len(rows) * pixel_area,
+                "COMPONENT_CONTEXT_STATUS": "selected_support_boundary_censored",
+                "METHOD": "virtual_projected_source_scale_four_neighbor_v1",
+            }
+        )
     by_cell: dict[str, tuple[str, ...]] = {}
     for cell_id, geometry in eligible.items():
         if geometry.is_empty:
             by_cell[cell_id] = ()
             continue
         cell_mask = geometry_mask(
-            [geometry], out_shape=values.shape, transform=transform,
-            invert=True, all_touched=False,
+            [geometry],
+            out_shape=values.shape,
+            transform=transform,
+            invert=True,
+            all_touched=False,
         )
-        by_cell[cell_id] = tuple(sorted({
-            component_ids[int(number)] for number in np.unique(labels[cell_mask])
-            if int(number) in component_ids
-        }))
+        by_cell[cell_id] = tuple(
+            sorted(
+                {
+                    component_ids[int(number)]
+                    for number in np.unique(labels[cell_mask])
+                    if int(number) in component_ids
+                }
+            )
+        )
     return components, by_cell
 
 
@@ -245,7 +287,10 @@ def first_water_facing_contour(
         raise ValueError("Tangent must be nonzero")
     normals = ((-ty / norm, tx / norm), (ty / norm, -tx / norm))
     probe = orientation_probe_m or step_m / 2
-    sides = [water.covers(Point(station.x + nx * probe, station.y + ny * probe)) for nx, ny in normals]
+    sides = [
+        water.covers(Point(station.x + nx * probe, station.y + ny * probe))
+        for nx, ny in normals
+    ]
     if sides.count(True) != 1:
         return TransectCrossing(None, None, "ambiguous_water_side", ())
     nx, ny = normals[sides.index(True)]
@@ -254,16 +299,22 @@ def first_water_facing_contour(
     distance = 0.0
     while distance <= max_distance_m + 1e-9:
         point = Point(station.x + nx * distance, station.y + ny * distance)
-        if distance > 0 and not water.buffer(1e-7).covers(LineString([previous_point, point])):
+        if distance > 0 and not water.buffer(1e-7).covers(
+            LineString([previous_point, point])
+        ):
             return TransectCrossing(None, None, "land_censored", tuple(samples))
         value = next(raster.sample([(point.x, point.y)], masked=True))[0]
-        if np.ma.is_masked(value) or not math.isfinite(float(value)) or (
-            raster.nodata is not None and float(value) == raster.nodata
+        if (
+            np.ma.is_masked(value)
+            or not math.isfinite(float(value))
+            or (raster.nodata is not None and float(value) == raster.nodata)
         ):
             return TransectCrossing(None, None, "nodata_censored", tuple(samples))
         depth = _positive_depth(float(value), raster_depth_convention)
         if depth is None:
-            return TransectCrossing(None, None, "land_or_nonmarine_raster", tuple(samples))
+            return TransectCrossing(
+                None, None, "land_or_nonmarine_raster", tuple(samples)
+            )
         samples.append((distance, depth))
         if depth >= depth_threshold_m:
             if len(samples) == 1:

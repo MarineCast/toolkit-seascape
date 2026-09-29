@@ -755,11 +755,12 @@ def scientific_metadata(
         )
     denominator = (
         "valid-bathymetry nearshore area"
-        if product_id == "nearshore_transitions" and column == "NEARSHORE_DEEP_WATER_FRAC_OF_VALID"
+        if product_id == "nearshore_transitions"
+        and column == "NEARSHORE_DEEP_WATER_FRAC_OF_VALID"
         else "water-clipped nearshore band area"
-        if product_id == "nearshore_transitions" and column == "NEARSHORE_BATHYMETRY_COVERAGE_FRAC"
-        else
-        "valid directly assigned marine depth pixels"
+        if product_id == "nearshore_transitions"
+        and column == "NEARSHORE_BATHYMETRY_COVERAGE_FRAC"
+        else "valid directly assigned marine depth pixels"
         if column.startswith("BATHYMETRY_FRAC_")
         else "known TID values on directly assigned marine depth pixels"
         if column.startswith("GEBCO_TID_") and "FRAC" in column

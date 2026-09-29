@@ -81,7 +81,8 @@ def test_optional_selected_outlet_reports_unconfigured_ids(workspace):
     )
     assert report["status"] == "failed"
     checks = [
-        check for check in report["checks"]
+        check
+        for check in report["checks"]
         if check["stage"] == "seascape-selected-outlets"
     ]
     assert any(
