@@ -115,6 +115,7 @@ def test_optional_tid_is_transactionally_published_with_depth(tmp_path):
     manifest = load_manifest(result.manifest_path)
     validate_manifest(manifest, project_root=result.workspace, verify_artifacts=True)
     assert any("GEBCO_TID_RES_8" in item["path"] for item in manifest["artifacts"])
-    assert "synthetic categorical software fixture" == manifest["sources"][1][
-        "evidence_type"
-    ]
+    assert (
+        "synthetic categorical software fixture"
+        == manifest["sources"][1]["evidence_type"]
+    )

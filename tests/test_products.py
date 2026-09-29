@@ -210,6 +210,42 @@ def _candidate_fixture(root: Path, value: bytes) -> Path:
     return artifact
 
 
+def test_published_source_support_survives_release_resolution(tmp_path):
+    from seascape.release import publish_candidate_release
+
+    workspace, candidate = tmp_path / "workspace", tmp_path / "candidate"
+    source = _candidate_fixture(candidate, b"source-support fixture")
+    family = source.with_name("bathymetry_manifest.json")
+    payload = json.loads(family.read_text())
+    payload["sources"] = [
+        {
+            "name": "synthetic source",
+            "version": "fixture-v1",
+            "native_spacing": "15 arc seconds",
+            "sampling_method": "direct pixel centers",
+            "observation_period": "not applicable: synthetic",
+            "datum": "synthetic",
+            "evidence_type": "synthetic software fixture",
+            "uncertainty_availability": "unavailable",
+        }
+    ]
+    payload["metadata"] = {
+        "scientific_method_version": "direct_pixel_support_v2",
+        "statistic_sampling_support": "direct pixels at the declared H3 resolution",
+    }
+    family.write_text(json.dumps(payload))
+    publish_candidate_release(
+        canonical_project_root=workspace, candidate_project_root=candidate
+    )
+
+    resolved = resolve_product(workspace=workspace, product="bathymetry", resolution=6)
+    assert resolved.scientific_method_version == "direct_pixel_support_v2"
+    assert resolved.source_support["statistic_sampling_support"].startswith("direct")
+    assert resolved.source_vintage[0]["native_spacing"] == "15 arc seconds"
+    assert resolved.source_vintage[0]["sampling_method"] == "direct pixel centers"
+    assert resolved.source_vintage[0]["uncertainty_availability"] == "unavailable"
+
+
 def test_two_publications_retain_prior_product_and_manifest_bytes(tmp_path):
     from seascape.release import publish_candidate_release
 
