@@ -31,13 +31,22 @@ manifest is the final commit marker.
 
 ## Missingness, QC, and R8 to R6 aggregation
 
-Mapped presence, explicit absence, and unsurveyed are mutually exclusive. Zero area alone is not
-absence. Deep coral/sponge remains null with explicit unavailability. R6 area is summed, fractions
-are recomputed from child water area, distances use minima, local maxima remain maxima, and
-persistence follows surveyed-year or source-basis weighting without mixing evidence bases.
+Mapped presence, explicit absence, unknown area, and mixed/partial evidence are separate states.
+Zero area alone is not absence. `PRESENT_AREA_FRAC`, `ABSENT_AREA_FRAC`, and `UNKNOWN_AREA_FRAC`
+close on water support; point/line observations retain presence evidence without inventing area.
+Only an explicitly registered complete survey-event footprint supplies surveyed area or inferred
+absence outside mapped positives. Presence-only annual polygons leave survey completeness unknown.
+The as-of year filters future observation periods and known availability years before exports;
+unknown source availability means historical outputs are retrospective, not operational replay.
+Different survey years can form a last-known spatial mosaic, labeled `spatiotemporal_mosaic`, not
+a contemporaneous complete survey. R6 evidence fractions are recomputed by child water area;
+one absent child beside an unknown child is partial absence. Deep coral/sponge remains null with
+explicit unavailability. Persistence uses actual registered survey opportunity or its separately
+labeled source basis, never treating positive-only map years as complete survey years.
 
 ## Inspection and validation
 
 Inspectors expose each ecological family and confidence state separately. Validation covers
-three-state evidence, fraction bounds, feature-aware aggregation, graph lineage, complete support,
-and no accidental family collapse.
+partial evidence, fraction closure, feature-aware aggregation, graph lineage, complete support,
+and no accidental family collapse. Retained releases keep their historical three-state columns;
+the v2 observation-state fields and method identity distinguish new candidates.

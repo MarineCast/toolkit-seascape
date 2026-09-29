@@ -155,7 +155,6 @@ def _annual_kelp_inventory(config: Any) -> list[Any]:
     if not candidates:
         LOGGER.warning("No annual polygon layers were discovered beneath %s", root)
         return []
-    latest_year = max(year for year, _frame, _name in candidates)
     outputs = []
     for year, frame, name in candidates:
         outputs.append(
@@ -164,7 +163,9 @@ def _annual_kelp_inventory(config: Any) -> list[Any]:
                 source_dataset=f"WA_DNR_FLOATING_KELP_{year}",
                 year=year,
                 evidence_class="direct_observation",
-                composition_eligible=year == latest_year,
+                # The latest mapped year must be chosen for each location,
+                # not once for the entire cross-border archive.
+                composition_eligible=True,
                 supports_area=True,
                 confidence=3,
                 survey_method="annual aerial floating-canopy inventory",

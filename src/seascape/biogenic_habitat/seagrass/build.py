@@ -45,6 +45,7 @@ def load_seagrass_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
         raster_paths,
         bbox=download.bbox,
         positive_values=processing.get("positive_values", [1]),
+        allow_empty=True,
     )
     frame = gpd.GeoDataFrame(
         {
@@ -71,11 +72,16 @@ def load_seagrass_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
         geometry=polygons,
         crs=crs,
     ).to_crs("EPSG:4326")
-    if frame.empty:
-        raise ValueError(
-            "Sentinel-2 source produced no seagrass polygons in the model area."
-        )
-    return frame.loc[:, NORMALIZED_INVENTORY_COLUMNS]
+    frame["OBSERVATION_START_YEAR"] = 2023
+    frame["OBSERVATION_END_YEAR"] = 2024
+    return frame.loc[
+        :,
+        [
+            *NORMALIZED_INVENTORY_COLUMNS,
+            "OBSERVATION_START_YEAR",
+            "OBSERVATION_END_YEAR",
+        ],
+    ]
 
 
 def build_seagrass_habitat(

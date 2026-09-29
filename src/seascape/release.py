@@ -133,14 +133,25 @@ def _catalog_table_audit(root: Path, catalog: dict[str, Any]) -> list[dict[str, 
                     f"{prefix}_UNSURVEYED",
                 ]
                 if all(column in frame for column in columns):
-                    invalid_state_rows += int(
-                        frame[columns]
-                        .fillna(False)
-                        .astype(bool)
-                        .sum(axis=1)
-                        .ne(1)
-                        .sum()
-                    )
+                    state_total = frame[columns].fillna(False).astype(bool).sum(axis=1)
+                    if f"{prefix}_OBSERVATION_STATE" in frame:
+                        valid = state_total.le(1) & frame[
+                            f"{prefix}_OBSERVATION_STATE"
+                        ].isin(
+                            {
+                                "present",
+                                "absent",
+                                "unknown",
+                                "partial_present",
+                                "partial_absent",
+                                "mixed_partial",
+                                "point_or_line_presence",
+                            }
+                        )
+                    else:
+                        # Retained releases use the historical three-state contract.
+                        valid = state_total.eq(1)
+                    invalid_state_rows += int((~valid).sum())
             fraction_columns = [column for column in frame if column.endswith("_FRAC")]
             invalid_fraction_values = sum(
                 int(
@@ -465,6 +476,9 @@ def _product_release_records(
             continue
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
         manifest_relative = str(manifest_path.relative_to(candidate))
+        scientific = payload.get("metadata", {})
+        if not isinstance(scientific, dict):
+            scientific = {}
         for artifact in payload.get("artifacts", []):
             relative = str(artifact.get("path", ""))
             if not relative:
@@ -481,10 +495,34 @@ def _product_release_records(
                         "name": source.get("name"),
                         "version": source.get("version"),
                         "observation_period": source.get("observation_period"),
+                        "available_at": source.get("available_at"),
+                        "native_spacing": source.get("native_spacing"),
+                        "sampling_method": source.get("sampling_method"),
+                        "datum": source.get("datum"),
+                        "evidence_type": source.get("evidence_type"),
+                        "uncertainty_availability": source.get(
+                            "uncertainty_availability"
+                        ),
                         "retrieved_at_utc": source.get("retrieved_at_utc"),
                     }
                     for source in payload.get("sources", [])
                 ],
+                "scientific_method_version": scientific.get(
+                    "scientific_method_version"
+                ),
+                "source_support": {
+                    key: scientific.get(key)
+                    for key in (
+                        "sample_support",
+                        "statistic_sampling_support",
+                        "rock_measurement",
+                        "sediment_measurement",
+                        "evidence_method_version",
+                        "tid_method_version",
+                        "tid_interpretation",
+                    )
+                    if scientific.get(key) is not None
+                },
                 "rights": {
                     "licensing": payload.get("licensing", []),
                     "attribution": payload.get("attribution", []),

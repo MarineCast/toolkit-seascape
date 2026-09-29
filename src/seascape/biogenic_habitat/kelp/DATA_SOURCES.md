@@ -2,9 +2,13 @@
 
 - **Washington DNR annual floating-kelp inventories** (1989-2024, excluding
   unavailable survey years) are direct canopy observations. The roughly 85 MB
-  archive is included by default and required for a production build. Only the
-  latest annual layer contributes to `KELP_FRAC`, while dated layers contribute
-  observation history. A generalized-only build requires an explicit override
+  archive is included by default and required for a production build. Annual
+  polygons are positive canopy observations, not their survey footprints.
+  The latest applicable positive or explicit negative evidence is selected by
+  location and as-of year; an archive-wide latest year does not erase older
+  observations where no later survey evidence applies. `KELP_FRAC` is mapped
+  last-known presence, not a contemporaneous complete canopy census. A
+  generalized-only build requires an explicit override
   and records the incomplete source state in its manifest.
 - **Washington DNR persistence polygons and ShoreZone** provide generalized
   spatial coverage and mapped presence/absence. The five-category proportion
@@ -19,4 +23,7 @@
 Floating canopy is not all kelp habitat. This product never relabels modeled
 potential kelp habitat as observed kelp. The DNR processing resolution changed
 from approximately 20 m to approximately 4 m in 2010, so annual raw polygon area
-is not assumed perfectly comparable across that break.
+is not assumed perfectly comparable across that break. The current source
+normalizers do not register separate complete survey-footprint geometries or
+availability dates; survey completeness therefore remains unknown and a
+historical as-of export is retrospective rather than an operational replay.

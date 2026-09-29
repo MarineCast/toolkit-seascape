@@ -92,6 +92,35 @@ def aggregate_r8_to_r6(
             float(measured["LARGEST_PATCH_AREA_M2"]) if measured is not None else np.nan
         )
         edge = float(measured["EDGE_LENGTH_M"]) if measured is not None else np.nan
+        present_area = float(
+            (
+                rows[f"{p}_PRESENT_AREA_FRAC"].astype(float)
+                * rows["CHILD_WATER_AREA_M2"].astype(float)
+            ).sum()
+        )
+        absent_area = float(
+            (
+                rows[f"{p}_ABSENT_AREA_FRAC"].astype(float)
+                * rows["CHILD_WATER_AREA_M2"].astype(float)
+            ).sum()
+        )
+        present_fraction = present_area / water_area if water_area > 0 else np.nan
+        absent_fraction = absent_area / water_area if water_area > 0 else np.nan
+        unknown_fraction = max(0.0, 1.0 - present_fraction - absent_fraction)
+        if present_area > 0 and absent_area > 0:
+            observation_state = "mixed_partial"
+        elif present_area > 0:
+            observation_state = (
+                "present" if unknown_fraction <= 1e-9 else "partial_present"
+            )
+        elif absent_area > 0:
+            observation_state = (
+                "absent" if unknown_fraction <= 1e-9 else "partial_absent"
+            )
+        elif rows[f"{p}_OBSERVATION_STATE"].eq("point_or_line_presence").any():
+            observation_state = "point_or_line_presence"
+        else:
+            observation_state = "unknown"
         persistence, persistence_basis = _aggregate_persistence(rows, p)
         feature_rows.append(
             {
@@ -133,6 +162,10 @@ def aggregate_r8_to_r6(
                     if measured is not None
                     else "topology_not_computed"
                 ),
+                f"{p}_PRESENT_AREA_FRAC": present_fraction,
+                f"{p}_ABSENT_AREA_FRAC": absent_fraction,
+                f"{p}_UNKNOWN_AREA_FRAC": unknown_fraction,
+                f"{p}_OBSERVATION_STATE": observation_state,
                 f"{p}_FIRST_YEAR": rows[f"{p}_FIRST_YEAR"].min(skipna=True),
                 f"{p}_LAST_YEAR": rows[f"{p}_LAST_YEAR"].max(skipna=True),
                 f"{p}_YEARS_OBSERVED": int(rows[f"{p}_YEARS_OBSERVED"].max()),
@@ -143,12 +176,11 @@ def aggregate_r8_to_r6(
                     rows[f"{p}_RECENT_5YR_PRESENCE"].any()
                 ),
                 f"{p}_RECENCY_YEARS": rows[f"{p}_RECENCY_YEARS"].min(skipna=True),
-                f"{p}_OBSERVED_PRESENCE": bool(rows[f"{p}_OBSERVED_PRESENCE"].any()),
-                f"{p}_OBSERVED_ABSENCE": bool(
-                    not rows[f"{p}_OBSERVED_PRESENCE"].any()
-                    and rows[f"{p}_OBSERVED_ABSENCE"].any()
+                f"{p}_OBSERVED_PRESENCE": bool(
+                    present_area > 0 or observation_state == "point_or_line_presence"
                 ),
-                f"{p}_UNSURVEYED": bool(rows[f"{p}_UNSURVEYED"].all()),
+                f"{p}_OBSERVED_ABSENCE": observation_state == "absent",
+                f"{p}_UNSURVEYED": observation_state == "unknown",
                 "NETWORK_DISTANCE_QC_REASON": (
                     None
                     if rows[f"{p}_DISTANCE_M"].notna().any()
@@ -159,11 +191,30 @@ def aggregate_r8_to_r6(
     confidence_name = f"{p}_CONFIDENCE"
     for parent, rows in child_conf.groupby("PARENT_H3_INDEX", sort=True):
         datasets = _pipe_union(rows[f"{p}_SOURCE_DATASETS"])
+        known_survey = rows[f"{p}_SURVEYED_AREA_FRAC"].notna()
         surveyed_area = (
-            rows[f"{p}_SURVEYED_AREA_FRAC"].astype(float)
-            * rows["CHILD_WATER_AREA_M2"].astype(float)
+            rows.loc[known_survey, f"{p}_SURVEYED_AREA_FRAC"].astype(float)
+            * rows.loc[known_survey, "CHILD_WATER_AREA_M2"].astype(float)
         ).sum()
         parent_water_area = float(rows["CHILD_WATER_AREA_M2"].sum())
+        surveyed_fraction = (
+            min(1.0, surveyed_area / parent_water_area)
+            if known_survey.any() and parent_water_area > 0
+            else np.nan
+        )
+        survey_years = _pipe_union(rows[f"{p}_SURVEY_OBSERVATION_YEARS"])
+        multi_year = bool(survey_years and "|" in survey_years)
+        survey_status = (
+            "unknown"
+            if not known_survey.any()
+            else "spatiotemporal_mosaic"
+            if multi_year and surveyed_area >= parent_water_area - 1e-6
+            else "partial_spatiotemporal_mosaic"
+            if multi_year
+            else "complete"
+            if surveyed_area >= parent_water_area - 1e-6
+            else "partial_or_unknown"
+        )
         confidence_rows.append(
             {
                 "H3_INDEX": str(parent),
@@ -184,11 +235,11 @@ def aggregate_r8_to_r6(
                     rows[f"{p}_OBSERVED_VS_MODELED"]
                 ),
                 confidence_name: int(rows[confidence_name].max()),
-                f"{p}_SURVEYED_AREA_FRAC": min(
-                    1.0,
-                    surveyed_area / parent_water_area if parent_water_area > 0 else 0.0,
-                ),
-                f"{p}_UNMAPPED_AREA": bool(surveyed_area < parent_water_area - 1e-6),
+                f"{p}_SURVEYED_AREA_FRAC": surveyed_fraction,
+                f"{p}_SURVEY_OBSERVATION_YEARS": survey_years,
+                f"{p}_SURVEY_COMPLETENESS_STATUS": survey_status,
+                f"{p}_UNMAPPED_AREA": survey_status
+                not in {"complete", "spatiotemporal_mosaic"},
             }
         )
     parent_features = pd.DataFrame(feature_rows)
@@ -246,9 +297,27 @@ def validate_surface_tables(
         + features[f"{prefix}_OBSERVED_ABSENCE"].astype(int)
         + features[f"{prefix}_UNSURVEYED"].astype(int)
     )
-    if not state_total.eq(1).all():
+    allowed_states = {
+        "present",
+        "absent",
+        "unknown",
+        "partial_present",
+        "partial_absent",
+        "mixed_partial",
+        "point_or_line_presence",
+    }
+    states = features[f"{prefix}_OBSERVATION_STATE"].astype(str)
+    if not states.isin(allowed_states).all() or not state_total.le(1).all():
         raise ValueError(
-            "Presence, explicit absence, and unsurveyed must remain three-state."
+            "Habitat observation states and compatibility booleans are inconsistent."
+        )
+    area_columns = [
+        f"{prefix}_{part}_AREA_FRAC" for part in ("PRESENT", "ABSENT", "UNKNOWN")
+    ]
+    areas = features[area_columns].astype(float)
+    if not np.allclose(areas.sum(axis=1), 1.0, atol=1e-6):
+        raise ValueError(
+            "Observed present, absent, and unknown area must close to one."
         )
 
 

@@ -38,6 +38,23 @@ def _spatial_pairs(
     return projected_cells, projected_inventory, pairs
 
 
+def _footprint_absence_geometry(footprint: Any, local_records: Any) -> Any:
+    """Only an explicit complete event footprint can imply unmapped absence."""
+
+    present = local_records.loc[
+        local_records["GEOMETRY_ROLE"].eq("observation")
+        & local_records["OBSERVATION_STATUS"].eq("present")
+        & local_records["SURVEY_EVENT_ID"].eq(footprint.SURVEY_EVENT_ID)
+        & local_records["OBSERVATION_YEAR"].eq(footprint.OBSERVATION_YEAR)
+        & local_records.geometry.geom_type.isin(["Polygon", "MultiPolygon"])
+    ]
+    return (
+        footprint.geometry.difference(union_all(present.geometry.to_numpy()))
+        if not present.empty
+        else footprint.geometry
+    )
+
+
 def _composition_metrics(
     cells: Any,
     inventory: Any,
@@ -69,17 +86,73 @@ def _composition_metrics(
         )
     composition_indices = set(composition.index)
     selected_pairs = pairs.loc[pairs["index_right"].isin(composition_indices)]
+    observed_absence = inventory.loc[
+        inventory["GEOMETRY_ROLE"].eq("observation")
+        & inventory["OBSERVED_VS_MODELED"].eq("observed")
+        & inventory["OBSERVATION_STATUS"].eq("absent")
+        & inventory.geometry.geom_type.isin(["Polygon", "MultiPolygon"])
+    ]
+    absence_pairs = pairs.loc[pairs["index_right"].isin(set(observed_absence.index))]
+    absence_by_cell = {
+        str(cell): rows["index_right"].astype(int).tolist()
+        for cell, rows in absence_pairs.groupby("H3_INDEX", sort=False)
+    }
+    footprint_indices = set(
+        inventory.index[
+            inventory["GEOMETRY_ROLE"].eq("survey_footprint")
+            & inventory["SURVEY_COMPLETENESS"].eq("complete")
+        ]
+    )
+    footprint_pairs = pairs.loc[pairs["index_right"].isin(footprint_indices)]
+    footprints_by_cell = {
+        str(cell): rows["index_right"].astype(int).tolist()
+        for cell, rows in footprint_pairs.groupby("H3_INDEX", sort=False)
+    }
+    all_by_cell = {
+        str(cell): rows["index_right"].astype(int).tolist()
+        for cell, rows in pairs.groupby("H3_INDEX", sort=False)
+    }
     cell_positions = {
         str(cell): index for index, cell in enumerate(cells["H3_INDEX"].astype(str))
     }
     for cell, cell_pairs in selected_pairs.groupby("H3_INDEX", sort=False):
         cell_position = cell_positions[str(cell)]
         cell_geometry = cells.geometry.iloc[cell_position]
+        local_records = inventory.iloc[all_by_cell.get(str(cell), [])]
+        blockers: list[tuple[int, int, Any]] = []
+        for absent_index in absence_by_cell.get(str(cell), []):
+            absent = inventory.iloc[absent_index]
+            blockers.append(
+                (
+                    int(absent["OBSERVATION_YEAR"])
+                    if pd.notna(absent["OBSERVATION_YEAR"])
+                    else -32768,
+                    int(absent["SOURCE_PRIORITY"]),
+                    absent.geometry,
+                )
+            )
+        for footprint_index in footprints_by_cell.get(str(cell), []):
+            footprint = inventory.iloc[footprint_index]
+            blockers.append(
+                (
+                    int(footprint["OBSERVATION_YEAR"]),
+                    int(footprint["SOURCE_PRIORITY"]),
+                    _footprint_absence_geometry(footprint, local_records),
+                )
+            )
         fragments = []
         for record_index in cell_pairs["index_right"]:
-            fragment = cell_geometry.intersection(
-                inventory.geometry.iloc[int(record_index)]
+            record = inventory.iloc[int(record_index)]
+            fragment = cell_geometry.intersection(record.geometry)
+            current_year = (
+                int(record["OBSERVATION_YEAR"])
+                if pd.notna(record["OBSERVATION_YEAR"])
+                else -32768
             )
+            current_priority = int(record["SOURCE_PRIORITY"])
+            for absent_year, absent_priority, absent_geometry in blockers:
+                if (absent_year, absent_priority) >= (current_year, current_priority):
+                    fragment = fragment.difference(absent_geometry)
             patch_area = float(fragment.area)
             if fragment.is_empty or patch_area <= 0:
                 continue
@@ -153,6 +226,10 @@ def _record_metrics(
         pair_records["OBSERVED_VS_MODELED"].eq("observed")
         & pair_records["OBSERVATION_STATUS"].isin(["present", "absent"])
     ].copy()
+    complete_footprints = pair_records.loc[
+        pair_records["GEOMETRY_ROLE"].eq("survey_footprint")
+        & pair_records["SURVEY_COMPLETENESS"].eq("complete")
+    ]
     feature_rows: list[dict[str, Any]] = []
     confidence_rows: list[dict[str, Any]] = []
     observed["H3_INDEX"] = observed["H3_INDEX"].astype(str)
@@ -162,6 +239,10 @@ def _record_metrics(
     }
     mapped_by_cell = {
         str(cell): rows for cell, rows in mapped.groupby("H3_INDEX", sort=False)
+    }
+    footprints_by_cell = {
+        str(cell): rows
+        for cell, rows in complete_footprints.groupby("H3_INDEX", sort=False)
     }
     present_cells = set(
         mapped.loc[mapped["OBSERVATION_STATUS"].eq("present"), "H3_INDEX"].astype(str)
@@ -210,7 +291,12 @@ def _record_metrics(
             )
             first_year = min(years) if years else pd.NA
             last_year = max(years) if years else pd.NA
-            years_surveyed = len(years)
+            footprint_rows = footprints_by_cell.get(cell)
+            years_surveyed = (
+                footprint_rows["OBSERVATION_YEAR"].dropna().nunique()
+                if footprint_rows is not None
+                else 0
+            )
             years_observed = len(observed_years)
             has_explicit_dated_absence = bool(
                 (
@@ -296,16 +382,21 @@ def _surveyed_fraction(
     inventory: Any,
     pairs: pd.DataFrame,
     support: pd.DataFrame,
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     survey = inventory.loc[
-        inventory["EVIDENCE_CLASS"].eq("direct_observation")
+        inventory["GEOMETRY_ROLE"].eq("survey_footprint")
+        & inventory["SURVEY_COMPLETENESS"].eq("complete")
         & inventory["OBSERVED_VS_MODELED"].eq("observed")
-        & inventory["OBSERVATION_STATUS"].isin(["present", "absent"])
         & inventory.geometry.geom_type.isin(["Polygon", "MultiPolygon"])
     ]
     if survey.empty:
-        return np.zeros(len(cells), dtype="float64")
-    surveyed_area = np.zeros(len(cells), dtype="float64")
+        return (
+            np.full(len(cells), np.nan, dtype="float64"),
+            np.full(len(cells), "unknown", dtype=object),
+            np.full(len(cells), None, dtype=object),
+        )
+    surveyed_area = np.full(len(cells), np.nan, dtype="float64")
+    survey_years = np.full(len(cells), None, dtype=object)
     selected_pairs = pairs.loc[pairs["index_right"].isin(set(survey.index))]
     cell_positions = {
         str(cell): index for index, cell in enumerate(cells["H3_INDEX"].astype(str))
@@ -322,17 +413,158 @@ def _surveyed_fraction(
             surveyed_area[cell_position] = float(
                 area(union_all(np.asarray(fragments, dtype=object)))
             )
+            survey_years[cell_position] = "|".join(
+                str(value)
+                for value in sorted(
+                    set(
+                        inventory.iloc[cell_pairs["index_right"].astype(int)][
+                            "OBSERVATION_YEAR"
+                        ]
+                        .dropna()
+                        .astype(int)
+                    )
+                )
+            )
     denominator = support["WATER_AREA_M2"].to_numpy(dtype="float64")
-    return np.clip(
+    fraction = np.clip(
         np.divide(
             surveyed_area,
             denominator,
-            out=np.zeros_like(surveyed_area),
-            where=denominator > 0,
+            out=np.full_like(surveyed_area, np.nan),
+            where=(denominator > 0) & np.isfinite(surveyed_area),
         ),
         0.0,
         1.0,
     )
+    status = np.asarray(
+        [
+            "unknown"
+            if not np.isfinite(value)
+            else "spatiotemporal_mosaic"
+            if value >= 1.0 - 1e-9 and years and "|" in years
+            else "partial_spatiotemporal_mosaic"
+            if years and "|" in years
+            else "complete"
+            if value >= 1.0 - 1e-9
+            else "partial"
+            for value, years in zip(fraction, survey_years, strict=True)
+        ],
+        dtype=object,
+    )
+    return fraction, status, survey_years
+
+
+def _observation_area_metrics(
+    cells: Any,
+    inventory: Any,
+    pairs: pd.DataFrame,
+    support: pd.DataFrame,
+) -> pd.DataFrame:
+    """Latest applicable observed polygon evidence per location, with unknown area."""
+
+    indexed_pairs = {
+        str(cell): rows["index_right"].astype(int).tolist()
+        for cell, rows in pairs.groupby("H3_INDEX", sort=False)
+    }
+    geometry_by_cell = dict(
+        zip(cells["H3_INDEX"].astype(str), cells.geometry, strict=True)
+    )
+    output: list[dict[str, Any]] = []
+    for cell, water_area in zip(
+        support["H3_INDEX"].astype(str),
+        support["WATER_AREA_M2"].astype(float),
+        strict=True,
+    ):
+        cell_geometry = geometry_by_cell[cell]
+        records = inventory.iloc[indexed_pairs.get(cell, [])]
+        records = records.loc[
+            records["GEOMETRY_ROLE"].eq("observation")
+            & records["OBSERVED_VS_MODELED"].eq("observed")
+            & records["OBSERVATION_STATUS"].isin(["present", "absent"])
+        ]
+        point_or_line_presence = bool(
+            (
+                records["OBSERVATION_STATUS"].eq("present")
+                & ~records.geometry.geom_type.isin(["Polygon", "MultiPolygon"])
+            ).any()
+        )
+        polygons = records.loc[
+            records.geometry.geom_type.isin(["Polygon", "MultiPolygon"])
+        ].copy()
+        footprints = inventory.iloc[indexed_pairs.get(cell, [])]
+        footprints = footprints.loc[
+            footprints["GEOMETRY_ROLE"].eq("survey_footprint")
+            & footprints["SURVEY_COMPLETENESS"].eq("complete")
+        ]
+        inferred_absence: list[dict[str, Any]] = []
+        for footprint in footprints.itertuples():
+            surveyed = _footprint_absence_geometry(footprint, records)
+            if surveyed.is_empty or surveyed.area <= 0:
+                continue
+            inferred_absence.append(
+                {
+                    "RECORD_ID": f"{footprint.RECORD_ID}:inferred_absence",
+                    "OBSERVATION_YEAR": footprint.OBSERVATION_YEAR,
+                    "SOURCE_PRIORITY": footprint.SOURCE_PRIORITY,
+                    "OBSERVATION_STATUS": "absent",
+                    "geometry": surveyed,
+                }
+            )
+        if inferred_absence:
+            polygons = pd.concat(
+                [polygons, pd.DataFrame(inferred_absence)], ignore_index=True
+            )
+        polygons["_YEAR"] = polygons["OBSERVATION_YEAR"].fillna(-32768).astype(int)
+        # Equal-year/equal-priority contradictory records resolve conservatively
+        # to absence, matching the composition blocker ordering.
+        polygons["_STATUS_PRIORITY"] = (
+            polygons["OBSERVATION_STATUS"].eq("absent").astype(int)
+        )
+        polygons = polygons.sort_values(
+            ["_YEAR", "SOURCE_PRIORITY", "_STATUS_PRIORITY", "RECORD_ID"],
+            ascending=[False, False, False, True],
+        )
+        remaining = cell_geometry
+        present_area = 0.0
+        absent_area = 0.0
+        for record in polygons.itertuples():
+            part = remaining.intersection(record.geometry)
+            if part.is_empty or part.area <= 0:
+                continue
+            if record.OBSERVATION_STATUS == "present":
+                present_area += float(part.area)
+            else:
+                absent_area += float(part.area)
+            remaining = remaining.difference(record.geometry)
+        denominator = water_area if water_area > 0 else float(cell_geometry.area)
+        present = min(1.0, present_area / denominator) if denominator > 0 else np.nan
+        absent = (
+            min(1.0 - present, absent_area / denominator) if denominator > 0 else np.nan
+        )
+        unknown = max(0.0, 1.0 - present - absent) if denominator > 0 else np.nan
+        if present > 0 and absent > 0:
+            state = "mixed_partial"
+        elif present > 0:
+            state = "present" if unknown <= 1e-9 else "partial_present"
+        elif absent > 0:
+            state = "absent" if unknown <= 1e-9 else "partial_absent"
+        elif point_or_line_presence:
+            state = "point_or_line_presence"
+        else:
+            state = "unknown"
+        output.append(
+            {
+                "H3_INDEX": cell,
+                "PRESENT_AREA_FRAC": present,
+                "ABSENT_AREA_FRAC": absent,
+                "UNKNOWN_AREA_FRAC": unknown,
+                "OBSERVATION_STATE": state,
+                "OBSERVED_PRESENCE": bool(present > 0 or point_or_line_presence),
+                "OBSERVED_ABSENCE": state == "absent",
+                "UNSURVEYED": state == "unknown",
+            }
+        )
+    return pd.DataFrame(output).set_index("H3_INDEX")
 
 
 def habitat_network_metrics(
@@ -444,6 +676,16 @@ def build_r8_tables(
     """Build the native H3 r8 feature and confidence tables."""
 
     inventory = normalize_inventory(inventory)
+    inventory = inventory.loc[
+        (
+            inventory["OBSERVATION_END_YEAR"].isna()
+            | inventory["OBSERVATION_END_YEAR"].le(reference_year)
+        )
+        & (
+            inventory["AVAILABLE_YEAR"].isna()
+            | inventory["AVAILABLE_YEAR"].le(reference_year)
+        )
+    ].reset_index(drop=True)
     target_cells = support["H3_INDEX"].astype(str).tolist()
     cells_projected, inventory_projected, pairs = _spatial_pairs(
         cells, inventory, equal_area_crs
@@ -456,11 +698,20 @@ def build_r8_tables(
     )
     records = records.set_index("H3_INDEX")
     confidence = confidence.set_index("H3_INDEX")
-    surveyed_fraction = _surveyed_fraction(
+    area_evidence = _observation_area_metrics(
+        cells_projected, inventory_projected, pairs, support
+    )
+    for column in area_evidence:
+        records[column] = area_evidence.loc[target_cells, column].to_numpy()
+    surveyed_fraction, survey_status, survey_years = _surveyed_fraction(
         cells_projected, inventory_projected, pairs, support
     )
     confidence["SURVEYED_AREA_FRAC"] = surveyed_fraction
-    confidence["UNMAPPED_AREA"] = surveyed_fraction < 1.0 - 1e-9
+    confidence["SURVEY_COMPLETENESS_STATUS"] = survey_status
+    confidence["SURVEY_OBSERVATION_YEARS"] = survey_years
+    confidence["UNMAPPED_AREA"] = np.isnan(surveyed_fraction) | (
+        surveyed_fraction < 1.0 - 1e-9
+    )
 
     area = composition["HABITAT_AREA_M2"].astype("float64")
     distance, within_radius, distance_qc = habitat_network_metrics(

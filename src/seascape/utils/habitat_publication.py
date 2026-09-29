@@ -45,6 +45,17 @@ def build_habitat_products(
     """Build normalized inventory plus r8/r6 feature and confidence products."""
 
     inventory = normalize_inventory(inventory)
+    availability_year_known = bool(inventory["AVAILABLE_YEAR"].notna().all())
+    inventory = inventory.loc[
+        (
+            inventory["OBSERVATION_END_YEAR"].isna()
+            | inventory["OBSERVATION_END_YEAR"].le(config.reference_year)
+        )
+        & (
+            inventory["AVAILABLE_YEAR"].isna()
+            | inventory["AVAILABLE_YEAR"].le(config.reference_year)
+        )
+    ].reset_index(drop=True)
     support_r8 = load_model_area_support(config.native_resolution, config_path)
     support_r6 = load_model_area_support(config.model_resolution, config_path)
     cells = load_cell_geometry(config, support_r8)
@@ -204,6 +215,14 @@ def build_habitat_products(
         ),
         metadata={
             "scientific_method_version": "habitat_topology_v2",
+            "evidence_method_version": "survey_opportunity_asof_v2",
+            "as_of_year": config.reference_year,
+            "operational_historical_reconstruction": availability_year_known,
+            "unknown_availability_time_note": (
+                None
+                if availability_year_known
+                else "Some source availability years are unknown; as-of output is retrospective, not operational history."
+            ),
             "patch_identity_support": "local to each R8/R6 reporting support; R6 recomputed from geometry",
             "edge_length_support": "within reporting support; clipping boundary excluded",
             "radius_operator_lineage": {
