@@ -5,6 +5,10 @@ import pytest
 import yaml
 
 from seascape.core.config.paths import project_root
+from seascape.maintenance.update_seascape_feature_catalog import (
+    PRODUCTS,
+    scientific_metadata,
+)
 
 CATALOG_PATH = project_root() / "config/feature_catalog.yaml"
 KEY_COLUMNS = {"H3_INDEX", "H3_RESOLUTION"}
@@ -20,6 +24,26 @@ METRIC_SUBFAMILIES = {
 
 def _catalog() -> dict:
     return yaml.safe_load(CATALOG_PATH.read_text(encoding="utf-8"))
+
+
+def test_new_catalog_science_fields_do_not_promote_source_type_or_sampling_scale():
+    depth = scientific_metadata(
+        "bathymetry", "BATHYMETRY_PIXEL_COUNT", PRODUCTS["bathymetry"]
+    )
+    tid = scientific_metadata(
+        "gebco_tid", "GEBCO_TID_DIRECT_FRAC_OF_KNOWN", PRODUCTS["gebco_tid"]
+    )
+    substrate = scientific_metadata(
+        "benthic_substrate", "SUBSTRATE_ROCK_FRAC", PRODUCTS["benthic_substrate"]
+    )
+    assert "direct" in depth["source_support"]["sampling_method"]
+    assert (
+        tid["denominator"]
+        == "known TID values on directly assigned marine depth pixels"
+    )
+    assert "not accuracy" in tid["scientific_definition"]
+    assert "not a measured areal" in substrate["scientific_definition"]
+    assert tid["validation_status"].startswith("software contract only")
 
 
 def _all_materialized_catalog_paths_exist() -> bool:

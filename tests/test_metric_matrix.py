@@ -78,6 +78,10 @@ def _fixture(
                         "unit": "m",
                         "role": "predictor",
                         "variable_kind": "feature_variable",
+                        "scientific_definition": "Direct marine pixel mean depth.",
+                        "source_support": {"sampling_method": "direct pixel center"},
+                        "uncertainty_availability": "unavailable",
+                        "method_version": "direct_pixel_support_v2",
                     },
                     "BATHYMETRY_QC": {
                         "collection_paths": {6: str(bathy_rel)},
@@ -135,6 +139,13 @@ def test_matrix_aligns_by_h3_and_preserves_zero_null_and_qc(tmp_path: Path) -> N
     assert metadata["source_validation"] == "legacy_structural_only"
     assert metadata["legacy_family_manifest_mismatches"] == ["missing.json"]
     assert metadata["fields"]["bathymetry__BATHYMETRY"]["unit"] == "m"
+    assert metadata["fields"]["bathymetry__BATHYMETRY"]["source_support"] == {
+        "sampling_method": "direct pixel center"
+    }
+    assert (
+        metadata["fields"]["bathymetry__BATHYMETRY"]["uncertainty_availability"]
+        == "unavailable"
+    )
     assert metadata["fields"]["bathymetry__BATHYMETRY"][
         "source_types_by_resolution"
     ] == {"6": "double"}

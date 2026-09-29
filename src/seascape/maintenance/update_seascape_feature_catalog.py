@@ -37,6 +37,7 @@ class ProductSpec:
     producer: str
     grain: str = "one row per canonical marine-support H3 cell"
     null_policy: str | None = None
+    optional: bool = False
 
 
 def _paths(template: str, resolutions: tuple[int, ...] = (6, 8)) -> dict[int, str]:
@@ -68,6 +69,17 @@ PRODUCTS: dict[str, ProductSpec] = {
             "seafloor_physiography/bathymetry/BATHYMETRY.parquet",
         },
         "seascape.seafloor_physiography.bathymetry.build",
+    ),
+    "gebco_tid": ProductSpec(
+        "GEBCO categorical source type",
+        "seafloor_physiography_evidence",
+        _paths(
+            "data/processed/domain/environmental_layer/seascape/"
+            "seafloor_physiography/bathymetry/GEBCO_TID_RES_{resolution}.parquet"
+        ),
+        "seascape.seafloor_physiography.bathymetry.tid",
+        null_policy="Source type is not a depth accuracy estimate; absent TID stays unavailable.",
+        optional=True,
     ),
     "geomorphometry": ProductSpec(
         "Seafloor geomorphometry",
@@ -419,6 +431,8 @@ def metric_subfamily(category: str) -> str:
         return "anthropogenic"
     if category.startswith("hydrologic_connectivity"):
         return "hydrologic_connectivity"
+    if category.startswith("seafloor_physiography"):
+        return "seafloor_physiography"
     return category
 
 
@@ -565,7 +579,11 @@ def unit(column: str, field: pa.Field) -> str:
 def role(column: str, product_id: str, field: pa.Field) -> str:
     """Separate predictors from states, identifiers, and evidence/QC fields."""
 
-    if product_id.endswith("confidence") or product_id.endswith("_evidence"):
+    if (
+        product_id == "gebco_tid"
+        or product_id.endswith("confidence")
+        or product_id.endswith("_evidence")
+    ):
         return "evidence"
     if column.endswith("_ID") or "_ID_" in column or column.endswith("_H3_INDEX"):
         return "identifier"
@@ -647,6 +665,92 @@ def variable_kind(product_id: str, field_role: str) -> str:
     return "feature_variable" if field_role in FEATURE_VARIABLE_ROLES else "metadata"
 
 
+def scientific_metadata(
+    product_id: str, column: str, spec: ProductSpec
+) -> dict[str, Any]:
+    """Attach explicit interpretation limits to each newly generated catalog field."""
+
+    methods = {
+        "bathymetry": "direct_pixel_support_v2",
+        "gebco_tid": "direct_categorical_pixel_support_v1",
+        "geomorphometry": "geomorphometry_curvature_tpi_v2",
+        "geomorphic_units": "geomorphic_evidence_v2",
+        "benthic_substrate": "separate_rock_presence_sediment_texture_v2",
+        "bottom_hardness": "hardness_unavailable_unverified_joint_denominator_v2",
+        "seagrass": "survey_opportunity_asof_v2",
+        "kelp": "survey_opportunity_asof_v2",
+        "reef": "survey_opportunity_asof_v2",
+        "exposure_and_enclosure": "geometric_fetch_16_bearings_v1",
+    }
+    sample_methods = {
+        "bathymetry": "direct assignment of valid native raster pixel centers to H3",
+        "gebco_tid": "categorical native pixel centers aligned to the depth grid; no resampling",
+        "benthic_substrate": "modeled raster sampled at representative point; not areal coverage",
+        "bottom_hardness": "derived from separately supported source fields",
+        "seagrass": "observation geometry intersected with water-clipped H3 support",
+        "kelp": "observation geometry intersected with water-clipped H3 support",
+        "reef": "observation geometry intersected with water-clipped H3 support",
+        "exposure_and_enclosure": "16 geometric rays from H3 representative points",
+    }
+    meanings = {
+        "SUBSTRATE_ROCK_FRAC": "Modeled rock-presence score; not a measured areal rock fraction.",
+        "SUBSTRATE_HARD_SUBSTRATE_FRAC": "Unavailable: a joint areal denominator with sediment texture is unverified.",
+        "BOTTOM_HARDNESS_INDEX": "Unavailable until joint source measurement basis is verified.",
+        "PLAN_CURVATURE": "Horizontal contour curvature from a local quadratic elevation fit.",
+        "TANGENTIAL_CURVATURE": "Surface-tangent curvature from the same local fit.",
+        "BATHYMETRY_PIXEL_COUNT": "Number of valid marine depth pixels directly assigned to this H3 cell.",
+    }
+    if column.startswith("GEBCO_TID_"):
+        meaning = (
+            "Categorical GEBCO depth-source type summary; not accuracy or uncertainty."
+        )
+    elif column.startswith("GEOMETRIC_FETCH_"):
+        meaning = "Straight geometric water fetch; at the search limit its true extent is censored."
+    elif column.endswith(
+        ("_PRESENT_AREA_FRAC", "_ABSENT_AREA_FRAC", "_UNKNOWN_AREA_FRAC")
+    ):
+        meaning = (
+            "Fraction of water-clipped support with latest local observation evidence."
+        )
+    else:
+        meaning = meanings.get(
+            column,
+            f"{common_name(column)}. Consult the producer and source manifest for the equation.",
+        )
+    denominator = (
+        "valid directly assigned marine depth pixels"
+        if column.startswith("BATHYMETRY_FRAC_")
+        else "known TID values on directly assigned marine depth pixels"
+        if column.startswith("GEBCO_TID_") and "FRAC" in column
+        else "water-clipped H3 support area"
+        if column.endswith(
+            ("_PRESENT_AREA_FRAC", "_ABSENT_AREA_FRAC", "_UNKNOWN_AREA_FRAC")
+        )
+        else "not applicable or specified by the producer"
+    )
+    return {
+        "scientific_definition": meaning,
+        "units_sign_range": "unit and sign are in the unit field and producer contract; no universal range asserted",
+        "source_support": {
+            "identity": "exact source and version in the candidate release family manifest",
+            "native_spacing": "source-specific; consult the family manifest",
+            "sampling_method": sample_methods.get(
+                product_id, "source-specific; consult producer"
+            ),
+            "effective_scale": "H3 reporting scale; not native observation resolution",
+            "spatial_support": spec.grain,
+        },
+        "denominator": denominator,
+        "missingness": spec.null_policy
+        or "Null and QC/evidence fields retain unavailable states.",
+        "aggregation": "Producer-defined; H3 reporting is not automatically an areal observation.",
+        "deterministic_dependencies": [spec.producer],
+        "method_version": methods.get(product_id, "see candidate family manifest"),
+        "validation_status": "software contract only; independent scientific validation not established",
+        "uncertainty_availability": "not inferred from source type or H3 resolution",
+    }
+
+
 def _relative(path: Path, root: Path) -> str:
     return str(path.resolve().relative_to(root.resolve()))
 
@@ -659,6 +763,10 @@ def build_catalog(root: Path) -> dict[str, Any]:
     feature_entry_count = 0
     unique_columns: set[str] = set()
     for product_id, spec in PRODUCTS.items():
+        if spec.optional and not any(
+            (root / path).exists() for path in spec.paths.values()
+        ):
+            continue
         schemas: dict[int, pa.Schema] = {}
         paths: dict[int, str] = {}
         for resolution, configured_path in sorted(spec.paths.items()):
@@ -711,6 +819,7 @@ def build_catalog(root: Path) -> dict[str, Any]:
                 "topology": infer_topology(product_id, column),
                 "scale_group": infer_scale_group(column),
                 "available_resolutions": available,
+                **scientific_metadata(product_id, column, spec),
             }
             feature_entry_count += 1
             unique_columns.add(column)

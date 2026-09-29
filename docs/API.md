@@ -13,7 +13,7 @@ workspace (otherwise `SEASCAPE_WORKSPACE`, then cwd); optional `release_id` sele
 | `list_products(*, workspace=None, release_id=None)` | Sorted `tuple[str, ...]` of logical products |
 | `list_resolutions(product, *, workspace=None, release_id=None)` | Sorted `tuple[int, ...]`; empty for an ungridded product; unknown product raises `KeyError` |
 | `resolve_product(*, product, resolution=None, workspace=None, release_id=None)` | `ProductArtifact`; exact requested resolution, never a fallback; unknown product/resolution raises `KeyError` |
-| `ProductArtifact` | Frozen dataclass: `Path` path/optional manifest_path, checksum and algorithm, release/product/dataset/schema identity, optional integer resolution, tuple grain and source vintage, immutable nested provenance/support/coverage/rights mappings |
+| `ProductArtifact` | Frozen dataclass: `Path` path/optional manifest_path, checksum and algorithm, release/product/dataset/schema identity, optional integer resolution, tuple grain and source vintage, scientific method version, immutable nested provenance/support/coverage/rights mappings |
 
 Discovery validates completed release metadata and governed/family checksums. Resolution also
 validates the selected artifact bytes. Missing files raise `FileNotFoundError`; invalid identity,
@@ -55,6 +55,7 @@ artifact = resolve_product(
 table = pq.read_table(artifact.path)
 print(release_id, artifact.checksum, table.num_rows, table.column_names)
 print(artifact.spatial_support, artifact.source_vintage, artifact.rights)
+print(artifact.scientific_method_version, artifact.source_support)
 ```
 <!-- END CONSUMER EXAMPLE -->
 
@@ -79,12 +80,12 @@ The supported bathymetry facade is `seascape.seafloor_physiography.bathymetry`:
 - `build_bathymetry_parquet(config, raster_path=...)` returns the written `Path`; it requires
   configured support inputs and does not alone publish a complete family/release manifest.
 
-Coarser bathymetry exports retain direct raster sampling for means/quantiles; parent depth-band
-counts/fractions (including the exported pixel-count total) are recomputed from child composition.
-H3 hierarchical parenting and direct coarser point assignment can differ at cell boundaries, so a
-null R6 mean can coexist with an available child-derived composition count. Keep these support
-semantics and missingness separate; do not fill a missing mean from the count. See the
-[observed pilot boundary case](pilots/san-juan.md#acceptance-and-measured-envelope).
+New bathymetry candidates use direct native-pixel assignment at each H3 resolution for **all**
+depth statistics, counts and bands. H3 hierarchical parenting and direct coarser assignment can
+differ at boundaries, so a hierarchy-only R6 parent retains null direct depth and counts. Older
+releases with mixed-support R6 counts remain immutable and must be interpreted under their
+archived method. See the [historical pilot boundary case](pilots/san-juan.md#acceptance-and-measured-envelope)
+and the [hardening register](scientific-hardening.md).
 
 When a selected water mask has `water_geometry_manifest.json`, H3/support and bathymetry
 builders verify its artifact identity before publication and retain its source/completeness and

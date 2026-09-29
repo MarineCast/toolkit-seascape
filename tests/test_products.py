@@ -59,6 +59,10 @@ def _release_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
                         "coverage": {"h3_resolutions": [6]},
                         "source_vintage": [{"name": "synthetic"}],
                         "rights": {"licensing": [{"license": "fixture"}]},
+                        "scientific_method_version": "direct_pixel_support_v2",
+                        "source_support": {
+                            "statistic_sampling_support": "direct pixels"
+                        },
                     }
                 },
             }
@@ -120,6 +124,8 @@ def test_discovery_and_exact_resolution_resolution(tmp_path: Path) -> None:
     assert resolved.dataset_id == "environment.seascape.bathymetry_r6"
     assert resolved.release_id == "a" * 64
     assert resolved.grain == ("H3_INDEX",)
+    assert resolved.scientific_method_version == "direct_pixel_support_v2"
+    assert resolved.source_support["statistic_sampling_support"] == "direct pixels"
     with pytest.raises(TypeError):
         resolved.coverage["changed"] = True  # type: ignore[index]
 

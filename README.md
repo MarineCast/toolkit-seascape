@@ -61,7 +61,7 @@ flowchart LR
     subgraph V["03 · OUTPUT VARIABLES"]
         direction TB
         V1["Depth, slope<br/>and geomorphic units"]
-        V2["Rock, gravel, sand, mud<br/>and derived hardness"]
+        V2["Modeled rock presence<br/>and sediment texture"]
         V3["Seagrass, kelp<br/>and rocky-reef evidence"]
         V4["Shoreline character, proximity<br/>and geometric exposure"]
         V5["River mouths, barriers<br/>and estuary proximity"]
@@ -107,7 +107,8 @@ Seafloor depth and shape: bathymetry, depth-band fractions, slope, terrain shape
 
 ### [Seafloor composition](src/seascape/benthic_substrate/README.md)
 
-Modeled rock, gravel, sand, and mud composition; substrate classification and a derived bottom-hardness index.
+Modeled rock presence and separately reported gravel, sand, and mud texture. The former hardness
+index is unavailable in new candidates until the source measurements support a common denominator.
 
 ### [Vegetation and habitat evidence](src/seascape/biogenic_habitat/README.md)
 
@@ -132,6 +133,8 @@ Shared geometry and water networks: water polygons, H3 support, passable edges, 
 Exact field names, units, resolutions, and source notes live in the [product reference](docs/products.md)
 and linked family guides. The checked-in catalog is reference metadata; an audited release records
 what was actually materialized.
+The [capability coverage matrix](docs/capability-coverage.md) separates implemented features from
+unmaterialized methods and source-blocked research.
 
 ---
 
@@ -166,10 +169,12 @@ bathymetry pipeline and leaves its outputs available for inspection.
 
 ### Install in an isolated environment
 
-Download and extract the [pinned source ZIP](https://github.com/MarineCast/toolkit-seascape/archive/9755f94f4ae50957f5c1af5316afb3e3cda26e54.zip).
+The source ZIP link below is pinned to revision `9755f94` and does not contain the development
+branch's scientific-hardening changes. Download and extract the [pinned source ZIP](https://github.com/MarineCast/toolkit-seascape/archive/9755f94f4ae50957f5c1af5316afb3e3cda26e54.zip).
 Open a terminal in the extracted root containing `pyproject.toml` and `README.md`. A checkout of
 [that revision](https://github.com/MarineCast/toolkit-seascape/tree/9755f94f4ae50957f5c1af5316afb3e3cda26e54)
-also works.
+also works. To exercise scientific-hardening work before release, use a checkout or source archive
+of this branch with the same commands and interpret its outputs as candidate/software acceptance.
 
 Use Python 3.11 or 3.14 on a tested Linux/macOS environment; see the
 [platform coverage](docs/environments/README.md#tested-platforms). This is a source installation,

@@ -48,6 +48,8 @@ class ProductArtifact:
     coverage: Mapping[str, Any]
     source_vintage: tuple[Mapping[str, Any], ...]
     rights: Mapping[str, Any]
+    scientific_method_version: str | None
+    source_support: Mapping[str, Any]
 
 
 def _root(workspace: str | Path | None) -> Path:
@@ -238,6 +240,8 @@ def resolve_product(
                 _freeze(item) for item in record.get("source_vintage", [])
             ),
             rights=_freeze(record.get("rights", {})),
+            scientific_method_version=record.get("scientific_method_version"),
+            source_support=_freeze(record.get("source_support", {})),
         )
 
 

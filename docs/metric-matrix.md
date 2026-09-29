@@ -11,6 +11,10 @@ metadata key `seascape_metric_matrix` contains the field-to-source mapping, unit
 roles, available resolutions, original field types by resolution, source table
 checksums, and validation status. Compatible source types may widen in the combined
 Parquet (for example, a year stored as integer at R6 and floating point at R8).
+Newly generated candidate catalogs also carry field definitions, native-versus-reporting
+support, denominator, missingness, aggregation, method version, dependencies and uncertainty
+availability. The exporter copies those into each namespaced field record. Older archived
+catalogs may lack these keys; their absence is not evidence of known precision or coverage.
 
 The input grain is the toolkit's canonical model-area H3 support at each resolution.
 R8 cells have nonzero water overlap; R6 is the exact parent union of those cells and

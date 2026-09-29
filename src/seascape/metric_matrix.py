@@ -285,6 +285,18 @@ def build_metric_matrix(
                         "unit": feature.get("unit"),
                         "role": feature.get("role"),
                         "variable_kind": feature.get("variable_kind"),
+                        "scientific_definition": feature.get("scientific_definition"),
+                        "source_support": feature.get("source_support"),
+                        "missingness": feature.get("missingness"),
+                        "aggregation": feature.get("aggregation"),
+                        "deterministic_dependencies": feature.get(
+                            "deterministic_dependencies"
+                        ),
+                        "method_version": feature.get("method_version"),
+                        "validation_status": feature.get("validation_status"),
+                        "uncertainty_availability": feature.get(
+                            "uncertainty_availability"
+                        ),
                         "available_resolutions": feature.get(
                             "available_resolutions", []
                         ),

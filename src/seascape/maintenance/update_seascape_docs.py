@@ -88,6 +88,11 @@ def _short_description(
     topology = str(feature.get("topology", ""))
     if topology and topology != "within_cell_or_nonspatial":
         description += f"; topology: {topology.replace('_', ' ')}"
+    definition = feature.get("scientific_definition")
+    if definition:
+        description += f"; meaning: {definition}"
+        description += f"; denominator: {feature.get('denominator', 'not stated')}"
+        description += f"; method: {feature.get('method_version', 'not stated')}"
     return _markdown_cell(description + ".")
 
 
