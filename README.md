@@ -136,10 +136,13 @@ what was actually materialized.
 
 ## What you get
 
-![Synthetic positive-down bathymetry on H3 resolution 8 cells. Gray cells indicate unavailable values.](docs/assets/demo-bathymetry.png)
+![Real GEBCO 2026 mean depth around the San Juan Islands, with named islands, a Pacific Northwest locator map, and a mint-to-deep-teal depth legend. Gray cells have unavailable depth.](docs/assets/san-juan-bathymetry.png)
 
-*Synthetic input, real production transformation. A 48 × 48 fixture raster becomes positive-down
-depth summaries on H3 R8 support. This figure is not a regional bathymetric survey.*
+*Real data, geographic context. The [San Juan exploratory pilot](docs/pilots/san-juan.md)
+shows production H3 R8 mean depths from GEBCO 2026, with a generalized Natural Earth coastline.
+This is a bounded family example, not a complete regional release or navigation chart.
+[Map sources and reproduction](docs/readme-map.md). The offline quickstart below uses a separate
+synthetic fixture; it does not produce this regional map.*
 
 **Physical products** — Parquet/GeoParquet tables and supporting spatial artifacts. Canonical H3 products use R8 and, where implemented, R6. Not every product exists at both resolutions.
 
