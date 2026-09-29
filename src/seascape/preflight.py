@@ -386,6 +386,24 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             c.output_dir / "geographic_gateways_manifest.json",
         ]
         checks.append(f"bounded to {c.max_cells} cells and {c.max_pairs} cell/gateway pairs")
+    elif name == "seascape-coast-complexity":
+        from seascape.coastal_configuration.coast_complexity_build import load_coast_complexity_config
+
+        c = load_coast_complexity_config(path)
+        inputs = [
+            Input("source shoreline inventory", c.shoreline_path),
+            Input("complete land components", c.land_components_path),
+            Input("source context polygon", c.source_context_path),
+            Input("canonical water polygon", c.water_path),
+            Input("R8 clipped water support", c.clipped_r8_path),
+        ]
+        outputs = [
+            c.output_dir / "LAND_COMPONENT_INVENTORY.parquet",
+            c.output_dir / "HEADLAND_CANDIDATES.parquet",
+            *(c.output_dir / f"COAST_COMPLEXITY_RES_{res}.parquet" for res in (8, 6)),
+            c.output_dir / "coast_complexity_manifest.json",
+        ]
+        checks.append(f"bounded to {c.max_cells} cells, {c.max_coast_segments} source segments and {c.max_headland_candidates} candidates")
     elif name == "seascape-shoreline-characterization":
         from seascape.coastal_configuration.shoreline_characterization.build import (
             load_shoreline_config,

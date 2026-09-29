@@ -239,6 +239,12 @@ def _run_geographic_gateways(ctx: DomainBuildContext) -> None:
     build_geographic_gateways(ctx.config_path)
 
 
+def _run_coast_complexity(ctx: DomainBuildContext) -> None:
+    from seascape.coastal_configuration.coast_complexity_build import build_coast_complexity
+
+    build_coast_complexity(ctx.config_path)
+
+
 def _run_seascape_geomorphic_units(ctx: DomainBuildContext) -> None:
     from seascape.seafloor_physiography.geomorphic_units.build import (
         build_geomorphic_units,
@@ -638,6 +644,19 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         ),
         declared_manifests=(
             "data/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/geographic_gateways_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-coast-complexity",
+        "Build source-coastline orientation, sinuosity, headland and island summaries.",
+        _run_coast_complexity,
+        dependencies=("seascape-shoreline-characterization",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/coast_complexity_manifest.json",
         ),
         optional=True,
     ),

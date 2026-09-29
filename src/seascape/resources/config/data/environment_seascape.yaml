@@ -384,6 +384,23 @@ geographic_gateways:
   corridor_max_offset_m: 1000
   output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways
 
+# Optional SV-05. Supply full source land components and their context polygon;
+# H3 clipping is applied only after complete island IDs and boundary QC exist.
+coast_complexity:
+  land_components_path: null
+  source_context_path: null
+  selected_h3_indices: []
+  sinuosity_scales_m: [500, 2000]
+  minimum_island_area_m2: 1000
+  orientation_probe_m: 10
+  headland_smoothing_m: 500
+  headland_station_spacing_m: 250
+  headland_minimum_turn_degrees: 20
+  max_cells: 200
+  max_coast_segments: 200
+  max_headland_candidates: 200
+  output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity
+
 fluvial_connectivity:
   area: model_area
 

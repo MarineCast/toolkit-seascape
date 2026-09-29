@@ -133,6 +133,17 @@ PRODUCTS: dict[str, ProductSpec] = {
         null_policy="Empty nearshore support, unavailable bathymetry, and network censoring have separate statuses.",
         optional=True,
     ),
+    "coast_complexity": ProductSpec(
+        "Source coastline and island complexity",
+        "coastal_configuration",
+        _paths(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/"
+            "coast_complexity/COAST_COMPLEXITY_RES_{resolution}.parquet"
+        ),
+        "seascape.coastal_configuration.coast_complexity_build",
+        null_policy="Weak orientation, censored islands, and absent source coastline retain explicit null/QC states.",
+        optional=True,
+    ),
     "exposure_and_enclosure": ProductSpec(
         "Marine exposure and enclosure",
         "coastal_configuration",
@@ -694,6 +705,7 @@ def scientific_metadata(
         "reef": "survey_opportunity_asof_v2",
         "exposure_and_enclosure": "geometric_fetch_16_bearings_v1",
         "nearshore_transitions": "nearshore_raster_footprint_v1",
+        "coast_complexity": "source_coast_complexity_v1",
     }
     sample_methods = {
         "bathymetry": "direct assignment of valid native raster pixel centers to H3",
@@ -705,6 +717,7 @@ def scientific_metadata(
         "reef": "observation geometry intersected with water-clipped H3 support",
         "exposure_and_enclosure": "16 geometric rays from H3 representative points",
         "nearshore_transitions": "area-weighted overlap of virtual projected native bathymetry pixels and water-clipped nearshore band",
+        "coast_complexity": "source vector coastline and complete source land-component geometry on water-clipped H3 support",
     }
     meanings = {
         "SUBSTRATE_ROCK_FRAC": "Modeled rock-presence score; not a measured areal rock fraction.",
@@ -717,6 +730,11 @@ def scientific_metadata(
         "NEARSHORE_DEEP_WATER_FRAC_OF_VALID": "Deep nearshore overlap area divided by valid-bathymetry nearshore overlap area.",
         "NEARSHORE_BATHYMETRY_COVERAGE_FRAC": "Valid-bathymetry nearshore overlap area divided by eligible water-clipped nearshore area.",
         "DISTANCE_TO_CONNECTED_DEEP_WATER_M": "Canonical water-graph distance to a mapped deep-water H3 target; path depth is unconstrained.",
+        "SHORELINE_LENGTH_DENSITY_M_PER_KM2": "Length of source coastline intersecting support divided by water-clipped support area in square kilometres.",
+        "SHORELINE_AXIAL_ORIENTATION_DEG": "Length-weighted axial coastline orientation, modulo 180 degrees; null when direction is weak.",
+        "SHORELINE_ORIENTATION_CONCENTRATION": "Magnitude of length-weighted sin/cos double-angle vector divided by source coastline length.",
+        "ISLAND_FRACTION_OF_SUPPORT": "Within-support area of complete source-identified islands divided by water-clipped support area.",
+        "DISTANCE_TO_HEADLAND_CANDIDATE_M": "Straight projected distance to a scale-declared land-convex source-coast candidate.",
     }
     if column.startswith("GEBCO_TID_"):
         meaning = (
