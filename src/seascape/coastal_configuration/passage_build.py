@@ -33,6 +33,7 @@ from .passage_sections import measure_passage_section, sill_candidates
 @dataclass(frozen=True)
 class PassageConfig:
     registry_path: Path
+    mapped_sills_path: Path | None
     water_path: Path
     clipped_r8_path: Path
     depth_raster_path: Path
@@ -47,6 +48,7 @@ class PassageConfig:
     max_passages: int
     max_sections: int
     max_cells: int
+    max_sills: int
 
 
 def load_passage_config(config_path: str | Path) -> PassageConfig:
@@ -69,14 +71,58 @@ def load_passage_config(config_path: str | Path) -> PassageConfig:
         raise ValueError("Passage scales must be positive and threshold nonnegative")
     bounds = {key: int(section.get(key, default)) for key, default in (
         ("max_passages", 2), ("max_sections", 100), ("max_cells", 200),
+        ("max_sills", 100),
     )}
     if min(bounds.values()) < 1:
         raise ValueError("Passage resource bounds must be positive")
     return PassageConfig(
-        registry, network.water_polygon_path, network.clipped_geometry_path(8),
+        registry,
+        root / str(section["mapped_sills_path"]) if section.get("mapped_sills_path") else None,
+        network.water_polygon_path, network.clipped_geometry_path(8),
         bathymetry.raw_path, output, str(section.get("projected_crs", "EPSG:32610")),
         **scales, **bounds,
     )
+
+
+def normalize_mapped_sills(
+    mapped: gpd.GeoDataFrame, passages: gpd.GeoDataFrame, *, max_sills: int
+) -> gpd.GeoDataFrame:
+    """Validate separately sourced crests; mapped is distinct from validated."""
+
+    required = {
+        "SILL_ID", "PASSAGE_ID", "MAPPED_SILL_CREST_DEPTH_M", "SOURCE_ID",
+        "SOURCE_VERSION", "RIGHTS", "VERTICAL_DATUM", "VALIDATION_STATUS",
+    }
+    if required - set(mapped) or mapped.crs is None:
+        raise ValueError(f"Mapped sill registry needs CRS and fields {sorted(required - set(mapped))}")
+    if len(mapped) > max_sills or mapped.SILL_ID.isna().any() or mapped.SILL_ID.duplicated().any():
+        raise ValueError("Mapped sill IDs must be unique, nonnull and within the configured bound")
+    text_fields = list(required - {"MAPPED_SILL_CREST_DEPTH_M"})
+    if mapped[text_fields].isna().any().any() or mapped[text_fields].astype(str).apply(
+        lambda column: column.str.strip().eq("").any()
+    ).any():
+        raise ValueError("Mapped sill identity, rights, datum and validation status are required")
+    depth = pd.to_numeric(mapped.MAPPED_SILL_CREST_DEPTH_M, errors="coerce")
+    if depth.isna().any() or not np.isfinite(depth).all() or depth.lt(0).any():
+        raise ValueError("Mapped sill crest depth must be finite and positive down")
+    if not set(mapped.VALIDATION_STATUS.astype(str)) <= {"mapped", "validated"}:
+        raise ValueError("Sill validation status must be mapped or validated")
+    if set(mapped.PASSAGE_ID.astype(str)) - set(passages.PASSAGE_ID.astype(str)):
+        raise ValueError("Mapped sill references unknown passage")
+    projected = mapped.to_crs(passages.crs).copy()
+    projected["PASSAGE_ID"] = projected.PASSAGE_ID.astype(str)
+    projected["SILL_ID"] = projected.SILL_ID.astype(str)
+    passage_geometry = passages.set_index("PASSAGE_ID").geometry
+    passage_datums = passages.set_index("PASSAGE_ID").VERTICAL_DATUM.astype(str)
+    for sill in projected.itertuples(index=False):
+        if sill.geometry.is_empty or not sill.geometry.is_valid or not passage_geometry.loc[sill.PASSAGE_ID].covers(sill.geometry):
+            raise ValueError("Mapped sill geometry must be valid and within its reviewed passage")
+        if str(sill.VERTICAL_DATUM) != passage_datums.loc[sill.PASSAGE_ID]:
+            raise ValueError("Mapped sill and passage vertical datums disagree")
+    projected["CONFIRMED_SILL_CREST_DEPTH_M"] = depth.where(
+        projected.VALIDATION_STATUS.eq("validated")
+    ).to_numpy()
+    return projected.sort_values("SILL_ID").reset_index(drop=True)
 
 
 def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
@@ -92,6 +138,7 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
             raise ValueError(f"Passage registry {field} is required")
     source_crs = passages.crs
     passages = passages.to_crs(config.projected_crs).sort_values("PASSAGE_ID").reset_index(drop=True)
+    passages["PASSAGE_ID"] = passages.PASSAGE_ID.astype(str)
     to_metric = Transformer.from_crs(source_crs, config.projected_crs, always_xy=True).transform
     centers = [transform(to_metric, wkt.loads(value)) for value in passages.CENTERLINE_WKT]
     if any(center.geom_type != "LineString" or not passage.geometry.covers(center) for center, passage in zip(centers, passages.itertuples(), strict=True)):
@@ -185,11 +232,19 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
             for res in (8, 6)
         ),
     ]
+    if config.mapped_sills_path is not None:
+        mapped_sills = normalize_mapped_sills(
+            gpd.read_parquet(config.mapped_sills_path), passages, max_sills=config.max_sills
+        )
+        outputs.append((mapped_sills, config.output_dir / "MAPPED_SILLS.parquet"))
     publisher = stage_parquet_family(config.output_dir, outputs)
     manifest = build_manifest(
         dataset_family="environment.seascape.passage_sections", run_id=publisher.run_id,
         resolved_config=asdict(config), artifacts=publisher.artifacts, project_root=project_root(),
-        sources=[{"name": "User-reviewed passage registry", "path": str(config.registry_path), "checksum": checksum_artifact(config.registry_path), "license": "Per-registry RIGHTS field"}],
+        sources=[
+            {"name": path.name, "path": str(path), "checksum": checksum_artifact(path), "license": "Per-registry RIGHTS field"}
+            for path in (config.registry_path, config.mapped_sills_path) if path is not None
+        ],
         upstream_artifacts=[{"path": str(path), "checksum": checksum_artifact(path)} for path in (config.water_path, config.clipped_r8_path, config.depth_raster_path)],
         attribution=[], source_completeness="partial",
         metadata={"scientific_method_version": "passage_cross_section_shoal_candidate_v1", "sample_support": "source passage polygon and ordered centerline; virtual projected native raster; bounded R8 child-union R6 associations"},

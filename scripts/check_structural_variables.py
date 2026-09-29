@@ -25,6 +25,7 @@ from seascape.coastal_configuration.gateways import (
     gateway_relationships,
 )
 from seascape.coastal_configuration.nearshore_transitions import (
+    bounded_deep_target_components,
     first_water_facing_contour,
     nearshore_depth_areas,
 )
@@ -81,6 +82,10 @@ def main() -> int:
             nearshore = nearshore_depth_areas(
                 water, water, coast, raster, depth_threshold_m=25, band_width_m=50,
             )
+            deep_components, _deep_by_cell = bounded_deep_target_components(
+                [("fixture", water)], water, coast, raster,
+                depth_threshold_m=25, band_width_m=50, max_pixels=100,
+            )
             transect = first_water_facing_contour(
                 Point(0, 50), (0, 1), water, raster,
                 depth_threshold_m=25, step_m=10, max_distance_m=100,
@@ -125,6 +130,7 @@ def main() -> int:
         "passages": 1, "raster_shape": [10, 10],
         "outlet_rows": len(outlet_rows), "gateway_rows": len(gateway_rows),
         "nearshore_deep_area_m2": nearshore.deep_area_m2,
+        "deep_component_count": len(deep_components),
         "contour_width_m": transect.width_m,
         "passage_area_m2": passage.cross_section_area_m2,
         "alternate_route_m": alternate["ALTERNATE_ROUTE_LENGTH_AFTER_GATEWAY_REMOVAL_M"],
@@ -136,6 +142,7 @@ def main() -> int:
     assert report["outlet_rows"] == 20
     assert report["gateway_rows"] == 10
     assert report["nearshore_deep_area_m2"] == 3000
+    assert report["deep_component_count"] == 1
     assert report["contour_width_m"] == 20
     assert report["passage_area_m2"] == 10_000
     assert math.isclose(report["mosaic_union_area_m2"], 50, abs_tol=1e-5)

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import geopandas as gpd
 import pandas as pd
 import pytest
-from shapely.geometry import LineString, box
+from shapely.geometry import LineString, Point, box
 
+from seascape.coastal_configuration.passage_build import normalize_mapped_sills
 from seascape.coastal_configuration.passage_sections import (
     measure_passage_section,
     sill_candidates,
@@ -56,3 +58,27 @@ def test_interior_shoal_requires_deeper_sections_both_sides() -> None:
     assert candidates.iloc[0].SILL_CANDIDATE_DEPTH_M == 20
     assert candidates.iloc[0].RELIEF_LEFT_M == 30
     assert sill_candidates(sections.assign(MAX_DEPTH_M=[10, 20, 60]), min_relief_m=20).empty
+
+
+def test_reviewed_sill_crests_remain_distinct_from_candidates() -> None:
+    passages = gpd.GeoDataFrame(
+        {"PASSAGE_ID": ["p"], "VERTICAL_DATUM": ["fixture"]},
+        geometry=[box(0, 0, 100, 100)], crs="EPSG:32610"
+    )
+    mapped = gpd.GeoDataFrame(
+        {
+            "SILL_ID": ["s1", "s2"], "PASSAGE_ID": ["p", "p"],
+            "MAPPED_SILL_CREST_DEPTH_M": [20.0, 25.0],
+            "SOURCE_ID": ["fixture"] * 2, "SOURCE_VERSION": ["v1"] * 2,
+            "RIGHTS": ["fixture"] * 2, "VERTICAL_DATUM": ["fixture"] * 2,
+            "VALIDATION_STATUS": ["mapped", "validated"],
+        },
+        geometry=[Point(20, 20), Point(30, 30)], crs="EPSG:32610",
+    )
+    result = normalize_mapped_sills(mapped, passages, max_sills=2)
+    assert pd.isna(result.loc[result.SILL_ID.eq("s1"), "CONFIRMED_SILL_CREST_DEPTH_M"].iloc[0])
+    assert result.loc[result.SILL_ID.eq("s2"), "CONFIRMED_SILL_CREST_DEPTH_M"].iloc[0] == 25
+    with pytest.raises(ValueError, match="within its reviewed passage"):
+        normalize_mapped_sills(mapped.set_geometry([Point(200, 20), Point(30, 30)]), passages, max_sills=2)
+    with pytest.raises(ValueError, match="vertical datums disagree"):
+        normalize_mapped_sills(mapped.assign(VERTICAL_DATUM="other"), passages, max_sills=2)

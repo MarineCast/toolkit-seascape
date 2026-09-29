@@ -23,8 +23,8 @@ scientific validation, universal coverage, or a regional product built in this b
 | Finer regional bathymetry | Data blocked | Register survey, rights, horizontal/vertical datum, gridding method and source-specific uncertainty. |
 | Shoreline density, sinuosity, islands, orientation | Optional producer fixture-tested; regional materialization absent | Source coast and complete land components are required; smoothing and denominator are explicit. |
 | Selected outlet relationships (SV-01) | Executable and fixture-tested; regional input and materialization pending | Exact reviewed mouth IDs, canonical water graph; no independent validation. |
-| Nearshore transitions (SV-02) | Executable and fixture-tested; regional materialization pending | Raster-footprint areas and water-facing transects. Bathymetric deep-target component identity remains unfinished. |
-| Passage sections and sill candidates (SV-03) | Executable and fixture-tested; reviewed registry absent | Candidate shoals are section-maximum proxies. Confirmed crest contract and independent validation pending. |
+| Nearshore transitions (SV-02) | Executable and fixture-tested; regional materialization pending | Raster-footprint areas, water-facing transects and bounded native-scale deep-pixel components. Subpixel connectivity and selected-boundary continuation remain unresolved. |
+| Passage sections and sill candidates (SV-03) | Executable and fixture-tested; reviewed registry absent | Candidate shoals are section-maximum proxies. Optional reviewed mapped/validated crest registry is supported but not populated regionally; independent validation pending. |
 | Geographic gateways (SV-04) | Executable and fixture-tested; reviewed registry absent | Reviewed graph attachments and crossing edges required; no regional materialization. |
 | Mapped habitat mosaic (SV-06) | Generic ingestion and producer fixture-tested; regional providers absent | Distinct marine/intertidal supports; provider rights, time, footprint and class semantics require review. |
 | Outer-coast shelf geometry (SV-07) | Source blocked | Reviewed shelf delineation unavailable; no product advertised. |

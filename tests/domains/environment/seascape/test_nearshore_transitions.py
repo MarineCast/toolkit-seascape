@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import numpy as np
-import rasterio
+import pandas as pd
 from rasterio.io import MemoryFile
 from rasterio.transform import from_origin
 from shapely.geometry import LineString, Point, box
 
+from seascape.coastal_configuration.nearshore_build import _deep_network_distance
 from seascape.coastal_configuration.nearshore_transitions import (
+    bounded_deep_target_components,
     first_water_facing_contour,
     nearshore_depth_areas,
 )
+from seascape.spatial_support.water_network.graph import WaterGraph
 
 
 def test_pixel_footprint_denominators_and_analytic_slope() -> None:
@@ -91,3 +94,45 @@ def test_subpixel_support_reads_both_intersecting_footprints() -> None:
             assert np.isclose(result.eligible_area_m2, 2)
             assert np.isclose(result.valid_area_m2, 2)
             assert np.isclose(result.deep_area_m2, 1)
+
+
+def test_bounded_native_raster_deep_components_remain_distinct() -> None:
+    with MemoryFile() as memory:
+        with memory.open(
+            driver="GTiff", width=5, height=2, count=1,
+            dtype="float32", crs="EPSG:32610",
+            transform=from_origin(0, 20, 10, 10),
+        ) as raster:
+            raster.write(np.array([[50, 50, 5, 50, 50]] * 2, dtype="float32"), 1)
+            cells = [("left", box(0, 0, 20, 20)), ("right", box(30, 0, 50, 20))]
+            components, by_cell = bounded_deep_target_components(
+                cells, box(0, 0, 50, 20), LineString([(0, 0), (50, 0)]),
+                raster, depth_threshold_m=25, band_width_m=20, max_pixels=10,
+            )
+            assert len(components) == 2
+            assert all(str(row["DEEP_COMPONENT_ID"]).startswith("deep:synthetic-raster:25m:") for row in components)
+            assert components[0]["PIXEL_COUNT"] == 4
+            assert len(by_cell["left"]) == len(by_cell["right"]) == 1
+            assert by_cell["left"] != by_cell["right"]
+            with np.testing.assert_raises_regex(ValueError, "pixel budget"):
+                bounded_deep_target_components(
+                    cells, box(0, 0, 50, 20), LineString([(0, 0), (50, 0)]),
+                    raster, depth_threshold_m=25, band_width_m=20, max_pixels=9,
+                )
+
+
+def test_network_distance_identifies_the_reached_deep_component() -> None:
+    graph = WaterGraph(
+        8, np.array(["a", "b", "c"]), np.array([0, 1, 3, 4]),
+        np.array([1, 0, 2, 1]), np.array([100, 100, 300, 300], dtype=float),
+        pd.DataFrame({"H3_INDEX": ["a", "b", "c"]}),
+        {"a": 0, "b": 1, "c": 2}, "fixture", "fixture",
+    )
+    table = pd.DataFrame({
+        "H3_INDEX": ["a", "b", "c"],
+        "DEEP_TARGET_COMPONENT_IDS": ["left", "", "right"],
+    })
+    distances, qc, nearest = _deep_network_distance(table, graph, resolution=8)
+    assert distances.tolist() == [0, 100, 0]
+    assert qc == ["mapped_deep_h3_target_graph_v1"] * 3
+    assert nearest == ["left", "left", "right"]

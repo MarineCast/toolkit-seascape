@@ -349,6 +349,15 @@ def register_builtin_datasets():
         primary_key=("STATION_ID",),
     )
     _register(
+        "environment.seascape.nearshore_deep_components",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/NEARSHORE_DEEP_COMPONENTS.parquet",
+        "environment.seascape.coastal_configuration.nearshore_build",
+        dependencies=("environment.seascape.shoreline_stations",),
+        primary_key=("DEEP_COMPONENT_ID",),
+    )
+    _register(
         "environment.seascape.shoreline_transects",
         DatasetLayer.DOMAIN,
         DatasetFormat.PARQUET,
@@ -397,6 +406,15 @@ def register_builtin_datasets():
         "environment.seascape.coastal_configuration.passage_build",
         dependencies=("environment.seascape.passage_cross_sections",),
         primary_key=("SILL_CANDIDATE_ID",),
+    )
+    _register(
+        "environment.seascape.mapped_sills",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/MAPPED_SILLS.parquet",
+        "environment.seascape.coastal_configuration.passage_build",
+        dependencies=("environment.seascape.passage_inventory",),
+        primary_key=("SILL_ID",),
     )
     for resolution in (6, 8):
         _register(

@@ -12,9 +12,12 @@ from dataclasses import dataclass
 import numpy as np
 import rasterio
 from pyproj import CRS
+from rasterio.features import geometry_mask
 from rasterio.windows import from_bounds
+from scipy.ndimage import label
 from shapely.geometry import LineString, Point, box
 from shapely.geometry.base import BaseGeometry
+from shapely.ops import unary_union
 
 
 @dataclass(frozen=True)
@@ -116,6 +119,103 @@ def nearshore_depth_areas(
         min(1.0, valid_area / eligible_area),
         "complete" if eligible_area - valid_area <= 1e-6 else "partial_bathymetry",
     )
+
+
+def bounded_deep_target_components(
+    cells: list[tuple[str, BaseGeometry]],
+    water: BaseGeometry,
+    shoreline: BaseGeometry,
+    raster: rasterio.io.DatasetReader,
+    *,
+    depth_threshold_m: float,
+    band_width_m: float,
+    max_pixels: int,
+    source_identity: str = "synthetic-raster",
+    raster_depth_convention: str = "positive_down",
+) -> tuple[list[dict[str, object]], dict[str, tuple[str, ...]]]:
+    """Four-neighbor deep pixel components in the selected nearshore support.
+
+    Components are bounded by the selected water/shore band. Pixel topology is
+    an analysis-scale candidate and is censored at the selected-context edge.
+    """
+
+    _require_metric_raster(raster)
+    if max_pixels < 1 or band_width_m <= 0 or depth_threshold_m < 0 or not source_identity:
+        raise ValueError("Invalid bounded deep-component settings")
+    band = shoreline.buffer(band_width_m)
+    eligible = {
+        cell_id: geometry.intersection(water).intersection(band)
+        for cell_id, geometry in cells
+    }
+    support = unary_union([geometry for geometry in eligible.values() if not geometry.is_empty])
+    if support.is_empty:
+        return [], {cell_id: () for cell_id, _ in cells}
+    floating = from_bounds(*support.bounds, transform=raster.transform)
+    left, top = math.floor(floating.col_off), math.floor(floating.row_off)
+    window = rasterio.windows.Window(
+        left, top,
+        math.ceil(floating.col_off + floating.width) - left,
+        math.ceil(floating.row_off + floating.height) - top,
+    )
+    try:
+        window = window.intersection(rasterio.windows.Window(0, 0, raster.width, raster.height))
+    except rasterio.errors.WindowError:
+        return [], {cell_id: () for cell_id, _ in cells}
+    if window.width * window.height > max_pixels:
+        raise ValueError("Deep-component raster pixel budget exceeded")
+    source = raster.read(1, window=window, masked=True)
+    values = np.ma.asarray(source, dtype=float).filled(np.nan)
+    if raster_depth_convention == "negative_elevation":
+        deep = np.isfinite(values) & (values < 0) & (-values >= depth_threshold_m)
+    elif raster_depth_convention == "positive_down":
+        if np.any(np.isfinite(values) & (values < 0)):
+            raise ValueError("Depth raster contradicts positive-down convention")
+        deep = np.isfinite(values) & (values >= depth_threshold_m)
+    else:
+        raise ValueError("Depth convention must be positive_down or negative_elevation")
+    transform = raster.window_transform(window)
+    in_support = geometry_mask(
+        [support], out_shape=values.shape, transform=transform,
+        invert=True, all_touched=False,
+    )
+    labels, count = label(deep & in_support, structure=np.array([
+        [0, 1, 0], [1, 1, 1], [0, 1, 0],
+    ]))
+    component_ids: dict[int, str] = {}
+    components: list[dict[str, object]] = []
+    pixel_area = abs(transform.a * transform.e)
+    for number in range(1, count + 1):
+        rows, cols = np.where(labels == number)
+        if not len(rows):
+            continue
+        component_id = (
+            f"deep:{source_identity}:{depth_threshold_m:g}m:"
+            f"r{int(window.row_off) + int(rows.min())}:"
+            f"c{int(window.col_off) + int(cols.min())}"
+        )
+        component_ids[number] = component_id
+        components.append({
+            "DEEP_COMPONENT_ID": component_id,
+            "DEPTH_THRESHOLD_M": depth_threshold_m,
+            "PIXEL_COUNT": len(rows),
+            "RASTER_COMPONENT_PIXEL_AREA_M2": len(rows) * pixel_area,
+            "COMPONENT_CONTEXT_STATUS": "selected_support_boundary_censored",
+            "METHOD": "virtual_projected_source_scale_four_neighbor_v1",
+        })
+    by_cell: dict[str, tuple[str, ...]] = {}
+    for cell_id, geometry in eligible.items():
+        if geometry.is_empty:
+            by_cell[cell_id] = ()
+            continue
+        cell_mask = geometry_mask(
+            [geometry], out_shape=values.shape, transform=transform,
+            invert=True, all_touched=False,
+        )
+        by_cell[cell_id] = tuple(sorted({
+            component_ids[int(number)] for number in np.unique(labels[cell_mask])
+            if int(number) in component_ids
+        }))
+    return components, by_cell
 
 
 def first_water_facing_contour(

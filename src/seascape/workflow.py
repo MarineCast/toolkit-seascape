@@ -222,7 +222,9 @@ def _run_selected_outlets(ctx: DomainBuildContext) -> None:
 
 
 def _run_nearshore_transitions(ctx: DomainBuildContext) -> None:
-    from seascape.coastal_configuration.nearshore_build import build_nearshore_transitions
+    from seascape.coastal_configuration.nearshore_build import (
+        build_nearshore_transitions,
+    )
 
     build_nearshore_transitions(ctx.config_path)
 
@@ -240,7 +242,9 @@ def _run_geographic_gateways(ctx: DomainBuildContext) -> None:
 
 
 def _run_coast_complexity(ctx: DomainBuildContext) -> None:
-    from seascape.coastal_configuration.coast_complexity_build import build_coast_complexity
+    from seascape.coastal_configuration.coast_complexity_build import (
+        build_coast_complexity,
+    )
 
     build_coast_complexity(ctx.config_path)
 

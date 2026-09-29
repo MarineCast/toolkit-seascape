@@ -339,18 +339,20 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             *_network_inputs(path, (8, 6)),
         ]
         outputs = [
+            c.output_dir / "NEARSHORE_DEEP_COMPONENTS.parquet",
             c.output_dir / "SHORELINE_STATIONS.parquet",
             c.output_dir / "SHORELINE_TRANSECTS.parquet",
             *(c.output_dir / f"NEARSHORE_TRANSITIONS_RES_{res}.parquet" for res in (8, 6)),
             c.output_dir / "nearshore_transitions_manifest.json",
         ]
-        checks.append(f"bounded to {c.max_cells} cells and {c.max_transects} transects; raster windows require producer scan")
+        checks.append(f"bounded to {c.max_cells} cells, {c.max_transects} transects and {c.max_component_pixels} component raster pixels; raster windows require producer scan")
     elif name == "seascape-passage-sections":
         from seascape.coastal_configuration.passage_build import load_passage_config
 
         c = load_passage_config(path)
         inputs = [
             Input("reviewed passage registry", c.registry_path),
+            *(Input("reviewed mapped sill crests", c.mapped_sills_path) for _ in (1,) if c.mapped_sills_path is not None),
             Input("canonical water polygon", c.water_path),
             Input("R8 clipped water support", c.clipped_r8_path),
             Input("native bathymetry raster", c.depth_raster_path),
@@ -363,7 +365,9 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
                 "passage_sections_manifest.json",
             )),
         ]
-        checks.append(f"bounded to {c.max_passages} passages, {c.max_sections} sections and {c.max_cells} association cells")
+        if c.mapped_sills_path is not None:
+            outputs.append(c.output_dir / "MAPPED_SILLS.parquet")
+        checks.append(f"bounded to {c.max_passages} passages, {c.max_sections} sections, {c.max_sills} mapped sills and {c.max_cells} association cells")
     elif name == "seascape-geographic-gateways":
         from seascape.coastal_configuration.gateway_build import load_gateway_config
 
@@ -387,7 +391,9 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
         ]
         checks.append(f"bounded to {c.max_cells} cells and {c.max_pairs} cell/gateway pairs")
     elif name == "seascape-coast-complexity":
-        from seascape.coastal_configuration.coast_complexity_build import load_coast_complexity_config
+        from seascape.coastal_configuration.coast_complexity_build import (
+            load_coast_complexity_config,
+        )
 
         c = load_coast_complexity_config(path)
         inputs = [
