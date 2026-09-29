@@ -351,6 +351,22 @@ nearshore_transitions:
   max_transects: 200
   output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions
 
+# Optional SV-03 candidate. Supply a reviewed GeoParquet with stable PASSAGE_ID,
+# polygon geometry, CENTERLINE_WKT in source CRS, source/rights and vertical datum.
+passage_sections:
+  registry_path: null
+  projected_crs: EPSG:32610
+  section_spacing_m: 1000
+  half_length_m: 5000
+  sample_step_m: 500
+  threshold_m: 50
+  tangent_scale_m: 1000
+  minimum_sill_relief_m: 10
+  max_passages: 2
+  max_sections: 100
+  max_cells: 200
+  output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections
+
 fluvial_connectivity:
   area: model_area
 

@@ -227,6 +227,12 @@ def _run_nearshore_transitions(ctx: DomainBuildContext) -> None:
     build_nearshore_transitions(ctx.config_path)
 
 
+def _run_passage_sections(ctx: DomainBuildContext) -> None:
+    from seascape.coastal_configuration.passage_build import build_passage_sections
+
+    build_passage_sections(ctx.config_path)
+
+
 def _run_seascape_geomorphic_units(ctx: DomainBuildContext) -> None:
     from seascape.seafloor_physiography.geomorphic_units.build import (
         build_geomorphic_units,
@@ -600,6 +606,19 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         ),
         declared_manifests=(
             "data/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/nearshore_transitions_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-passage-sections",
+        "Build reviewed passage cross-sections and separate sill candidates.",
+        _run_passage_sections,
+        dependencies=("seascape-bathymetry",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/passage_sections_manifest.json",
         ),
         optional=True,
     ),

@@ -345,6 +345,25 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             c.output_dir / "nearshore_transitions_manifest.json",
         ]
         checks.append(f"bounded to {c.max_cells} cells and {c.max_transects} transects; raster windows require producer scan")
+    elif name == "seascape-passage-sections":
+        from seascape.coastal_configuration.passage_build import load_passage_config
+
+        c = load_passage_config(path)
+        inputs = [
+            Input("reviewed passage registry", c.registry_path),
+            Input("canonical water polygon", c.water_path),
+            Input("R8 clipped water support", c.clipped_r8_path),
+            Input("native bathymetry raster", c.depth_raster_path),
+        ]
+        outputs = [
+            *(c.output_dir / filename for filename in (
+                "PASSAGE_INVENTORY.parquet", "PASSAGE_CROSS_SECTIONS.parquet",
+                "SILL_CANDIDATES.parquet", "H3_PASSAGE_ASSOCIATIONS_RES_8.parquet",
+                "H3_PASSAGE_ASSOCIATIONS_RES_6.parquet",
+                "passage_sections_manifest.json",
+            )),
+        ]
+        checks.append(f"bounded to {c.max_passages} passages, {c.max_sections} sections and {c.max_cells} association cells")
     elif name == "seascape-shoreline-characterization":
         from seascape.coastal_configuration.shoreline_characterization.build import (
             load_shoreline_config,
