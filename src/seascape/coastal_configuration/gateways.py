@@ -241,7 +241,8 @@ def read_released_gateways(
         release_id=release_id,
     )
     frame = pd.read_parquet(artifact.path)
-    if frame.duplicated(["H3_INDEX", "H3_RESOLUTION", "GATEWAY_ID"]).any():
+    key = ["H3_INDEX", "H3_RESOLUTION", "GATEWAY_ID"]
+    if frame[key].isna().any().any() or frame.duplicated(key).any():
         raise ValueError("Released gateway relationship identity is ambiguous")
     if set(selected) - set(frame.GATEWAY_ID.astype(str)):
         raise KeyError("Selected gateway absent from release")
@@ -254,7 +255,8 @@ def pivot_selected_gateways(
     selected = tuple(dict.fromkeys(str(value) for value in gateway_ids))
     if not selected or set(selected) - set(frame.GATEWAY_ID.astype(str)):
         raise ValueError("Select available gateway IDs explicitly")
-    if frame.duplicated(["H3_INDEX", "H3_RESOLUTION", "GATEWAY_ID"]).any():
+    key = ["H3_INDEX", "H3_RESOLUTION", "GATEWAY_ID"]
+    if frame[key].isna().any().any() or frame.duplicated(key).any():
         raise ValueError("Gateway relationship identity is ambiguous")
     wide = frame.loc[frame.GATEWAY_ID.isin(selected)].pivot(
         index=["H3_INDEX", "H3_RESOLUTION"],

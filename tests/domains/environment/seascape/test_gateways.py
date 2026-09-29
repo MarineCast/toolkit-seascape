@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 from shapely.geometry import Point, box
 
 from seascape.coastal_configuration.gateways import (
@@ -9,6 +10,7 @@ from seascape.coastal_configuration.gateways import (
     basin_membership,
     corridor_coordinates,
     gateway_relationships,
+    pivot_selected_gateways,
 )
 from seascape.spatial_support.water_network.graph import WaterGraph
 
@@ -78,3 +80,16 @@ def test_basin_ambiguity_and_corridor_support() -> None:
     assert corridor_coordinates(
         Point(3, 1), LineString([(0, 0), (5, 0)]), max_lateral_offset_m=2
     ) == (3, 1, "assigned")
+
+
+def test_gateway_pivot_rejects_null_object_identity() -> None:
+    frame = pd.DataFrame(
+        {
+            "H3_INDEX": ["cell", None],
+            "H3_RESOLUTION": [8, 8],
+            "GATEWAY_ID": ["gate", "gate"],
+            "WATER_NETWORK_DISTANCE_M": [1.0, 2.0],
+        }
+    )
+    with pytest.raises(ValueError, match="ambiguous"):
+        pivot_selected_gateways(frame, ["gate"])

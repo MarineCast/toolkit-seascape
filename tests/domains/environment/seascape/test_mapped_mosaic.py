@@ -10,6 +10,7 @@ from seascape.biogenic_habitat.mosaic import (
     VectorProviderContract,
     build_mapped_mosaic,
     normalize_vector_provider,
+    pivot_selected_habitats,
 )
 from seascape.biogenic_habitat.mosaic_build import _radius_area
 from seascape.spatial_support.water_network.graph import WaterGraph
@@ -156,3 +157,17 @@ def test_radius_area_counts_terminal_mapped_habitat_once() -> None:
     assert _radius_area(graph, "node", sources, 5000) == 50
     assert _radius_area(graph, "terminal", sources, 5000) == 50
     assert _radius_area(graph, "node", sources, 99) == 0
+
+
+def test_habitat_pivot_requires_selected_type_on_requested_support() -> None:
+    frame = pd.DataFrame(
+        {
+            "H3_INDEX": ["cell"],
+            "H3_RESOLUTION": [8],
+            "SUPPORT_TYPE": ["intertidal"],
+            "HABITAT_TYPE": ["tidal_marsh"],
+            "MAPPED_AREA_M2": [10.0],
+        }
+    )
+    with pytest.raises(ValueError, match="unavailable on this support"):
+        pivot_selected_habitats(frame, ["tidal_marsh"], support_type="marine")

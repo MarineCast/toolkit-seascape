@@ -403,6 +403,8 @@ def pivot_selected_habitats(
     rows = frame.loc[
         frame.SUPPORT_TYPE.eq(support_type) & frame.HABITAT_TYPE.isin(selected)
     ]
+    if set(selected) - set(rows.HABITAT_TYPE.astype(str)):
+        raise ValueError("Selected habitat type is unavailable on this support")
     if rows.duplicated(["H3_INDEX", "H3_RESOLUTION", "HABITAT_TYPE"]).any():
         raise ValueError("Mosaic pivot has one-to-many cell/type relationships")
     wide = rows.pivot(
