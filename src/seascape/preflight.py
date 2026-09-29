@@ -307,6 +307,26 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
                 c.processed_path.with_name(f"GEBCO_TID_RES_{resolution}.parquet")
                 for resolution in resolutions
             )
+    elif name == "seascape-selected-outlets":
+        from seascape.hydrologic_connectivity.fluvial_connectivity.selected_outlets_build import (
+            load_selected_outlet_config,
+        )
+
+        c = load_selected_outlet_config(path)
+        inputs = [
+            Input("normalized outlet inventory", c.inventory_path),
+            Input("canonical water polygon", c.water_polygon_path),
+            *_network_inputs(path, c.resolutions),
+        ]
+        outputs = [
+            c.output_dir / "SELECTED_OUTLET_INVENTORY.parquet",
+            *(c.output_dir / f"OUTLET_RELATIONSHIPS_RES_{res}.parquet" for res in c.resolutions),
+            c.output_dir / "selected_outlets_manifest.json",
+        ]
+        checks.append(
+            f"selected outlet pair budget {c.max_pairs}; exact IDs {len(c.selected_ids)}; "
+            "actual cell and graph counts require producer scan"
+        )
     elif name == "seascape-shoreline-characterization":
         from seascape.coastal_configuration.shoreline_characterization.build import (
             load_shoreline_config,

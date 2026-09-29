@@ -314,6 +314,32 @@ def register_builtin_datasets():
         schema_version="2",
     )
     _register(
+        "environment.seascape.selected_outlet_inventory",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets/SELECTED_OUTLET_INVENTORY.parquet",
+        "environment.seascape.hydrologic_connectivity.fluvial_connectivity.selected_outlets_build",
+        dependencies=("environment.seascape.fluvial_connectivity_r8",),
+        primary_key=("OUTLET_ID",),
+        schema_version="1",
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.outlet_relationships_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets/OUTLET_RELATIONSHIPS_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.hydrologic_connectivity.fluvial_connectivity.selected_outlets_build",
+            dependencies=(
+                "environment.seascape.selected_outlet_inventory",
+                f"environment.seascape.h3_marine_support_r{resolution}",
+                f"environment.seascape.h3_water_edges_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "OUTLET_ID"),
+            schema_version="1",
+        )
+    _register(
         "environment.seascape.estuarine_connectivity_r8",
         DatasetLayer.DOMAIN,
         DatasetFormat.PARQUET,

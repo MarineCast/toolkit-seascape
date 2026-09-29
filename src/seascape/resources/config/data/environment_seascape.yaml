@@ -328,6 +328,15 @@ freshwater_sources:
     river_simplify_tolerance_m: 75
 
 # SEASCAPE - HYDROLOGIC CONNECTIVITY: FLUVIAL CONNECTIVITY
+# Optional SV-01 build. Set exact FLUVIAL_MOUTH_ID values from the normalized
+# HydroRIVERS mouth inventory before selecting seascape-selected-outlets.
+selected_outlets:
+  selected_ids: []
+  resolutions: [8, 6]
+  max_pairs: 200000
+  max_search_m: null
+  output_dir: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets
+
 fluvial_connectivity:
   area: model_area
 

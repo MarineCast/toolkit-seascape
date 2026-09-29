@@ -53,6 +53,7 @@ class DomainBuildStage:
     declared_outputs: tuple[str, ...] = ()
     declared_manifests: tuple[str, ...] = ()
     terminal_action: bool = False
+    optional: bool = False
 
 
 @dataclass(frozen=True)
@@ -210,6 +211,14 @@ def _run_seascape_waterbody_morphometry(ctx: DomainBuildContext) -> None:
     )
 
     build_waterbody_morphometry(config_path=ctx.config_path)
+
+
+def _run_selected_outlets(ctx: DomainBuildContext) -> None:
+    from seascape.hydrologic_connectivity.fluvial_connectivity.selected_outlets_build import (
+        build_selected_outlets,
+    )
+
+    build_selected_outlets(config_path=ctx.config_path)
 
 
 def _run_seascape_geomorphic_units(ctx: DomainBuildContext) -> None:
@@ -563,6 +572,19 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         ),
     ),
     DomainBuildStage(
+        "seascape-selected-outlets",
+        "Build exact long-table relationships to explicitly selected river outlets.",
+        _run_selected_outlets,
+        dependencies=("seascape-fluvial-connectivity",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets/selected_outlets_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
         "seascape-estuarine-connectivity",
         "Build straight and canonical-network estuary proximity.",
         _run_seascape_estuarine_connectivity,
@@ -778,7 +800,11 @@ def selected_stages(
             + ". Valid stages: "
             + ", ".join(by_name)
         )
-    requested = [name for name in by_name if not only_set or name in only_set]
+    requested = [
+        name
+        for name, stage in by_name.items()
+        if (name in only_set if only_set else not stage.optional)
+    ]
     ordered: list[DomainBuildStage] = []
     complete: set[str] = set()
     visiting: list[str] = []
