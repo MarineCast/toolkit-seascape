@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import tomllib
 from importlib.resources import files
 from pathlib import Path
 
@@ -12,6 +13,13 @@ from seascape.cli import DOWNLOAD_FAMILIES, FAMILIES, initialize_workspace, main
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.core.data.registry import DATASETS
 from seascape.workflow import selected_stages
+
+
+def test_package_targets_python_314_only():
+    project = tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text())
+    assert project["project"]["requires-python"] == ">=3.14,<3.15"
+    assert project["tool"]["ruff"]["target-version"] == "py314"
+    assert project["tool"]["mypy"]["python_version"] == "3.14"
 
 
 def test_source_has_no_application_imports():

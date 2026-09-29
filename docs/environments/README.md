@@ -2,6 +2,10 @@
 
 ## Tested platforms
 
+The current package requires Python 3.14 (`>=3.14,<3.15`). Current CI is configured for Linux
+x86_64 and macOS ARM64 on 3.14. Earlier 3.11 results below document historical revisions; 3.11 is no
+longer a supported installation target.
+
 The [SS-09 implementation run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36327449869)
 passed all nine jobs on `3022ace`, including the documented source-install quickstart on all three
 consumer platforms. Prior [SS-08 implementation run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36324502530)
@@ -11,7 +15,8 @@ not a guarantee for all dependency lower bounds, OS versions or architectures.
 
 | Environment | Executed evidence |
 | --- | --- |
-| Linux x86_64, Python 3.11 / 3.14 | Full offline suite and clean runtime-first wheel consumers; copied contracts/notebook |
+| Linux x86_64, Python 3.14 | Full offline suite and clean runtime-first wheel consumers; copied contracts/notebook |
+| Linux x86_64, Python 3.11 (historical) | Earlier full offline suite and clean runtime-first wheel consumer; unsupported by current metadata |
 | macOS ARM64, Python 3.14 | Clean runtime-first wheel consumer and constrained quality/native baseline |
 | Local macOS 26.6.2 ARM64, CPython 3.14.6 | SS-09 full suite/clean consumer/source quickstart; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1 |
 | Native Windows | Not supported for the existing POSIX publication locks; no Windows acceptance claimed |
@@ -73,7 +78,7 @@ Review evidence before sharing; logs can contain private paths or rejected packa
 Ruff checks all Python under `src/`, `tests/` and `scripts/`: syntax/control-flow baseline
 `E9,F63,F7,F82`, unused imports/locals `F401,F841`, redefinitions/duplicate keys
 `F811,F601,F602`, mutable defaults `B006`, and import order `I001`. Formatting uses the existing
-defaults/Python 3.11 target. No new per-file exclusions or rule suppressions were added.
+defaults/Python 3.14 target. No new per-file exclusions or rule suppressions were added.
 
 Mypy checks these **12 modules**, with annotated functions, checked bodies and unused-ignore warnings:
 
@@ -81,19 +86,19 @@ Mypy checks these **12 modules**, with annotated functions, checked bodies and u
 - `demo.py`, `cli.py`, `_cli_diagnostics.py`, `preflight.py`
 - `core/config/document.py`, `core/config/data.py`, `core/config/paths.py`, `metric_matrix.py`
 
-The project syntax/type target remains Python 3.11. Existing skipped imports/missing external
+The project syntax/type target is Python 3.14. Existing skipped imports/missing external
 stubs remain explicit limits; this is not strict typing of the whole scientific implementation.
-Only NumPy's external stubs also use `follow_imports_for_stubs = true`: its exercised release
-contains Python 3.12+ stub syntax that mypy cannot parse against the 3.11 target. This narrow
-dependency boundary makes array internals opaque; it does not suppress errors in project modules.
+The earlier NumPy-only stub override was removed with the 3.11 target; the exercised stubs are
+now parsed against their supported Python version. No project-module errors are suppressed.
 Preflight dictionaries now have concrete schema-1 types, without changing serialized reports or
 exception behavior. Dynamic YAML and demo/export metadata stay open mappings at their boundaries.
 
 CI retains tests, installed-wheel/notebook checks and security audits. Its quality matrix uses an
-unconstrained Linux Python 3.11 solve and the constrained macOS Python 3.14 ARM64 baseline; the
+unconstrained Linux Python 3.14 solve and the constrained macOS Python 3.14 ARM64 baseline; the
 constrained job compares the observed closure/native versions. Each saves and audits runtime,
 test and quality dependencies. [Hosted run 36322829881](https://github.com/MarineCast/toolkit-seascape/actions/runs/36322829881)
-passed all nine jobs on commit `6ddd5ca`, including Linux 3.11/3.14 consumers and macOS 3.14 ARM64.
+passed all nine jobs on historical commit `6ddd5ca`, including then-supported Linux 3.11/3.14
+consumers and macOS 3.14 ARM64.
 Its constrained macOS quality job reproduced the dependency/native baseline on Python 3.14.7,
 macOS 14.8.9; these differ from the recorded local interpreter patch/OS. See the progress record
 for observed versions and exact acceptance limits. A configured matrix alone is not execution

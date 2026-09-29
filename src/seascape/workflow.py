@@ -1098,7 +1098,7 @@ def _stage_is_reusable(
             and state.get("input_identities", {})
             == _stage_input_identities(candidate_root, stage)
         )
-    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+    except OSError, ValueError, TypeError, json.JSONDecodeError:
         return False
 
 
@@ -1135,7 +1135,7 @@ def _canonical_stage_is_seedable(
                 resolved = source if source.is_absolute() else canonical_root / source
                 if checksum_path(resolved) != upstream.get("checksum"):
                     return False
-    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
+    except OSError, ValueError, TypeError, KeyError, json.JSONDecodeError:
         return False
     return True
 

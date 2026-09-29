@@ -4,8 +4,8 @@
 
 Use the [single installation and first-result recipe](../README.md#install-and-get-a-first-result)
 and its `SEASCAPE_WORKSPACE`. Runtime requires neither checkout files, network, credentials,
-pytest nor Jupyter. Installation may download declared Python dependencies. Linux Python 3.11/3.14
-and macOS ARM64 Python 3.14 have [executed CI evidence](environments/README.md#tested-platforms).
+pytest nor Jupyter. Installation may download declared Python dependencies. The current package
+supports Python 3.14; Linux and macOS ARM64 have [executed CI evidence](environments/README.md#tested-platforms).
 
 The CLI prints `Synthetic software acceptance: PASS (not a regional release)` only after every
 check and figure succeeds, followed by exact output paths. All demo-owned inputs and outputs are

@@ -142,6 +142,8 @@ def _prepare_fixture(root: Path) -> _Fixture:
     """
     for name in ("input", "output", "config", "figures"):
         (root / name).mkdir(parents=True, exist_ok=True)
+    rows: np.ndarray
+    columns: np.ndarray
     rows, columns = np.indices((48, 48), dtype="float32")
     elevation = -(5.0 + 145.0 * columns / 47 + 80.0 * rows / 47)
     elevation[:12, :12] = -5.0

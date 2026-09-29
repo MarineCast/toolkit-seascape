@@ -7,7 +7,7 @@ name = "toolkit-seascape"
 version = "0.1.0"
 description = "Source-backed marine geometry, bathymetry, and seascape products"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14,<3.15"
 license = "Apache-2.0"
 dependencies = [
   "branca>=0.7", "folium>=0.20", "geopandas>=1.0", "h3>=4.0",
@@ -41,14 +41,14 @@ testpaths = ["tests"]
 addopts = "-ra --import-mode=importlib"
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py314"
 
 [tool.ruff.lint]
 # Selected correctness, unused-name and import rules across source/tests/scripts.
 select = ["E9", "F63", "F7", "F82", "F401", "F841", "F811", "F601", "F602", "B006", "I001"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.14"
 files = [
   "src/seascape/products.py",
   "src/seascape/core/geo/crs.py",
@@ -68,10 +68,3 @@ ignore_missing_imports = true
 check_untyped_defs = true
 disallow_untyped_defs = true
 warn_unused_ignores = true
-
-# NumPy ships Python 3.12+ stub syntax in the exercised Python 3.14 environment.
-# Keep the project target at 3.11; only this external array implementation is opaque.
-[[tool.mypy.overrides]]
-module = ["numpy", "numpy.*"]
-follow_imports = "skip"
-follow_imports_for_stubs = true

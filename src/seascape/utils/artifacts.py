@@ -169,7 +169,7 @@ def parquet_contract(path: Path) -> dict[str, Any]:
                 {int(h3.get_resolution(value)) for value in normalized}
             )
             centers = [h3.cell_to_latlng(value) for value in normalized]
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             resolutions = []
             centers = []
         if resolutions:
@@ -195,7 +195,7 @@ def parquet_contract(path: Path) -> dict[str, Any]:
                     "max_lon": float(bbox[-2]),
                     "max_lat": float(bbox[-1]),
                 }
-        except (TypeError, ValueError, KeyError, json.JSONDecodeError):
+        except TypeError, ValueError, KeyError, json.JSONDecodeError:
             pass
     return contract
 

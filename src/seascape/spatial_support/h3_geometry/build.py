@@ -202,7 +202,7 @@ def _merge_geometries(
             continue
         try:
             normalized = _normalize_geom(geom)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             continue
         valid_geoms.append(normalized)
 

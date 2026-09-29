@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ['3.11', '3.14']
+        python: ['3.14']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,7 +35,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: ubuntu-latest, python: '3.11', setup_arch: x64, system: Linux, machine: x86_64}
           - {os: ubuntu-latest, python: '3.14', setup_arch: x64, system: Linux, machine: x86_64}
           - {os: macos-14, python: '3.14', setup_arch: arm64, system: Darwin, machine: arm64}
     steps:
@@ -104,7 +103,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.14'
       - run: python -m pip install '.[notebook]'
       - run: python -m pip check
       - run: |
@@ -122,7 +121,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: ubuntu-latest, python: '3.11', arch: x64, constraints: ''}
+          - {os: ubuntu-latest, python: '3.14', arch: x64, constraints: ''}
           - {os: macos-14, python: '3.14', arch: arm64, constraints: docs/environments/quality-python314-macos-arm64.txt}
     steps:
       - uses: actions/checkout@v4

@@ -31,12 +31,12 @@ git diff --check
 ```
 
 The [observed platform table](environments/README.md#tested-platforms) records actual CI evidence.
-The [CI workflow](../.github/workflows/ci.yml) defines Python 3.11 and 3.14 jobs. A configured job
+The [CI workflow](../.github/workflows/ci.yml) defines Python 3.14 jobs. A configured job
 is not evidence it ran. The offline suite includes tests that skip without regional materialized
 products; report skips separately from passed checks. Do not infer live provider availability,
 map rendering, a full regional rebuild or application compatibility from unit tests.
 
-Formatting uses the existing Ruff defaults and Python 3.11 target in `pyproject.toml`. Contributor
+Formatting uses the existing Ruff defaults and Python 3.14 target in `pyproject.toml`. Contributor
 and CI format checks cover all Python under `src/`, `tests/` and `scripts/`, with no additional
 generated-code exclusions:
 
@@ -52,7 +52,7 @@ package code identity and can invalidate recorded resume state; retain those exi
 
 ## Clean consumer acceptance
 
-The `consumer-install` CI job targets Linux Python 3.11/3.14 (x86_64) and macOS Python 3.14
+The `consumer-install` CI job targets Linux Python 3.14 (x86_64) and macOS Python 3.14
 (arm64, `macos-14`). It asserts the observed interpreter/system/architecture and saves native
 library versions. Runner labels follow the [GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners);
 the saved environment, rather than the label alone, identifies what actually ran. The first

@@ -176,14 +176,15 @@ Open a terminal in the extracted root containing `pyproject.toml` and `README.md
 also works. To exercise scientific-hardening work before release, use a checkout or source archive
 of this branch with the same commands and interpret its outputs as candidate/software acceptance.
 
-Use Python 3.11 or 3.14 on a tested Linux/macOS environment; see the
-[platform coverage](docs/environments/README.md#tested-platforms). This is a source installation,
+Use Python 3.14 on a tested Linux/macOS environment for this branch; see the
+[platform coverage](docs/environments/README.md#tested-platforms). The pinned source ZIP is an older
+revision with its own package metadata. This is a source installation,
 not an assumed PyPI or tagged release. Installation requires access to declared dependencies.
 
 <!-- BEGIN QUICKSTART install -->
 ```sh
 SEASCAPE_ENV="$PWD/.venv"
-python3 -m venv "$SEASCAPE_ENV"
+python3.14 -m venv "$SEASCAPE_ENV"
 . "$SEASCAPE_ENV/bin/activate"
 python -m pip install 'pip>=26.2'
 python -m pip install .

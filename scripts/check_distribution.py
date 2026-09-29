@@ -6,7 +6,9 @@ import argparse
 import hashlib
 import json
 import tarfile
+import tomllib
 import zipfile
+from email.parser import BytesParser
 from pathlib import Path
 
 from check_installed_package import REQUIRED_FILES
@@ -17,6 +19,29 @@ def inspect(sdist: Path, wheel: Path) -> dict:
         names = archive.getnames()
         root = names[0].split("/")[0]
         assert f"{root}/pyproject.toml" in names
+        project_file = archive.extractfile(f"{root}/pyproject.toml")
+        assert project_file is not None
+        requires_python = tomllib.loads(project_file.read().decode())["project"][
+            "requires-python"
+        ]
+        assert requires_python == ">=3.14,<3.15", requires_python
+        for metadata in (
+            archive.extractfile(f"{root}/PKG-INFO"),
+            built.open(
+                next(
+                    name
+                    for name in built.namelist()
+                    if name.endswith(".dist-info/METADATA")
+                )
+            ),
+        ):
+            assert metadata is not None
+            with metadata:
+                declared = BytesParser().parsebytes(metadata.read())["Requires-Python"]
+            assert declared is not None
+            assert {clause.strip() for clause in declared.split(",")} == {
+                clause.strip() for clause in requires_python.split(",")
+            }, declared
         for relative in REQUIRED_FILES:
             member = archive.extractfile(f"{root}/src/seascape/{relative}")
             assert member is not None, relative
@@ -38,6 +63,7 @@ def inspect(sdist: Path, wheel: Path) -> dict:
         "status": "PASS",
         "required_files": len(REQUIRED_FILES),
         "packaged_resources": len(resources),
+        "requires_python": requires_python,
         "sdist": str(sdist),
         "sdist_sha256": hashlib.sha256(sdist.read_bytes()).hexdigest(),
         "wheel": str(wheel),

@@ -82,7 +82,7 @@ def test_guard_rejects_activity_in_invoked_process(tmp_path, case):
     }[case] in completed.stderr
 
 
-@pytest.mark.parametrize("failure", [None, "missing", "different"])
+@pytest.mark.parametrize("failure", [None, "missing", "different", "python"])
 def test_sdist_wheel_resource_survival(tmp_path, monkeypatch, failure):
     monkeypatch.syspath_prepend(str(SCRIPTS))
     module = load("check_distribution")
@@ -92,7 +92,8 @@ def test_sdist_wheel_resource_survival(tmp_path, monkeypatch, failure):
     files["resources/docs/products.md"] = b"packaged documentation"
     with tarfile.open(sdist, "w:gz") as archive:
         contents = {
-            "pkg/pyproject.toml": b"fixture",
+            "pkg/pyproject.toml": b'[project]\nrequires-python = ">=3.14,<3.15"\n',
+            "pkg/PKG-INFO": b"Metadata-Version: 2.4\nRequires-Python: >=3.14,<3.15\n",
             **{f"pkg/src/seascape/{name}": value for name, value in files.items()},
         }
         for name, value in contents.items():
@@ -100,6 +101,11 @@ def test_sdist_wheel_resource_survival(tmp_path, monkeypatch, failure):
             member.size = len(value)
             archive.addfile(member, io.BytesIO(value))
     with zipfile.ZipFile(wheel, "w") as archive:
+        wheel_python = ">=3.11" if failure == "python" else ">=3.14,<3.15"
+        archive.writestr(
+            "toolkit_seascape-0.1.0.dist-info/METADATA",
+            f"Metadata-Version: 2.4\nRequires-Python: {wheel_python}\n",
+        )
         for name, value in files.items():
             if name == "resources/docs/products.md" and failure:
                 if failure == "missing":

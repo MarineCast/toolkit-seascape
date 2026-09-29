@@ -143,7 +143,7 @@ def _source_identifier(value: Any, fallback: Any) -> str:
     if value is not None and not pd.isna(value):
         try:
             numeric = float(value)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             numeric = math.nan
         if math.isfinite(numeric) and numeric.is_integer():
             return str(int(numeric))

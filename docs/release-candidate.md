@@ -1,5 +1,9 @@
 # Offline research candidate and maintainer handoff
 
+This is a dated candidate record. The current development branch requires Python 3.14
+(`>=3.14,<3.15`); the Python 3.11 evidence and compatibility claim below describe the tested
+September 27 revision, not the current branch.
+
 VERIFY-01 review, September 27, 2026. Tested source commit:
 **`50675db2bef48d3e48de56ec02a5c98a992808ca`**, on
 `feature/seascape-repository-organization-updates`. FIX-01 (`f98a36b`) and FIX-02 (`9755f94`)

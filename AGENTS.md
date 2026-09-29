@@ -44,7 +44,7 @@ features; species habitat suitability belongs in a downstream application.
 
 ## Validation and completion
 
-Use isolated Python 3.11+: `python -m pip install -e '.[test]'`.
+Use isolated Python 3.14: `python -m pip install -e '.[test]'`.
 Start behavior validation with `python -m pytest -q tests/<relevant_test>.py`, then the required
 suite below. Documentation-only edits need reference checks and `git diff --check`, not Python tests.
 No local skills are needed yet; load only the task-specific documents routed above.
@@ -154,9 +154,9 @@ Global skill defaults do not override repository scope or code-only extraction. 
 Install `.[test,quality]`, then run `ruff check src tests scripts`, `python -m mypy`, and
 `ruff format --check src tests scripts`. Use `ruff format src tests scripts` for formatting;
 keep lint autofixes, import reordering and semantic edits in separate changes. The format gate
-covers all Python in those paths with the existing Ruff defaults and Python 3.11 target;
+covers all Python in those paths with the existing Ruff defaults and Python 3.14 target;
 there are no additional generated-code exclusions. Mypy checks the 12 interface modules listed
-in `docs/environments/README.md`; the NumPy-only external-stub boundary is documented there.
+in `docs/environments/README.md`; skipped external imports remain documented there.
 Run installed-wheel imports using `scripts/check_installed_package.py` from outside the checkout.
 Capture the runtime/test/quality closure with `scripts/environment_snapshot.py --extra test
 --extra quality --output /tmp/seascape-env`

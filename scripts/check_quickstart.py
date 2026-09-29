@@ -40,7 +40,7 @@ def examples(readme: str, workflows: str) -> dict[str, str]:
     expected = {
         "install": [
             'SEASCAPE_ENV="$PWD/.venv"',
-            'python3 -m venv "$SEASCAPE_ENV"',
+            'python3.14 -m venv "$SEASCAPE_ENV"',
             '. "$SEASCAPE_ENV/bin/activate"',
             "python -m pip install 'pip>=26.2'",
             "python -m pip install .",
@@ -164,10 +164,10 @@ def run(sdist: Path, source: Path, forbidden: Path, output: Path) -> dict:
             PYTHONNOUSERSITE="1",
             PYTHONDONTWRITEBYTECODE="1",
         )
-        # Pin python3 to the selected CI/local interpreter; all documented lines
+        # Pin python3.14 to the selected CI/local interpreter; all documented lines
         # run verbatim in one shell, preserving activation and workspace state.
         script = (
-            "set -eu\npython3() { "
+            "set -eu\npython3.14() { "
             + shlex.quote(sys.executable)
             + ' "$@"; }\n'
             + blocks["install"]

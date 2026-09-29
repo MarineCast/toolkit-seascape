@@ -1334,3 +1334,37 @@ skips and installed-wheel 175 external tests remain identified at the tested pac
 redundant source suite or packaging rebuild for this docs-only execution closure. No remote merge,
 tag, registry/settings or data publication. Stop after PILOT-01; next ACCEPT-01 remains pending on
 its actual unfamiliar-human evidence and owner decisions, not implied by this pilot or software CI.
+
+## Python 3.14-only support — September 29
+
+At clean starting HEAD `49b5feb558f5749ddc2ed61e8b84cfdf4ba65267` on
+`feature/seascape-scientific-hardening`, the package advertised Python `>=3.11`, which explains
+the 3.11 test, consumer and quality jobs. Per the owner's new support decision, metadata now
+requires `>=3.14,<3.15`; test, notebook, consumer and quality CI jobs all select 3.14. Current-use
+README, contributor, demo and platform docs and the executable quickstart reflect that policy.
+Historical 3.11 runs/candidate evidence are retained as dated records. Ruff/mypy target 3.14;
+the old NumPy-stub override is gone. Six source files received only Python-3.14 Ruff formatting
+(AST-identical to HEAD); demo fixture gained type annotations, with its calculations unchanged.
+Package APIs, source data, canonical products, retained releases and scientific gates are unchanged.
+
+Local interpreter: CPython 3.14.6, macOS ARM64. Evidence root:
+`/private/tmp/seascape-python314-only.rgzcw5` (not a release or uploaded artifact).
+
+| Command/check | Result |
+| --- | --- |
+| `python -m pytest -q tests/test_standalone_package.py tests/test_consumer_acceptance.py tests/test_documentation.py` | exit 0; 69 passed (after metadata-fixture correction) |
+| `python -m pytest -q` | exit 0; 446 passed, 3 skipped for absent regional artifacts; 110 warnings |
+| `python scripts/check_docs.py`; `python -m pytest -q tests/test_documentation.py` | exits 0; 46 documents/198 links/26 stages; 16 passed |
+| `ruff check src tests scripts`; `ruff format --check src tests scripts`; `python -m mypy`; `python -m pip check`; `git diff --check` | exits 0; 242 Python files formatted; 12 typed modules; no broken requirements or whitespace errors |
+| `python -m build --outdir <evidence>/distributions`; `python scripts/check_distribution.py --sdist <sdist> --wheel <wheel> --output <report>` | exits 0; isolated sdist-to-wheel build; both archives declare Python 3.14 only; 9 required files and 5 resources checked |
+| `python scripts/check_consumer_install.py --wheel <wheel> --source <checkout> --forbid-root <MarineCast> --output <evidence>/consumer` | exit 0; 16 expected-exit steps, runtime-only demo and negative probes, 179 external tests, copied notebook with 2 figures |
+| `python scripts/check_quickstart.py --sdist <sdist> --source <checkout> --forbid-root <MarineCast> --output <evidence>/quickstart` | exit 0; documented source install/plan/demo, 15 synthetic checks |
+| `python -m pip install --dry-run --no-deps --ignore-installed --python-version 3.11 <wheel>` | expected exit 1: Requires-Python excludes 3.11 |
+| Same pip dry run with `--python-version 3.14` | exit 0: would install 0.1.0 |
+
+The first isolated build attempt exited 1 because sandbox DNS blocked PyPI build dependencies;
+the authorized network retry above succeeded. The first distribution inspection found setuptools'
+reordered equivalent metadata clauses; the inspector now compares those clauses and its regression
+also rejects a wheel that falsely advertises 3.11. Focused checks were rerun after this correction.
+Hosted CI for this exact support-policy change remains unrun until a feature push/run completes;
+historical 3.11 CI success is not current-support evidence. No 3.11 execution was claimed here.
