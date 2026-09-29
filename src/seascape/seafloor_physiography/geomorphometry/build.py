@@ -54,6 +54,7 @@ NATIVE_OUTPUT_COLUMNS = [
     "NORTHNESS",
     "PROFILE_CURVATURE",
     "PLAN_CURVATURE",
+    "TANGENTIAL_CURVATURE",
     "GENERAL_CURVATURE",
     "SURFACE_AREA_RATIO_FROM_SLOPE",
 ]
@@ -64,6 +65,7 @@ PER_RING_TEMPLATES = (
     "ASPECT_RESULTANT_LENGTH_RING_{ring}",
     "TERRAIN_POSITION_RING_{ring}_M",
     "TERRAIN_POSITION_RING_{ring}_Z",
+    "TERRAIN_POSITION_RING_{ring}_Z_QC_REASON",
     "LOCAL_RELIEF_RING_{ring}_M",
     "DEPTH_RANGE_RING_{ring}_M",
     "DEPTH_STD_RING_{ring}_M",
@@ -271,8 +273,8 @@ def _quadratic_curvatures(
     neighbors: list[str],
     depths: Mapping[str, float],
     centers: Mapping[str, tuple[float, float]],
-) -> tuple[float, float, float, float]:
-    """Return legacy Laplacian and positive-convex general/profile/plan curvature."""
+) -> tuple[float, float, float, float, float]:
+    """Return elevation Laplacian, convex general/profile/plan/tangential curvature."""
 
     center_x, center_y = centers[center]
     cells = [center, *neighbors]
@@ -282,7 +284,7 @@ def _quadratic_curvatures(
     ]
     scale = float(np.mean(distances))
     if not math.isfinite(scale) or scale <= 0.0:
-        return (math.nan,) * 4
+        return (math.nan,) * 5
     design: list[list[float]] = []
     elevations: list[float] = []
     for cell in cells:
@@ -294,7 +296,7 @@ def _quadratic_curvatures(
         np.asarray(design), np.asarray(elevations), rcond=None
     )
     if rank < 6:
-        return (math.nan,) * 4
+        return (math.nan,) * 5
     a, b, c, d, e, _intercept = coefficients
     p = float(d / scale)
     q = float(e / scale)
@@ -305,14 +307,18 @@ def _quadratic_curvatures(
     general = -legacy_laplacian
     gradient_squared = p * p + q * q
     if gradient_squared <= 1e-18:
-        return legacy_laplacian, general, math.nan, math.nan
+        return legacy_laplacian, general, math.nan, math.nan, math.nan
     profile = -(r * p * p + 2.0 * s * p * q + t * q * q) / (
         gradient_squared * (1.0 + gradient_squared) ** 1.5
     )
-    plan = -(r * q * q - 2.0 * s * p * q + t * p * p) / (
+    contour_numerator = -(r * q * q - 2.0 * s * p * q + t * p * p)
+    # Plan curvature is curvature of the horizontal isoline; tangential
+    # curvature bends the 3D surface in the contour-tangent direction.
+    plan = contour_numerator / gradient_squared**1.5
+    tangential = contour_numerator / (
         gradient_squared * math.sqrt(1.0 + gradient_squared)
     )
-    return legacy_laplacian, general, float(profile), float(plan)
+    return legacy_laplacian, general, float(profile), float(plan), float(tangential)
 
 
 def validate_native_raster_header(raster) -> None:
@@ -470,12 +476,14 @@ def _vector_ruggedness(
         cell
         for cell in cells
         if math.isfinite(slopes.get(cell, math.nan))
-        and math.isfinite(aspects.get(cell, math.nan))
+        and (abs(slopes[cell]) <= 1e-12 or math.isfinite(aspects.get(cell, math.nan)))
     ]
     if not valid:
         return math.nan
     slope_radians = np.deg2rad([slopes[cell] for cell in valid])
-    aspect_radians = np.deg2rad([aspects[cell] for cell in valid])
+    aspect_radians = np.deg2rad(
+        [aspects[cell] if slopes[cell] > 1e-12 else 0.0 for cell in valid]
+    )
     x = np.sin(slope_radians) * np.sin(aspect_radians)
     y = np.sin(slope_radians) * np.cos(aspect_radians)
     z = np.cos(slope_radians)
@@ -540,7 +548,7 @@ def _derive_metrics(
     }
     centers = _projected_centers(pd.Series(cells), config.projected_crs)
     columns = output_columns(config.neighborhood_rings)
-    rows: dict[str, dict[str, float | str]] = {
+    rows: dict[str, dict[str, float | str | None]] = {
         cell: {column: math.nan for column in columns} for cell in cells
     }
     slopes: dict[str, float] = {}
@@ -574,13 +582,14 @@ def _derive_metrics(
                 row["NORTHNESS"] = math.cos(math.radians(aspect))
             row["SURFACE_AREA_RATIO_FROM_SLOPE"] = 1.0 / math.cos(math.radians(slope))
         if len(neighbors) >= 5:
-            legacy, general, profile, plan = _quadratic_curvatures(
+            legacy, general, profile, plan, tangential = _quadratic_curvatures(
                 cell, neighbors, depths, centers
             )
             row["CURVATURE"] = legacy
             row["GENERAL_CURVATURE"] = general
             row["PROFILE_CURVATURE"] = profile
             row["PLAN_CURVATURE"] = plan
+            row["TANGENTIAL_CURVATURE"] = tangential
 
     for cell in cells:
         if cell not in depths:
@@ -596,16 +605,22 @@ def _derive_metrics(
             all_depths = np.asarray([depths[item] for item in neighborhood])
             terrain_position = float(neighbor_depths.mean() - depths[cell])
             neighbor_standard_deviation = float(np.std(neighbor_depths))
-            terrain_position_z = (
-                terrain_position / neighbor_standard_deviation
-                if neighbor_standard_deviation > 1e-9
-                else 0.0
-            )
-            tpi_z_values.append(terrain_position_z)
+            if neighbor_standard_deviation > 1e-9:
+                terrain_position_z = terrain_position / neighbor_standard_deviation
+                tpi_qc = None
+            elif abs(terrain_position) <= 1e-9:
+                terrain_position_z = 0.0
+                tpi_qc = None
+            else:
+                terrain_position_z = math.nan
+                tpi_qc = "zero_neighbor_variance_nonzero_position"
+            if math.isfinite(terrain_position_z):
+                tpi_z_values.append(terrain_position_z)
             deviations = np.abs(all_depths - depths[cell])
             median_depth = float(np.median(all_depths))
             row[f"TERRAIN_POSITION_RING_{ring}_M"] = terrain_position
             row[f"TERRAIN_POSITION_RING_{ring}_Z"] = terrain_position_z
+            row[f"TERRAIN_POSITION_RING_{ring}_Z_QC_REASON"] = tpi_qc
             row[f"LOCAL_RELIEF_RING_{ring}_M"] = float(np.max(deviations))
             row[f"DEPTH_RANGE_RING_{ring}_M"] = float(np.ptp(all_depths))
             row[f"DEPTH_STD_RING_{ring}_M"] = float(np.std(all_depths))
@@ -723,7 +738,8 @@ def build_geomorphometry(
     result = result[columns]
     if result["H3_INDEX"].nunique() != len(result):
         raise ValueError("Geomorphometry output contains duplicate H3_INDEX values.")
-    numeric = result.drop(columns="H3_INDEX").to_numpy(dtype="float64")
+    qc_columns = [column for column in result if column.endswith("_QC_REASON")]
+    numeric = result.drop(columns=["H3_INDEX", *qc_columns]).to_numpy(dtype="float64")
     if np.isinf(numeric).any():
         raise ValueError("Geomorphometry output contains infinite values.")
     publisher = stage_parquet_family(
@@ -759,6 +775,10 @@ def build_geomorphometry(
         ],
         source_completeness="complete",
         metadata={
+            "scientific_method_version": "geomorphometry_curvature_tpi_v2",
+            "curvature_sign_and_units": "negative-depth elevation; positive convex; inverse metres at projected H3 fitting scale",
+            "plan_curvature_method": "horizontal contour curvature; historical PLAN_CURVATURE values were tangential curvature",
+            "tpi_zero_variance": "zero only for zero focal prominence; otherwise null with QC reason",
             "neighborhood_semantics": "water-passable graph neighborhoods",
             "native_slope_method": "marine_only_central_differences_v2",
             "native_slope_edges": "one_sided_at_raster_edges; missing_if_stencil_has_land_or_nodata",
