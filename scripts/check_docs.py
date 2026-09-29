@@ -23,7 +23,7 @@ from seascape.maintenance.update_seascape_docs import (
     render_product_index,
 )
 from seascape.preflight import preflight_build
-from seascape.workflow import stage_names
+from seascape.workflow import DOMAIN_LAYER_STAGES, stage_names
 
 STAGE_START = "<!-- BEGIN GENERATED STAGE INPUTS -->"
 STAGE_END = "<!-- END GENERATED STAGE INPUTS -->"
@@ -193,7 +193,14 @@ def render_stage_inputs() -> str:
             lines.append(
                 "| " + " | ".join(cell.replace("|", "\\|") for cell in cells) + " |"
             )
-        if len(report["stages"]) != len(stage_names()):
+        optional_stages = [stage for stage in DOMAIN_LAYER_STAGES if stage.optional]
+        for stage in optional_stages:
+            dependencies = ", ".join(f"`{name}`" for name in stage.dependencies) or "—"
+            lines.append(
+                f"| `{stage.name}` | {dependencies} | Selected only; set its explicit source registry "
+                "and bounds in `config/data/environment_seascape.yaml`, then run read-only preflight. |"
+            )
+        if len(report["stages"]) + len(optional_stages) != len(stage_names()):
             raise ValueError("Stage input reference lost workflow stages")
         return "\n".join([*lines, STAGE_END])
 

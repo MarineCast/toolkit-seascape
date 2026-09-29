@@ -31,6 +31,13 @@ and QC reasons. Survey coverage does not imply observed absence outside that cov
 
 ## Validation and publication
 
+The optional [structural-variable contracts](structural-variables.md) define the
+SV-01–SV-06 product grains, equations, R8/R6 support, source requirements,
+missingness and fixture-only validation status. Their long-form object
+relationships retain object IDs; they are not one-row-per-H3 predictor columns.
+No regional materialization or independent ecological validation is inferred
+from registration or a synthetic fixture.
+
 Producer tests retain dimensional, geometry, alignment, provenance, finite-value, missingness,
 connectivity and duplicate-key checks. Manifest schema and release checks are retained from the
 originating implementation. Source metadata's legacy `_orcacast` JSON key is retained for cache

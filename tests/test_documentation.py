@@ -25,7 +25,9 @@ def docs(monkeypatch):
 def test_repository_documentation_matches_production_metadata(docs):
     report = docs.check(ROOT)
     assert report["status"] == "PASS"
-    assert report["workflow_stages"] == 26
+    from seascape.workflow import stage_names
+
+    assert report["workflow_stages"] == len(stage_names())
     assert report["local_links"] > 100
 
 

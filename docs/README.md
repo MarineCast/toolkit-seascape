@@ -23,6 +23,7 @@ The live explorer is a separate research path with explicit acquisition and expl
 | [Bounded San Juan pilot](pilots/san-juan.md) | Executed exploratory R6/R8 family pilot, measurements and limits; not a complete regional release |
 | [Scientific hardening evidence](scientific-hardening.md) | Development-branch issue results, migrations and blockers |
 | [Capability coverage](capability-coverage.md) | Existing, unmaterialized, data-blocked and deferred physical capabilities |
+| [Structural variables SV-01–SV-07](structural-variables.md) | Optional producers, exact keys and equations, source requirements, loading and limits |
 | [Bounded real-data recipe](real-data-recipe.md) | Reviewed source requirements and small candidate preparation; unexecuted in this branch |
 | [Unfamiliar-user checklist](new-user-checklist.md) | Human first-use acceptance script; trial pending |
 | [Configuration](CONFIGURATION.md) | Workspace precedence, editable settings, candidate isolation and reuse limits |

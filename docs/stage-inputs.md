@@ -46,4 +46,10 @@ materializes datasets or regenerates the authoritative product catalog. CI check
 | `seascape-documentation` | `environment-feature-catalog` | Existing dependency outputs / stage validation |
 | `seascape-release-audit` | `seascape-feature-eligibility`, `seascape-documentation` | Existing dependency outputs / stage validation |
 | `seascape-release` | `seascape-release-audit` | Existing dependency outputs / stage validation |
+| `seascape-selected-outlets` | `seascape-fluvial-connectivity` | Selected only; set its explicit source registry and bounds in `config/data/environment_seascape.yaml`, then run read-only preflight. |
+| `seascape-nearshore-transitions` | `seascape-bathymetry`, `seascape-shoreline-characterization` | Selected only; set its explicit source registry and bounds in `config/data/environment_seascape.yaml`, then run read-only preflight. |
+| `seascape-passage-sections` | `seascape-bathymetry` | Selected only; set its explicit source registry and bounds in `config/data/environment_seascape.yaml`, then run read-only preflight. |
+| `seascape-geographic-gateways` | `h3-marine-spatial-support` | Selected only; set its explicit source registry and bounds in `config/data/environment_seascape.yaml`, then run read-only preflight. |
+| `seascape-coast-complexity` | `seascape-shoreline-characterization` | Selected only; set its explicit source registry and bounds in `config/data/environment_seascape.yaml`, then run read-only preflight. |
+| `seascape-mapped-habitat-mosaic` | `h3-marine-spatial-support` | Selected only; set its explicit source registry and bounds in `config/data/environment_seascape.yaml`, then run read-only preflight. |
 <!-- END GENERATED STAGE INPUTS -->
