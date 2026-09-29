@@ -29,17 +29,17 @@ OrcaCast or sibling-toolkit checkout is required.
 
 ## From sources to variables
 
-**Source data → Thematic processing → Interpretable variable areas**
+Follow each row from a source dataset, through a Seascape theme, to the variables it produces.
 
 ```mermaid
 flowchart LR
     accTitle: Seascape source data, themes, and variable areas
     accDescr: Seven thematic routes connect representative source data to Seascape themes and example variable areas. Spatial support is shared by the other families. This conceptual overview is not the execution dependency graph or a complete lineage map.
 
-    subgraph S["INPUTS · SOURCE DATA"]
+    subgraph S["01 · SOURCE DATA"]
         direction TB
-        S1["GEBCO<br/>bathymetry grids"]
-        S2["dbSEABED<br/>composition rasters"]
+        S1["<b>GEBCO</b><br/>Bathymetry grids"]
+        S2["<b>dbSEABED</b><br/>Composition rasters"]
         S3["Vegetation maps<br/>and reef evidence"]
         S4["Shoreline inventories<br/>and coastal geometry"]
         S5["River, barrier<br/>and estuary inventories"]
@@ -47,18 +47,18 @@ flowchart LR
         S7["U.S. / Canadian<br/>marine and land boundaries"]
     end
 
-    subgraph T["SEASCAPE · THEMES"]
+    subgraph T["02 · SEASCAPE THEMES"]
         direction TB
         T1["Depth and terrain"]
-        T2["Seafloor composition"]
-        T3["Vegetation and habitat evidence"]
+        T2["Seafloor<br/>composition"]
+        T3["Vegetation and<br/>habitat evidence"]
         T4["Coastal form"]
-        T5["Freshwater connections"]
+        T5["Freshwater<br/>connections"]
         T6["Built environment"]
         T7["Spatial support"]
     end
 
-    subgraph V["OUTPUTS · VARIABLE AREAS"]
+    subgraph V["03 · OUTPUT VARIABLES"]
         direction TB
         V1["Depth, slope<br/>and geomorphic units"]
         V2["Rock, gravel, sand, mud<br/>and derived hardness"]
@@ -77,13 +77,14 @@ flowchart LR
     S6 --> T6 --> V6
     S7 --> T7 --> V7
 
-    style S fill:transparent,stroke:#94A3B8,color:#64748B
-    style T fill:transparent,stroke:#0F766E,color:#0F766E
-    style V fill:transparent,stroke:#5EAAA0,color:#5EAAA0
+    style S fill:#F3F7F6,stroke:#D7E3DF,color:#123E37,stroke-width:1px,rx:12,ry:12
+    style T fill:#E7F2EE,stroke:#B3D2C8,color:#123E37,stroke-width:1px,rx:12,ry:12
+    style V fill:#F0F9F5,stroke:#D0E7DD,color:#123E37,stroke-width:1px,rx:12,ry:12
 
-    classDef source fill:#F1F5F9,stroke:#94A3B8,color:#172B4D,stroke-width:1px
-    classDef theme fill:#0F766E,stroke:#0F766E,color:#FFFFFF,stroke-width:1px
-    classDef variable fill:#ECFDF5,stroke:#5EAAA0,color:#123E37,stroke-width:1px
+    classDef source fill:#FFFFFF,stroke:#B6CCC4,color:#284B43,stroke-width:1px,rx:7,ry:7
+    classDef theme fill:#0F766E,stroke:#0B625C,color:#FFFFFF,stroke-width:1px,rx:7,ry:7
+    classDef variable fill:#ECFDF5,stroke:#8DBFB0,color:#123E37,stroke-width:1px,rx:7,ry:7
+    linkStyle default stroke:#609B91,stroke-width:1.5px
     class S1,S2,S3,S4,S5,S6,S7 source
     class T1,T2,T3,T4,T5,T6,T7 theme
     class V1,V2,V3,V4,V5,V6,V7 variable
