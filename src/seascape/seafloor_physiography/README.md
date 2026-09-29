@@ -45,8 +45,14 @@ their manifest last.
 ## Missingness, QC, and R8 to R6 aggregation
 
 Raster nodata remains null. Depth-band fractions use valid contributing pixels as the denominator;
-band pixel counts remain counts. R6 bathymetry is recomputed with feature-aware summaries rather
-than averaging every R8 output column. No R6 geomorphometry or unit table is implied.
+band pixel counts remain counts. Every canonical bathymetry statistic at each resolution uses
+the same direct pixel-to-H3 assignment. R6 means, quantiles, counts, and bands are computed from
+the pixels assigned directly to R6, not from R8 children. A water-support cell with no direct
+sample retains null depth, count, and band values; this includes hierarchy-only parents at H3
+boundary disagreements. A completely nonoverlapping source fails instead of producing a
+misleading all-null product. Earlier R6 releases could contain direct moments with hierarchical
+counts; they remain immutable and must not be silently interpreted as the direct-support v2
+contract. No R6 geomorphometry or unit table is implied.
 
 ## Inspection and validation
 

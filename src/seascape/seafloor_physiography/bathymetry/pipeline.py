@@ -8,14 +8,11 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Mapping
 
-import pandas as pd
-
 from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.core.config.presentation import DEFAULT_PRESENTATION_CONFIG_PATH
-from seascape.core.geo.h3 import cell_to_parent
 from seascape.publication import (
     TransactionalSeascapePublisher,
 )
@@ -29,7 +26,7 @@ from seascape.utils.config import (
     resolve_project_path,
 )
 
-from .build import DEPTH_BANDS_M, build_bathymetry_parquet
+from .build import build_bathymetry_parquet
 from .download import download_gebco_geotiff
 from .inspect import build_bathymetry_map
 
@@ -289,53 +286,6 @@ def load_bathymetry_config(
     )
 
 
-def recompute_parent_depth_bands(
-    child_path: Path,
-    parent_path: Path,
-    *,
-    parent_resolution: int,
-) -> None:
-    """Replace parent composition counts/fractions with sums of child counts."""
-
-    child = pd.read_parquet(child_path)
-    parent = pd.read_parquet(parent_path)
-    count_columns = [
-        f"BATHYMETRY_PIXEL_COUNT_{token}_M" for token, _lower, _upper in DEPTH_BANDS_M
-    ]
-    required = {"H3_INDEX", *count_columns}
-    for name, frame in (("child", child), ("parent", parent)):
-        missing = sorted(required.difference(frame.columns))
-        if missing:
-            raise ValueError(
-                f"Bathymetry {name} table lacks depth-band columns: {missing}"
-            )
-    child_counts = child.loc[:, ["H3_INDEX", *count_columns]].copy()
-    child_counts["H3_INDEX"] = (
-        child_counts["H3_INDEX"]
-        .astype(str)
-        .map(lambda cell: cell_to_parent(cell, parent_resolution))
-    )
-    grouped = child_counts.groupby("H3_INDEX", sort=True, observed=True)[
-        count_columns
-    ].sum(min_count=1)
-    parent["H3_INDEX"] = parent["H3_INDEX"].astype(str)
-    parent = parent.set_index("H3_INDEX").copy()
-    unknown = sorted(set(grouped.index).difference(parent.index))
-    if unknown:
-        raise ValueError(
-            f"Child bathymetry maps to parents outside canonical support: {unknown[:5]}"
-        )
-    parent.loc[grouped.index, count_columns] = grouped
-    total = parent[count_columns].sum(axis=1, min_count=1)
-    parent["BATHYMETRY_PIXEL_COUNT"] = total
-    for token, _lower, _upper in DEPTH_BANDS_M:
-        count = f"BATHYMETRY_PIXEL_COUNT_{token}_M"
-        fraction = f"BATHYMETRY_FRAC_{token}_M"
-        parent[fraction] = parent[count].div(total.where(total > 0))
-    parent = parent.reset_index()
-    parent.to_parquet(parent_path, index=False)
-
-
 def run_pipeline(
     config_path: str | Path = "config/data/environment_seascape.yaml",
     *,
@@ -413,15 +363,6 @@ def run_pipeline(
             )
         for staged_config in staged_configs:
             build_bathymetry_parquet(staged_config, raster_path=raw_path)
-        staged_by_resolution = {
-            item.h3_resolution: item.processed_path for item in staged_configs
-        }
-        if {6, 8}.issubset(staged_by_resolution):
-            recompute_parent_depth_bands(
-                staged_by_resolution[8],
-                staged_by_resolution[6],
-                parent_resolution=6,
-            )
         processed_paths = [item.processed_path for item in product_configs]
         artifacts = [
             capture_staged_parquet_artifact(publisher, destination)
@@ -496,6 +437,8 @@ def run_pipeline(
                     "[200,infinity)",
                 ],
                 "neighborhood_semantics": "water_connected_minimum_hops",
+                "scientific_method_version": "direct_pixel_support_v2",
+                "statistic_sampling_support": "all canonical bathymetry statistics and depth-band counts use the same direct pixel-to-resolution assignment",
             },
         )
         publisher.stage_manifest(output_dir / "bathymetry_manifest.json", manifest)
