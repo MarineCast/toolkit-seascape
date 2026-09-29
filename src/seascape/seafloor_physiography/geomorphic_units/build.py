@@ -68,6 +68,7 @@ OUTPUT_COLUMNS = [
     "H3_INDEX",
     "GEOMORPHIC_UNIT",
     "CLASSIFICATION_CONFIDENCE",
+    "CLASSIFICATION_QC_REASON",
     "MAPPING_UNIT_CELL_COUNT",
     "MINIMUM_MAPPING_UNIT_CELLS",
     "MEETS_MINIMUM_MAPPING_UNIT",
@@ -298,8 +299,8 @@ def _terrain_context(
     broad_tpi = np.full(len(cells), np.nan)
     broad_z = np.full(len(cells), np.nan)
     slope_context = np.full(len(cells), np.nan)
-    directional_anisotropy = np.zeros(len(cells), dtype="float64")
-    crosses_shelf_depth = np.zeros(len(cells), dtype="float64")
+    directional_anisotropy = np.full(len(cells), np.nan)
+    crosses_shelf_depth = np.full(len(cells), np.nan)
 
     for offset, cell in enumerate(cells):
         if not math.isfinite(depth[offset]):
@@ -322,6 +323,8 @@ def _terrain_context(
                 broad_tpi[offset] / standard_deviation
                 if standard_deviation > 1e-9
                 else 0.0
+                if abs(broad_tpi[offset]) <= 1e-9
+                else np.nan
             )
             valid_slopes = slope[broad_indices]
             valid_slopes = valid_slopes[np.isfinite(valid_slopes)]
@@ -370,7 +373,7 @@ def _terrain_context(
 
 def _rise(values: np.ndarray, low: float, high: float) -> np.ndarray:
     span = max(high - low, 1e-12)
-    return np.clip((np.nan_to_num(values, nan=low) - low) / span, 0.0, 1.0)
+    return np.clip((values - low) / span, 0.0, 1.0)
 
 
 def _fall(values: np.ndarray, low: float, high: float) -> np.ndarray:
@@ -428,8 +431,8 @@ def _classification_scores(
     negative_local = _rise(
         -local_tpi, config.prominence_min_m, config.prominence_min_m * 3.0
     )
-    crest = np.maximum(positive_broad, positive_local)
-    valley = np.maximum(negative_broad, negative_local)
+    crest = np.fmax(positive_broad, positive_local)
+    valley = np.fmax(negative_broad, negative_local)
     strong_relief = _rise(
         relief, config.canyon_relief_min_m, config.canyon_relief_min_m * 4.0
     )
@@ -445,7 +448,7 @@ def _classification_scores(
         min(1.0, config.sill_min_constriction + 0.30),
     )
     near_sill = _fall(distance_sill, 0.0, 5_000.0)
-    near_shelf_break = np.maximum(
+    near_shelf_break = np.fmax(
         _fall(distance_200, 0.0, config.shelf_break_distance_m),
         terrain["CROSSES_SHELF_DEPTH"],
     )
@@ -502,7 +505,26 @@ def _classification_scores(
         * (crest > 0.20)
         * (deep > 0.10)
     )
-    scores["CANYON_RIM"] = np.zeros(len(frame), dtype="float64")
+    scores["CANYON_RIM"] = np.full(len(frame), np.nan)
+    # Every contributing term is required. Preserve unknowns rather than
+    # renormalizing the observed terms into a complete-looking score.
+    required = {
+        "SHELF": (shelf_depth, flat, neutral_bpi),
+        "SHELF_BREAK": (near_shelf_break, steep),
+        "SLOPE": (steep, deep, neutral_bpi),
+        "BANK_OR_SHOAL": (crest, shallow_bank, flat, strong_relief),
+        "BASIN_OR_DEPRESSION": (valley, deep, flat),
+        "CANYON_AXIS": (valley, linear, strong_relief, steep_context),
+        "CHANNEL": (valley, linear, narrow_channel, constrained),
+        "TROUGH": (negative_broad, linear, flat, deep),
+        "SILL": (crest, narrow_sill, constrained, near_sill),
+        "RIDGE": (crest, linear, strong_relief, deep),
+        "TERRACE": (flat, steep_context, neutral_bpi),
+        "SEAMOUNT_OR_KNOLL": (crest, radial, deep, strong_relief),
+    }
+    for unit, evidence in required.items():
+        eligible = np.logical_and.reduce([np.isfinite(term) for term in evidence])
+        scores[unit][~eligible] = np.nan
     return scores
 
 
@@ -522,11 +544,15 @@ def _add_canyon_rim_scores(
             if neighbor_index is None or neighbor_index == axis_index:
                 continue
             depth_difference = axis_depth - terrain["DEPTH"][neighbor_index]
+            if not np.isfinite(depth_difference) or not np.isfinite(
+                terrain["SLOPE"][neighbor_index]
+            ):
+                continue
             shallower = float(np.clip(depth_difference / 40.0, 0.0, 1.0))
             slope = float(
                 _rise(np.asarray([terrain["SLOPE"][neighbor_index]]), 2.0, 10.0)[0]
             )
-            scores["CANYON_RIM"][neighbor_index] = max(
+            scores["CANYON_RIM"][neighbor_index] = np.fmax(
                 scores["CANYON_RIM"][neighbor_index],
                 0.70 * (0.45 + 0.30 * shallower + 0.25 * slope),
             )
@@ -552,16 +578,20 @@ def _select_labels(
         "SHELF",
     )
     matrix = np.column_stack([scores[unit] for unit in priority])
-    selected = np.argmax(matrix, axis=1)
+    eligible = np.isfinite(matrix) & (matrix > 0.0)
+    rankable = np.where(eligible, matrix, -np.inf)
+    selected = np.argmax(rankable, axis=1)
     labels = np.asarray([priority[index] for index in selected], dtype=object)
     valid_depth = np.isfinite(
         pd.to_numeric(frame["BATHYMETRY"], errors="coerce").to_numpy("float64")
     )
-    labels[~valid_depth] = "UNCLASSIFIED"
-    top = matrix[np.arange(len(frame)), selected]
-    second = np.partition(matrix, -2, axis=1)[:, -2]
+    supported = valid_depth & eligible.any(axis=1)
+    labels[~supported] = "UNCLASSIFIED"
+    top = rankable[np.arange(len(frame)), selected]
+    second = np.partition(rankable, -2, axis=1)[:, -2]
+    second = np.where(np.isfinite(second), second, 0.0)
     confidence = np.clip(0.55 * top + 0.45 * np.maximum(top - second, 0.0), 0.0, 1.0)
-    confidence[~valid_depth] = 0.0
+    confidence[~supported] = 0.0
     return labels, confidence
 
 
@@ -628,9 +658,15 @@ def _apply_minimum_mapping_unit(
             candidates = [
                 label for label, count in counts.items() if count == best_count
             ]
-            changes[int(offset)] = max(
-                candidates, key=lambda label: float(scores[label][offset])
-            )
+            supported_candidates = [
+                label
+                for label in candidates
+                if np.isfinite(scores[label][offset]) and scores[label][offset] > 0
+            ]
+            if supported_candidates:
+                changes[int(offset)] = max(
+                    supported_candidates, key=lambda label: float(scores[label][offset])
+                )
         if not changes:
             break
         for offset, label in changes.items():
@@ -713,6 +749,11 @@ def _build_output(
         "H3_INDEX": frame["H3_INDEX"].astype(str),
         "GEOMORPHIC_UNIT": labels,
         "CLASSIFICATION_CONFIDENCE": confidence,
+        "CLASSIFICATION_QC_REASON": np.where(
+            ~np.isfinite(terrain["DEPTH"]),
+            "depth_unavailable",
+            np.where(labels == "UNCLASSIFIED", "insufficient_evidence", None),
+        ),
         "MAPPING_UNIT_CELL_COUNT": component_sizes,
         "MINIMUM_MAPPING_UNIT_CELLS": np.full(len(frame), minimum_cells),
         "MEETS_MINIMUM_MAPPING_UNIT": (component_sizes >= minimum_cells)
@@ -773,7 +814,30 @@ def build_geomorphic_units(
         neighborhood_lookups[1],
     )
     changed = labels != raw_labels
-    confidence[changed] *= 0.75
+    # Support must refer to the published label after minimum-unit processing.
+    if changed.any():
+        priority = tuple(scores)
+        for offset in np.flatnonzero(changed):
+            selected_score = float(scores[str(labels[offset])][offset])
+            runner_up = max(
+                (
+                    float(scores[unit][offset])
+                    for unit in priority
+                    if unit != labels[offset] and np.isfinite(scores[unit][offset])
+                ),
+                default=0.0,
+            )
+            confidence[offset] = (
+                float(
+                    np.clip(
+                        0.55 * selected_score
+                        + 0.45 * max(selected_score - runner_up, 0.0),
+                        0.0,
+                        1.0,
+                    )
+                )
+                * 0.75
+            )
     confidence *= np.minimum(
         1.0,
         np.maximum(component_sizes, 1) / float(config.minimum_mapping_unit_cells),
@@ -849,6 +913,8 @@ def build_geomorphic_units(
                 "Modeling-scale terrain classification; not an authoritative geological map."
             ),
             "neighborhood_semantics": "water-passable graph neighborhoods",
+            "scientific_method_version": "geomorphic_evidence_v2",
+            "classification_confidence": "heuristic support for the published label; not a calibrated probability",
         },
     )
     publisher.publish_manifest(

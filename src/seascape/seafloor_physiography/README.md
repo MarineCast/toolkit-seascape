@@ -53,3 +53,18 @@ than averaging every R8 output column. No R6 geomorphometry or unit table is imp
 Inspectors use shared basemaps and palettes while retaining terrain-specific legends. Tests cover
 depth-band closure, finite geomorphometry, water-connected neighborhoods, classification rules,
 schema contracts, and canonical support.
+
+## Geomorphic classification method v2 (scientific hardening)
+
+The classifier treats missing required inputs as ineligible for that class. A row with no
+positive eligible class is `UNCLASSIFIED`, with `CLASSIFICATION_QC_REASON` set to
+`depth_unavailable` or `insufficient_evidence`. `CLASSIFICATION_CONFIDENCE` is a bounded
+heuristic support score for the **published** label, including any minimum-mapping-unit
+change; it is not a calibrated probability. Missing width does not imply a narrow channel,
+missing slope does not imply flat terrain, and missing contour/sill distance does not imply
+proximity. When broad-neighborhood variance is zero but focal prominence is nonzero,
+standardized broad terrain position is undefined rather than neutral.
+
+This changes label, confidence, and QC semantics from historical outputs. Existing immutable
+releases keep their original meanings. Build a fresh candidate and use its method-versioned
+manifest for new results; do not reinterpret old labels as v2.
