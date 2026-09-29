@@ -44,6 +44,32 @@ class HabitatDownloadConfig:
     sources: dict[str, dict[str, Any]]
 
 
+def _source_applies(name: str, source: Mapping[str, Any], active: set[str]) -> bool:
+    """Use declared jurisdiction (or the repository's bc_/wa_ source convention)."""
+
+    jurisdiction = source.get("jurisdiction")
+    if jurisdiction is None:
+        jurisdiction = (
+            "bc" if name.startswith("bc_") else "wa" if name.startswith("wa_") else None
+        )
+    return jurisdiction is None or str(jurisdiction).lower() in active
+
+
+def _active_jurisdictions(download: Mapping[str, Any], section_name: str) -> set[str]:
+    active_raw = download.get("active_jurisdictions", ["bc", "wa"])
+    if (
+        not isinstance(active_raw, list)
+        or not active_raw
+        or any(not isinstance(value, str) for value in active_raw)
+        or set(active_raw) - {"bc", "wa"}
+        or len(active_raw) != len(set(active_raw))
+    ):
+        raise ValueError(
+            f"{section_name}.download.active_jurisdictions must contain bc and/or wa."
+        )
+    return set(active_raw)
+
+
 def load_habitat_download_config(
     section_name: str,
     config_path: str | Path,
@@ -67,6 +93,15 @@ def load_habitat_download_config(
     sources = _mapping(download.get("sources"), f"{section_name}.download.sources")
     if not sources:
         raise ValueError(f"{section_name}.download.sources must not be empty.")
+    active = _active_jurisdictions(download, section_name)
+    resolved_sources: dict[str, dict[str, Any]] = {}
+    for name, value in sources.items():
+        source_value = _mapping(value, f"{section_name}.sources.{name}")
+        resolved_sources[name] = {
+            **source_value,
+            "enabled": bool(source_value.get("enabled", True))
+            and _source_applies(name, source_value, active),
+        }
     return HabitatDownloadConfig(
         section_name=section_name,
         bbox=bbox_from_config(section),
@@ -74,10 +109,7 @@ def load_habitat_download_config(
         request_timeout_seconds=timeout,
         page_size=page_size,
         overwrite=bool(download.get("overwrite", False)),
-        sources={
-            name: _mapping(value, f"{section_name}.sources.{name}")
-            for name, value in sources.items()
-        },
+        sources=resolved_sources,
     )
 
 

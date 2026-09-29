@@ -45,11 +45,23 @@ def load_water_geometry_config(config_path: str | Path) -> dict[str, Any]:
         base_dir,
     )
     sources = download.get("sources") or {}
+    jurisdictions = build.get("jurisdictions", ["bc", "us"])
+    if (
+        not isinstance(jurisdictions, list)
+        or not jurisdictions
+        or any(not isinstance(value, str) for value in jurisdictions)
+        or set(jurisdictions) not in ({"bc"}, {"bc", "us"})
+        or len(jurisdictions) != len(set(jurisdictions))
+    ):
+        raise ValueError(
+            "water_geometry.build.jurisdictions must be [bc] or [bc, us] without duplicates"
+        )
     return {
         "base_dir": base_dir,
         "output_path": output_dir
         / str(build.get("output_filename", DEFAULT_WATER_POLYGON_FILENAME)),
         "bbox": bbox_from_config(build),
+        "jurisdictions": sorted(jurisdictions),
         "alaska_boundary_snap_tolerance_m": float(
             build.get("alaska_boundary_snap_tolerance_m", 75_000.0)
         ),

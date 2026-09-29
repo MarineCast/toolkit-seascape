@@ -42,6 +42,15 @@ DEFAULT_RAW_MARINE_SOURCE_PATHS = {
 CONSUMED_WATER_GEOMETRY_SOURCE_NAMES: tuple[str, ...] = tuple(
     DEFAULT_RAW_MARINE_SOURCE_PATHS
 )
+BC_SOURCE_NAMES = {"ca_regions_path", "tz_file_path"}
+
+
+def _required_source_names(jurisdictions: set[str]) -> set[str]:
+    return (
+        set(CONSUMED_WATER_GEOMETRY_SOURCE_NAMES)
+        if "us" in jurisdictions
+        else set(BC_SOURCE_NAMES)
+    )
 
 
 def _source_path(value: Any, name: str) -> str | Path:
@@ -63,10 +72,26 @@ def load_water_geometry_source_config(config_path: str | Path) -> dict[str, Any]
         raise FileNotFoundError(f"Config file not found: {path}")
     raw = load_data_config(path, domains="SEASCAPE_LAYER")
     water_geometry = _mapping(raw.get("water_geometry", {}), "water_geometry")
+    build = _mapping(water_geometry.get("build", {}), "water_geometry.build")
+    jurisdictions = build.get("jurisdictions", ["bc", "us"])
+    if (
+        not isinstance(jurisdictions, list)
+        or any(not isinstance(value, str) for value in jurisdictions)
+        or set(jurisdictions) not in ({"bc"}, {"bc", "us"})
+        or len(jurisdictions) != len(set(jurisdictions))
+    ):
+        raise ValueError("water_geometry.build.jurisdictions must be [bc] or [bc, us]")
     download = _mapping(water_geometry.get("download", {}), "water_geometry.download")
     configured_sources = download.get("sources") or {}
     configured_sources = _mapping(configured_sources, "water_geometry.download.sources")
-    sources = {**DEFAULT_RAW_MARINE_SOURCE_PATHS, **configured_sources}
+    sources = {
+        name: value
+        for name, value in {
+            **DEFAULT_RAW_MARINE_SOURCE_PATHS,
+            **configured_sources,
+        }.items()
+        if name in _required_source_names(set(jurisdictions))
+    }
     base_dir = (
         project_root() / Path(raw.get("base_directory", ".")).expanduser()
     ).resolve()
@@ -80,10 +105,14 @@ def resolve_water_geometry_paths(config_dict: dict[str, Any]) -> dict[str, str]:
         **DEFAULT_RAW_MARINE_SOURCE_PATHS,
         **dict(config_dict.get("raw_paths", {}) or {}),
     }
+    required = _required_source_names(
+        set(config_dict.get("jurisdictions", ["bc", "us"]))
+    )
     base_dir = Path(config_dict["base_dir"])
     return {
         name: str(_resolve_project_path(_source_path(value, name), base_dir))
         for name, value in raw_paths.items()
+        if name in required
     }
 
 

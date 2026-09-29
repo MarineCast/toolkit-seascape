@@ -220,16 +220,12 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             load_water_geometry_config,
         )
         from seascape.spatial_support.water_geometry.download import (
-            CONSUMED_WATER_GEOMETRY_SOURCE_NAMES,
             resolve_water_geometry_paths,
         )
 
         c = load_water_geometry_config(path)
         sources = resolve_water_geometry_paths(c)
-        inputs = [
-            Input(key, Path(sources[key]))
-            for key in CONSUMED_WATER_GEOMETRY_SOURCE_NAMES
-        ]
+        inputs = [Input(key, Path(value)) for key, value in sorted(sources.items())]
         outputs = [
             c["output_path"],
             c["output_path"].parent / "water_geometry_manifest.json",
@@ -288,6 +284,8 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             Input("source raster", c.raw_path),
             Input("water polygon", c.water_polygon_path),
         ]
+        if c.tid_raw_path is not None:
+            inputs.append(Input("GEBCO categorical TID raster", c.tid_raw_path))
         for res in resolutions:
             inputs += [
                 Input(
@@ -304,6 +302,11 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             *(item.processed_path for item in c.additional_exports),
             c.processed_path.parent / "bathymetry_manifest.json",
         ]
+        if c.tid_raw_path is not None:
+            outputs.extend(
+                c.processed_path.with_name(f"GEBCO_TID_RES_{resolution}.parquet")
+                for resolution in resolutions
+            )
     elif name == "seascape-shoreline-characterization":
         from seascape.coastal_configuration.shoreline_characterization.build import (
             load_shoreline_config,
@@ -488,9 +491,13 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
                 if not value.get("enabled", True):
                     checks.append(f"source {key}: disabled, not applicable")
                     continue
-                # Kelp and reef readers permit partial source inventories; presence of
-                # a usable inventory remains a producer gate, not a header claim.
-                optional = name in {"seascape-kelp-habitat", "seascape-reef-habitat"}
+                # The Washington annual kelp archive is a production requirement
+                # when that jurisdiction is enabled. Generalized-only builds use
+                # an explicit producer override, not a misleading ready preflight.
+                optional = name == "seascape-reef-habitat" or (
+                    name == "seascape-kelp-habitat"
+                    and key != "wa_dnr_annual_floating_kelp"
+                )
                 inputs.append(
                     Input(
                         key,

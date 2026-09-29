@@ -12,6 +12,7 @@ from seascape.utils.config import (
     require_mapping,
     resolve_project_path,
 )
+from seascape.utils.habitat_acquisition import _active_jurisdictions, _source_applies
 
 DEFAULT_CONFIG_PATH = "config/data/environment_seascape.yaml"
 
@@ -27,13 +28,26 @@ def load_source_config(config_path: str | Path = DEFAULT_CONFIG_PATH) -> dict[st
     sources = require_mapping(
         section.get("sources"), "shoreline_characterization.sources"
     )
+    download = require_mapping(
+        section.get("download"), "shoreline_characterization.download"
+    )
+    active = _active_jurisdictions(download, "shoreline_characterization")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
         configured_base
         if configured_base.is_absolute()
         else project_root() / configured_base
     ).resolve()
-    return {"base_dir": base_dir, "sources": sources}
+    return {
+        "base_dir": base_dir,
+        "sources": {
+            name: value
+            for name, value in sources.items()
+            if _source_applies(
+                name, require_mapping(value, f"shoreline source {name}"), active
+            )
+        },
+    }
 
 
 def resolve_shoreline_sources(

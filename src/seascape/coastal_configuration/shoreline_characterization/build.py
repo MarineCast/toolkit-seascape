@@ -99,9 +99,9 @@ def load_shoreline_config(
         section.get("processing"),
         "shoreline_characterization.processing",
     )
-    sources = require_mapping(
-        section.get("sources"), "shoreline_characterization.sources"
-    )
+    from .download import load_source_config
+
+    sources = load_source_config(config_path)["sources"]
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
         configured_base

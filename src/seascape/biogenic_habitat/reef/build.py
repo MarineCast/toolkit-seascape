@@ -135,7 +135,7 @@ def load_reef_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
     wdfw_path = config.raw_dir / str(
         config.sources["wa_wdfw_shellfish"]["raw_filename"]
     )
-    if wdfw_path.exists():
+    if config.sources["wa_wdfw_shellfish"].get("enabled", True) and wdfw_path.exists():
         wdfw = gpd.read_file(wdfw_path).to_crs("EPSG:4326")
         description = wdfw["shellfish_description"].astype(str).str.lower()
         wdfw = wdfw.loc[description.str.contains("oyster")].copy()
@@ -151,7 +151,10 @@ def load_reef_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
     bc_path = config.raw_dir / str(
         config.sources["bc_shorezone_bivalves"]["raw_filename"]
     )
-    if bc_path.exists():
+    if (
+        config.sources["bc_shorezone_bivalves"].get("enabled", True)
+        and bc_path.exists()
+    ):
         bc = gpd.read_file(bc_path).to_crs("EPSG:4326")
         species = bc["SPECIES_NAME"].astype(str).str.lower()
         keep = species.str.contains("mytilus|crassostrea|ostrea", regex=True)

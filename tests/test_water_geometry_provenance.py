@@ -249,3 +249,45 @@ def test_bad_mask_lineage_preserves_existing_bathymetry(tmp_path):
     ):
         pipeline.run_pipeline(config_path, skip_download=True, skip_map=True)
     assert {p: p.read_bytes() for p in before} == before
+
+
+def test_bc_only_geometry_branch_uses_only_canadian_layers(tmp_path, monkeypatch):
+    from seascape.spatial_support.water_geometry import build as water_build
+
+    ca = tmp_path / "ca.geojson"
+    tz = tmp_path / "tz.geojson"
+    source = gpd.GeoDataFrame(geometry=[box(-123.2, 48.4, -123.1, 48.5)], crs=4326)
+    source.to_file(ca, driver="GeoJSON")
+    source.to_file(tz, driver="GeoJSON")
+    called = []
+
+    def canadian_only(ca_frame, tz_frame):
+        called.append((len(ca_frame), len(tz_frame)))
+        return gpd.GeoDataFrame(
+            {"NAME": ["CANADA"], "AREA": ["BRITISH_COLUMBIA"], "TYPE": ["TERRITORIAL"]},
+            geometry=[box(-123.2, 48.4, -123.1, 48.5)],
+            crs=4326,
+        )
+
+    monkeypatch.setattr(water_build, "get_ca_waters", canadian_only)
+    monkeypatch.setattr(
+        water_build,
+        "get_us_water_shapes",
+        lambda *_: pytest.fail("B.C.-only geometry must not open U.S. inputs"),
+    )
+    output = tmp_path / "out.parquet"
+    water_build.collect_all_waters(
+        {
+            "jurisdictions": ["bc"],
+            "bbox": {
+                "min_lon": -123.2,
+                "min_lat": 48.4,
+                "max_lon": -123.1,
+                "max_lat": 48.5,
+            },
+            "output_path": output,
+        },
+        data_paths={"ca_regions_path": ca, "tz_file_path": tz},
+    )
+    assert called == [(1, 1)]
+    assert gpd.read_parquet(output)["NAME"].tolist() == ["CANADA"]

@@ -102,13 +102,20 @@ def _records(
     ).loc[:, NORMALIZED_INVENTORY_COLUMNS]
 
 
-def _source_path(config: Any, source_name: str) -> Path:
-    return config.raw_dir / str(config.sources[source_name]["raw_filename"])
+def _source_path(config: Any, source_name: str) -> Path | None:
+    source = config.sources[source_name]
+    return (
+        config.raw_dir / str(source["raw_filename"])
+        if source.get("enabled", True)
+        else None
+    )
 
 
-def _read_optional(path: Path):
+def _read_optional(path: Path | None):
     import geopandas as gpd
 
+    if path is None:
+        return None
     if not path.exists():
         LOGGER.warning("Optional kelp source is absent: %s", path)
         return None
@@ -135,6 +142,8 @@ def _annual_kelp_inventory(config: Any) -> list[Any]:
     import geopandas as gpd
 
     source = config.sources["wa_dnr_annual_floating_kelp"]
+    if not source.get("enabled", True):
+        return []
     root = config.raw_dir / str(source.get("extract_directory", "WA_floating_kelp"))
     if not root.exists():
         return []
@@ -204,10 +213,13 @@ def load_kelp_inventory(
     import geopandas as gpd
 
     config = load_habitat_download_config(SECTION_NAME, config_path)
+    wa_enabled = bool(
+        config.sources["wa_dnr_annual_floating_kelp"].get("enabled", True)
+    )
     annual_frames = _annual_kelp_inventory(config)
     _require_annual_inventory(
         annual_frames,
-        allow_generalized_only=allow_generalized_only,
+        allow_generalized_only=allow_generalized_only or not wa_enabled,
     )
     frames: list[Any] = list(annual_frames)
 
@@ -299,16 +311,25 @@ def build_kelp_habitat(
         .str.fullmatch(r"WA_DNR_FLOATING_KELP_\d{4}")
         .any()
     )
+    wa_enabled = bool(
+        load_habitat_download_config(SECTION_NAME, config_path)
+        .sources["wa_dnr_annual_floating_kelp"]
+        .get("enabled", True)
+    )
     return build_habitat_products(
         inventory,
         config,
         config_path,
         source_completeness={
-            "required_source": "wa_dnr_annual_floating_kelp",
+            "required_source": "wa_dnr_annual_floating_kelp" if wa_enabled else None,
             "annual_observations_available": annual_available,
             "allow_generalized_only": allow_generalized_only,
             "status": (
-                "complete" if annual_available else "generalized_only_explicit_override"
+                "complete"
+                if annual_available
+                else "generalized_only_wa_not_applicable"
+                if not wa_enabled
+                else "generalized_only_explicit_override"
             ),
             "included_source_datasets": sorted(
                 set(inventory["SOURCE_DATASET"].dropna().astype(str))

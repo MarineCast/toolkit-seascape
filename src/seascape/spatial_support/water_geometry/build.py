@@ -24,7 +24,6 @@ from seascape.utils.artifacts import (
 
 from .config import load_water_geometry_config
 from .download import (
-    CONSUMED_WATER_GEOMETRY_SOURCE_NAMES,
     download_water_geometry_sources,
     open_water_geometry_sources,
     resolve_water_geometry_paths,
@@ -417,6 +416,19 @@ def collect_all_waters(
     if data_paths is None:
         data_paths = resolve_water_geometry_paths(config_dict)
 
+    # A B.C.-only case keeps the existing Canadian polygon construction but
+    # does not request unrelated Washington/US boundary layers.
+    if set(config_dict.get("jurisdictions", ["bc", "us"])) == {"bc"}:
+        ca_waters = gpd.read_file(data_paths["ca_regions_path"])
+        tz_canada = gpd.read_file(data_paths["tz_file_path"])
+        all_waters = _clip_to_bbox(
+            get_ca_waters(ca_waters, tz_canada), config_dict["bbox"]
+        )
+        output_path = Path(config_dict["output_path"])
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        all_waters.to_parquet(output_path)
+        return output_path
+
     # 2. Open Data
     (
         us_waters,
@@ -516,7 +528,7 @@ def build_water_geometry(
             collect_all_waters(staged_config, data_paths=data_paths)
         artifact = capture_staged_parquet_artifact(publisher, output_path)
         sources = []
-        for name in sorted(CONSUMED_WATER_GEOMETRY_SOURCE_NAMES):
+        for name in sorted(data_paths):
             value = data_paths[name]
             source_path = Path(value)
             attribution, license_name = SOURCE_ATTRIBUTION.get(
@@ -545,7 +557,8 @@ def build_water_geometry(
                     "text": attribution,
                     "license": license_name,
                 }
-                for attribution, license_name in SOURCE_ATTRIBUTION.values()
+                for name, (attribution, license_name) in SOURCE_ATTRIBUTION.items()
+                if name in data_paths
             ],
             source_completeness="complete",
             metadata={
@@ -553,7 +566,8 @@ def build_water_geometry(
                 "alaska_boundary_snap_tolerance_m": config[
                     "alaska_boundary_snap_tolerance_m"
                 ],
-                "consumed_source_names": sorted(CONSUMED_WATER_GEOMETRY_SOURCE_NAMES),
+                "consumed_source_names": sorted(data_paths),
+                "selected_jurisdictions": config["jurisdictions"],
             },
         )
         publisher.stage_manifest(

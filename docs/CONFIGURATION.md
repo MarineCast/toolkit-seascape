@@ -66,6 +66,21 @@ units, vertical datum, nodata treatment and the distinction between full-cell an
 support. Family loaders implement their own validation; there is no single top-level CLI command
 that validates every source and artifact without a build.
 
+For an explicitly B.C.-only case, set `water_geometry.build.jurisdictions: [bc]` in the
+workspace's Seascape configuration. The water-geometry builder then consumes only Canadian
+marine-region and territorial-zone layers and records the selected jurisdiction; default
+`[bc, us]` retains the cross-border source contract. Set `download.active_jurisdictions: [bc]`
+in each selected B.C./Washington habitat or shoreline family to disable its `wa_` sources.
+Kelp records a generalized-only B.C. evidence state rather than requiring the Washington
+annual archive. A disabled source cannot be read even if a stale local file exists. These
+explicit switches do not infer jurisdiction from a bounding box; review area and source
+coverage before claiming a complete B.C. product. Other nationally scoped sources need
+their own applicability review. Preflight reports selected inputs without acquiring them.
+
+An optional, locally acquired matching GEBCO TID raster can be enabled with
+`bathymetry.source.tid_raw_filename` and `tid_release`. Exact categorical grid alignment and
+release declarations are required; TID does not supply numeric uncertainty.
+
 ## Before a bounded build
 
 Start with the workspace initialized in the [workflow guide](WORKFLOWS.md#bounded-real-data-processing).

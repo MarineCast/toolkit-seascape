@@ -695,3 +695,70 @@ def test_preflight_does_not_swallow_unrelated_errors(
         plan(workspace)
     assert caught.value is error
     assert tree(workspace) == before and dict(os.environ) == environment
+
+
+def test_bc_only_water_preflight_excludes_unneeded_us_inputs(workspace):
+    def bc_only(raw):
+        raw["water_geometry"]["build"]["jurisdictions"] = ["bc"]
+        for key in (
+            "wsdot_shorelines_path",
+            "ws_marine_shoreline_type_path",
+            "us_coastline_path",
+            "us_waters_path",
+        ):
+            raw["water_geometry"]["download"]["sources"][key] = "missing-us-source.shp"
+
+    change(workspace, bc_only)
+    report = preflight_build(
+        only=["seascape-water-geometry"],
+        candidate_root=workspace / ".seascape/candidate",
+    )
+    source_names = {item["name"] for item in report["checks"]}
+    assert report["status"] == "ready", report["checks"]
+    assert "ca_regions_path" in source_names and "tz_file_path" in source_names
+    assert "us_coastline_path" not in source_names
+    assert "wsdot_shorelines_path" not in source_names
+
+
+def test_configured_tid_is_required_by_bathymetry_preflight(workspace):
+    change(
+        workspace,
+        lambda raw: raw["bathymetry"]["source"].update(
+            tid_raw_filename="GEBCO_2026_TID_MODEL_AREA.tif", tid_release="2026"
+        ),
+    )
+    report = plan(workspace)
+    tid = [
+        item
+        for item in report["checks"]
+        if item["name"] == "GEBCO categorical TID raster"
+    ]
+    assert len(tid) == 1
+    assert tid[0]["status"] == "missing_external"
+    assert tid[0]["required"]
+
+
+def test_bc_only_habitat_loader_disables_wa_source_even_if_cached(workspace):
+    from seascape.biogenic_habitat.kelp.build import (
+        _annual_kelp_inventory,
+        _source_path,
+    )
+    from seascape.utils.habitat_acquisition import load_habitat_download_config
+
+    change(
+        workspace,
+        lambda raw: raw["kelp_habitat"]["download"].update(active_jurisdictions=["bc"]),
+    )
+    config = load_habitat_download_config(
+        "kelp_habitat", workspace / "config/data/project.yaml"
+    )
+    stale = config.raw_dir / str(
+        config.sources["wa_dnr_annual_floating_kelp"].get(
+            "extract_directory", "WA_floating_kelp"
+        )
+    )
+    stale.mkdir(parents=True)
+    assert not config.sources["wa_dnr_annual_floating_kelp"]["enabled"]
+    assert config.sources["bc_crims_kelp"]["enabled"]
+    assert _source_path(config, "wa_dnr_kelp_persistence") is None
+    assert _annual_kelp_inventory(config) == []

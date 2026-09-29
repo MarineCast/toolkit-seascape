@@ -81,6 +81,10 @@ bathymetry:
     api_base_url: https://download.gebco.net/api
     raw_dir: data/raw/bathymetry
     raw_filename: GEBCO_2026_MODEL_AREA.tif
+    # Optional local companion. When supplied, the release must match and the
+    # categorical raster must align exactly with the depth grid; no download occurs.
+    # tid_raw_filename: GEBCO_2026_TID_MODEL_AREA.tif
+    # tid_release: "2026"
     request_timeout_seconds: 120
     poll_interval_seconds: 5
     poll_timeout_seconds: 1800
