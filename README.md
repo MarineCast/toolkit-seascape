@@ -8,8 +8,6 @@
 
 **The shape, composition, and connectivity of the marine environment.**
 
-Depth and terrain · Seafloor composition · Marine vegetation · Coastal form
-
 [Explore the themes](#what-seascape-describes) · [Get a first result](#install-and-get-a-first-result) · [Read the docs](docs/README.md)
 
 </div>
@@ -23,15 +21,80 @@ connections**, together with the spatial support and source evidence needed to i
 Built for GIS users, researchers, and downstream applications. Independently installable; no
 OrcaCast or sibling-toolkit checkout is required.
 
-| Package | Python / command | Core delivery |
-| --- | --- | --- |
-| `toolkit-seascape` | `seascape` | Spatial tables, source evidence, quality-control fields, and provenance |
+**Package:** `toolkit-seascape` · **Python / CLI:** `seascape`
 
 > [!NOTE]
 > **New here?** Start with the [offline demo](#install-and-get-a-first-result). It produces a
 > small bathymetry table, a validation report, and two figures without source downloads or credentials.
 
-## From sources to variables
+## What you get
+
+![Synthetic positive-down bathymetry on H3 resolution 8 cells. Gray cells indicate unavailable values.](docs/assets/demo-bathymetry.png)
+
+*Synthetic input, real production transformation. A 48 × 48 fixture raster becomes positive-down
+depth summaries on H3 R8 support. This figure is not a regional bathymetric survey.*
+
+**Physical products**
+
+Parquet/GeoParquet tables and supporting spatial artifacts. Canonical H3 products use R8 and, where implemented, R6. Not every product exists at both resolutions.
+
+**Evidence and quality**
+
+Product-specific coverage, source state, confidence, and quality-control fields. Unknown, unavailable, and observed-zero values remain distinct.
+
+**Reproducible identity**
+
+Source and artifact checksums, configuration and code identity, and manifests. Completed releases retain immutable generations addressable by release ID.
+
+**Inspection and export**
+
+Family-specific inspectors and a release-backed H3 metric matrix with namespaced fields and retained source metadata.
+
+For downstream work, use [product resolution](docs/API.md) rather than hard-coding mutable output
+paths. The [metric-matrix exporter](docs/metric-matrix.md) combines released fields for inspection
+and joins without silently filling nulls or substituting another resolution.
+
+---
+
+## What Seascape describes
+
+Seven themes organize the toolkit. The examples below describe product capabilities, not a promise
+of complete survey coverage or availability at every location and resolution.
+
+### [Depth and terrain](src/seascape/seafloor_physiography/README.md)
+
+Seafloor depth and shape: bathymetry, depth-band fractions, slope, terrain shape, and geomorphic units.
+
+### [Seafloor composition](src/seascape/benthic_substrate/README.md)
+
+Modeled rock, gravel, sand, and mud composition; substrate classification and a derived bottom-hardness index.
+
+### [Vegetation and habitat evidence](src/seascape/biogenic_habitat/README.md)
+
+Mapped or derived seagrass, kelp, rocky-reef evidence, and bivalve-bed proxies, with explicit coverage and confidence states.
+
+### [Coastal form](src/seascape/coastal_configuration/README.md)
+
+Shoreline and waterbody geometry: shoreline character and proximity, directional exposure, enclosure, width, and constriction.
+
+### [Freshwater connections](src/seascape/hydrologic_connectivity/README.md)
+
+River and estuary connections to marine waters: river mouths, fluvial connectivity, mapped barriers, passage evidence, and estuary proximity.
+
+### [Built environment](src/seascape/anthropogenic/README.md)
+
+Mapped physical footprints of shoreline modification, overwater structures, dredging, disposal, artificial reefs, and aquaculture.
+
+### [Spatial support](src/seascape/spatial_support/README.md)
+
+Shared geometry and water networks: water polygons, H3 support, passable edges, terminal connectors, and bounded neighborhoods.
+
+Exact field names, units, resolutions, and source notes live in the [product reference](docs/products.md)
+and linked family guides. The checked-in catalog is reference metadata; an audited release records
+what was actually materialized.
+
+<details>
+<summary><strong>From sources to variables — explore the detailed map</strong></summary>
 
 **Source data → Thematic processing → Interpretable variable areas**
 
@@ -93,42 +156,9 @@ flowchart LR
 several products combine inputs across these routes. Source availability and acquisition methods
 vary by family. See the [stage inputs](docs/stage-inputs.md) for operational dependencies.*
 
-## What Seascape describes
+</details>
 
-Seven themes organize the toolkit. The examples below describe product capabilities, not a promise
-of complete survey coverage or availability at every location and resolution.
-
-| Theme | What it describes | Representative variables and products |
-| --- | --- | --- |
-| **🌊 [Depth and terrain](src/seascape/seafloor_physiography/README.md)** | The depth and physical shape of the seafloor | Bathymetry, depth-band fractions, slope, terrain shape, and geomorphic units |
-| **🪨 [Seafloor composition](src/seascape/benthic_substrate/README.md)** | Modeled sediment composition and derived hardness | Rock, gravel, sand, and mud composition; substrate classification; derived bottom-hardness index |
-| **🌿 [Vegetation and habitat evidence](src/seascape/biogenic_habitat/README.md)** | Mapped or derived evidence of vegetation and habitat-forming structure | Seagrass, kelp, rocky-reef evidence, mapped bivalve-bed proxies, coverage and confidence states |
-| **〰️ [Coastal form](src/seascape/coastal_configuration/README.md)** | How shorelines and waterbody geometry shape marine space | Shoreline character and proximity, directional exposure, enclosure, width, and constriction |
-| **💧 [Freshwater connections](src/seascape/hydrologic_connectivity/README.md)** | Connections between rivers, estuaries, and marine waters | River-mouth locations, fluvial connectivity, mapped barriers, passage evidence, and estuary proximity |
-| **⚓ [Built environment](src/seascape/anthropogenic/README.md)** | The mapped physical footprint of human-made features | Shoreline modification, overwater structures, dredging, disposal, artificial reefs, and aquaculture footprints |
-| **🧭 [Spatial support](src/seascape/spatial_support/README.md)** | The geometry and water-network framework shared by products | Water polygons, H3 support, passable edges, terminal connectors, and bounded neighborhoods |
-
-Exact field names, units, resolutions, and source notes live in the [product reference](docs/products.md)
-and linked family guides. The checked-in catalog is reference metadata; an audited release records
-what was actually materialized.
-
-**Interpretation matters.** Derived hardness is not a direct acoustic measurement. Geometric exposure
-is not modeled weather or waves. A mapped structure is not a measure of vessel traffic or observer
-effort. Vegetation and reef products retain the distinction between mapped evidence and unavailable
-coverage; deep coral/sponge evidence remains explicitly unavailable rather than inferred.
-
-## What you get
-
-| Layer | Delivered information |
-| --- | --- |
-| **Physical products** | Parquet/GeoParquet tables and supporting spatial artifacts. Canonical H3 products use R8 and, where implemented, R6. Not every product exists at both resolutions. |
-| **Evidence and quality** | Product-specific coverage, source state, confidence, and quality-control fields. Unknown, unavailable, and observed-zero values remain distinct. |
-| **Reproducible identity** | Source and artifact checksums, configuration and code identity, and manifests. Completed releases retain immutable generations addressable by release ID. |
-| **Inspection and export** | Family-specific inspectors and a release-backed H3 metric matrix with namespaced fields and retained source metadata. |
-
-For downstream work, use [product resolution](docs/API.md) rather than hard-coding mutable output
-paths. The [metric-matrix exporter](docs/metric-matrix.md) combines released fields for inspection
-and joins without silently filling nulls or substituting another resolution.
+---
 
 ## Install and get a first result
 
@@ -181,11 +211,6 @@ and two PNG figures**. Outputs stay under `$SEASCAPE_WORKSPACE/.seascape/demo/` 
 finishes. This example uses a temporary directory, so copy anything you need before system cleanup.
 The [demo guide](docs/demo.md) explains persistent workspace selection and safe reruns.
 
-![Synthetic positive-down bathymetry on H3 resolution 8 cells. Gray cells indicate unavailable values.](docs/assets/demo-bathymetry.png)
-
-*Synthetic input, real production transformation. A 48 × 48 fixture raster becomes positive-down
-depth summaries on H3 R8 support. This figure is not a regional bathymetric survey.*
-
 <details>
 <summary><strong>What the demonstration checks</strong></summary>
 
@@ -205,13 +230,27 @@ Existing demo output is refused by default; review ownership before using `--ove
 
 </details>
 
+---
+
 ## Choose your route
 
-| Your goal | Start here | Outcome |
-| --- | --- | --- |
-| **Try the toolkit** | [Offline demo](docs/demo.md) or [explanatory notebook](notebooks/README.md) | A small synthetic product with inspectable values, provenance, and validation results. |
-| **Process real data** | [Bounded workflow](docs/WORKFLOWS.md#bounded-real-data-processing), [configuration](docs/CONFIGURATION.md), and [stage inputs](docs/stage-inputs.md) | A candidate built from reviewed inputs, with explicit inspection and publication decisions. See the [San Juan pilot](docs/pilots/san-juan.md) for bounded execution evidence and limits. |
-| **Use existing products** | [Release-frozen consumer example](docs/API.md#freeze-and-read-a-release) and [matrix export](docs/metric-matrix.md) | Exact product/resolution lookup and checksum-verified paths from an existing audited release. |
+### Try the toolkit
+
+A small synthetic product with inspectable values, provenance, and validation results.
+
+[Offline demo](docs/demo.md) or [explanatory notebook](notebooks/README.md)
+
+### Process real data
+
+A candidate built from reviewed inputs, with explicit inspection and publication decisions. See the [San Juan pilot](docs/pilots/san-juan.md) for bounded execution evidence and limits.
+
+[Bounded workflow](docs/WORKFLOWS.md#bounded-real-data-processing), [configuration](docs/CONFIGURATION.md), and [stage inputs](docs/stage-inputs.md)
+
+### Use existing products
+
+Exact product/resolution lookup and checksum-verified paths from an existing audited release.
+
+[Release-frozen consumer example](docs/API.md#freeze-and-read-a-release) and [matrix export](docs/metric-matrix.md)
 
 Acquisition, processing, and release promotion are separate operations. Initializing a workspace
 does not download datasets. Review the selected area's inputs and resources before executing
@@ -223,6 +262,11 @@ regional defaults; start with the documented bounded workflow rather than an unr
 > **Physical conditions and source evidence are not species occurrence or habitat suitability.**
 > Seascape does not infer ecological absence from missing data or decide which variables belong
 > in a predictive model. An audited software release is not blanket scientific certification.
+
+**Interpretation matters.** Derived hardness is not a direct acoustic measurement. Geometric exposure
+is not modeled weather or waves. A mapped structure is not a measure of vessel traffic or observer
+effort. Vegetation and reef products retain the distinction between mapped evidence and unavailable
+coverage; deep coral/sponge evidence remains explicitly unavailable rather than inferred.
 
 Source datasets and regional releases are not bundled. Coverage, survey vintage, source resolution,
 and uncertainty vary. Keep quality-control and evidence fields with the physical variables, and
