@@ -49,6 +49,7 @@ def aggregate_r8_to_r6(
     parent_support: pd.DataFrame,
     *,
     prefix: str,
+    topology: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Apply the explicit feature-aware r8-to-r6 aggregation contract."""
 
@@ -69,11 +70,28 @@ def aggregate_r8_to_r6(
         validate="one_to_one",
     )
     p = prefix
+    topology_by_parent = (
+        topology.set_index("H3_INDEX") if topology is not None else None
+    )
     feature_rows: list[dict[str, Any]] = []
     confidence_rows: list[dict[str, Any]] = []
     for parent, rows in child.groupby("PARENT_H3_INDEX", sort=True):
         water_area = float(rows["CHILD_WATER_AREA_M2"].sum())
-        habitat_area = float(rows[f"{p}_AREA_M2"].sum())
+        measured = (
+            topology_by_parent.loc[str(parent)]
+            if topology_by_parent is not None
+            else None
+        )
+        habitat_area = (
+            float(measured["HABITAT_AREA_M2"])
+            if measured is not None
+            else float(rows[f"{p}_AREA_M2"].sum())
+        )
+        patch_count = int(measured["PATCH_COUNT"]) if measured is not None else None
+        largest = (
+            float(measured["LARGEST_PATCH_AREA_M2"]) if measured is not None else np.nan
+        )
+        edge = float(measured["EDGE_LENGTH_M"]) if measured is not None else np.nan
         persistence, persistence_basis = _aggregate_persistence(rows, p)
         feature_rows.append(
             {
@@ -91,33 +109,29 @@ def aggregate_r8_to_r6(
                 f"{p}_OCCUPIED_CHILD_COUNT": int(
                     rows[f"{p}_OCCUPIED_CHILD_COUNT"].sum()
                 ),
-                f"{p}_PATCH_COUNT": int(rows[f"{p}_PATCH_COUNT"].sum()),
-                f"{p}_LARGEST_PATCH_AREA_M2": float(
-                    rows[f"{p}_LARGEST_PATCH_AREA_M2"].max()
-                ),
+                f"{p}_PATCH_COUNT": patch_count,
+                f"{p}_LARGEST_PATCH_AREA_M2": largest,
                 f"{p}_MEAN_PATCH_AREA_M2": (
-                    habitat_area / float(rows[f"{p}_PATCH_COUNT"].sum())
-                    if rows[f"{p}_PATCH_COUNT"].sum() > 0
-                    else 0.0
+                    habitat_area / patch_count if patch_count else np.nan
                 ),
-                f"{p}_EDGE_LENGTH_M": float(rows[f"{p}_EDGE_LENGTH_M"].sum()),
+                f"{p}_EDGE_LENGTH_M": edge,
                 f"{p}_EDGE_DENSITY_M_PER_KM2": (
-                    float(rows[f"{p}_EDGE_LENGTH_M"].sum()) / (water_area / 1_000_000.0)
-                    if water_area > 0
-                    else 0.0
+                    edge / (water_area / 1_000_000.0)
+                    if water_area > 0 and measured is not None
+                    else np.nan
                 ),
                 f"{p}_FRAGMENTATION_INDEX": (
-                    float(
-                        np.clip(
-                            1.0
-                            - float(rows[f"{p}_LARGEST_PATCH_AREA_M2"].max())
-                            / habitat_area,
-                            0.0,
-                            1.0,
-                        )
-                    )
-                    if habitat_area > 0
-                    else 0.0
+                    float(np.clip(1.0 - largest / habitat_area, 0.0, 1.0))
+                    if habitat_area > 0 and measured is not None
+                    else np.nan
+                ),
+                f"{p}_FRAGMENTATION_QC_REASON": (
+                    "no_mapped_patch" if habitat_area <= 0 else None
+                ),
+                f"{p}_TOPOLOGY_QC_REASON": (
+                    measured["TOPOLOGY_QC_REASON"]
+                    if measured is not None
+                    else "topology_not_computed"
                 ),
                 f"{p}_FIRST_YEAR": rows[f"{p}_FIRST_YEAR"].min(skipna=True),
                 f"{p}_LAST_YEAR": rows[f"{p}_LAST_YEAR"].max(skipna=True),

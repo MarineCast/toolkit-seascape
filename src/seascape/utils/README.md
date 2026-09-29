@@ -14,7 +14,7 @@ not source-agnostic utilities or supported downstream APIs. See [API contracts](
   `prepare_water_land_context`, canonical-support alignment, and H3-set hashing.
 - `acquisition`: generic habitat source loading/downloading and the common leaf CLI invocation.
 - `habitat_configuration`: habitat configuration and canonical geometry alignment.
-- `habitat_surface`: within-cell evidence metrics; `habitat_aggregation`: feature-aware R8-to-R6
+- `habitat_surface`: per-support habitat geometry and evidence metrics; `habitat_aggregation`: feature-aware R8-to-R6. Patch identity is local to each reporting support. Parent patch topology is recomputed from the bounded union of selected child support geometry and source polygons; child patch counts and edges are not summed. Edge length excludes clipping lines on the support boundary, with truncation recorded. No mapped patch has undefined relative fragmentation (`no_mapped_patch`), not zero fragmentation. Historical outputs retain their old semantics.
   aggregation; `habitat_publication`: family orchestration. Graph-radius logic is owned by
   `spatial_support.water_network`.
 - `values`: optional-text cleaning, row-record iteration, and deterministic pipe-delimited unions.

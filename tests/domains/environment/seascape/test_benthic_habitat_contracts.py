@@ -50,6 +50,7 @@ from seascape.utils.habitat_surface import (
     _record_metrics,
     build_r8_tables,
     habitat_network_metrics,
+    habitat_topology_for_support,
 )
 
 
@@ -163,6 +164,15 @@ def test_exact_polygon_overlay_and_three_state_contract_survive_r8_to_r6():
         crosswalk,
         support_r6,
         prefix="SEAGRASS",
+        topology=habitat_topology_for_support(
+            gpd.GeoDataFrame(
+                {"H3_INDEX": ["parent"]},
+                geometry=[box(0, 0, 20, 10)],
+                crs="EPSG:6933",
+            ),
+            _inventory_frame(),
+            "EPSG:6933",
+        ),
     )
     parent = parent_features.iloc[0]
     assert parent["SEAGRASS_AREA_M2"] == pytest.approx(50.0, rel=1e-6)
@@ -170,6 +180,9 @@ def test_exact_polygon_overlay_and_three_state_contract_survive_r8_to_r6():
     assert parent["SEAGRASS_MAX_LOCAL_FRAC"] == pytest.approx(0.5, rel=1e-6)
     assert parent["SEAGRASS_OCCUPIED_CHILD_COUNT"] == 1
     assert parent["SEAGRASS_DISTANCE_M"] == pytest.approx(0.0)
+    assert parent["SEAGRASS_PATCH_COUNT"] == 1
+    assert parent["SEAGRASS_EDGE_LENGTH_M"] == pytest.approx(10.0)
+    assert parent["SEAGRASS_FRAGMENTATION_INDEX"] == pytest.approx(0.0)
     assert parent_confidence.iloc[0]["SEAGRASS_UNMAPPED_AREA"]
 
 

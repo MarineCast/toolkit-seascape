@@ -6,7 +6,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from shapely import area, length, union_all
+from shapely import area, difference, length, union_all
 
 from seascape.spatial_support.water_network.graph import (
     WaterGraph,
@@ -57,6 +57,7 @@ def _composition_metrics(
             "PATCH_COUNT": np.zeros(len(support), dtype="int32"),
             "LARGEST_PATCH_AREA_M2": np.zeros(len(support), dtype="float64"),
             "EDGE_LENGTH_M": np.zeros(len(support), dtype="float64"),
+            "TOPOLOGY_QC_REASON": ["no_mapped_patch"] * len(support),
         }
     ).set_index("H3_INDEX")
     if composition.empty:
@@ -98,7 +99,13 @@ def _composition_metrics(
         if not polygon_parts:
             continue
         output.loc[str(cell), "HABITAT_AREA_M2"] = float(area(local_union))
-        output.loc[str(cell), "EDGE_LENGTH_M"] = float(length(local_union.boundary))
+        # The H3 clip is a reporting boundary, not evidence of habitat edge.
+        measured_boundary = difference(local_union.boundary, cell_geometry.boundary)
+        output.loc[str(cell), "EDGE_LENGTH_M"] = float(length(measured_boundary))
+        if local_union.boundary.intersects(cell_geometry.boundary):
+            output.loc[str(cell), "TOPOLOGY_QC_REASON"] = "reporting_boundary_truncated"
+        else:
+            output.loc[str(cell), "TOPOLOGY_QC_REASON"] = None
         output.loc[str(cell), "PATCH_COUNT"] = len(polygon_parts)
         output.loc[str(cell), "LARGEST_PATCH_AREA_M2"] = max(
             float(geometry.area) for geometry in polygon_parts
@@ -106,6 +113,23 @@ def _composition_metrics(
     water_area = support.set_index("H3_INDEX")["WATER_AREA_M2"].astype("float64")
     output["HABITAT_AREA_M2"] = np.minimum(output["HABITAT_AREA_M2"], water_area)
     return output.reset_index()
+
+
+def habitat_topology_for_support(
+    cells: Any, inventory: Any, equal_area_crs: str
+) -> pd.DataFrame:
+    """Recompute bounded patch geometry for each reporting support independently."""
+
+    projected_cells, projected_inventory, pairs = _spatial_pairs(
+        cells, inventory, equal_area_crs
+    )
+    support = pd.DataFrame(
+        {
+            "H3_INDEX": projected_cells["H3_INDEX"].astype("string"),
+            "WATER_AREA_M2": projected_cells.geometry.area.to_numpy(),
+        }
+    )
+    return _composition_metrics(projected_cells, projected_inventory, pairs, support)
 
 
 def _record_metrics(
@@ -466,7 +490,7 @@ def build_r8_tables(
     fragmentation = np.divide(
         composition["LARGEST_PATCH_AREA_M2"].to_numpy(dtype="float64"),
         habitat_area,
-        out=np.zeros_like(habitat_area),
+        out=np.full_like(habitat_area, np.nan),
         where=habitat_area > 0,
     )
     fragmentation = np.clip(1.0 - fragmentation, 0.0, 1.0)
@@ -487,6 +511,10 @@ def build_r8_tables(
             "EDGE_LENGTH_M": composition["EDGE_LENGTH_M"].to_numpy(),
             "EDGE_DENSITY_M_PER_KM2": edge_density,
             "FRAGMENTATION_INDEX": fragmentation,
+            "FRAGMENTATION_QC_REASON": np.where(
+                habitat_area > 0, None, "no_mapped_patch"
+            ),
+            "TOPOLOGY_QC_REASON": composition["TOPOLOGY_QC_REASON"].to_numpy(),
             **{column: records[column].to_numpy() for column in records.columns},
             "WATER_COMPONENT_ID": lineage["WATER_COMPONENT_ID"].to_numpy(),
             "NETWORK_CONNECTOR_METHOD": lineage["CONNECTOR_METHOD"].to_numpy(),

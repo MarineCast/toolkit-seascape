@@ -29,7 +29,7 @@ from .habitat_configuration import (
     model_bbox_tuple,
 )
 from .habitat_inventory import normalize_inventory
-from .habitat_surface import build_r8_tables
+from .habitat_surface import build_r8_tables, habitat_topology_for_support
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ def build_habitat_products(
         equal_area_crs=config.equal_area_crs,
         reference_year=config.reference_year,
     )
-    del graph, cells, support_r8
+    del graph, support_r8
     gc.collect()
     if not config.parent_child_path.exists():
         raise FileNotFoundError(
@@ -97,6 +97,30 @@ def build_habitat_products(
             "%s H3 r8 cells have a geometrically dry H3 r6 parent and are omitted from r6.",
             omitted_children,
         )
+    import geopandas as gpd
+    from shapely import union_all
+
+    child_geometry = cells[["H3_INDEX", "geometry"]].copy()
+    child_geometry["H3_INDEX"] = child_geometry["H3_INDEX"].astype(str)
+    grouped_geometry = child_geometry.merge(
+        crosswalk[["CHILD_H3_INDEX", "PARENT_H3_INDEX"]],
+        left_on="H3_INDEX",
+        right_on="CHILD_H3_INDEX",
+        how="inner",
+        validate="one_to_one",
+    )
+    parent_rows = [
+        {
+            "H3_INDEX": str(parent),
+            "geometry": union_all(group.geometry.to_numpy()),
+        }
+        for parent, group in grouped_geometry.groupby("PARENT_H3_INDEX", sort=True)
+    ]
+    parent_cells = gpd.GeoDataFrame(parent_rows, geometry="geometry", crs=cells.crs)
+    parent_topology = habitat_topology_for_support(
+        parent_cells, inventory, config.equal_area_crs
+    )
+    del cells, parent_cells, grouped_geometry
     r6_features, r6_confidence = aggregate_r8_to_r6(
         r8_features.loc[
             r8_features["H3_INDEX"].astype(str).isin(aggregation_children)
@@ -107,6 +131,7 @@ def build_habitat_products(
         crosswalk,
         support_r6,
         prefix=config.prefix,
+        topology=parent_topology,
     )
     paths = (
         config.inventory_path,
@@ -178,6 +203,9 @@ def build_habitat_products(
             "partial" if declared_status not in {"", "complete"} else "complete"
         ),
         metadata={
+            "scientific_method_version": "habitat_topology_v2",
+            "patch_identity_support": "local to each R8/R6 reporting support; R6 recomputed from geometry",
+            "edge_length_support": "within reporting support; clipping boundary excluded",
             "radius_operator_lineage": {
                 "path": str(network.radius_sum_operator_path),
                 "checksum": checksum_artifact(network.radius_sum_operator_path),
