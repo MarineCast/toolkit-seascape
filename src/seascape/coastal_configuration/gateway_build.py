@@ -13,8 +13,16 @@ from shapely.geometry import Point
 
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root
-from seascape.spatial_support.water_network.load import load_model_area_support, load_water_graph
-from seascape.utils.artifacts import build_manifest, checksum_artifact, stage_parquet_family
+from seascape.core.geo.h3 import cell_to_parent
+from seascape.spatial_support.water_network.load import (
+    load_model_area_support,
+    load_water_graph,
+)
+from seascape.utils.artifacts import (
+    build_manifest,
+    checksum_artifact,
+    stage_parquet_family,
+)
 
 from .gateways import (
     alternate_route_after_gateway_removal,
@@ -39,6 +47,7 @@ class GatewayConfig:
     max_distance_m: float | None
     attachment_tolerance_m: float
     corridor_max_offset_m: float
+    selected_h3_indices: tuple[str, ...]
 
 
 def load_gateway_config(config_path: str | Path) -> GatewayConfig:
@@ -70,6 +79,7 @@ def load_gateway_config(config_path: str | Path) -> GatewayConfig:
         output, str(section.get("projected_crs", "EPSG:32610")), resolutions,
         max_cells, max_pairs, float(max_distance) if max_distance is not None else None,
         tolerance, corridor_offset,
+        tuple(str(value) for value in section.get("selected_h3_indices", ())),
     )
 
 
@@ -107,6 +117,16 @@ def build_geographic_gateways(config_path: str | Path) -> tuple[Path, ...]:
     for resolution in config.resolutions:
         graph = load_water_graph(resolution, config_path)
         support = load_model_area_support(resolution, config_path)
+        if config.selected_h3_indices:
+            selected = (
+                set(config.selected_h3_indices)
+                if resolution == 8
+                else {cell_to_parent(cell, 6) for cell in config.selected_h3_indices}
+            )
+            missing = selected - set(support.H3_INDEX.astype(str))
+            if missing:
+                raise KeyError(f"Selected gateway cells absent from R{resolution}: {sorted(missing)}")
+            support = support.loc[support.H3_INDEX.isin(selected)]
         if support.empty or len(support) > config.max_cells:
             raise ValueError(f"Gateway R{resolution} cell count exceeds bound {config.max_cells}")
         local = attachment.loc[attachment.H3_RESOLUTION.eq(resolution)]

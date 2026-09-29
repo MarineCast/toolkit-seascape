@@ -6,8 +6,8 @@ explicitly; regional rights, coverage and observations are not bundled here.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -16,9 +16,9 @@ import numpy as np
 import pandas as pd
 from shapely.ops import unary_union
 
+from seascape.products import resolve_product
 from seascape.utils.habitat_inventory import normalize_inventory
 from seascape.utils.habitat_surface import _composition_metrics, _spatial_pairs
-from seascape.products import resolve_product
 
 HABITAT_SUPPORT = {
     "eelgrass": "marine",
@@ -100,7 +100,22 @@ def normalize_vector_provider(raw: gpd.GeoDataFrame, contract: VectorProviderCon
             "geometry": geometry,
         }
         records.append(record)
-    frame = gpd.GeoDataFrame(records, geometry="geometry", crs=raw.crs)
+    if records:
+        frame = gpd.GeoDataFrame(records, geometry="geometry", crs=raw.crs)
+    else:
+        # An explicitly empty map is valid input evidence; absence still needs
+        # a separate complete survey footprint and cannot be inferred here.
+        from seascape.utils.habitat_inventory import (
+            EVIDENCE_EXTENSION_COLUMNS,
+            NORMALIZED_INVENTORY_COLUMNS,
+        )
+
+        frame = gpd.GeoDataFrame(
+            {column: pd.Series(dtype="object") for column in (
+                *NORMALIZED_INVENTORY_COLUMNS, *EVIDENCE_EXTENSION_COLUMNS
+            )},
+            geometry="geometry", crs=raw.crs,
+        )
     normalized = normalize_inventory(frame)
     raw_class_by_id = {
         f"{contract.source_id}:{contract.source_version}:{feature_id}": source_class
@@ -157,6 +172,7 @@ def build_mapped_mosaic(
         geometry_by_type: dict[str, dict[str, Any]] = {}
         survey_by_type: dict[str, dict[str, float]] = {}
         years_by_type: dict[str, set[int]] = {}
+        evidence_by_type: dict[str, dict[str, tuple[str, ...]]] = {}
         for habitat_type in sorted(set(mapped.HABITAT_TYPE.dropna())):
             selected = mapped.loc[mapped.HABITAT_TYPE.eq(habitat_type)].copy()
             projected_cells, projected_inventory, pairs = _spatial_pairs(cells, selected, equal_area_crs)
@@ -169,6 +185,12 @@ def build_mapped_mosaic(
                 return_geometries=True,
             )
             geometry_by_type[habitat_type] = geometries
+            evidence_by_type[habitat_type] = {
+                str(cell_id): tuple(sorted(projected_inventory.iloc[
+                    group.index_right.astype(int).to_numpy()
+                ].RECORD_ID.astype(str).unique()))
+                for cell_id, group in pairs.groupby("H3_INDEX", sort=False)
+            }
             years_by_type[habitat_type] = set(selected.OBSERVATION_YEAR.dropna().astype(int))
             footprints = projected_inventory.loc[
                 projected_inventory.GEOMETRY_ROLE.eq("survey_footprint")
@@ -203,6 +225,11 @@ def build_mapped_mosaic(
                     "OBSERVATION_STATE": "mapped_presence" if area > 0 else "mapped_absence" if surveyed is not None and surveyed >= eligible - 1e-6 else "unknown",
                     "OPERATIONAL_HISTORY_STATUS": "unknown_availability" if selected.AVAILABLE_YEAR.isna().any() else "available_by_as_of_year",
                     "OBSERVATION_YEARS": "|".join(map(str, sorted(years_by_type[habitat_type]))),
+                    # These are intersecting evidence, including absence and
+                    # superseded observations, not only surviving presence.
+                    "INTERSECTING_EVIDENCE_RECORD_IDS": "|".join(
+                        evidence_by_type[habitat_type].get(str(cell.H3_INDEX), ())
+                    ),
                 })
         for cell in cells.itertuples(index=False):
             fragments = [
@@ -230,6 +257,10 @@ def build_mapped_mosaic(
                 "OBSERVATION_STATE": "combined_mapped_presence" if area is not None and area > 0 else "unknown",
                 "OPERATIONAL_HISTORY_STATUS": "unknown_availability" if mapped.AVAILABLE_YEAR.isna().any() else "available_by_as_of_year",
                 "OBSERVATION_YEARS": "|".join(map(str, sorted(all_years))),
+                "INTERSECTING_EVIDENCE_RECORD_IDS": "|".join(sorted({
+                    record_id for by_cell in evidence_by_type.values()
+                    for record_id in by_cell.get(str(cell.H3_INDEX), ())
+                })),
             })
     output = pd.DataFrame(rows)
     if output.duplicated(["H3_INDEX", "H3_RESOLUTION", "SUPPORT_TYPE", "HABITAT_TYPE"]).any():

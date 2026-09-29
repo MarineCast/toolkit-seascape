@@ -71,6 +71,14 @@ _CONFIG_SITES = {
     "seascape.hydrologic_connectivity.fluvial_connectivity.topology": {
         "load_fluvial_connectivity_config"
     },
+    "seascape.hydrologic_connectivity.fluvial_connectivity.selected_outlets_build": {
+        "load_selected_outlet_config"
+    },
+    "seascape.coastal_configuration.nearshore_build": {"load_nearshore_config"},
+    "seascape.coastal_configuration.passage_build": {"load_passage_config"},
+    "seascape.coastal_configuration.gateway_build": {"load_gateway_config"},
+    "seascape.coastal_configuration.coast_complexity_build": {"load_coast_complexity_config"},
+    "seascape.biogenic_habitat.mosaic_build": {"load_mosaic_config"},
     "seascape.hydrologic_connectivity.estuarine_connectivity.build": {
         "load_estuarine_connectivity_config"
     },

@@ -74,7 +74,15 @@ def nearshore_depth_areas(
     if eligible_area <= 1e-9:
         return NearshoreArea(0.0, 0.0, None, None, None, "empty_nearshore_support")
     window = from_bounds(*eligible.bounds, transform=raster.transform)
-    window = window.round_offsets().round_lengths()
+    # Read every source pixel whose footprint can intersect the eligible area.
+    # Rounding the length to nearest can omit a narrow strip at the far edge.
+    left = math.floor(window.col_off)
+    top = math.floor(window.row_off)
+    window = rasterio.windows.Window(
+        left, top,
+        math.ceil(window.col_off + window.width) - left,
+        math.ceil(window.row_off + window.height) - top,
+    )
     try:
         window = window.intersection(rasterio.windows.Window(0, 0, raster.width, raster.height))
     except rasterio.errors.WindowError:

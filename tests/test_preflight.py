@@ -74,6 +74,22 @@ def plan(root, **kwargs):
     )
 
 
+def test_optional_selected_outlet_reports_unconfigured_ids(workspace):
+    report = preflight_build(
+        only=["seascape-selected-outlets"],
+        candidate_root=workspace / ".seascape/candidate",
+    )
+    assert report["status"] == "failed"
+    checks = [
+        check for check in report["checks"]
+        if check["stage"] == "seascape-selected-outlets"
+    ]
+    assert any(
+        check["status"] == "invalid" and "selected_ids" in check["detail"]
+        for check in checks
+    )
+
+
 def change(root, callback):
     file = root / "config/data/environment_seascape.yaml"
     raw = yaml.safe_load(file.read_text())

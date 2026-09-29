@@ -13,7 +13,11 @@ from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.spatial_support.water_network.config import load_water_network_config
-from seascape.utils.artifacts import build_manifest, checksum_artifact, stage_parquet_family
+from seascape.utils.artifacts import (
+    build_manifest,
+    checksum_artifact,
+    stage_parquet_family,
+)
 
 from .coast_complexity import headland_candidates, shoreline_sinuosity, summarize_coast
 from .shoreline_characterization.build import load_shoreline_config

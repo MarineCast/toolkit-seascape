@@ -18,7 +18,11 @@ from seascape.spatial_support.water_network.load import (
     load_model_area_support,
     load_water_graph,
 )
-from seascape.utils.artifacts import build_manifest, checksum_artifact, stage_parquet_family
+from seascape.utils.artifacts import (
+    build_manifest,
+    checksum_artifact,
+    stage_parquet_family,
+)
 
 from .multiple_outlets import build_outlet_relationships
 from .topology import DEFAULT_CONFIG_PATH, load_fluvial_connectivity_config

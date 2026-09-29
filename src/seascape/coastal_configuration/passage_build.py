@@ -21,7 +21,11 @@ from seascape.core.config.paths import project_root
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.seafloor_physiography.bathymetry.pipeline import load_bathymetry_config
 from seascape.spatial_support.water_network.config import load_water_network_config
-from seascape.utils.artifacts import build_manifest, checksum_artifact, stage_parquet_family
+from seascape.utils.artifacts import (
+    build_manifest,
+    checksum_artifact,
+    stage_parquet_family,
+)
 
 from .passage_sections import measure_passage_section, sill_candidates
 

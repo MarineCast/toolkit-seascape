@@ -12,8 +12,8 @@ import pandas as pd
 from shapely.geometry import Point
 from shapely.geometry.base import BaseGeometry
 
-from seascape.spatial_support.water_network.graph import WaterGraph
 from seascape.products import resolve_product
+from seascape.spatial_support.water_network.graph import WaterGraph
 
 
 def gateway_relationships(

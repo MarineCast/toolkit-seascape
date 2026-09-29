@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import heapq
+import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -13,7 +15,14 @@ from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.spatial_support.water_network.config import load_water_network_config
-from seascape.utils.artifacts import build_manifest, checksum_artifact, stage_parquet_family
+from seascape.spatial_support.water_network.graph import target_graph_mapping
+from seascape.spatial_support.water_network.load import load_water_graph
+from seascape.utils.artifacts import (
+    build_manifest,
+    checksum_artifact,
+    stage_parquet_family,
+)
+from seascape.utils.habitat_surface import habitat_network_metrics
 
 from .mosaic import build_mapped_mosaic
 
@@ -29,6 +38,7 @@ class MosaicConfig:
     max_cells: int
     max_records: int
     selected_h3_indices: tuple[str, ...]
+    max_radius_searches: int
 
 
 def load_mosaic_config(config_path: str | Path) -> MosaicConfig:
@@ -44,7 +54,8 @@ def load_mosaic_config(config_path: str | Path) -> MosaicConfig:
     year = int(section["as_of_year"])
     max_cells = int(section.get("max_cells", 200))
     max_records = int(section.get("max_records", 10_000))
-    if year < 1800 or min(max_cells, max_records) < 1:
+    max_radius_searches = int(section.get("max_radius_searches", 2000))
+    if year < 1800 or min(max_cells, max_records, max_radius_searches) < 1:
         raise ValueError("Mosaic year and resource bounds are invalid")
     return MosaicConfig(
         root / str(section["inventory_path"]),
@@ -53,6 +64,7 @@ def load_mosaic_config(config_path: str | Path) -> MosaicConfig:
         str(section.get("equal_area_crs", "EPSG:6933")), year,
         max_cells, max_records,
         tuple(str(value) for value in section.get("selected_h3_indices", ())),
+        max_radius_searches,
     )
 
 
@@ -69,6 +81,74 @@ def _parent_support(children: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         ).groupby(["PARENT", "SUPPORT_TYPE"], sort=True)
     ]
     return gpd.GeoDataFrame(rows, geometry="geometry", crs=children.crs)
+
+
+def _radius_area(
+    graph, cell: str, sources: list[tuple[str, int, float, float]], radius_m: float
+) -> float | None:
+    positions, connectors, _reasons = target_graph_mapping(graph, [cell])
+    if positions[0] < 0:
+        return None
+    start = int(positions[0])
+    queue = [(float(connectors[0]), start)]
+    best = {start: float(connectors[0])}
+    while queue:
+        distance, node = heapq.heappop(queue)
+        if distance > best[node] + 1e-9 or distance > radius_m:
+            continue
+        neighbors, weights = graph.neighbors_of(node)
+        for target, weight in zip(neighbors, weights, strict=True):
+            target = int(target)
+            candidate = distance + float(weight)
+            if candidate <= radius_m and candidate < best.get(target, math.inf):
+                best[target] = candidate
+                heapq.heappush(queue, (candidate, target))
+    return sum(
+        area for source_cell, node, connector, area in sources
+        if source_cell == cell or best.get(node, math.inf) + connector <= radius_m
+    )
+
+
+def _network_mosaic_metrics(frame: pd.DataFrame, resolution: int, config_path: str | Path, max_searches: int) -> pd.DataFrame:
+    frame = frame.copy()
+    frame["NEAREST_MAPPED_HABITAT_M"] = float("nan")
+    frame["MAPPED_AREA_WITHIN_5KM_OF_SELECTED_SUPPORT_M2"] = float("nan")
+    frame["NETWORK_QC"] = "intertidal_requires_reviewed_marine_attachment"
+    marine = frame.loc[frame.SUPPORT_TYPE.eq("marine")]
+    if marine.empty:
+        return frame
+    graph = load_water_graph(resolution, config_path)
+    groups = list(marine.groupby("HABITAT_TYPE", sort=True))
+    if sum(len(group) for _name, group in groups) > max_searches:
+        raise ValueError("Habitat radius-search budget exceeded")
+    for habitat_type, group in groups:
+        cells = group.H3_INDEX.astype(str).tolist()
+        area = group.set_index("H3_INDEX").MAPPED_AREA_M2.astype(float)
+        present = set(area.loc[area.gt(0)].index.astype(str))
+        distance, _unused_area, qc = habitat_network_metrics(
+            graph, cells, present, area, None
+        )
+        source_area = {
+            str(cell): float(value) for cell, value in area.items()
+            if pd.notna(value) and value > 0
+        }
+        source_cells = sorted(source_area)
+        source_positions, source_connectors, _ = target_graph_mapping(graph, source_cells)
+        sources = [
+            (cell, int(position), float(connector), source_area[cell])
+            for cell, position, connector in zip(
+                source_cells, source_positions, source_connectors, strict=True
+            )
+            if position >= 0 and math.isfinite(float(connector))
+        ]
+        radius = [_radius_area(graph, cell, sources, 5000.0) for cell in cells]
+        frame.loc[group.index, "NEAREST_MAPPED_HABITAT_M"] = distance
+        frame.loc[group.index, "MAPPED_AREA_WITHIN_5KM_OF_SELECTED_SUPPORT_M2"] = radius
+        frame.loc[group.index, "NETWORK_QC"] = [
+            str(value) if value is not None and not pd.isna(value) else "mapped_habitat_graph_v1_selected_support_censored"
+            for value in qc
+        ]
+    return frame
 
 
 def build_mapped_habitat_mosaic(config_path: str | Path) -> tuple[Path, ...]:
@@ -110,6 +190,8 @@ def build_mapped_habitat_mosaic(config_path: str | Path) -> tuple[Path, ...]:
     support_r6 = _parent_support(support_r8.to_crs(config.equal_area_crs))
     r8 = build_mapped_mosaic(support_r8, inventory, as_of_year=config.as_of_year, equal_area_crs=config.equal_area_crs)
     r6 = build_mapped_mosaic(support_r6, inventory, as_of_year=config.as_of_year, equal_area_crs=config.equal_area_crs)
+    r8 = _network_mosaic_metrics(r8, 8, config_path, config.max_radius_searches)
+    r6 = _network_mosaic_metrics(r6, 6, config_path, config.max_radius_searches)
     outputs = [
         (inventory, config.output_dir / "NORMALIZED_MAPPED_HABITAT_INVENTORY.parquet"),
         (support_r8, config.output_dir / "MAPPED_HABITAT_SUPPORT_RES_8.parquet"),

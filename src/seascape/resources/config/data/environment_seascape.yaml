@@ -377,6 +377,7 @@ geographic_gateways:
   corridors_path: null
   projected_crs: EPSG:32610
   resolutions: [8, 6]
+  selected_h3_indices: []
   max_cells: 200
   max_pairs: 200000
   max_distance_m: null
@@ -411,6 +412,7 @@ mapped_habitat_mosaic:
   as_of_year: 2026
   max_cells: 200
   max_records: 10000
+  max_radius_searches: 2000
   output_dir: data/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic
 
 fluvial_connectivity:

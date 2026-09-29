@@ -73,3 +73,21 @@ def test_island_blocks_transect_before_deep_water() -> None:
                 depth_threshold_m=55, step_m=5, max_distance_m=90,
             )
             assert result.status == "land_censored"
+
+
+def test_subpixel_support_reads_both_intersecting_footprints() -> None:
+    with MemoryFile() as memory:
+        with memory.open(
+            driver="GTiff", width=2, height=1, count=1,
+            dtype="float32", crs="EPSG:32610",
+            transform=from_origin(0, 10, 10, 10),
+        ) as raster:
+            raster.write(np.array([[5, 50]], dtype="float32"), 1)
+            result = nearshore_depth_areas(
+                box(9.9, 0, 10.1, 10), box(0, 0, 20, 10),
+                LineString([(0, 0), (0, 10)]), raster,
+                depth_threshold_m=25, band_width_m=20,
+            )
+            assert np.isclose(result.eligible_area_m2, 2)
+            assert np.isclose(result.valid_area_m2, 2)
+            assert np.isclose(result.deep_area_m2, 1)

@@ -21,8 +21,15 @@ from seascape.core.geo.h3 import cell_to_parent
 from seascape.seafloor_physiography.bathymetry.pipeline import load_bathymetry_config
 from seascape.spatial_support.water_network.config import load_water_network_config
 from seascape.spatial_support.water_network.graph import target_graph_mapping
-from seascape.spatial_support.water_network.load import load_water_graph, multi_source_shortest_paths
-from seascape.utils.artifacts import build_manifest, checksum_artifact, stage_parquet_family
+from seascape.spatial_support.water_network.load import (
+    load_water_graph,
+    multi_source_shortest_paths,
+)
+from seascape.utils.artifacts import (
+    build_manifest,
+    checksum_artifact,
+    stage_parquet_family,
+)
 
 from .nearshore_transitions import first_water_facing_contour, nearshore_depth_areas
 from .shoreline_characterization.build import load_shoreline_config
