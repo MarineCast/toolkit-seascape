@@ -221,6 +221,12 @@ def _run_selected_outlets(ctx: DomainBuildContext) -> None:
     build_selected_outlets(config_path=ctx.config_path)
 
 
+def _run_nearshore_transitions(ctx: DomainBuildContext) -> None:
+    from seascape.coastal_configuration.nearshore_build import build_nearshore_transitions
+
+    build_nearshore_transitions(ctx.config_path)
+
+
 def _run_seascape_geomorphic_units(ctx: DomainBuildContext) -> None:
     from seascape.seafloor_physiography.geomorphic_units.build import (
         build_geomorphic_units,
@@ -581,6 +587,19 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         ),
         declared_manifests=(
             "data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets/selected_outlets_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-nearshore-transitions",
+        "Build source-shoreline transects and raster-footprint nearshore depth geometry.",
+        _run_nearshore_transitions,
+        dependencies=("seascape-bathymetry", "seascape-shoreline-characterization"),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/nearshore_transitions_manifest.json",
         ),
         optional=True,
     ),

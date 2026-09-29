@@ -121,6 +121,18 @@ PRODUCTS: dict[str, ProductSpec] = {
             "remain null with a QC reason."
         ),
     ),
+    "nearshore_transitions": ProductSpec(
+        "Nearshore depth transition geometry",
+        "coastal_configuration",
+        _paths(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/"
+            "nearshore_transitions/NEARSHORE_TRANSITIONS_RES_{resolution}.parquet"
+        ),
+        "seascape.coastal_configuration.nearshore_build",
+        grain="one row per selected water-clipped H3 cell and configured depth threshold",
+        null_policy="Empty nearshore support, unavailable bathymetry, and network censoring have separate statuses.",
+        optional=True,
+    ),
     "exposure_and_enclosure": ProductSpec(
         "Marine exposure and enclosure",
         "coastal_configuration",
@@ -681,6 +693,7 @@ def scientific_metadata(
         "kelp": "survey_opportunity_asof_v2",
         "reef": "survey_opportunity_asof_v2",
         "exposure_and_enclosure": "geometric_fetch_16_bearings_v1",
+        "nearshore_transitions": "nearshore_raster_footprint_v1",
     }
     sample_methods = {
         "bathymetry": "direct assignment of valid native raster pixel centers to H3",
@@ -691,6 +704,7 @@ def scientific_metadata(
         "kelp": "observation geometry intersected with water-clipped H3 support",
         "reef": "observation geometry intersected with water-clipped H3 support",
         "exposure_and_enclosure": "16 geometric rays from H3 representative points",
+        "nearshore_transitions": "area-weighted overlap of virtual projected native bathymetry pixels and water-clipped nearshore band",
     }
     meanings = {
         "SUBSTRATE_ROCK_FRAC": "Modeled rock-presence score; not a measured areal rock fraction.",
@@ -699,6 +713,10 @@ def scientific_metadata(
         "PLAN_CURVATURE": "Horizontal contour curvature from a local quadratic elevation fit.",
         "TANGENTIAL_CURVATURE": "Surface-tangent curvature from the same local fit.",
         "BATHYMETRY_PIXEL_COUNT": "Number of valid marine depth pixels directly assigned to this H3 cell.",
+        "NEARSHORE_DEEP_WATER_AREA_M2": "Area of valid nearshore raster-footprint overlap at or deeper than the configured positive-down threshold.",
+        "NEARSHORE_DEEP_WATER_FRAC_OF_VALID": "Deep nearshore overlap area divided by valid-bathymetry nearshore overlap area.",
+        "NEARSHORE_BATHYMETRY_COVERAGE_FRAC": "Valid-bathymetry nearshore overlap area divided by eligible water-clipped nearshore area.",
+        "DISTANCE_TO_CONNECTED_DEEP_WATER_M": "Canonical water-graph distance to a mapped deep-water H3 target; path depth is unconstrained.",
     }
     if column.startswith("GEBCO_TID_"):
         meaning = (
@@ -718,6 +736,11 @@ def scientific_metadata(
             f"{common_name(column)}. Consult the producer and source manifest for the equation.",
         )
     denominator = (
+        "valid-bathymetry nearshore area"
+        if product_id == "nearshore_transitions" and column == "NEARSHORE_DEEP_WATER_FRAC_OF_VALID"
+        else "water-clipped nearshore band area"
+        if product_id == "nearshore_transitions" and column == "NEARSHORE_BATHYMETRY_COVERAGE_FRAC"
+        else
         "valid directly assigned marine depth pixels"
         if column.startswith("BATHYMETRY_FRAC_")
         else "known TID values on directly assigned marine depth pixels"

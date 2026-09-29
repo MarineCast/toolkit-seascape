@@ -340,6 +340,39 @@ def register_builtin_datasets():
             schema_version="1",
         )
     _register(
+        "environment.seascape.shoreline_stations",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/SHORELINE_STATIONS.parquet",
+        "environment.seascape.coastal_configuration.nearshore_build",
+        dependencies=("environment.seascape.shoreline_characterization_r8",),
+        primary_key=("STATION_ID",),
+    )
+    _register(
+        "environment.seascape.shoreline_transects",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/SHORELINE_TRANSECTS.parquet",
+        "environment.seascape.coastal_configuration.nearshore_build",
+        dependencies=("environment.seascape.shoreline_stations",),
+        primary_key=("STATION_ID", "DEPTH_THRESHOLD_M"),
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.nearshore_transitions_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/NEARSHORE_TRANSITIONS_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.coastal_configuration.nearshore_build",
+            dependencies=(
+                "environment.seascape.shoreline_stations",
+                f"environment.seascape.h3_marine_support_r{resolution}",
+                f"environment.seascape.bathymetry_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "DEPTH_THRESHOLD_M"),
+        )
+    _register(
         "environment.seascape.estuarine_connectivity_r8",
         DatasetLayer.DOMAIN,
         DatasetFormat.PARQUET,

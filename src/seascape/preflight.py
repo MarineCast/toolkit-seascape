@@ -327,6 +327,24 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             f"selected outlet pair budget {c.max_pairs}; exact IDs {len(c.selected_ids)}; "
             "actual cell and graph counts require producer scan"
         )
+    elif name == "seascape-nearshore-transitions":
+        from seascape.coastal_configuration.nearshore_build import load_nearshore_config
+
+        c = load_nearshore_config(path)
+        inputs = [
+            Input("source shoreline inventory", c.shoreline_path),
+            Input("canonical water polygon", c.water_path),
+            Input("R8 water-clipped geometry", c.clipped_r8_path),
+            Input("native bathymetry raster", c.depth_raster_path),
+            *_network_inputs(path, (8, 6)),
+        ]
+        outputs = [
+            c.output_dir / "SHORELINE_STATIONS.parquet",
+            c.output_dir / "SHORELINE_TRANSECTS.parquet",
+            *(c.output_dir / f"NEARSHORE_TRANSITIONS_RES_{res}.parquet" for res in (8, 6)),
+            c.output_dir / "nearshore_transitions_manifest.json",
+        ]
+        checks.append(f"bounded to {c.max_cells} cells and {c.max_transects} transects; raster windows require producer scan")
     elif name == "seascape-shoreline-characterization":
         from seascape.coastal_configuration.shoreline_characterization.build import (
             load_shoreline_config,

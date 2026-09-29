@@ -337,6 +337,20 @@ selected_outlets:
   max_search_m: null
   output_dir: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets
 
+# Optional SV-02 bounded candidate. Set selected_h3_indices for a reviewed area;
+# an empty selection is accepted only when the complete R8 support fits max_cells.
+nearshore_transitions:
+  selected_h3_indices: []
+  threshold_m: 100
+  band_width_m: 1000
+  station_spacing_m: 250
+  tangent_scale_m: 500
+  transect_step_m: 100
+  transect_max_m: 5000
+  max_cells: 200
+  max_transects: 200
+  output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions
+
 fluvial_connectivity:
   area: model_area
 
