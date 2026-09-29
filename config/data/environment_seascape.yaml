@@ -367,6 +367,23 @@ passage_sections:
   max_cells: 200
   output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections
 
+# Optional SV-04. Reviewed source geometry and canonical water-valid attachment
+# table are separate; no gateway is inferred from whale or model observations.
+geographic_gateways:
+  registry_path: null
+  attachments_path: null
+  routes_path: null
+  basins_path: null
+  corridors_path: null
+  projected_crs: EPSG:32610
+  resolutions: [8, 6]
+  max_cells: 200
+  max_pairs: 200000
+  max_distance_m: null
+  attachment_tolerance_m: 1000
+  corridor_max_offset_m: 1000
+  output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways
+
 fluvial_connectivity:
   area: model_area
 

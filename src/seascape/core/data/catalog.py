@@ -413,6 +413,42 @@ def register_builtin_datasets():
             primary_key=("H3_INDEX", "H3_RESOLUTION", "PASSAGE_ID"),
         )
     _register(
+        "environment.seascape.gateway_inventory", DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_INVENTORY.parquet",
+        "environment.seascape.coastal_configuration.gateway_build",
+        primary_key=("GATEWAY_ID",),
+    )
+    _register(
+        "environment.seascape.gateway_attachments", DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_ATTACHMENTS.parquet",
+        "environment.seascape.coastal_configuration.gateway_build",
+        dependencies=("environment.seascape.gateway_inventory",),
+        primary_key=("GATEWAY_ID", "H3_RESOLUTION", "GRAPH_H3_INDEX"),
+    )
+    _register(
+        "environment.seascape.gateway_route_diagnostics", DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_ROUTE_DIAGNOSTICS.parquet",
+        "environment.seascape.coastal_configuration.gateway_build",
+        dependencies=("environment.seascape.gateway_attachments",),
+        primary_key=("ROUTE_ID", "H3_RESOLUTION"),
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.gateway_relationships_r{resolution}",
+            DatasetLayer.DOMAIN, DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_RELATIONSHIPS_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.coastal_configuration.gateway_build",
+            dependencies=(
+                "environment.seascape.gateway_attachments",
+                f"environment.seascape.h3_marine_support_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "GATEWAY_ID"),
+        )
+    _register(
         "environment.seascape.estuarine_connectivity_r8",
         DatasetLayer.DOMAIN,
         DatasetFormat.PARQUET,

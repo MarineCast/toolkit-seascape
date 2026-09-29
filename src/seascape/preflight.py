@@ -364,6 +364,28 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             )),
         ]
         checks.append(f"bounded to {c.max_passages} passages, {c.max_sections} sections and {c.max_cells} association cells")
+    elif name == "seascape-geographic-gateways":
+        from seascape.coastal_configuration.gateway_build import load_gateway_config
+
+        c = load_gateway_config(path)
+        inputs = [
+            Input("reviewed gateway geometry", c.registry_path),
+            Input("water-valid graph attachments", c.attachments_path),
+            *_network_inputs(path, c.resolutions),
+            *(Input(name, value) for name, value in (
+                ("route configuration", c.routes_path),
+                ("basin registry", c.basins_path),
+                ("corridor registry", c.corridors_path),
+            ) if value is not None),
+        ]
+        outputs = [
+            c.output_dir / "GATEWAY_INVENTORY.parquet",
+            c.output_dir / "GATEWAY_ATTACHMENTS.parquet",
+            *(c.output_dir / f"GATEWAY_RELATIONSHIPS_RES_{res}.parquet" for res in c.resolutions),
+            c.output_dir / "GATEWAY_ROUTE_DIAGNOSTICS.parquet",
+            c.output_dir / "geographic_gateways_manifest.json",
+        ]
+        checks.append(f"bounded to {c.max_cells} cells and {c.max_pairs} cell/gateway pairs")
     elif name == "seascape-shoreline-characterization":
         from seascape.coastal_configuration.shoreline_characterization.build import (
             load_shoreline_config,

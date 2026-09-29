@@ -233,6 +233,12 @@ def _run_passage_sections(ctx: DomainBuildContext) -> None:
     build_passage_sections(ctx.config_path)
 
 
+def _run_geographic_gateways(ctx: DomainBuildContext) -> None:
+    from seascape.coastal_configuration.gateway_build import build_geographic_gateways
+
+    build_geographic_gateways(ctx.config_path)
+
+
 def _run_seascape_geomorphic_units(ctx: DomainBuildContext) -> None:
     from seascape.seafloor_physiography.geomorphic_units.build import (
         build_geomorphic_units,
@@ -619,6 +625,19 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         ),
         declared_manifests=(
             "data/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/passage_sections_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-geographic-gateways",
+        "Build reviewed gateway relationships and bounded alternate-route diagnostics.",
+        _run_geographic_gateways,
+        dependencies=("h3-marine-spatial-support",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/geographic_gateways_manifest.json",
         ),
         optional=True,
     ),
