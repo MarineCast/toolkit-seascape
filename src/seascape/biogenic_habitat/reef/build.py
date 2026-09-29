@@ -262,12 +262,14 @@ def _rocky_potential(
         valid = np.isfinite(values)
         numerator[valid] += values[valid] * weights[name]
         denominator[valid] += weights[name]
-    return np.divide(
+    potential = np.divide(
         numerator,
         denominator,
         out=np.full(len(terrain), np.nan, dtype="float64"),
         where=denominator > 0,
     )
+    potential[~np.isfinite(scores["hardness"])] = np.nan
+    return potential
 
 
 def _rocky_fraction(
@@ -423,13 +425,15 @@ def _r8_tables(
     rocky_fraction, substrate_conf = _rocky_fraction(
         base, substrate_confidence, target_cells
     )
-    rocky_area = rocky_fraction.fillna(0.0).to_numpy() * support[
-        "WATER_AREA_M2"
-    ].to_numpy(dtype="float64")
+    rocky_area = rocky_fraction.to_numpy() * support["WATER_AREA_M2"].to_numpy(
+        dtype="float64"
+    )
     rocky_area_5km = radius_operator.apply(
         rocky_area,
         eligible_sources=np.isfinite(rocky_area) & (rocky_area > 0),
     )
+    if not np.isfinite(rocky_area).any():
+        rocky_area_5km[:] = np.nan
     potential = _rocky_potential(base, geomorphometry, bathymetry, processing)
     biogenic, biogenic_confidence = _biogenic_metrics(
         inventory,
@@ -765,6 +769,8 @@ def build_reef_habitat(
         ],
         source_completeness="partial",
         metadata={
+            "scientific_method_version": "reef_no_unverified_hardness_v2",
+            "modeled_rock_area_status": "unavailable: source rock presence is not verified areal cover",
             "radius_operator_lineage": {
                 "path": str(network.radius_sum_operator_path),
                 "checksum": _sha256(network.radius_sum_operator_path),

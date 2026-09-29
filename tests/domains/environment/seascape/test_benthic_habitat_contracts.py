@@ -6,12 +6,13 @@ import pytest
 from shapely.geometry import box
 
 from seascape.benthic_substrate.bottom_hardness.build import (
-    CLASS_WEIGHTS,
     _derive,
 )
 from seascape.benthic_substrate.classification.build import (
     CLASSES,
     _close_composition,
+    _entropy,
+    _sediment_texture_status,
 )
 from seascape.biogenic_habitat.composite.build import (
     CORE_FEATURES,
@@ -23,6 +24,7 @@ from seascape.biogenic_habitat.kelp.build import (
 )
 from seascape.biogenic_habitat.reef.build import (
     _rocky_fraction,
+    _rocky_potential,
 )
 from seascape.spatial_support.water_network.graph import (
     WaterGraph,
@@ -39,7 +41,6 @@ from seascape.utils.habitat_aggregation import (
     aggregate_r8_to_r6,
 )
 from seascape.utils.habitat_inventory import (
-    NORMALIZED_INVENTORY_COLUMNS,
     normalize_inventory,
 )
 from seascape.utils.habitat_raster import (
@@ -90,10 +91,15 @@ def _inventory_frame():
             "SURVEY_METHOD": ["synthetic polygon"],
             "SPATIAL_PRECISION_CLASS": ["exact_polygon"],
             "TEMPORAL_PRECISION_CLASS": ["survey_year"],
+            "GEOMETRY_ROLE": ["observation"],
+            "SURVEY_EVENT_ID": [None],
+            "SURVEY_COMPLETENESS": ["unknown"],
+            "AVAILABLE_YEAR": [None],
+            "SOURCE_PRIORITY": [0],
         },
         geometry=[box(0, 0, 5, 10)],
         crs="EPSG:6933",
-    ).loc[:, NORMALIZED_INVENTORY_COLUMNS]
+    )
 
 
 def test_exact_polygon_overlay_and_three_state_contract_survive_r8_to_r6():
@@ -266,8 +272,8 @@ def test_persistence_distinguishes_survey_ratio_from_published_bin():
         2026,
     )
     features = features.set_index("H3_INDEX")
-    assert features.loc["survey-cell", "PERSISTENCE_RATIO"] == pytest.approx(0.5)
-    assert features.loc["survey-cell", "PERSISTENCE_BASIS"] == "surveyed_years"
+    assert pd.isna(features.loc["survey-cell", "PERSISTENCE_RATIO"])
+    assert pd.isna(features.loc["survey-cell", "PERSISTENCE_BASIS"])
     assert features.loc["mapped-cell", "PERSISTENCE_RATIO"] == pytest.approx(0.7)
     assert (
         features.loc["mapped-cell", "PERSISTENCE_BASIS"]
@@ -352,6 +358,33 @@ def test_raster_helpers_polygonize_classes_and_sample_percentages(tmp_path):
     assert crs == "EPSG:4326"
     assert len(polygons) == 1
     assert polygons[0].area == pytest.approx(1.0)
+
+
+def test_valid_empty_positive_raster_is_not_corrupt(tmp_path):
+    import rasterio
+    from rasterio.transform import from_origin
+
+    path = tmp_path / "valid-empty.tif"
+    with rasterio.open(
+        path,
+        "w",
+        driver="GTiff",
+        width=2,
+        height=2,
+        count=1,
+        dtype="uint8",
+        crs="EPSG:4326",
+        transform=from_origin(0, 2, 1, 1),
+    ) as raster:
+        raster.write(np.zeros((2, 2), dtype="uint8"), 1)
+    polygons, crs = positive_raster_polygons(
+        [path],
+        bbox={"min_lon": 0, "min_lat": 0, "max_lon": 2, "max_lat": 2},
+        positive_values=[1],
+        allow_empty=True,
+    )
+    assert polygons == []
+    assert crs == "EPSG:4326"
 
 
 def test_arcgis_feature_batches_use_post_to_avoid_url_length_failures(tmp_path):
@@ -447,20 +480,21 @@ def test_substrate_ontology_and_hardness_derivation_are_bounded():
     )
     assert valid.tolist() == [True]
     assert classes["ROCK"][0] == pytest.approx(0.25)
-    assert classes["GRAVEL"][0] == pytest.approx(0.15)
-    assert classes["SAND"][0] == pytest.approx(0.225)
-    assert classes["MUD"][0] == pytest.approx(0.375)
-    assert sum(classes[name][0] for name in CLASSES) == pytest.approx(1.0)
+    assert classes["GRAVEL"][0] == pytest.approx(0.2)
+    assert classes["SAND"][0] == pytest.approx(0.3)
+    assert classes["MUD"][0] == pytest.approx(0.5)
+    assert all(np.isnan(classes[name][0]) for name in ("BOULDER", "COBBLE", "MIXED"))
     features = pd.DataFrame(
         {
             "H3_INDEX": ["cell"],
             "H3_RESOLUTION": [8],
             **{
-                f"SUBSTRATE_{name}_FRAC": [1.0 if name == "ROCK" else 0.0]
+                f"SUBSTRATE_{name}_FRAC": [1.0 if name == "ROCK" else np.nan]
                 for name in CLASSES
             },
-            "SUBSTRATE_HARD_SUBSTRATE_FRAC": [0.4],
-            "SUBSTRATE_DISTANCE_TO_HARD_SUBSTRATE_M": [0.0],
+            "SUBSTRATE_MODELED_ROCK_PRESENCE_SCORE": [1.0],
+            "SUBSTRATE_HARD_SUBSTRATE_FRAC": [np.nan],
+            "SUBSTRATE_DISTANCE_TO_HARD_SUBSTRATE_M": [np.nan],
             "WATER_COMPONENT_ID": ["cell"],
             "NETWORK_CONNECTOR_METHOD": ["graph_node"],
             "NETWORK_CONNECTOR_DISTANCE_M": [0.0],
@@ -476,12 +510,68 @@ def test_substrate_ontology_and_hardness_derivation_are_bounded():
         }
     )
     hardness, hardness_confidence = _derive(features, confidence)
-    assert hardness.loc[0, "BOTTOM_HARDNESS_INDEX"] == CLASS_WEIGHTS["ROCK"]
-    assert hardness.loc[0, "DERIVATION_METHOD"].startswith("fixed documented")
-    assert (
-        hardness_confidence.loc[0, "BOTTOM_HARDNESS_OBSERVED_VS_MODELED"]
-        == "derived_from_modeled_dbseabed_substrate"
+    assert pd.isna(hardness.loc[0, "BOTTOM_HARDNESS_INDEX"])
+    assert hardness.loc[0, "MODELED_ROCK_PRESENCE_SCORE"] == 1.0
+    assert hardness.loc[0, "DERIVATION_QC_REASON"].startswith("rock_presence")
+    assert hardness_confidence.loc[0, "BOTTOM_HARDNESS_CONFIDENCE"] == 0
+
+
+def test_substrate_entropy_uses_only_supported_closed_sediment_texture():
+    equal, valid = _close_composition(
+        np.array([0.25]), np.array([1 / 3]), np.array([1 / 3]), np.array([1 / 3])
     )
+    assert valid[0]
+    assert _entropy(equal)[0] == pytest.approx(1.0)
+    assert _sediment_texture_status(equal)[0] == "closed_sediment_texture"
+    pure_sand, _ = _close_composition(
+        np.array([0.0]), np.array([0.0]), np.array([1.0]), np.array([0.0])
+    )
+    assert _entropy(pure_sand)[0] == pytest.approx(0.0)
+    pure_rock, valid = _close_composition(
+        np.array([1.0]), np.array([0.0]), np.array([0.0]), np.array([0.0])
+    )
+    assert valid[0]
+    assert pure_rock["ROCK"][0] == 1.0
+    assert np.isnan(_entropy(pure_rock)[0])
+    assert _sediment_texture_status(pure_rock)[0] == "no_sediment_texture_mass"
+    missing, valid = _close_composition(
+        np.array([0.25]), np.array([np.nan]), np.array([0.5]), np.array([0.5])
+    )
+    assert not valid[0]
+    assert np.isnan(_entropy(missing)[0])
+    assert _sediment_texture_status(missing)[0] == "source_texture_unavailable"
+    with pytest.raises(ValueError, match="within"):
+        _close_composition(
+            np.array([0.25]), np.array([1.01]), np.array([0.0]), np.array([0.0])
+        )
+
+
+def test_reef_potential_does_not_renormalize_away_unavailable_hardness():
+    base = pd.DataFrame({"H3_INDEX": ["cell"], "BOTTOM_HARDNESS_INDEX": [np.nan]})
+    geom = pd.DataFrame(
+        {
+            "H3_INDEX": ["cell"],
+            "SLOPE_MEAN_RING_1": [20.0],
+            "LOCAL_RELIEF_RING_2_M": [30.0],
+            "VECTOR_RUGGEDNESS_RING_1": [0.5],
+        }
+    )
+    bath = pd.DataFrame({"H3_INDEX": ["cell"], "BATHYMETRY_MEDIAN": [10.0]})
+    processing = {
+        "slope_full_score_degrees": 10.0,
+        "relief_full_score_m": 20.0,
+        "ruggedness_full_score": 0.2,
+        "depth_full_score_max_m": 20.0,
+        "depth_zero_score_m": 200.0,
+        "potential_weights": {
+            "hardness": 1.0,
+            "slope": 1.0,
+            "relief": 1.0,
+            "ruggedness": 1.0,
+            "depth": 1.0,
+        },
+    }
+    assert np.isnan(_rocky_potential(base, geom, bath, processing)[0])
 
 
 def test_model_panel_keeps_exactly_the_requested_initial_core_features():
