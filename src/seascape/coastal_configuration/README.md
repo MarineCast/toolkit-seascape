@@ -40,6 +40,12 @@ distance remains null when disconnected. Shoreline fractions divide by physicall
 length; unclassified mapped length changes coverage and is not absence. R6 lengths are summed and
 fractions recomputed from denominators.
 
+The R8 exposure product exports 16 bearing-specific `GEOMETRIC_FETCH_*_M` values, clockwise
+from north at 22.5-degree steps, plus `GEOMETRIC_FETCH_*_CENSORED` flags, a maximum search
+distance and geometry-source status. A ray at the configured limit is censored: the true open
+fetch beyond it is unknown. These are static straight-line geometric distances, not wind or wave
+exposure, and the land/water source geometry limits their interpretation.
+
 ## Inspection and validation
 
 Family-specific colors and legends remain local. Shared presentation settings control basemap,

@@ -9,6 +9,8 @@ from pyproj import Transformer
 from shapely.geometry import LineString
 
 from seascape.coastal_configuration.exposure_and_enclosure.build import (
+    BEARING_LABELS,
+    _build_output,
     _open_water_seed_positions,
 )
 from seascape.coastal_configuration.shoreline_proximity.build import (
@@ -28,6 +30,41 @@ def test_open_water_seeds_require_a_materialized_open_water_class() -> None:
     assert _open_water_seed_positions(openness, 0.60).tolist() == [1, 2]
     with pytest.raises(ValueError, match="maximum graph openness was 0.610"):
         _open_water_seed_positions(openness, 0.75)
+
+
+def test_directional_fetch_exports_censoring_and_search_limit() -> None:
+    rays = np.full((1, 16), 500.0)
+    rays[0, 0] = 1_000.0
+    config = SimpleNamespace(maximum_fetch_km=1.0, open_bearing_fetch_fraction=0.9)
+    lineage = pd.DataFrame(
+        {
+            "WATER_COMPONENT_ID": ["water"],
+            "CONNECTOR_METHOD": ["direct"],
+            "CONNECTOR_DISTANCE_M": [0.0],
+        }
+    )
+    result = (
+        _build_output(
+            ["cell"],
+            rays,
+            np.asarray([0.0]),
+            config,
+            lineage,
+            np.asarray([None], dtype=object),
+        )
+        .to_pandas()
+        .iloc[0]
+    )
+
+    assert len(BEARING_LABELS) == 16
+    assert result["GEOMETRIC_FETCH_N_M"] == pytest.approx(1_000.0)
+    assert result["GEOMETRIC_FETCH_N_CENSORED"]
+    assert result["GEOMETRIC_FETCH_NNE_M"] == pytest.approx(500.0)
+    assert not result["GEOMETRIC_FETCH_NNE_CENSORED"]
+    assert result["GEOMETRIC_FETCH_MAX_SEARCH_M"] == pytest.approx(1_000.0)
+    assert (
+        result["GEOMETRIC_FETCH_SOURCE_STATUS"] == "land_and_water_geometry_available"
+    )
 
 
 def test_width_and_constriction_mechanisms_preserve_local_narrows() -> None:

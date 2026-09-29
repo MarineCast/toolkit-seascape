@@ -54,6 +54,20 @@ misleading all-null product. Earlier R6 releases could contain direct moments wi
 counts; they remain immutable and must not be silently interpreted as the direct-support v2
 contract. No R6 geomorphometry or unit table is implied.
 
+An optional local GEBCO TID GeoTIFF can be configured as `bathymetry.source.tid_raw_filename`
+with matching `tid_release`. The depth and TID grids must have identical EPSG:4326 shape and
+affine transform. The builder publishes `GEBCO_TID_RES_8.parquet` and
+`GEBCO_TID_RES_6.parquet` in the bathymetry family transaction, counting categorical source
+types at the same valid marine pixel centers assigned directly to each H3 resolution. It never
+interpolates TID identifiers. No TID raster is packaged, downloaded, or present in current
+regional products; omit the option when unavailable. The
+[GEBCO 2026 TID definitions](https://www.gebco.net/data-products-gridded-bathymetry-data/gebco2026-grid)
+distinguish direct (10–17), indirect (40–48), and unknown/mixed-source (70–72) codes. These
+describe input type, **not** depth accuracy, uncertainty, or complete survey coverage. Grid
+alignment and a declared matching release are checked locally; a configured filename alone
+cannot authenticate source provenance. A candidate release must retain source checksum and
+provider metadata for review.
+
 Distances to requested isobaths use native-raster marching-square **segments** in the configured
 metric CRS and H3 center straight-line distance, not a water-network route. A raster square is
 eligible only when all four corners are marine and finite, so a segment cannot bridge land or

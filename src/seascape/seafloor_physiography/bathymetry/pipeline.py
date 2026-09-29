@@ -88,6 +88,8 @@ class BathymetryConfig:
     smoothing_gaussian_sigma_km: float
     smoothing_fill_opacity: float
     additional_exports: tuple[BathymetryExportConfig, ...]
+    tid_raw_path: Path | None = None
+    tid_release: str | None = None
 
 
 def _required(section: Mapping[str, Any], name: str, key: str) -> Any:
@@ -207,6 +209,27 @@ def load_bathymetry_config(
         (".tif", ".tiff")
     ):
         raise ValueError("bathymetry.source.raw_filename must be a GeoTIFF filename.")
+    tid_filename = source.get("tid_raw_filename")
+    if tid_filename is not None and (
+        not isinstance(tid_filename, str)
+        or Path(tid_filename).name != tid_filename
+        or not tid_filename.lower().endswith((".tif", ".tiff"))
+    ):
+        raise ValueError(
+            "bathymetry.source.tid_raw_filename must be a GeoTIFF filename."
+        )
+    tid_release = (
+        str(source.get("tid_release", source["release"])) if tid_filename else None
+    )
+    if tid_filename and str(source.get("provider", "GEBCO")) not in {
+        "GEBCO",
+        "SYNTHETIC",
+    }:
+        raise ValueError(
+            "GEBCO TID requires a GEBCO or synthetic fixture depth provider"
+        )
+    if tid_release is not None and tid_release != str(source["release"]):
+        raise ValueError("bathymetry.source.tid_release must match the depth release")
 
     additional_exports: list[BathymetryExportConfig] = []
     for index, value in enumerate(processing.get("additional_exports", [])):
@@ -283,6 +306,8 @@ def load_bathymetry_config(
         ),
         smoothing_fill_opacity=float(map_config.get("smoothing_fill_opacity", 0.82)),
         additional_exports=tuple(additional_exports),
+        tid_raw_path=raw_dir / tid_filename if tid_filename else None,
+        tid_release=tid_release,
     )
 
 
@@ -364,6 +389,49 @@ def run_pipeline(
         for staged_config in staged_configs:
             build_bathymetry_parquet(staged_config, raster_path=raw_path)
         processed_paths = [item.processed_path for item in product_configs]
+        if config.tid_raw_path is not None:
+            import pandas as pd
+
+            from .build import load_h3_cells
+            from .tid import build_tid_parquet
+
+            if not config.tid_raw_path.is_file():
+                raise FileNotFoundError(
+                    f"GEBCO TID GeoTIFF not found: {config.tid_raw_path}"
+                )
+            for product_config, staged_config in zip(
+                product_configs, staged_configs, strict=True
+            ):
+                destination = product_config.processed_path.with_name(
+                    f"GEBCO_TID_RES_{product_config.h3_resolution}.parquet"
+                )
+                staged_tid = publisher.stage_path(destination)
+                build_tid_parquet(
+                    depth_path=raw_path,
+                    tid_path=config.tid_raw_path,
+                    output_path=staged_tid,
+                    cells=load_h3_cells(product_config),
+                    resolution=product_config.h3_resolution,
+                    depth_release=config.release,
+                    tid_release=config.tid_release or "",
+                )
+                depth_counts = pd.read_parquet(
+                    staged_config.processed_path,
+                    columns=["H3_INDEX", "BATHYMETRY_PIXEL_COUNT"],
+                ).set_index("H3_INDEX")
+                tid_counts = pd.read_parquet(
+                    staged_tid,
+                    columns=["H3_INDEX", "GEBCO_TID_DEPTH_PIXEL_COUNT"],
+                ).set_index("H3_INDEX")
+                if not depth_counts.index.equals(tid_counts.index) or not depth_counts[
+                    "BATHYMETRY_PIXEL_COUNT"
+                ].fillna(-1).equals(
+                    tid_counts["GEBCO_TID_DEPTH_PIXEL_COUNT"].fillna(-1)
+                ):
+                    raise ValueError(
+                        "GEBCO TID and bathymetry direct pixel support disagree"
+                    )
+                processed_paths.append(destination)
         artifacts = [
             capture_staged_parquet_artifact(publisher, destination)
             for destination in processed_paths
@@ -390,11 +458,59 @@ def run_pipeline(
             sources=[
                 {
                     "name": f"{config.provider} {config.release}",
+                    "version": config.release,
+                    "native_spacing": f"{config.native_resolution_arc_seconds:g} arc seconds",
+                    "sampling_method": "direct assignment of valid native marine pixel centers to H3",
+                    "datum": (
+                        "synthetic; no real-world datum"
+                        if synthetic
+                        else (
+                            "GEBCO compilation approximately mean sea level; constituent sources may differ"
+                            if config.provider == "GEBCO"
+                            else "not verified for the configured provider"
+                        )
+                    ),
+                    "evidence_type": (
+                        "synthetic software fixture"
+                        if synthetic
+                        else (
+                            "compiled gridded elevation, not a direct survey at every pixel"
+                            if config.provider == "GEBCO"
+                            else "configured gridded elevation; source evidence unverified"
+                        )
+                    ),
+                    "uncertainty_availability": (
+                        "not assigned for synthetic fixture"
+                        if synthetic
+                        else "not provided as per-pixel accuracy in the depth grid"
+                    ),
                     "path": str(raw_path),
                     "checksum": checksum_path(raw_path),
                     **rights,
                     **synthetic_source,
-                }
+                },
+                *(
+                    [
+                        {
+                            "name": f"{config.provider} {config.tid_release} TID categorical source types",
+                            "version": config.tid_release,
+                            "native_spacing": f"{config.native_resolution_arc_seconds:g} arc seconds",
+                            "sampling_method": "aligned categorical pixel center; no interpolation",
+                            "evidence_type": (
+                                "synthetic categorical software fixture"
+                                if synthetic
+                                else "source type identifier, not a survey footprint"
+                            ),
+                            "uncertainty_availability": "TID is not a numeric accuracy estimate",
+                            "path": str(config.tid_raw_path),
+                            "checksum": checksum_path(config.tid_raw_path),
+                            **rights,
+                            **synthetic_source,
+                        }
+                    ]
+                    if config.tid_raw_path is not None
+                    else []
+                ),
             ],
             upstream_artifacts=upstream_artifacts,
             attribution=[
@@ -441,6 +557,12 @@ def run_pipeline(
                 "statistic_sampling_support": "all canonical bathymetry statistics and depth-band counts use the same direct pixel-to-resolution assignment",
                 "isobath_distance_method": "marine_only_marching_squares_segments_straight_line_v2",
                 "isobath_distance_limit": "within source crop only; no contour gives null distance and explicit status",
+                "tid_method_version": "direct_categorical_pixel_support_v1"
+                if config.tid_raw_path
+                else None,
+                "tid_interpretation": "GEBCO source type, not uncertainty or accuracy"
+                if config.tid_raw_path
+                else None,
             },
         )
         publisher.stage_manifest(output_dir / "bathymetry_manifest.json", manifest)

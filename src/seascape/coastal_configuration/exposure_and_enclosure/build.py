@@ -78,6 +78,10 @@ BEARING_LABELS = (
 )
 OUTPUT_COLUMNS = [
     "H3_INDEX",
+    *[f"GEOMETRIC_FETCH_{bearing}_M" for bearing in BEARING_LABELS],
+    *[f"GEOMETRIC_FETCH_{bearing}_CENSORED" for bearing in BEARING_LABELS],
+    "GEOMETRIC_FETCH_MAX_SEARCH_M",
+    "GEOMETRIC_FETCH_SOURCE_STATUS",
     "OPENNESS_TO_OCEAN_INDEX",
     "ENCLOSURE_INDEX",
     "EMBAYMENT_INDEX",
@@ -252,6 +256,18 @@ def _build_output(
     ).sum(axis=1) * (360.0 / len(BEARING_LABELS))
     data: dict[str, Any] = {
         "H3_INDEX": target_cells,
+        **{
+            f"GEOMETRIC_FETCH_{bearing}_M": target_fetch[:, index]
+            for index, bearing in enumerate(BEARING_LABELS)
+        },
+        **{
+            f"GEOMETRIC_FETCH_{bearing}_CENSORED": np.isclose(
+                target_fetch[:, index], maximum_fetch_m, atol=1e-6
+            )
+            for index, bearing in enumerate(BEARING_LABELS)
+        },
+        "GEOMETRIC_FETCH_MAX_SEARCH_M": maximum_fetch_m,
+        "GEOMETRIC_FETCH_SOURCE_STATUS": "land_and_water_geometry_available",
         "OPENNESS_TO_OCEAN_INDEX": openness,
         "ENCLOSURE_INDEX": enclosure,
         "EMBAYMENT_INDEX": embayment,
@@ -268,11 +284,14 @@ def _build_output(
             pl.col("H3_INDEX").cast(pl.String),
             pl.exclude(
                 "H3_INDEX",
+                "GEOMETRIC_FETCH_SOURCE_STATUS",
+                *[f"GEOMETRIC_FETCH_{bearing}_CENSORED" for bearing in BEARING_LABELS],
                 "WATER_COMPONENT_ID",
                 "NETWORK_CONNECTOR_METHOD",
                 "NETWORK_DISTANCE_QC_REASON",
             ).cast(pl.Float64),
             pl.col("WATER_COMPONENT_ID").cast(pl.String),
+            pl.col("GEOMETRIC_FETCH_SOURCE_STATUS").cast(pl.String),
             pl.col("NETWORK_CONNECTOR_METHOD").cast(pl.String),
             pl.col("NETWORK_DISTANCE_QC_REASON").cast(pl.String),
         )
@@ -432,6 +451,14 @@ def build_exposure_and_enclosure(
             "algorithm_semantics": (
                 "Directional exposure and line-of-sight use geometric ray casting; distance "
                 "to open water follows the canonical water-passable graph."
+            ),
+            "scientific_method_version": "geometric_fetch_16_bearings_v1",
+            "geometric_fetch_bearings_degrees_clockwise_from_north": {
+                bearing: index * 22.5 for index, bearing in enumerate(BEARING_LABELS)
+            },
+            "geometric_fetch_censoring": (
+                "At maximum search distance the true unobstructed fetch is unknown; "
+                "CENSORED is true, not a measured coastline intersection."
             ),
             "open_water_openness_threshold": config.open_water_openness_threshold,
             "open_water_seed_definition": (

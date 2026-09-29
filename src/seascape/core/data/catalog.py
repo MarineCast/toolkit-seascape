@@ -207,6 +207,16 @@ def register_builtin_datasets():
             primary_key=("H3_INDEX",),
             schema_version="1",
         )
+        _register(
+            f"environment.seascape.gebco_tid_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            f"{{data_root}}/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/GEBCO_TID_RES_{resolution}.parquet",
+            "environment.seascape.seafloor_physiography.bathymetry.tid",
+            dependencies=(f"environment.seascape.bathymetry_r{resolution}",),
+            primary_key=("H3_INDEX",),
+            schema_version="1",
+        )
     _register(
         "environment.seascape.geomorphometry_r8",
         DatasetLayer.DOMAIN,
