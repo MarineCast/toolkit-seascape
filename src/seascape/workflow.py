@@ -245,6 +245,12 @@ def _run_coast_complexity(ctx: DomainBuildContext) -> None:
     build_coast_complexity(ctx.config_path)
 
 
+def _run_mapped_habitat_mosaic(ctx: DomainBuildContext) -> None:
+    from seascape.biogenic_habitat.mosaic_build import build_mapped_habitat_mosaic
+
+    build_mapped_habitat_mosaic(ctx.config_path)
+
+
 def _run_seascape_geomorphic_units(ctx: DomainBuildContext) -> None:
     from seascape.seafloor_physiography.geomorphic_units.build import (
         build_geomorphic_units,
@@ -657,6 +663,19 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         ),
         declared_manifests=(
             "data/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/coast_complexity_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-mapped-habitat-mosaic",
+        "Build normalized observed/mapped habitat evidence on marine and tidal-frame supports.",
+        _run_mapped_habitat_mosaic,
+        dependencies=("h3-marine-spatial-support",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/mapped_habitat_mosaic_manifest.json",
         ),
         optional=True,
     ),

@@ -476,6 +476,35 @@ def register_builtin_datasets():
             primary_key=("H3_INDEX", "H3_RESOLUTION"),
         )
     _register(
+        "environment.seascape.normalized_mapped_habitat_inventory", DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/NORMALIZED_MAPPED_HABITAT_INVENTORY.parquet",
+        "environment.seascape.biogenic_habitat.mosaic_build",
+        primary_key=("RECORD_ID",),
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.mapped_habitat_support_r{resolution}",
+            DatasetLayer.DOMAIN, DatasetFormat.GEOPARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/MAPPED_HABITAT_SUPPORT_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.biogenic_habitat.mosaic_build",
+            dependencies=(f"environment.seascape.h3_marine_support_r{resolution}",),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "SUPPORT_TYPE"),
+        )
+        _register(
+            f"environment.seascape.mapped_habitat_mosaic_r{resolution}",
+            DatasetLayer.DOMAIN, DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/MAPPED_HABITAT_MOSAIC_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.biogenic_habitat.mosaic_build",
+            dependencies=(
+                "environment.seascape.normalized_mapped_habitat_inventory",
+                f"environment.seascape.mapped_habitat_support_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "SUPPORT_TYPE", "HABITAT_TYPE"),
+        )
+    _register(
         "environment.seascape.estuarine_connectivity_r8",
         DatasetLayer.DOMAIN,
         DatasetFormat.PARQUET,

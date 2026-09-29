@@ -401,6 +401,18 @@ coast_complexity:
   max_headland_candidates: 200
   output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity
 
+# Optional SV-06. Supply reviewed normalized polygon evidence and an independent
+# tidal-frame support when intertidal classes are present. No provider is bundled.
+mapped_habitat_mosaic:
+  inventory_path: null
+  intertidal_support_path: null
+  selected_h3_indices: []
+  equal_area_crs: EPSG:6933
+  as_of_year: 2026
+  max_cells: 200
+  max_records: 10000
+  output_dir: data/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic
+
 fluvial_connectivity:
   area: model_area
 

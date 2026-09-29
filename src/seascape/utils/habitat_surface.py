@@ -60,7 +60,9 @@ def _composition_metrics(
     inventory: Any,
     pairs: pd.DataFrame,
     support: pd.DataFrame,
-) -> pd.DataFrame:
+    *,
+    return_geometries: bool = False,
+) -> Any:
     composition_mask = (
         inventory["COMPOSITION_ELIGIBLE"].astype(bool)
         & inventory["SUPPORTS_AREA"].astype(bool)
@@ -78,7 +80,7 @@ def _composition_metrics(
         }
     ).set_index("H3_INDEX")
     if composition.empty:
-        return output.reset_index()
+        return (output.reset_index(), {}) if return_geometries else output.reset_index()
     if not composition["COVERAGE_WEIGHT"].eq(1.0).all():
         raise ValueError(
             "Composition-eligible polygons must use exact coverage weight 1. "
@@ -115,6 +117,7 @@ def _composition_metrics(
     cell_positions = {
         str(cell): index for index, cell in enumerate(cells["H3_INDEX"].astype(str))
     }
+    resolved_geometries: dict[str, Any] = {}
     for cell, cell_pairs in selected_pairs.groupby("H3_INDEX", sort=False):
         cell_position = cell_positions[str(cell)]
         cell_geometry = cells.geometry.iloc[cell_position]
@@ -160,6 +163,7 @@ def _composition_metrics(
         if not fragments:
             continue
         local_union = union_all(np.asarray(fragments, dtype=object))
+        resolved_geometries[str(cell)] = local_union
         polygon_parts = []
         pending = [local_union]
         while pending:
@@ -185,7 +189,7 @@ def _composition_metrics(
         )
     water_area = support.set_index("H3_INDEX")["WATER_AREA_M2"].astype("float64")
     output["HABITAT_AREA_M2"] = np.minimum(output["HABITAT_AREA_M2"], water_area)
-    return output.reset_index()
+    return (output.reset_index(), resolved_geometries) if return_geometries else output.reset_index()
 
 
 def habitat_topology_for_support(

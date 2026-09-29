@@ -404,6 +404,26 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
             c.output_dir / "coast_complexity_manifest.json",
         ]
         checks.append(f"bounded to {c.max_cells} cells, {c.max_coast_segments} source segments and {c.max_headland_candidates} candidates")
+    elif name == "seascape-mapped-habitat-mosaic":
+        from seascape.biogenic_habitat.mosaic_build import load_mosaic_config
+
+        c = load_mosaic_config(path)
+        inputs = [
+            Input("normalized mapped habitat", c.inventory_path),
+            Input("R8 clipped marine support", c.marine_r8_path),
+            *(Input("tidal-frame intertidal support", c.intertidal_support_path) for _ in (1,) if c.intertidal_support_path is not None),
+        ]
+        outputs = [
+            *(c.output_dir / filename for filename in (
+                "NORMALIZED_MAPPED_HABITAT_INVENTORY.parquet",
+                "MAPPED_HABITAT_SUPPORT_RES_8.parquet",
+                "MAPPED_HABITAT_SUPPORT_RES_6.parquet",
+                "MAPPED_HABITAT_MOSAIC_RES_8.parquet",
+                "MAPPED_HABITAT_MOSAIC_RES_6.parquet",
+                "mapped_habitat_mosaic_manifest.json",
+            )),
+        ]
+        checks.append(f"bounded to {c.max_cells} cells and {c.max_records} source records")
     elif name == "seascape-shoreline-characterization":
         from seascape.coastal_configuration.shoreline_characterization.build import (
             load_shoreline_config,
