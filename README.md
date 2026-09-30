@@ -32,7 +32,23 @@ not by itself create a Python package version, Git tag, or GitHub Release.
 
 ## Install and get a first result
 
-Use a Python 3.14 source checkout with `pyproject.toml` at its root. Clone [the repository](https://github.com/MarineCast/toolkit-seascape), then run these commands from the checkout. Installation retrieves declared Python dependencies; the demo itself does not need source downloads or credentials.
+After publication to PyPI, install the software with Python 3.14:
+
+```sh
+python3.14 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install toolkit-seascape
+```
+
+For a reproducible installation, pin a published version, for example
+`python -m pip install toolkit-seascape==0.1.0` once that version is available on PyPI.
+Installation retrieves declared Python dependencies; the package does not include regional
+scientific datasets or an audited data release.
+
+Contributors and maintainers validating the source-install quick start can clone
+[the repository](https://github.com/MarineCast/toolkit-seascape) and run the following from its
+root. This exercised source path also checks the documentation example:
 
 <!-- BEGIN QUICKSTART install -->
 ```sh
@@ -44,6 +60,9 @@ python -m pip install .
 python -m pip check
 ```
 <!-- END QUICKSTART install -->
+
+For iterative development in the cloned checkout, use
+`python -m pip install -e '.[test,docs,quality]'`.
 
 Leave the checkout and select a fresh owned workspace:
 

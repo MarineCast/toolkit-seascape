@@ -31,6 +31,12 @@ docs = ["mkdocs-material>=9.6,<10"]
 [project.scripts]
 seascape = "seascape.cli:main"
 
+[project.urls]
+Homepage = "https://marinecast.github.io/toolkit-seascape/"
+Documentation = "https://marinecast.github.io/toolkit-seascape/"
+Repository = "https://github.com/MarineCast/toolkit-seascape"
+Issues = "https://github.com/MarineCast/toolkit-seascape/issues"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
