@@ -87,6 +87,9 @@ nav:
       - Stage inputs: stage-inputs.md
       - Architecture: ARCHITECTURE.md
       - Development: DEVELOPMENT.md
+  - Development:
+      - Release process: development/releases.md
+      - Release checklist: development/release-checklist.md
 
 validation:
   nav:

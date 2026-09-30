@@ -56,6 +56,7 @@ def main() -> int:
 
     location = Path(seascape.__file__).resolve()
     check_location(location, Path(sys.prefix).resolve())
+    assert seascape.__version__ == metadata.version("toolkit-seascape")
     check_resources(location.parent)
     from seascape.core.data.registry import DATASETS
 
