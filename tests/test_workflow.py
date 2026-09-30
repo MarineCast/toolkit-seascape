@@ -62,7 +62,9 @@ def test_dependency_closure_is_topological_and_rejects_invalid_graphs() -> None:
         "leaf",
     ]
     with pytest.raises(ValueError, match="unknown dependencies"):
-        selected_stages(stages=(DomainBuildStage("bad", "bad", noop, dependencies=("missing",)),))
+        selected_stages(
+            stages=(DomainBuildStage("bad", "bad", noop, dependencies=("missing",)),)
+        )
     with pytest.raises(ValueError, match="dependency cycle"):
         selected_stages(
             stages=(
@@ -72,7 +74,9 @@ def test_dependency_closure_is_topological_and_rejects_invalid_graphs() -> None:
         )
 
 
-def test_resume_reuses_only_valid_stage_state_and_force_rebuilds(tmp_path: Path) -> None:
+def test_resume_reuses_only_valid_stage_state_and_force_rebuilds(
+    tmp_path: Path,
+) -> None:
     config = tmp_path / "config.yaml"
     config.write_text("base_directory: .\n", encoding="utf-8")
     candidate = tmp_path / "candidate"

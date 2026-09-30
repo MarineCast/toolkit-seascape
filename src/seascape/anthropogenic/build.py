@@ -36,11 +36,9 @@ from seascape.utils.acquisition import (
 )
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.surface import (
     load_cell_geometry as _load_cell_geometry,
 )
@@ -175,8 +173,12 @@ def _external_attachments(
         return {}
     points = candidates.geometry.representative_point().to_crs("EPSG:4326")
     projected_points = points.to_crs("EPSG:6933")
-    projected_water = gpd.GeoSeries([water_geometry], crs="EPSG:4326").to_crs("EPSG:6933").iloc[0]
-    source_to_water = projected_points.distance(projected_water).to_numpy(dtype="float64")
+    projected_water = (
+        gpd.GeoSeries([water_geometry], crs="EPSG:4326").to_crs("EPSG:6933").iloc[0]
+    )
+    source_to_water = projected_points.distance(projected_water).to_numpy(
+        dtype="float64"
+    )
     within = source_to_water <= float(processing["source_water_max_distance_m"])
     output: dict[int, tuple[str, float, str | None]] = {
         int(source_index): ("", np.nan, "source_exceeds_water_entry_tolerance")
@@ -192,7 +194,9 @@ def _external_attachments(
         points.y.to_numpy(dtype="float64"),
         water_geometry,
         source_water_max_distance_m=float(processing["source_water_max_distance_m"]),
-        graph_connector_max_distance_m=float(processing["graph_connector_max_distance_m"]),
+        graph_connector_max_distance_m=float(
+            processing["graph_connector_max_distance_m"]
+        ),
         candidate_limit=int(processing["graph_connector_candidate_limit"]),
     )
     source_indices = candidates.index.to_list()
@@ -201,7 +205,8 @@ def _external_attachments(
         if bool(row.IS_CONNECTED):
             output[source_index] = (
                 str(row.GRAPH_H3_INDEX),
-                float(row.SOURCE_TO_WATER_DISTANCE_M) + float(row.GRAPH_CONNECTOR_DISTANCE_M),
+                float(row.SOURCE_TO_WATER_DISTANCE_M)
+                + float(row.GRAPH_CONNECTOR_DISTANCE_M),
                 None,
             )
         else:
@@ -220,7 +225,8 @@ def _seed_sources(
     direct_target_cells: set[str] = set()
     failures: dict[int, str] = {}
     records = inventory.loc[
-        inventory["IS_CANONICAL"].astype(bool) & inventory["FEATURE_CLASS"].eq(feature_class)
+        inventory["IS_CANONICAL"].astype(bool)
+        & inventory["FEATURE_CLASS"].eq(feature_class)
     ]
     for source_index in records.index:
         cells = direct_cells.get(int(source_index), [])
@@ -232,7 +238,11 @@ def _seed_sources(
                 direct_target_cells.add(str(cell))
                 if position >= 0 and np.isfinite(connector):
                     sources.append(
-                        (str(graph.cells[int(position)]), float(connector), int(source_index))
+                        (
+                            str(graph.cells[int(position)]),
+                            float(connector),
+                            int(source_index),
+                        )
                     )
                 elif reason is not None and not pd.isna(reason) and str(reason):
                     failures[int(source_index)] = str(reason)
@@ -301,7 +311,8 @@ def _record_source_cells(
 ) -> dict[int, str]:
     output: dict[int, str] = {}
     records = inventory.loc[
-        inventory["IS_CANONICAL"].astype(bool) & inventory["FEATURE_CLASS"].isin(feature_classes)
+        inventory["IS_CANONICAL"].astype(bool)
+        & inventory["FEATURE_CLASS"].isin(feature_classes)
     ]
     for source_index in records.index:
         cells = direct_cells.get(int(source_index), [])
@@ -326,7 +337,8 @@ def _mapped_presence(
     output = np.full(len(target_cells), np.nan, dtype="float64")
     positions = {cell: index for index, cell in enumerate(target_cells)}
     records = inventory.loc[
-        inventory["IS_CANONICAL"].astype(bool) & inventory["FEATURE_CLASS"].eq(feature_class)
+        inventory["IS_CANONICAL"].astype(bool)
+        & inventory["FEATURE_CLASS"].eq(feature_class)
     ]
     for source_index in records.index:
         cells = direct_cells.get(int(source_index), [])
@@ -359,7 +371,11 @@ def _confidence_table(
     rows: list[dict[str, Any]] = []
     for cell in target_cells:
         source_indices = records_by_cell[cell]
-        local = inventory.loc[sorted(source_indices)] if source_indices else inventory.iloc[0:0]
+        local = (
+            inventory.loc[sorted(source_indices)]
+            if source_indices
+            else inventory.iloc[0:0]
+        )
         row: dict[str, Any] = {"H3_INDEX": cell, "H3_RESOLUTION": 8}
         for family, classes in CONFIDENCE_FAMILIES.items():
             selected = local.loc[local["FEATURE_CLASS"].isin(classes)]
@@ -397,7 +413,9 @@ def build_r8_tables(
 
     inventory = normalize_anthropogenic_inventory(inventory)
     canonical = inventory.loc[inventory["IS_CANONICAL"].astype(bool)].copy()
-    projected_cells, projected_inventory, pairs = _spatial_pairs(cells, canonical, equal_area_crs)
+    projected_cells, projected_inventory, pairs = _spatial_pairs(
+        cells, canonical, equal_area_crs
+    )
     target_cells = support["H3_INDEX"].astype(str).tolist()
     water_area = support["WATER_AREA_M2"].to_numpy(dtype="float64")
     direct_cells = _direct_cells_by_record(pairs)
@@ -455,7 +473,9 @@ def build_r8_tables(
             sources,
             direct,
             empty_reason=(
-                next(iter(failures.values())) if failures else f"no_mapped_{feature_class}_source"
+                next(iter(failures.values()))
+                if failures
+                else f"no_mapped_{feature_class}_source"
             ),
         )
         feature_data[output_column] = distance
@@ -493,7 +513,9 @@ def build_r8_tables(
             [structure_values.get(cell, 0.0) for cell in radius_operator.source_cells],
             dtype="float64",
         )
-        unknown_sources = sorted(set(structure_values).difference(radius_operator.source_cells))
+        unknown_sources = sorted(
+            set(structure_values).difference(radius_operator.source_cells)
+        )
         if unknown_sources:
             raise ValueError(
                 "Mapped overwater structures fall outside canonical radius support: "
@@ -512,11 +534,13 @@ def build_r8_tables(
         out=np.full(len(target_cells), np.nan, dtype="float64"),
         where=reachable_water_area > 0,
     )
-    feature_data["WATER_COMPONENT_ID"] = support["WATER_COMPONENT_ID"].astype(str).to_numpy()
-    feature_data["NETWORK_CONNECTOR_METHOD"] = support["CONNECTOR_METHOD"].to_numpy()
-    feature_data["NETWORK_CONNECTOR_DISTANCE_M"] = support["CONNECTOR_DISTANCE_M"].to_numpy(
-        dtype="float64"
+    feature_data["WATER_COMPONENT_ID"] = (
+        support["WATER_COMPONENT_ID"].astype(str).to_numpy()
     )
+    feature_data["NETWORK_CONNECTOR_METHOD"] = support["CONNECTOR_METHOD"].to_numpy()
+    feature_data["NETWORK_CONNECTOR_DISTANCE_M"] = support[
+        "CONNECTOR_DISTANCE_M"
+    ].to_numpy(dtype="float64")
     feature_data["NETWORK_DISTANCE_QC_REASON"] = support["GRAPH_QC_REASON"].to_numpy()
     features = pd.DataFrame(feature_data)
     confidence = _confidence_table(
@@ -547,11 +571,17 @@ def build_anthropogenic_seascape(
     radius_operator = load_radius_sum_operator(config_path)
     reachable_frame = load_reachable_water_area(config_path)
     if radius_operator.radius_m != float(processing["marine_buffer_m"]):
-        raise ValueError("Anthropogenic marine_buffer_m must match the canonical radius operator.")
+        raise ValueError(
+            "Anthropogenic marine_buffer_m must match the canonical radius operator."
+        )
     network_config = load_water_network_config(config_path)
-    water_frame = gpd.read_parquet(network_config.water_polygon_path).to_crs("EPSG:4326")
+    water_frame = gpd.read_parquet(network_config.water_polygon_path).to_crs(
+        "EPSG:4326"
+    )
     water_bounds = box(bbox[0] - 0.25, bbox[1] - 0.25, bbox[2] + 0.25, bbox[3] + 0.25)
-    water_geometry = intersection(union_all(water_frame.geometry.to_numpy()), water_bounds)
+    water_geometry = intersection(
+        union_all(water_frame.geometry.to_numpy()), water_bounds
+    )
     r8_features, r8_confidence = build_r8_tables(
         inventory,
         support_r8,
@@ -572,9 +602,13 @@ def build_anthropogenic_seascape(
     ].copy()
     selected_parents = set(crosswalk["PARENT_H3_INDEX"].astype(str))
     support_r6 = load_model_area_support(6, config_path)
-    support_r6 = support_r6.loc[support_r6["H3_INDEX"].astype(str).isin(selected_parents)].copy()
+    support_r6 = support_r6.loc[
+        support_r6["H3_INDEX"].astype(str).isin(selected_parents)
+    ].copy()
     valid_parents = set(support_r6["H3_INDEX"].astype(str))
-    crosswalk = crosswalk.loc[crosswalk["PARENT_H3_INDEX"].astype(str).isin(valid_parents)].copy()
+    crosswalk = crosswalk.loc[
+        crosswalk["PARENT_H3_INDEX"].astype(str).isin(valid_parents)
+    ].copy()
     r6_features, r6_confidence = aggregate_r8_to_r6(
         r8_features,
         r8_confidence,

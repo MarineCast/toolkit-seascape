@@ -29,7 +29,7 @@ from .habitat_configuration import (
     model_bbox_tuple,
 )
 from .habitat_inventory import normalize_inventory
-from .habitat_surface import build_r8_tables
+from .habitat_surface import build_r8_tables, habitat_topology_for_support
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +45,17 @@ def build_habitat_products(
     """Build normalized inventory plus r8/r6 feature and confidence products."""
 
     inventory = normalize_inventory(inventory)
+    availability_year_known = bool(inventory["AVAILABLE_YEAR"].notna().all())
+    inventory = inventory.loc[
+        (
+            inventory["OBSERVATION_END_YEAR"].isna()
+            | inventory["OBSERVATION_END_YEAR"].le(config.reference_year)
+        )
+        & (
+            inventory["AVAILABLE_YEAR"].isna()
+            | inventory["AVAILABLE_YEAR"].le(config.reference_year)
+        )
+    ].reset_index(drop=True)
     support_r8 = load_model_area_support(config.native_resolution, config_path)
     support_r6 = load_model_area_support(config.model_resolution, config_path)
     cells = load_cell_geometry(config, support_r8)
@@ -57,7 +68,9 @@ def build_habitat_products(
     radius_operator = load_radius_sum_operator(config_path)
     network = load_water_network_config(config_path)
     if radius_operator.radius_m != config.marine_buffer_m:
-        raise ValueError("Habitat marine_buffer_m must match the canonical radius-sum operator.")
+        raise ValueError(
+            "Habitat marine_buffer_m must match the canonical radius-sum operator."
+        )
     r8_features, r8_confidence = build_r8_tables(
         inventory,
         support_r8,
@@ -68,7 +81,7 @@ def build_habitat_products(
         equal_area_crs=config.equal_area_crs,
         reference_year=config.reference_year,
     )
-    del graph, cells, support_r8
+    del graph, support_r8
     gc.collect()
     if not config.parent_child_path.exists():
         raise FileNotFoundError(
@@ -76,11 +89,17 @@ def build_habitat_products(
         )
     crosswalk = pd.read_parquet(config.parent_child_path)
     selected = set(r8_features["H3_INDEX"].astype(str))
-    crosswalk = crosswalk.loc[crosswalk["CHILD_H3_INDEX"].astype(str).isin(selected)].copy()
-    selected_parents = set(crosswalk["PARENT_H3_INDEX"].astype(str))
-    support_r6 = support_r6.loc[support_r6["H3_INDEX"].astype(str).isin(selected_parents)].copy()
     crosswalk = crosswalk.loc[
-        crosswalk["PARENT_H3_INDEX"].astype(str).isin(set(support_r6["H3_INDEX"].astype(str)))
+        crosswalk["CHILD_H3_INDEX"].astype(str).isin(selected)
+    ].copy()
+    selected_parents = set(crosswalk["PARENT_H3_INDEX"].astype(str))
+    support_r6 = support_r6.loc[
+        support_r6["H3_INDEX"].astype(str).isin(selected_parents)
+    ].copy()
+    crosswalk = crosswalk.loc[
+        crosswalk["PARENT_H3_INDEX"]
+        .astype(str)
+        .isin(set(support_r6["H3_INDEX"].astype(str)))
     ].copy()
     aggregation_children = set(crosswalk["CHILD_H3_INDEX"].astype(str))
     omitted_children = len(r8_features) - len(aggregation_children)
@@ -89,12 +108,41 @@ def build_habitat_products(
             "%s H3 r8 cells have a geometrically dry H3 r6 parent and are omitted from r6.",
             omitted_children,
         )
+    import geopandas as gpd
+    from shapely import union_all
+
+    child_geometry = cells[["H3_INDEX", "geometry"]].copy()
+    child_geometry["H3_INDEX"] = child_geometry["H3_INDEX"].astype(str)
+    grouped_geometry = child_geometry.merge(
+        crosswalk[["CHILD_H3_INDEX", "PARENT_H3_INDEX"]],
+        left_on="H3_INDEX",
+        right_on="CHILD_H3_INDEX",
+        how="inner",
+        validate="one_to_one",
+    )
+    parent_rows = [
+        {
+            "H3_INDEX": str(parent),
+            "geometry": union_all(group.geometry.to_numpy()),
+        }
+        for parent, group in grouped_geometry.groupby("PARENT_H3_INDEX", sort=True)
+    ]
+    parent_cells = gpd.GeoDataFrame(parent_rows, geometry="geometry", crs=cells.crs)
+    parent_topology = habitat_topology_for_support(
+        parent_cells, inventory, config.equal_area_crs
+    )
+    del cells, parent_cells, grouped_geometry
     r6_features, r6_confidence = aggregate_r8_to_r6(
-        r8_features.loc[r8_features["H3_INDEX"].astype(str).isin(aggregation_children)].copy(),
-        r8_confidence.loc[r8_confidence["H3_INDEX"].astype(str).isin(aggregation_children)].copy(),
+        r8_features.loc[
+            r8_features["H3_INDEX"].astype(str).isin(aggregation_children)
+        ].copy(),
+        r8_confidence.loc[
+            r8_confidence["H3_INDEX"].astype(str).isin(aggregation_children)
+        ].copy(),
         crosswalk,
         support_r6,
         prefix=config.prefix,
+        topology=parent_topology,
     )
     paths = (
         config.inventory_path,
@@ -127,7 +175,9 @@ def build_habitat_products(
             "license": source.get("license") or "See authoritative source terms",
             "attribution": source.get("attribution") or name,
             "observation_period": source.get("observation_period"),
-            "source_url": source.get("url", source.get("layer_url", source.get("dataset_url"))),
+            "source_url": source.get(
+                "url", source.get("layer_url", source.get("dataset_url"))
+            ),
         }
         if raw_path is not None:
             record["path"] = str(raw_path)
@@ -136,7 +186,9 @@ def build_habitat_products(
                 record["checksum"] = checksum_artifact(raw_path)
         sources.append(record)
     declared_status = (
-        str(source_completeness.get("status", "")).strip().lower() if source_completeness else ""
+        str(source_completeness.get("status", "")).strip().lower()
+        if source_completeness
+        else ""
     )
     manifest = build_manifest(
         dataset_family=f"environment.seascape.{config.section_name}",
@@ -155,10 +207,24 @@ def build_habitat_products(
             )
         ],
         attribution=[
-            {"text": source["attribution"], "license": source["license"]} for source in sources
+            {"text": source["attribution"], "license": source["license"]}
+            for source in sources
         ],
-        source_completeness=("partial" if declared_status not in {"", "complete"} else "complete"),
+        source_completeness=(
+            "partial" if declared_status not in {"", "complete"} else "complete"
+        ),
         metadata={
+            "scientific_method_version": "habitat_topology_v2",
+            "evidence_method_version": "survey_opportunity_asof_v2",
+            "as_of_year": config.reference_year,
+            "operational_historical_reconstruction": availability_year_known,
+            "unknown_availability_time_note": (
+                None
+                if availability_year_known
+                else "Some source availability years are unknown; as-of output is retrospective, not operational history."
+            ),
+            "patch_identity_support": "local to each R8/R6 reporting support; R6 recomputed from geometry",
+            "edge_length_support": "within reporting support; clipping boundary excluded",
             "radius_operator_lineage": {
                 "path": str(network.radius_sum_operator_path),
                 "checksum": checksum_artifact(network.radius_sum_operator_path),

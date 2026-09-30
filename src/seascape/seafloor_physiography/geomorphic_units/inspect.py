@@ -29,12 +29,18 @@ from .build import (
 )
 
 LOGGER = logging.getLogger(__name__)
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/seafloor_physiography")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/seafloor_physiography"
+)
 GEOMORPHIC_UNITS_MAP_FILENAME = "geomorphic_units.html"
 
 LABELS = {
     "BROAD_TERRAIN_POSITION_M": ("Broad terrain position", "m", "diverging"),
-    "BROAD_TERRAIN_POSITION_Z": ("Standardized broad terrain position", "z", "diverging"),
+    "BROAD_TERRAIN_POSITION_Z": (
+        "Standardized broad terrain position",
+        "z",
+        "diverging",
+    ),
     "DIRECTIONAL_ANISOTROPY": ("Directional terrain anisotropy", "0–1", "unit"),
     "CANYON_DENSITY": ("Canyon-axis and rim density", "0–1", "unit"),
     "CLASSIFICATION_CONFIDENCE": ("Classification confidence", "0–1", "unit"),
@@ -79,7 +85,8 @@ def _feature(row: Mapping[str, Any]) -> dict[str, object]:
     cell = str(row["H3_INDEX"])
     geometry = mapping(cell_to_polygon(cell))
     geometry["coordinates"] = [
-        [[round(x, 6), round(y, 6)] for x, y in ring] for ring in geometry["coordinates"]
+        [[round(x, 6), round(y, 6)] for x, y in ring]
+        for ring in geometry["coordinates"]
     ]
     properties: dict[str, object] = {
         "H3_INDEX": cell,
@@ -107,11 +114,17 @@ def inspect_geomorphic_units(
 
     config = load_geomorphic_units_config(config_path)
     settings = load_presentation_settings(presentation_config_path)
-    source = Path(parquet_path).expanduser().resolve() if parquet_path else config.output_path
+    source = (
+        Path(parquet_path).expanduser().resolve()
+        if parquet_path
+        else config.output_path
+    )
     destination = (
         Path(output_path).expanduser().resolve()
         if output_path
-        else settings.export_path(MAP_EXPORT_SUBDIRECTORY, GEOMORPHIC_UNITS_MAP_FILENAME)
+        else settings.export_path(
+            MAP_EXPORT_SUBDIRECTORY, GEOMORPHIC_UNITS_MAP_FILENAME
+        )
     )
     if not source.exists():
         raise FileNotFoundError(f"Geomorphic-unit Parquet not found: {source}")
@@ -143,7 +156,9 @@ def inspect_geomorphic_units(
         for index, (metric, (label, units, kind)) in enumerate(METRICS.items())
         for bounds in [_scale(frame[metric], kind)]
     }
-    centroids = frame["H3_INDEX"].astype(str).map(lambda cell: cell_to_polygon(cell).centroid)
+    centroids = (
+        frame["H3_INDEX"].astype(str).map(lambda cell: cell_to_polygon(cell).centroid)
+    )
     map_options: dict[str, object] = {
         "location": [
             float(centroids.map(lambda point: point.y).mean()),
@@ -163,9 +178,9 @@ def inspect_geomorphic_units(
         for unit in GEOMORPHIC_UNITS
     )
     script = f"""
-    const geomorphicData = {json.dumps(feature_collection, separators=(',', ':'))};
-    const geomorphicScales = {json.dumps(scales, separators=(',', ':'))};
-    const geomorphicUnitColors = {json.dumps(category_colors, separators=(',', ':'))};
+    const geomorphicData = {json.dumps(feature_collection, separators=(",", ":"))};
+    const geomorphicScales = {json.dumps(scales, separators=(",", ":"))};
+    const geomorphicUnitColors = {json.dumps(category_colors, separators=(",", ":"))};
     function geomorphicHexRgb(hex) {{
       const value = hex.replace('#', '');
       return [parseInt(value.slice(0,2),16), parseInt(value.slice(2,4),16), parseInt(value.slice(4,6),16)];
@@ -239,7 +254,8 @@ def inspect_geomorphic_units(
         "{% macro script(this, kwargs) %}" + script + "{% endmacro %}"
     )
     map_.add_child(layer_script)
-    map_.get_root().header.add_child(folium.Element("""
+    map_.get_root().header.add_child(
+        folium.Element("""
             <style>
             .geomorphic-unit-legend {
               background: rgba(255,255,255,0.94); padding: 8px 10px;
@@ -253,8 +269,14 @@ def inspect_geomorphic_units(
             }
             </style>
             <title>Seascape Toolkit Seafloor Geomorphic Units</title>
-            """))
-    bounds = frame["H3_INDEX"].astype(str).map(cell_to_polygon).map(lambda polygon: polygon.bounds)
+            """)
+    )
+    bounds = (
+        frame["H3_INDEX"]
+        .astype(str)
+        .map(cell_to_polygon)
+        .map(lambda polygon: polygon.bounds)
+    )
     map_.fit_bounds(
         [
             [min(item[1] for item in bounds), min(item[0] for item in bounds)],
@@ -270,7 +292,9 @@ def inspect_geomorphic_units(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="config/data/environment_seascape.yaml")
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     args = parser.parse_args()
     logging.basicConfig(
         level=logging.INFO,

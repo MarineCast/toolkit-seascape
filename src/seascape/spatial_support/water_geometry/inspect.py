@@ -32,7 +32,9 @@ def _read_geometry(path: Path, label: str) -> gpd.GeoDataFrame:
     frame = gpd.read_parquet(path)
     if frame.crs is None:
         raise ValueError(f"{label} has no coordinate reference system: {path}")
-    frame = frame.loc[frame.geometry.notna() & ~frame.geometry.is_empty].to_crs("EPSG:4326")
+    frame = frame.loc[frame.geometry.notna() & ~frame.geometry.is_empty].to_crs(
+        "EPSG:4326"
+    )
     if frame.empty:
         raise ValueError(f"{label} contains no mappable geometry: {path}")
     return frame
@@ -64,7 +66,9 @@ def inspect_water_geometry(
     frame = _read_geometry(source, "Water geometry")
     water_map = new_vector_map(settings, frame.total_bounds)
 
-    tooltip_fields = [field for field in ("NAME", "AREA", "TYPE") if field in frame.columns]
+    tooltip_fields = [
+        field for field in ("NAME", "AREA", "TYPE") if field in frame.columns
+    ]
     layer_options: dict[str, object] = {}
     if tooltip_fields:
         layer_options["tooltip"] = folium.GeoJsonTooltip(
@@ -86,7 +90,9 @@ def inspect_water_geometry(
         **layer_options,
     ).add_to(water_map)
     folium.LayerControl(collapsed=False).add_to(water_map)
-    water_map.get_root().header.add_child(folium.Element("<title>Seascape Toolkit Water Geometry</title>"))
+    water_map.get_root().header.add_child(
+        folium.Element("<title>Seascape Toolkit Water Geometry</title>")
+    )
     destination = save_vector_map(water_map, destination)
     LOGGER.info("Saved water-geometry inspection map: %s", destination)
     return destination

@@ -5,6 +5,10 @@ import pytest
 import yaml
 
 from seascape.core.config.paths import project_root
+from seascape.maintenance.update_seascape_feature_catalog import (
+    PRODUCTS,
+    scientific_metadata,
+)
 
 CATALOG_PATH = project_root() / "config/feature_catalog.yaml"
 KEY_COLUMNS = {"H3_INDEX", "H3_RESOLUTION"}
@@ -20,6 +24,26 @@ METRIC_SUBFAMILIES = {
 
 def _catalog() -> dict:
     return yaml.safe_load(CATALOG_PATH.read_text(encoding="utf-8"))
+
+
+def test_new_catalog_science_fields_do_not_promote_source_type_or_sampling_scale():
+    depth = scientific_metadata(
+        "bathymetry", "BATHYMETRY_PIXEL_COUNT", PRODUCTS["bathymetry"]
+    )
+    tid = scientific_metadata(
+        "gebco_tid", "GEBCO_TID_DIRECT_FRAC_OF_KNOWN", PRODUCTS["gebco_tid"]
+    )
+    substrate = scientific_metadata(
+        "benthic_substrate", "SUBSTRATE_ROCK_FRAC", PRODUCTS["benthic_substrate"]
+    )
+    assert "direct" in depth["source_support"]["sampling_method"]
+    assert (
+        tid["denominator"]
+        == "known TID values on directly assigned marine depth pixels"
+    )
+    assert "not accuracy" in tid["scientific_definition"]
+    assert "not a measured areal" in substrate["scientific_definition"]
+    assert tid["validation_status"].startswith("software contract only")
 
 
 def _all_materialized_catalog_paths_exist() -> bool:
@@ -70,7 +94,10 @@ def test_seascape_catalog_has_direct_collection_contract() -> None:
         assert product["features"], product_id
         assert product["feature_count"] == len(product["features"])
         assert product["variable_kind_counts"] == {
-            kind: sum(feature["variable_kind"] == kind for feature in product["features"].values())
+            kind: sum(
+                feature["variable_kind"] == kind
+                for feature in product["features"].values()
+            )
             for kind in catalog["catalog_contract"]["variable_kinds"]
         }
         for column, feature in product["features"].items():
@@ -84,8 +111,16 @@ def test_seascape_catalog_has_direct_collection_contract() -> None:
                 for resolution in feature["available_resolutions"]
             }
             assert feature["role"] in catalog["catalog_contract"]["roles"]
-            assert feature["variable_kind"] in catalog["catalog_contract"]["variable_kinds"]
-            if feature["role"] in {"coverage", "evidence", "support_or_qc", "identifier"}:
+            assert (
+                feature["variable_kind"]
+                in catalog["catalog_contract"]["variable_kinds"]
+            )
+            if feature["role"] in {
+                "coverage",
+                "evidence",
+                "support_or_qc",
+                "identifier",
+            }:
                 assert feature["variable_kind"] == "metadata"
     assert all(
         product["variable_kind"] == "metadata"
@@ -125,7 +160,9 @@ def test_supporting_product_paths_resolve() -> None:
             assert (root / product["path"]).exists()
         else:
             for resolution in product["resolutions"]:
-                assert (root / product["path_template"].format(resolution=resolution)).exists()
+                assert (
+                    root / product["path_template"].format(resolution=resolution)
+                ).exists()
 
 
 def test_every_resolution_named_seascape_artifact_is_classified() -> None:
@@ -143,14 +180,22 @@ def test_every_resolution_named_seascape_artifact_is_classified() -> None:
             classified.add(str((root / product["path"]).resolve()))
         else:
             classified.update(
-                str((root / product["path_template"].format(resolution=resolution)).resolve())
+                str(
+                    (
+                        root / product["path_template"].format(resolution=resolution)
+                    ).resolve()
+                )
                 for resolution in product["resolutions"]
             )
     for product in catalog["superseded_products"].values():
         for key, paths in product.items():
             if key.endswith("_paths"):
-                classified.update(str((root / path).resolve()) for path in paths.values())
+                classified.update(
+                    str((root / path).resolve()) for path in paths.values()
+                )
     observed = {
-        str(path.resolve()) for path in seascape_root.rglob("*.parquet") if "_RES_" in path.name
+        str(path.resolve())
+        for path in seascape_root.rglob("*.parquet")
+        if "_RES_" in path.name
     }
     assert classified.issuperset(observed)

@@ -34,9 +34,7 @@ PRODUCT_FIELD_EXCLUSIONS = {
     ("geomorphic_units", "BROAD_TERRAIN_POSITION_Z"): (
         "duplicate_of_geomorphometry_terrain_position_ring_4_z"
     ),
-    ("geomorphometry", "DEPTH_RANGE_RING_1_M"): (
-        "duplicate_of_geomorphometry_relief"
-    ),
+    ("geomorphometry", "DEPTH_RANGE_RING_1_M"): ("duplicate_of_geomorphometry_relief"),
     ("geomorphometry", "GENERAL_CURVATURE"): "signed_duplicate_of_curvature",
     ("geomorphometry", "TERRAIN_POSITION"): (
         "duplicate_of_geomorphometry_terrain_position_ring_1_m"
@@ -214,7 +212,8 @@ def seascape_catalog_subset(catalog: Mapping[str, Any]) -> tuple[dict[str, Any],
         "products": {
             str(product_id): product
             for product_id, product in products.items()
-            if isinstance(product, Mapping) and product.get("metric_family") == "seascape"
+            if isinstance(product, Mapping)
+            and product.get("metric_family") == "seascape"
         },
     }
     encoded = json.dumps(subset, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -393,10 +392,14 @@ def audit_collinearity(
     ]
     if not rows:
         return pd.DataFrame(columns=columns)
-    return pd.DataFrame(rows).sort_values(
-        ["EXACT_DUPLICATE", "ABS_SPEARMAN_RHO", "LEFT_COLUMN", "RIGHT_COLUMN"],
-        ascending=[False, False, True, True],
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            ["EXACT_DUPLICATE", "ABS_SPEARMAN_RHO", "LEFT_COLUMN", "RIGHT_COLUMN"],
+            ascending=[False, False, True, True],
+        )
+        .reset_index(drop=True)
+    )
 
 
 def main() -> int:
@@ -426,7 +429,9 @@ def main() -> int:
     rendered = yaml.safe_dump(eligibility, sort_keys=False, width=100)
     if args.check:
         if not output.exists() or output.read_text(encoding="utf-8") != rendered:
-            raise SystemExit(f"Seascape feature eligibility metadata is stale: {output}")
+            raise SystemExit(
+                f"Seascape feature eligibility metadata is stale: {output}"
+            )
     else:
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(rendered, encoding="utf-8")
@@ -434,10 +439,14 @@ def main() -> int:
         audit = audit_collinearity(
             read_seascape_parquet(args.panel, canonical_root=root), eligibility
         )
-        audit_path = Path(args.audit_output or "outputs/seascape_collinearity_audit.csv")
+        audit_path = Path(
+            args.audit_output or "outputs/seascape_collinearity_audit.csv"
+        )
         audit_path.parent.mkdir(parents=True, exist_ok=True)
         audit.to_csv(audit_path, index=False)
-        print(json.dumps({"eligibility": str(output), "audit": str(audit_path)}, indent=2))
+        print(
+            json.dumps({"eligibility": str(output), "audit": str(audit_path)}, indent=2)
+        )
     else:
         print(output)
     return 0

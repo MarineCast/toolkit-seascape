@@ -78,7 +78,9 @@ def _records(
     )
     return gpd.GeoDataFrame(
         {
-            "RECORD_ID": [f"{source_dataset}:{value}:{index}" for index, value in enumerate(ids)],
+            "RECORD_ID": [
+                f"{source_dataset}:{value}:{index}" for index, value in enumerate(ids)
+            ],
             "HABITAT_TYPE": "floating_kelp",
             "SOURCE_DATASET": source_dataset,
             "SOURCE_FEATURE_ID": ids.to_numpy(),
@@ -100,13 +102,20 @@ def _records(
     ).loc[:, NORMALIZED_INVENTORY_COLUMNS]
 
 
-def _source_path(config: Any, source_name: str) -> Path:
-    return config.raw_dir / str(config.sources[source_name]["raw_filename"])
+def _source_path(config: Any, source_name: str) -> Path | None:
+    source = config.sources[source_name]
+    return (
+        config.raw_dir / str(source["raw_filename"])
+        if source.get("enabled", True)
+        else None
+    )
 
 
-def _read_optional(path: Path):
+def _read_optional(path: Path | None):
     import geopandas as gpd
 
+    if path is None:
+        return None
     if not path.exists():
         LOGGER.warning("Optional kelp source is absent: %s", path)
         return None
@@ -133,6 +142,8 @@ def _annual_kelp_inventory(config: Any) -> list[Any]:
     import geopandas as gpd
 
     source = config.sources["wa_dnr_annual_floating_kelp"]
+    if not source.get("enabled", True):
+        return []
     root = config.raw_dir / str(source.get("extract_directory", "WA_floating_kelp"))
     if not root.exists():
         return []
@@ -153,7 +164,6 @@ def _annual_kelp_inventory(config: Any) -> list[Any]:
     if not candidates:
         LOGGER.warning("No annual polygon layers were discovered beneath %s", root)
         return []
-    latest_year = max(year for year, _frame, _name in candidates)
     outputs = []
     for year, frame, name in candidates:
         outputs.append(
@@ -162,7 +172,9 @@ def _annual_kelp_inventory(config: Any) -> list[Any]:
                 source_dataset=f"WA_DNR_FLOATING_KELP_{year}",
                 year=year,
                 evidence_class="direct_observation",
-                composition_eligible=year == latest_year,
+                # The latest mapped year must be chosen for each location,
+                # not once for the entire cross-border archive.
+                composition_eligible=True,
                 supports_area=True,
                 confidence=3,
                 survey_method="annual aerial floating-canopy inventory",
@@ -201,10 +213,13 @@ def load_kelp_inventory(
     import geopandas as gpd
 
     config = load_habitat_download_config(SECTION_NAME, config_path)
+    wa_enabled = bool(
+        config.sources["wa_dnr_annual_floating_kelp"].get("enabled", True)
+    )
     annual_frames = _annual_kelp_inventory(config)
     _require_annual_inventory(
         annual_frames,
-        allow_generalized_only=allow_generalized_only,
+        allow_generalized_only=allow_generalized_only or not wa_enabled,
     )
     frames: list[Any] = list(annual_frames)
 
@@ -231,7 +246,9 @@ def load_kelp_inventory(
     shorezone = _read_optional(_source_path(config, "wa_dnr_shorezone_floating_kelp"))
     if shorezone is not None:
         values = shorezone["FLOATKELP"].astype(str).str.upper()
-        shorezone = shorezone.loc[values.isin(["CONTINUOUS", "PATCHY", "ABSENT"])].copy()
+        shorezone = shorezone.loc[
+            values.isin(["CONTINUOUS", "PATCHY", "ABSENT"])
+        ].copy()
         status = np.where(
             shorezone["FLOATKELP"].astype(str).str.upper().eq("ABSENT"),
             "absent",
@@ -289,17 +306,31 @@ def build_kelp_habitat(
         allow_generalized_only=allow_generalized_only,
     )
     annual_available = bool(
-        inventory["SOURCE_DATASET"].astype(str).str.fullmatch(r"WA_DNR_FLOATING_KELP_\d{4}").any()
+        inventory["SOURCE_DATASET"]
+        .astype(str)
+        .str.fullmatch(r"WA_DNR_FLOATING_KELP_\d{4}")
+        .any()
+    )
+    wa_enabled = bool(
+        load_habitat_download_config(SECTION_NAME, config_path)
+        .sources["wa_dnr_annual_floating_kelp"]
+        .get("enabled", True)
     )
     return build_habitat_products(
         inventory,
         config,
         config_path,
         source_completeness={
-            "required_source": "wa_dnr_annual_floating_kelp",
+            "required_source": "wa_dnr_annual_floating_kelp" if wa_enabled else None,
             "annual_observations_available": annual_available,
             "allow_generalized_only": allow_generalized_only,
-            "status": ("complete" if annual_available else "generalized_only_explicit_override"),
+            "status": (
+                "complete"
+                if annual_available
+                else "generalized_only_wa_not_applicable"
+                if not wa_enabled
+                else "generalized_only_explicit_override"
+            ),
             "included_source_datasets": sorted(
                 set(inventory["SOURCE_DATASET"].dropna().astype(str))
             ),

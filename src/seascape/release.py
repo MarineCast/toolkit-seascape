@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import shutil
 import os
 import re
 import runpy
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -18,9 +18,9 @@ import pandas as pd
 import yaml
 
 from seascape.core.artifacts import atomic_write_json
-from seascape.core.config.paths import project_root
 from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.code_identity import package_code_identity
+from seascape.core.config.paths import project_root
 from seascape.core.data.registry import DATASETS
 from seascape.governance.feature_eligibility import (
     seascape_catalog_subset,
@@ -133,14 +133,25 @@ def _catalog_table_audit(root: Path, catalog: dict[str, Any]) -> list[dict[str, 
                     f"{prefix}_UNSURVEYED",
                 ]
                 if all(column in frame for column in columns):
-                    invalid_state_rows += int(
-                        frame[columns]
-                        .fillna(False)
-                        .astype(bool)
-                        .sum(axis=1)
-                        .ne(1)
-                        .sum()
-                    )
+                    state_total = frame[columns].fillna(False).astype(bool).sum(axis=1)
+                    if f"{prefix}_OBSERVATION_STATE" in frame:
+                        valid = state_total.le(1) & frame[
+                            f"{prefix}_OBSERVATION_STATE"
+                        ].isin(
+                            {
+                                "present",
+                                "absent",
+                                "unknown",
+                                "partial_present",
+                                "partial_absent",
+                                "mixed_partial",
+                                "point_or_line_presence",
+                            }
+                        )
+                    else:
+                        # Retained releases use the historical three-state contract.
+                        valid = state_total.eq(1)
+                    invalid_state_rows += int((~valid).sum())
             fraction_columns = [column for column in frame if column.endswith("_FRAC")]
             invalid_fraction_values = sum(
                 int(
@@ -465,6 +476,9 @@ def _product_release_records(
             continue
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
         manifest_relative = str(manifest_path.relative_to(candidate))
+        scientific = payload.get("metadata", {})
+        if not isinstance(scientific, dict):
+            scientific = {}
         for artifact in payload.get("artifacts", []):
             relative = str(artifact.get("path", ""))
             if not relative:
@@ -481,10 +495,34 @@ def _product_release_records(
                         "name": source.get("name"),
                         "version": source.get("version"),
                         "observation_period": source.get("observation_period"),
+                        "available_at": source.get("available_at"),
+                        "native_spacing": source.get("native_spacing"),
+                        "sampling_method": source.get("sampling_method"),
+                        "datum": source.get("datum"),
+                        "evidence_type": source.get("evidence_type"),
+                        "uncertainty_availability": source.get(
+                            "uncertainty_availability"
+                        ),
                         "retrieved_at_utc": source.get("retrieved_at_utc"),
                     }
                     for source in payload.get("sources", [])
                 ],
+                "scientific_method_version": scientific.get(
+                    "scientific_method_version"
+                ),
+                "source_support": {
+                    key: scientific.get(key)
+                    for key in (
+                        "sample_support",
+                        "statistic_sampling_support",
+                        "rock_measurement",
+                        "sediment_measurement",
+                        "evidence_method_version",
+                        "tid_method_version",
+                        "tid_interpretation",
+                    )
+                    if scientific.get(key) is not None
+                },
                 "rights": {
                     "licensing": payload.get("licensing", []),
                     "attribution": payload.get("attribution", []),
@@ -533,7 +571,8 @@ def _product_release_records(
 
 def _release_file(path: Path) -> bool:
     return (
-        path.is_file() and not path.name.endswith(".lock")
+        path.is_file()
+        and not path.name.endswith(".lock")
         and not {".staging", ".transactions"}.intersection(path.parts)
     )
 
@@ -558,7 +597,8 @@ def publish_candidate_release(
     family_manifests = {
         str(path.relative_to(candidate)): checksum_path(path)
         for path in sorted(processed.rglob("*manifest*.json"))
-        if _release_file(path) and path.name != SEASCAPE_RELEASE_MANIFEST
+        if _release_file(path)
+        and path.name != SEASCAPE_RELEASE_MANIFEST
         and "biogenic_habitat/eelgrass" not in str(path)
     }
     governed = {
@@ -617,9 +657,7 @@ def publish_candidate_release(
         "storage_root": f".seascape/releases/{release_id}",
         "built_at_utc": datetime.now(UTC).isoformat(),
         "artifact_release_passed": True,
-        "feature_eligibility_complete": bool(
-            audit.get("feature_eligibility_complete")
-        ),
+        "feature_eligibility_complete": bool(audit.get("feature_eligibility_complete")),
         "family_manifest_checksums": family_manifests,
         "governed_artifacts": governed_checksums,
         "artifact_checksums": artifact_checksums,
@@ -664,7 +702,9 @@ def publish_candidate_release(
             if {k: v for k, v in existing.items() if k != "built_at_utc"} != {
                 k: v for k, v in release_payload.items() if k != "built_at_utc"
             }:
-                raise ValueError("Existing release generation has conflicting identity.")
+                raise ValueError(
+                    "Existing release generation has conflicting identity."
+                )
             for relative in generation_files - {release_relative}:
                 source = candidate / relative
                 if not source.is_file():
@@ -672,7 +712,9 @@ def publish_candidate_release(
                 if not (generation / relative).is_file() or checksum_path(
                     generation / relative
                 ) != checksum_path(source):
-                    raise ValueError(f"Existing release generation checksum mismatch: {relative}")
+                    raise ValueError(
+                        f"Existing release generation checksum mismatch: {relative}"
+                    )
             # An idempotent publication retains its original creation metadata.
             atomic_write_json(release_path, existing, overwrite=True)
         else:
@@ -688,8 +730,12 @@ def publish_candidate_release(
                 with destination.open("rb") as handle:
                     os.fsync(handle.fileno())
             for directory in sorted(
-                [staged_generation, *(path for path in staged_generation.rglob("*") if path.is_dir())],
-                key=lambda path: len(path.parts), reverse=True,
+                [
+                    staged_generation,
+                    *(path for path in staged_generation.rglob("*") if path.is_dir()),
+                ],
+                key=lambda path: len(path.parts),
+                reverse=True,
             ):
                 descriptor = os.open(directory, os.O_RDONLY)
                 try:

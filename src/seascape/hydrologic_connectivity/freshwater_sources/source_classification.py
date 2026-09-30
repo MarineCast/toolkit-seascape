@@ -16,7 +16,7 @@ def finite_number(value: Any) -> float | None:
 
     try:
         numeric = float(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
     return numeric if math.isfinite(numeric) else None
 
@@ -27,7 +27,9 @@ def nhd_feature_type(value: Any) -> int | None:
     code = finite_number(value)
     if code is not None:
         return int(code)
-    normalized = (clean_optional_text(value) or "").lower().replace("/", "").replace(" ", "")
+    normalized = (
+        (clean_optional_text(value) or "").lower().replace("/", "").replace(" ", "")
+    )
     return {"streamriver": 460, "artificialpath": 558}.get(normalized)
 
 

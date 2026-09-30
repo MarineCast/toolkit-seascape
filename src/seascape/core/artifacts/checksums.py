@@ -33,7 +33,9 @@ def checksum_path(
     )
     for item in paths:
         relative = (
-            item.relative_to(resolved) if resolved.is_dir() else Path(logical_name or item.name)
+            item.relative_to(resolved)
+            if resolved.is_dir()
+            else Path(logical_name or item.name)
         )
         digest.update(str(relative).encode("utf-8"))
         with item.open("rb") as handle:

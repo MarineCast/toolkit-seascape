@@ -12,6 +12,7 @@ from seascape.utils.config import (
     require_mapping,
     resolve_project_path,
 )
+from seascape.utils.habitat_acquisition import _active_jurisdictions, _source_applies
 
 DEFAULT_CONFIG_PATH = "config/data/environment_seascape.yaml"
 
@@ -24,12 +25,29 @@ def load_source_config(config_path: str | Path = DEFAULT_CONFIG_PATH) -> dict[st
         raw.get("shoreline_characterization"),
         "shoreline_characterization",
     )
-    sources = require_mapping(section.get("sources"), "shoreline_characterization.sources")
+    sources = require_mapping(
+        section.get("sources"), "shoreline_characterization.sources"
+    )
+    download = require_mapping(
+        section.get("download"), "shoreline_characterization.download"
+    )
+    active = _active_jurisdictions(download, "shoreline_characterization")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
-    return {"base_dir": base_dir, "sources": sources}
+    return {
+        "base_dir": base_dir,
+        "sources": {
+            name: value
+            for name, value in sources.items()
+            if _source_applies(
+                name, require_mapping(value, f"shoreline source {name}"), active
+            )
+        },
+    }
 
 
 def resolve_shoreline_sources(
@@ -41,7 +59,9 @@ def resolve_shoreline_sources(
     output: dict[str, tuple[Path, Mapping[str, Any]]] = {}
     missing: list[Path] = []
     for name, raw_source in sorted(config["sources"].items()):
-        source = require_mapping(raw_source, f"shoreline_characterization.sources.{name}")
+        source = require_mapping(
+            raw_source, f"shoreline_characterization.sources.{name}"
+        )
         if "path" not in source:
             raise ValueError(f"Shoreline source {name!r} is missing path.")
         path = resolve_project_path(source["path"], config["base_dir"])
@@ -50,7 +70,8 @@ def resolve_shoreline_sources(
         output[name] = (path, source)
     if missing:
         raise FileNotFoundError(
-            "Missing shoreline source snapshots: " + ", ".join(str(path) for path in missing)
+            "Missing shoreline source snapshots: "
+            + ", ".join(str(path) for path in missing)
         )
     return output
 
@@ -74,7 +95,9 @@ def collect_shoreline_sources(
         load_habitat_download_config,
     )
 
-    download_habitat_sources("shoreline_characterization", config_path, overwrite=overwrite)
+    download_habitat_sources(
+        "shoreline_characterization", config_path, overwrite=overwrite
+    )
     acquired = load_habitat_download_config("shoreline_characterization", config_path)
     config = load_source_config(config_path)
     installs = []
@@ -82,9 +105,13 @@ def collect_shoreline_sources(
         destination = resolve_project_path(source["path"], config["base_dir"])
         spec = acquired.sources[name]
         if spec.get("extract"):
-            matches = list((acquired.raw_dir / spec["extract_directory"]).rglob(destination.name))
+            matches = list(
+                (acquired.raw_dir / spec["extract_directory"]).rglob(destination.name)
+            )
             if len(matches) != 1:
-                raise ValueError(f"Expected one archive dataset named {destination.name}")
+                raise ValueError(
+                    f"Expected one archive dataset named {destination.name}"
+                )
             origin = matches[0]
         else:
             origin = acquired.raw_dir / spec["raw_filename"]
@@ -92,21 +119,31 @@ def collect_shoreline_sources(
         if (
             frame.empty
             or frame.crs is None
-            or not frame.geometry.geom_type.isin(["LineString", "MultiLineString"]).all()
+            or not frame.geometry.geom_type.isin(
+                ["LineString", "MultiLineString"]
+            ).all()
         ):
             raise ValueError(f"Invalid shoreline geometry: {origin}")
         components = (
-            list(origin.parent.glob(origin.stem + ".*")) if origin.suffix == ".shp" else [origin]
+            list(origin.parent.glob(origin.stem + ".*"))
+            if origin.suffix == ".shp"
+            else [origin]
         )
         if origin.suffix == ".shp" and not {".shp", ".shx", ".dbf", ".prj"}.issubset(
             {p.suffix.lower() for p in components}
         ):
             raise ValueError(f"Incomplete shoreline shapefile: {origin}")
         for component in components:
-            target = destination.parent / component.name if origin.suffix == ".shp" else destination
+            target = (
+                destination.parent / component.name
+                if origin.suffix == ".shp"
+                else destination
+            )
             if target.exists() and not overwrite:
                 if checksum_path(target) != checksum_path(component):
-                    raise ValueError(f"Existing shoreline differs: {target}; use --overwrite")
+                    raise ValueError(
+                        f"Existing shoreline differs: {target}; use --overwrite"
+                    )
                 continue
             installs.append((component, target))
     # Validation above completes before any consumed source is replaced.

@@ -9,20 +9,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from seascape.core.config.paths import project_root
 from seascape.benthic_substrate.classification.build import (
     PREFIX as SUBSTRATE_PREFIX,
 )
 from seascape.benthic_substrate.classification.download import (
     SECTION_NAME as SUBSTRATE_SECTION,
 )
+from seascape.core.config.paths import project_root
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.habitat_configuration import (
     load_habitat_surface_config,
 )
@@ -31,47 +29,34 @@ from .download import DEFAULT_CONFIG_PATH
 
 SECTION_NAME = "bottom_hardness"
 PREFIX = "BOTTOM_HARDNESS"
-CLASS_WEIGHTS = {
-    "ROCK": 1.00,
-    "BOULDER": 0.90,
-    "COBBLE": 0.75,
-    "GRAVEL": 0.45,
-    "SAND": 0.20,
-    "MUD": 0.05,
-    "MIXED": 0.40,
-}
 
 
-def _derive(features: pd.DataFrame, confidence: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    evidence_total = sum(
-        pd.to_numeric(features[f"{SUBSTRATE_PREFIX}_{name}_FRAC"], errors="raise")
-        for name in CLASS_WEIGHTS
+def _derive(
+    features: pd.DataFrame, confidence: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    # Rock presence and sediment texture are separate modeled measurements.
+    # A weighted physical hardness index requires a verified shared denominator.
+    index = pd.Series(np.nan, index=features.index, dtype="float64")
+    consolidated = pd.Series(np.nan, index=features.index, dtype="float64")
+    rock_presence = pd.to_numeric(
+        features[f"{SUBSTRATE_PREFIX}_MODELED_ROCK_PRESENCE_SCORE"], errors="raise"
     )
-    index = sum(
-        pd.to_numeric(features[f"{SUBSTRATE_PREFIX}_{name}_FRAC"], errors="raise") * weight
-        for name, weight in CLASS_WEIGHTS.items()
-    )
-    index = index.where(evidence_total > 0)
-    consolidated = sum(
-        pd.to_numeric(features[f"{SUBSTRATE_PREFIX}_{name}_FRAC"], errors="raise")
-        for name in ("ROCK", "BOULDER", "COBBLE")
-    ).where(evidence_total > 0)
     output = pd.DataFrame(
         {
             "H3_INDEX": features["H3_INDEX"].astype("string"),
             "H3_RESOLUTION": features["H3_RESOLUTION"].astype("int8"),
             "BOTTOM_HARDNESS_INDEX": index,
             "CONSOLIDATED_SUBSTRATE_FRAC": consolidated,
-            "EXPOSED_ROCK_FRAC": pd.to_numeric(
-                features[f"{SUBSTRATE_PREFIX}_ROCK_FRAC"], errors="raise"
-            ).where(evidence_total > 0),
+            "EXPOSED_ROCK_FRAC": np.nan,
+            "MODELED_ROCK_PRESENCE_SCORE": rock_presence,
             "MODELED_HARD_SUBSTRATE_FRAC": features[
                 f"{SUBSTRATE_PREFIX}_HARD_SUBSTRATE_FRAC"
             ].to_numpy(),
             "DISTANCE_TO_MODELED_HARD_SUBSTRATE_M": features[
                 f"{SUBSTRATE_PREFIX}_DISTANCE_TO_HARD_SUBSTRATE_M"
             ].to_numpy(),
-            "DERIVATION_METHOD": "fixed documented weights on dbSEABED composition",
+            "DERIVATION_METHOD": "unavailable_joint_rock_sediment_denominator_v2",
+            "DERIVATION_QC_REASON": "rock_presence_and_sediment_texture_are_not_verified_joint_areal_fractions",
         }
     )
     for column in (
@@ -93,11 +78,9 @@ def _derive(features: pd.DataFrame, confidence: pd.DataFrame) -> tuple[pd.DataFr
             if column.startswith("SUBSTRATE_")
         }
     ).copy()
-    renamed["BOTTOM_HARDNESS_OBSERVED_VS_MODELED"] = np.where(
-        renamed["BOTTOM_HARDNESS_CONFIDENCE"] > 0,
-        "derived_from_modeled_dbseabed_substrate",
-        None,
-    )
+    renamed["BOTTOM_HARDNESS_CONFIDENCE"] = 0
+    renamed["BOTTOM_HARDNESS_UNMAPPED_AREA"] = True
+    renamed["BOTTOM_HARDNESS_OBSERVED_VS_MODELED"] = None
     return output, renamed
 
 
@@ -105,7 +88,9 @@ def build_bottom_hardness(
     config_path: str | Path = DEFAULT_CONFIG_PATH,
 ) -> tuple[Path, Path, Path, Path, Path]:
     config = load_habitat_surface_config(SECTION_NAME, PREFIX, config_path)
-    substrate = load_habitat_surface_config(SUBSTRATE_SECTION, SUBSTRATE_PREFIX, config_path)
+    substrate = load_habitat_surface_config(
+        SUBSTRATE_SECTION, SUBSTRATE_PREFIX, config_path
+    )
     input_paths = [
         substrate.feature_path(8),
         substrate.confidence_path(8),
@@ -155,7 +140,9 @@ def build_bottom_hardness(
                 "license": "Inherited dbSEABED source terms; see substrate manifest",
             }
         ],
-        upstream_artifacts=[{"path": str(path), "checksum": _sha256(path)} for path in input_paths],
+        upstream_artifacts=[
+            {"path": str(path), "checksum": _sha256(path)} for path in input_paths
+        ],
         attribution=[
             {
                 "text": "Derived from dbSEABED interpolated substrate composition",
@@ -163,6 +150,10 @@ def build_bottom_hardness(
             }
         ],
         source_completeness="complete",
+        metadata={
+            "scientific_method_version": "hardness_unavailable_unverified_joint_denominator_v2",
+            "hardness_status": "not calculated from separate rock-presence and sediment-texture grids",
+        },
     )
     publisher.publish_manifest(config.manifest_path, manifest)
     return (*paths, config.manifest_path)

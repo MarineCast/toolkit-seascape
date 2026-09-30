@@ -33,7 +33,10 @@ def inspect_reef_habitat(
             ("ROCKY_REEF_AREA_WITHIN_5KM_M2", "Rocky-reef area within 5 km (m²)"),
             ("POTENTIAL_ROCKY_REEF_SUITABILITY", "Potential rocky-reef suitability"),
             ("BIOGENIC_REEF_FRAC", "Mapped bivalve-bed proxy fraction"),
-            ("BIOGENIC_REEF_DISTANCE_M", "Marine-connected distance to bivalve beds (m)"),
+            (
+                "BIOGENIC_REEF_DISTANCE_M",
+                "Marine-connected distance to bivalve beds (m)",
+            ),
             ("DEEP_CORAL_SPONGE_FRAC", "Deep coral/sponge mapped fraction"),
         ],
         map_subdirectory=MAP_EXPORT_SUBDIRECTORY,
@@ -47,7 +50,9 @@ def inspect_reef_habitat(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--resolution", type=int, choices=(6, 8), default=6)
     parser.add_argument("--output")
     args = parser.parse_args()

@@ -25,7 +25,9 @@ def line_components(geometry: Any) -> list[Any]:
     if geometry.geom_type == "LineString":
         return [geometry]
     if geometry.geom_type in {"MultiLineString", "GeometryCollection"}:
-        return [component for part in geometry.geoms for component in line_components(part)]
+        return [
+            component for part in geometry.geoms for component in line_components(part)
+        ]
     return []
 
 
@@ -61,15 +63,22 @@ def width_from_polygons(
     dataset = str(row["SOURCE_DATASET"])
     key = clean_optional_text(row.get("_WIDTH_KEY"))
     candidate_indices = (
-        list(bc_polygon_indices.get(key, [])) if dataset == "BC_FWA_STREAM_NETWORK" and key else []
+        list(bc_polygon_indices.get(key, []))
+        if dataset == "BC_FWA_STREAM_NETWORK" and key
+        else []
     )
-    search_geometry = row["_TERMINAL_LINE"].buffer(config.mouth_width_polygon_match_distance_m)
+    search_geometry = row["_TERMINAL_LINE"].buffer(
+        config.mouth_width_polygon_match_distance_m
+    )
     allowed_source = {
         "BC_FWA_STREAM_NETWORK": "BC_FWA_RIVER_POLYGONS",
         "US_NHD_SMALL_SCALE": "US_NHDPLUS_HR_NHDAREA",
     }.get(dataset)
     for index in polygons.sindex.query(search_geometry, predicate="intersects"):
-        if allowed_source is None or polygons.iloc[index]["WIDTH_SOURCE_DATASET"] == allowed_source:
+        if (
+            allowed_source is None
+            or polygons.iloc[index]["WIDTH_SOURCE_DATASET"] == allowed_source
+        ):
             candidate_indices.append(int(index))
     candidate_indices = sorted(set(candidate_indices))
     if not candidate_indices:
@@ -121,13 +130,17 @@ def apply_mouth_widths(mouths: Any, bc_polygons: Any, us_polygons: Any, config: 
     if polygons.empty:
         return mouths
     bc_indices: dict[str, list[int]] = {}
-    for index, value in polygons.get("BLUE_LINE_KEY", pd.Series(dtype="string")).items():
+    for index, value in polygons.get(
+        "BLUE_LINE_KEY", pd.Series(dtype="string")
+    ).items():
         key = clean_optional_text(value)
         if key:
             bc_indices.setdefault(key, []).append(int(index))
     output = mouths.copy()
     for index, row in iter_frame_records(output):
-        width, source, sample_count = width_from_polygons(row, polygons, bc_indices, config)
+        width, source, sample_count = width_from_polygons(
+            row, polygons, bc_indices, config
+        )
         if width is not None:
             output.at[index, "MOUTH_WIDTH_M"] = width
             output.at[index, "MOUTH_WIDTH_SOURCE_DATASET"] = source
@@ -137,4 +150,9 @@ def apply_mouth_widths(mouths: Any, bc_polygons: Any, us_polygons: Any, config: 
     return output
 
 
-__all__ = ["apply_mouth_widths", "cross_section", "line_components", "width_from_polygons"]
+__all__ = [
+    "apply_mouth_widths",
+    "cross_section",
+    "line_components",
+    "width_from_polygons",
+]

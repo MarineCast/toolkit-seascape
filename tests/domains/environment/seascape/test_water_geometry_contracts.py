@@ -48,7 +48,9 @@ def test_boundary_polygonization_rejects_open_linework() -> None:
 def test_boundary_polygonization_rejects_empty_and_ambiguous_cycles() -> None:
     empty = gpd.GeoDataFrame(geometry=[], crs="EPSG:3857")
     with pytest.raises(ValueError, match="nonempty"):
-        polygonize_boundary_cycle(empty, snap_tolerance_m=0.1, projected_crs="EPSG:3857")
+        polygonize_boundary_cycle(
+            empty, snap_tolerance_m=0.1, projected_crs="EPSG:3857"
+        )
 
     first = [
         LineString([(0, 0), (10, 0)]),

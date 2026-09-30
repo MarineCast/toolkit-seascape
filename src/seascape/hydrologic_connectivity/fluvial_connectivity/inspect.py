@@ -36,7 +36,9 @@ from .topology import (
 
 LOGGER = logging.getLogger(__name__)
 
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/hydrologic_connectivity")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/hydrologic_connectivity"
+)
 MAP_FILENAME = "fluvial_connectivity.html"
 
 
@@ -44,12 +46,17 @@ def _h3_feature(row: Mapping[str, Any]) -> dict[str, Any]:
     cell = str(row["H3_INDEX"])
     geometry = mapping(cell_to_polygon(cell))
     geometry["coordinates"] = [
-        [[round(x, 6), round(y, 6)] for x, y in ring] for ring in geometry["coordinates"]
+        [[round(x, 6), round(y, 6)] for x, y in ring]
+        for ring in geometry["coordinates"]
     ]
     properties = {
         "H3_INDEX": cell,
-        "NETWORK_DISTANCE_M": _property_value(row["WATER_NETWORK_DISTANCE_TO_FLUVIAL_MOUTH_M"]),
-        "EUCLIDEAN_DISTANCE_M": _property_value(row["EUCLIDEAN_DISTANCE_TO_FLUVIAL_MOUTH_M"]),
+        "NETWORK_DISTANCE_M": _property_value(
+            row["WATER_NETWORK_DISTANCE_TO_FLUVIAL_MOUTH_M"]
+        ),
+        "EUCLIDEAN_DISTANCE_M": _property_value(
+            row["EUCLIDEAN_DISTANCE_TO_FLUVIAL_MOUTH_M"]
+        ),
         "DETOUR_M": _property_value(row["FLUVIAL_PATH_DETOUR_M"]),
         "DETOUR_RATIO": _property_value(row["FLUVIAL_PATH_DETOUR_RATIO"]),
         "REACHABLE": _property_value(row["FLUVIAL_MOUTH_REACHABLE"]),
@@ -61,12 +68,18 @@ def _h3_feature(row: Mapping[str, Any]) -> dict[str, Any]:
         "JUNCTIONS": _property_value(row["CONNECTED_TRIBUTARY_JUNCTION_COUNT"]),
         "HEADWATERS": _property_value(row["CONNECTED_HEADWATER_COUNT"]),
         "STRAHLER": _property_value(row["CONNECTED_STRAHLER_ORDER"]),
-        "NETWORK_LENGTH_KM": _property_value(row["CONNECTED_UPSTREAM_NETWORK_LENGTH_KM"]),
+        "NETWORK_LENGTH_KM": _property_value(
+            row["CONNECTED_UPSTREAM_NETWORK_LENGTH_KM"]
+        ),
         "UPSTREAM_DISTANCE_KM": _property_value(row["CONNECTED_UPSTREAM_DISTANCE_KM"]),
-        "DRAINAGE_AREA_KM2": _property_value(row["CONNECTED_UPSTREAM_DRAINAGE_AREA_KM2"]),
+        "DRAINAGE_AREA_KM2": _property_value(
+            row["CONNECTED_UPSTREAM_DRAINAGE_AREA_KM2"]
+        ),
         "TOPOLOGY_GAPS": _property_value(row["SOURCE_NETWORK_TOPOLOGY_GAP_COUNT"]),
         "COMPONENT_ID": _property_value(row["MARINE_NETWORK_COMPONENT_ID"]),
-        "MOUTHS_IN_COMPONENT": _property_value(row["MAPPED_FLUVIAL_MOUTH_COUNT_IN_COMPONENT"]),
+        "MOUTHS_IN_COMPONENT": _property_value(
+            row["MAPPED_FLUVIAL_MOUTH_COUNT_IN_COMPONENT"]
+        ),
     }
     return {"type": "Feature", "properties": properties, "geometry": geometry}
 
@@ -90,7 +103,11 @@ def _mouth_feature(row: Mapping[str, Any]) -> dict[str, Any]:
             "MARINE_NETWORK_COMPONENT_ID",
         )
     }
-    return {"type": "Feature", "properties": properties, "geometry": mapping(row["geometry"])}
+    return {
+        "type": "Feature",
+        "properties": properties,
+        "geometry": mapping(row["geometry"]),
+    }
 
 
 def _segment_feature(row: Mapping[str, Any]) -> dict[str, Any]:
@@ -111,7 +128,11 @@ def _segment_feature(row: Mapping[str, Any]) -> dict[str, Any]:
             "SOURCE_NETWORK_TOPOLOGY_GAP",
         )
     }
-    return {"type": "Feature", "properties": properties, "geometry": mapping(row["geometry"])}
+    return {
+        "type": "Feature",
+        "properties": properties,
+        "geometry": mapping(row["geometry"]),
+    }
 
 
 def _inspection_simplification(config_path: str | Path) -> float:
@@ -154,25 +175,33 @@ def _load_map_inputs(config_path: str | Path):
         if missing:
             raise ValueError(f"Fluvial {name} product is missing columns: {missing}")
     if features.empty or not features["H3_INDEX"].is_unique:
-        raise ValueError("Fluvial feature product must have one nonempty row per H3 cell.")
+        raise ValueError(
+            "Fluvial feature product must have one nonempty row per H3 cell."
+        )
     if not features["H3_INDEX"].equals(crosswalk["H3_INDEX"]):
-        raise ValueError("Feature and watershed crosswalk H3 support must match exactly.")
+        raise ValueError(
+            "Feature and watershed crosswalk H3 support must match exactly."
+        )
     if segments.crs is None or mouths.crs is None:
         raise ValueError("Fluvial network geometries must retain CRS metadata.")
     return config, features, crosswalk, segments, mouths
 
 
 def _prepare_segments(segments: Any, *, simplify_m: float, projected_crs: str):
-    selected = segments.loc[segments.geometry.notna() & ~segments.geometry.is_empty].copy()
+    selected = segments.loc[
+        segments.geometry.notna() & ~segments.geometry.is_empty
+    ].copy()
     if selected.empty:
         raise ValueError("Fluvial network product contains no displayable linework.")
     if simplify_m > 0:
         projected = selected.to_crs(projected_crs)
-        projected.geometry = projected.geometry.simplify(simplify_m, preserve_topology=True)
+        projected.geometry = projected.geometry.simplify(
+            simplify_m, preserve_topology=True
+        )
         selected = projected.to_crs("EPSG:4326")
-    return selected.loc[selected.geometry.notna() & ~selected.geometry.is_empty].reset_index(
-        drop=True
-    )
+    return selected.loc[
+        selected.geometry.notna() & ~selected.geometry.is_empty
+    ].reset_index(drop=True)
 
 
 def _metric_specs(features: pd.DataFrame) -> list[dict[str, Any]]:
@@ -312,11 +341,11 @@ def inspect_fluvial_connectivity(
     map_ = folium.Map(**map_options)
     map_name = map_.get_name()
     script = f"""
-    const fluvialH3 = {json.dumps(h3_data, separators=(',', ':'))};
-    const fluvialMouths = {json.dumps(mouth_data, separators=(',', ':'))};
-    const fluvialSegments = {json.dumps(segment_data, separators=(',', ':'))};
-    const fluvialColors = {json.dumps(list(settings.color_map()), separators=(',', ':'))};
-    const fluvialMetricSpecs = {json.dumps(metric_specs, separators=(',', ':'))};
+    const fluvialH3 = {json.dumps(h3_data, separators=(",", ":"))};
+    const fluvialMouths = {json.dumps(mouth_data, separators=(",", ":"))};
+    const fluvialSegments = {json.dumps(segment_data, separators=(",", ":"))};
+    const fluvialColors = {json.dumps(list(settings.color_map()), separators=(",", ":"))};
+    const fluvialMetricSpecs = {json.dumps(metric_specs, separators=(",", ":"))};
 
     function fluvialHexRgb(hex) {{
       const value = hex.replace('#', '');
@@ -438,7 +467,9 @@ def inspect_fluvial_connectivity(
     L.control.layers({{}}, fluvialOverlays, {{collapsed: true}}).addTo({map_name});
     """
     element = MacroElement()
-    element._template = Template("{% macro script(this, kwargs) %}" + script + "{% endmacro %}")
+    element._template = Template(
+        "{% macro script(this, kwargs) %}" + script + "{% endmacro %}"
+    )
     map_.add_child(element)
     map_.fit_bounds(
         [
@@ -446,7 +477,9 @@ def inspect_fluvial_connectivity(
             [config.bbox["max_lat"], config.bbox["max_lon"]],
         ]
     )
-    map_.get_root().header.add_child(folium.Element("<title>Seascape Toolkit Fluvial Connectivity</title>"))
+    map_.get_root().header.add_child(
+        folium.Element("<title>Seascape Toolkit Fluvial Connectivity</title>")
+    )
     destination.parent.mkdir(parents=True, exist_ok=True)
     map_.save(destination)
     LOGGER.info(
@@ -462,7 +495,9 @@ def inspect_fluvial_connectivity(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--output")
     args = parser.parse_args()
     logging.basicConfig(

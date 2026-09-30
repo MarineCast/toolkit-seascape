@@ -58,6 +58,7 @@ def positive_raster_polygons(
     *,
     bbox: Mapping[str, float],
     positive_values: Sequence[int | float],
+    allow_empty: bool = False,
 ) -> tuple[list[Any], Any]:
     """Polygonize configured positive raster classes inside a WGS84 bbox.
 
@@ -104,8 +105,10 @@ def positive_raster_polygons(
                 )
                 if int(value) == 1
             )
-    if not output:
-        raise ValueError("No configured positive raster pixels intersect the model area.")
+    if not output and not allow_empty:
+        raise ValueError(
+            "No configured positive raster pixels intersect the model area."
+        )
     return output, "EPSG:4326"
 
 
@@ -128,7 +131,9 @@ def sample_raster_bilinear(
     lon = np.asarray(longitudes, dtype="float64")
     lat = np.asarray(latitudes, dtype="float64")
     if lon.shape != lat.shape:
-        raise ValueError("Raster sample longitude and latitude arrays must have equal shape.")
+        raise ValueError(
+            "Raster sample longitude and latitude arrays must have equal shape."
+        )
     result = np.full(lon.shape, np.nan, dtype="float64")
     valid_result = np.zeros(lon.shape, dtype=bool)
     with rasterio.open(path) as source:
@@ -208,9 +213,9 @@ def validate_percentage(values: np.ndarray, variable: str) -> np.ndarray:
     """Convert a percent raster to a bounded fraction and reject bad units."""
 
     finite = values[np.isfinite(values)]
-    if finite.size and (finite.min() < -1e-6 or finite.max() > 100.0 + 1e-6):
+    if finite.size and (finite.min() < 0.0 or finite.max() > 100.0):
         raise ValueError(
             f"dbSEABED {variable} raster must use percent values in [0, 100]; "
             f"observed [{finite.min()}, {finite.max()}]."
         )
-    return np.clip(values / 100.0, 0.0, 1.0)
+    return values / 100.0

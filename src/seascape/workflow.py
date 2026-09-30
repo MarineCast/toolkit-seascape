@@ -19,6 +19,8 @@ from typing import Any
 
 import yaml
 
+from seascape.core.artifacts.checksums import checksum_path
+from seascape.core.code_identity import package_code_identity
 from seascape.core.config.data import DOMAIN_CONFIG_KEYS, load_data_config
 from seascape.core.config.document import ConfigDocument
 from seascape.core.config.paths import (
@@ -26,8 +28,6 @@ from seascape.core.config.paths import (
     resolve_config_include,
     resolve_config_path,
 )
-from seascape.core.artifacts.checksums import checksum_path
-from seascape.core.code_identity import package_code_identity
 
 StageRunner = Callable[["DomainBuildContext"], Any]
 
@@ -53,6 +53,7 @@ class DomainBuildStage:
     declared_outputs: tuple[str, ...] = ()
     declared_manifests: tuple[str, ...] = ()
     terminal_action: bool = False
+    optional: bool = False
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,45 @@ class StageResult:
     status: str
     elapsed_seconds: float = 0.0
     error: str | None = None
+
+
+@dataclass(frozen=True)
+class DomainBuildPlan:
+    """Read-only stage and destination resolution shared with execution."""
+
+    source_config: Path
+    canonical_root: Path
+    candidate_root: Path
+    stages: tuple[DomainBuildStage, ...]
+
+
+def plan_domain_layer_build(
+    *,
+    config_path: str | Path,
+    only: Iterable[str] = (),
+    skip: Iterable[str] = (),
+    candidate_root: str | Path | None = None,
+    stage_definitions: Sequence[DomainBuildStage] | None = None,
+) -> DomainBuildPlan:
+    canonical = project_root().resolve()
+    candidate = (
+        Path(candidate_root).expanduser().resolve()
+        if candidate_root is not None
+        else canonical
+        / ".seascape/candidates/seascape"
+        / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    )
+    available = tuple(stage_definitions or DOMAIN_LAYER_STAGES)
+    for stage in available:
+        for path in _declared_paths(candidate, stage):
+            if not path.resolve().is_relative_to(candidate):
+                raise ValueError(f"Declared output escapes candidate root: {path}")
+    return DomainBuildPlan(
+        resolve_config_path(config_path),
+        canonical,
+        candidate,
+        tuple(selected_stages(only=only, skip=skip, stages=available)),
+    )
 
 
 @contextmanager
@@ -171,6 +211,48 @@ def _run_seascape_waterbody_morphometry(ctx: DomainBuildContext) -> None:
     )
 
     build_waterbody_morphometry(config_path=ctx.config_path)
+
+
+def _run_selected_outlets(ctx: DomainBuildContext) -> None:
+    from seascape.hydrologic_connectivity.fluvial_connectivity.selected_outlets_build import (
+        build_selected_outlets,
+    )
+
+    build_selected_outlets(config_path=ctx.config_path)
+
+
+def _run_nearshore_transitions(ctx: DomainBuildContext) -> None:
+    from seascape.coastal_configuration.nearshore_build import (
+        build_nearshore_transitions,
+    )
+
+    build_nearshore_transitions(ctx.config_path)
+
+
+def _run_passage_sections(ctx: DomainBuildContext) -> None:
+    from seascape.coastal_configuration.passage_build import build_passage_sections
+
+    build_passage_sections(ctx.config_path)
+
+
+def _run_geographic_gateways(ctx: DomainBuildContext) -> None:
+    from seascape.coastal_configuration.gateway_build import build_geographic_gateways
+
+    build_geographic_gateways(ctx.config_path)
+
+
+def _run_coast_complexity(ctx: DomainBuildContext) -> None:
+    from seascape.coastal_configuration.coast_complexity_build import (
+        build_coast_complexity,
+    )
+
+    build_coast_complexity(ctx.config_path)
+
+
+def _run_mapped_habitat_mosaic(ctx: DomainBuildContext) -> None:
+    from seascape.biogenic_habitat.mosaic_build import build_mapped_habitat_mosaic
+
+    build_mapped_habitat_mosaic(ctx.config_path)
 
 
 def _run_seascape_geomorphic_units(ctx: DomainBuildContext) -> None:
@@ -524,6 +606,84 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         ),
     ),
     DomainBuildStage(
+        "seascape-selected-outlets",
+        "Build exact long-table relationships to explicitly selected river outlets.",
+        _run_selected_outlets,
+        dependencies=("seascape-fluvial-connectivity",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets/selected_outlets_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-nearshore-transitions",
+        "Build source-shoreline transects and raster-footprint nearshore depth geometry.",
+        _run_nearshore_transitions,
+        dependencies=("seascape-bathymetry", "seascape-shoreline-characterization"),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/nearshore_transitions_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-passage-sections",
+        "Build reviewed passage cross-sections and separate sill candidates.",
+        _run_passage_sections,
+        dependencies=("seascape-bathymetry",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/passage_sections_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-geographic-gateways",
+        "Build reviewed gateway relationships and bounded alternate-route diagnostics.",
+        _run_geographic_gateways,
+        dependencies=("h3-marine-spatial-support",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/geographic_gateways_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-coast-complexity",
+        "Build source-coastline orientation, sinuosity, headland and island summaries.",
+        _run_coast_complexity,
+        dependencies=("seascape-shoreline-characterization",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/coast_complexity_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
+        "seascape-mapped-habitat-mosaic",
+        "Build normalized observed/mapped habitat evidence on marine and tidal-frame supports.",
+        _run_mapped_habitat_mosaic,
+        dependencies=("h3-marine-spatial-support",),
+        declared_outputs=(
+            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic",
+        ),
+        declared_manifests=(
+            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/mapped_habitat_mosaic_manifest.json",
+        ),
+        optional=True,
+    ),
+    DomainBuildStage(
         "seascape-estuarine-connectivity",
         "Build straight and canonical-network estuary proximity.",
         _run_seascape_estuarine_connectivity,
@@ -739,7 +899,11 @@ def selected_stages(
             + ". Valid stages: "
             + ", ".join(by_name)
         )
-    requested = [name for name in by_name if not only_set or name in only_set]
+    requested = [
+        name
+        for name, stage in by_name.items()
+        if (name in only_set if only_set else not stage.optional)
+    ]
     ordered: list[DomainBuildStage] = []
     complete: set[str] = set()
     visiting: list[str] = []
@@ -800,13 +964,21 @@ def _rebase_candidate_values(
     return value
 
 
-def _validate_candidate_outputs(value: Any, canonical_root: Path, candidate_root: Path) -> None:
+def _validate_candidate_outputs(
+    value: Any, canonical_root: Path, candidate_root: Path
+) -> None:
     """Reject configured output escapes before any family runs (inputs stay external)."""
     if isinstance(value, dict):
         for key, item in value.items():
             name = str(key)
             if isinstance(item, str) and (
-                name in {"output_dir", "output_path", "processed_path", "processed_directory"}
+                name
+                in {
+                    "output_dir",
+                    "output_path",
+                    "processed_path",
+                    "processed_directory",
+                }
                 or name.endswith(("_output_dir", "_processed_out_dir"))
                 or name == "processed_out_dir"
             ):
@@ -814,12 +986,18 @@ def _validate_candidate_outputs(value: Any, canonical_root: Path, candidate_root
                 if not destination.is_absolute():
                     destination = canonical_root / destination
                 if not destination.resolve().is_relative_to(candidate_root.resolve()):
-                    raise ValueError(f"Candidate output escapes candidate root ({name}): {item}")
-            if isinstance(item, str) and "filename" in name and not any(
-                part in name for part in ("raw_", "source_")
+                    raise ValueError(
+                        f"Candidate output escapes candidate root ({name}): {item}"
+                    )
+            if (
+                isinstance(item, str)
+                and "filename" in name
+                and not any(part in name for part in ("raw_", "source_"))
             ):
                 if Path(item).name != item or item in {".", ".."}:
-                    raise ValueError(f"Candidate output filename must be a basename ({name}): {item}")
+                    raise ValueError(
+                        f"Candidate output filename must be a basename ({name}): {item}"
+                    )
             _validate_candidate_outputs(item, canonical_root, candidate_root)
     elif isinstance(value, list):
         for item in value:
@@ -832,7 +1010,11 @@ def _configuration_identity(source_config: Path) -> dict[str, Any]:
     documents = [project]
     for key in DOMAIN_CONFIG_KEYS:
         if project.data.get(key):
-            documents.append(ConfigDocument.load(resolve_config_include(project.source, project.data[key])))
+            documents.append(
+                ConfigDocument.load(
+                    resolve_config_include(project.source, project.data[key])
+                )
+            )
     common = project_root() / "config/common.yaml"
     if common.is_file():
         documents.append(ConfigDocument.load(common))
@@ -844,10 +1026,56 @@ def _configuration_identity(source_config: Path) -> dict[str, Any]:
     }
     return {
         "files": {str(path): checksum_path(path) for path in paths},
-        "effective_sha256": hashlib.sha256(json.dumps(
-            payload, sort_keys=True, separators=(",", ":"), default=str
-        ).encode("utf-8")).hexdigest(),
+        "effective_sha256": hashlib.sha256(
+            json.dumps(
+                payload, sort_keys=True, separators=(",", ":"), default=str
+            ).encode("utf-8")
+        ).hexdigest(),
     }
+
+
+def _render_candidate_config(
+    source_config: Path,
+    *,
+    canonical_root: Path,
+    candidate_root: Path,
+) -> dict[str, Any]:
+    """Resolve the effective candidate configuration without creating any paths."""
+    if canonical_root.is_relative_to(candidate_root):
+        raise ValueError(
+            "Candidate must not be the canonical workspace or its ancestor."
+        )
+    raw = load_data_config(source_config)
+    # Supply the only output-directory defaults otherwise resolved from the
+    # canonical base by the water/H3 loaders.
+    for section, key, relative in (
+        ("water_geometry", "processed_out_dir", "spatial_support/water_geometry"),
+        ("h3_geometry", "output_dir", "spatial_support/h3_geometry"),
+    ):
+        if section in raw:
+            raw[section].setdefault(
+                key, f"data/processed/domain/environmental_layer/seascape/{relative}"
+            )
+    configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
+    input_root = (canonical_root / configured_base).resolve()
+    rendered = _rebase_candidate_values(raw, input_root, candidate_root)
+    _validate_candidate_outputs(rendered, input_root, candidate_root)
+    for key in DOMAIN_CONFIG_KEYS:
+        rendered.pop(key, None)
+    rendered["base_directory"] = str(input_root)
+    config_dir = candidate_root / ".seascape/config"
+    config_names = (
+        "project.yaml",
+        "environment_seascape.yaml",
+        "common.yaml",
+        "identity.json",
+    )
+    for target in (config_dir, *(config_dir / name for name in config_names)):
+        if not target.resolve().is_relative_to(candidate_root):
+            raise ValueError(
+                f"Candidate configuration path escapes candidate root: {target}"
+            )
+    return rendered
 
 
 def _prepare_candidate_config(
@@ -857,44 +1085,48 @@ def _prepare_candidate_config(
     candidate_root: Path,
 ) -> Path:
     """Freeze the same effective configuration used by direct family APIs."""
-    if canonical_root.is_relative_to(candidate_root):
-        raise ValueError("Candidate must not be the canonical workspace or its ancestor.")
-    raw = load_data_config(source_config)
-    # Supply the only output-directory defaults otherwise resolved from the
-    # canonical base by the water/H3 loaders.
-    for section, key, relative in (
-        ("water_geometry", "processed_out_dir", "spatial_support/water_geometry"),
-        ("h3_geometry", "output_dir", "spatial_support/h3_geometry"),
-    ):
-        if section in raw:
-            raw[section].setdefault(key, f"data/processed/domain/environmental_layer/seascape/{relative}")
-    configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
-    input_root = (canonical_root / configured_base).resolve()
-    rendered = _rebase_candidate_values(raw, input_root, candidate_root)
-    _validate_candidate_outputs(rendered, input_root, candidate_root)
+    rendered = _render_candidate_config(
+        source_config,
+        canonical_root=canonical_root,
+        candidate_root=candidate_root,
+    )
+    input_root = Path(rendered["base_directory"])
     config_dir = candidate_root / ".seascape/config"
     if not config_dir.resolve().is_relative_to(candidate_root):
         raise ValueError("Candidate configuration directory escapes candidate root.")
     config_dir.mkdir(parents=True, exist_ok=True)
-    for key in DOMAIN_CONFIG_KEYS:
-        rendered.pop(key, None)
-    rendered["base_directory"] = str(input_root)
     domain = config_dir / "environment_seascape.yaml"
     destination = config_dir / "project.yaml"
-    for target in (domain, destination, config_dir / "common.yaml", config_dir / "identity.json"):
+    for target in (
+        domain,
+        destination,
+        config_dir / "common.yaml",
+        config_dir / "identity.json",
+    ):
         if not target.resolve().is_relative_to(candidate_root):
-            raise ValueError(f"Candidate configuration path escapes candidate root: {target}")
+            raise ValueError(
+                f"Candidate configuration path escapes candidate root: {target}"
+            )
     domain.write_text(yaml.safe_dump(rendered, sort_keys=False), encoding="utf-8")
-    destination.write_text(yaml.safe_dump({
-        "base_directory": str(input_root), "SEASCAPE_LAYER": str(domain),
-    }, sort_keys=False), encoding="utf-8")
+    destination.write_text(
+        yaml.safe_dump(
+            {
+                "base_directory": str(input_root),
+                "SEASCAPE_LAYER": str(domain),
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
     common = canonical_root / "config/common.yaml"
     if common.is_file():
         (config_dir / "common.yaml").write_text(
-            yaml.safe_dump(dict(ConfigDocument.load(common).data), sort_keys=False), encoding="utf-8"
+            yaml.safe_dump(dict(ConfigDocument.load(common).data), sort_keys=False),
+            encoding="utf-8",
         )
     (config_dir / "identity.json").write_text(
-        json.dumps(_configuration_identity(source_config), sort_keys=True, indent=2) + "\n",
+        json.dumps(_configuration_identity(source_config), sort_keys=True, indent=2)
+        + "\n",
         encoding="utf-8",
     )
     return destination
@@ -905,9 +1137,13 @@ def _stage_state_path(candidate_root: Path, stage: DomainBuildStage) -> Path:
 
 
 def _configuration_checksum(source_config: Path) -> str:
-    return hashlib.sha256(json.dumps(
-        _configuration_identity(source_config), sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(
+            _configuration_identity(source_config),
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
 
 
 def _declared_paths(root: Path, stage: DomainBuildStage) -> tuple[Path, ...]:
@@ -987,7 +1223,7 @@ def _stage_is_reusable(
             and state.get("input_identities", {})
             == _stage_input_identities(candidate_root, stage)
         )
-    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+    except OSError, ValueError, TypeError, json.JSONDecodeError:
         return False
 
 
@@ -1024,7 +1260,7 @@ def _canonical_stage_is_seedable(
                 resolved = source if source.is_absolute() else canonical_root / source
                 if checksum_path(resolved) != upstream.get("checksum"):
                     return False
-    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
+    except OSError, ValueError, TypeError, KeyError, json.JSONDecodeError:
         return False
     return True
 
@@ -1116,22 +1352,21 @@ def run_domain_layer_build(
     resume: bool = False,
     publish: bool = True,
     stage_definitions: Sequence[DomainBuildStage] | None = None,
+    _failure_reporter: Callable[[str, float, Exception], None] | None = None,
     **context_kwargs: Any,
 ) -> list[StageResult]:
-    source_config = resolve_config_path(config_path)
-    canonical_root = project_root().resolve()
-    candidate = (
-        Path(candidate_root).expanduser().resolve()
-        if candidate_root is not None
-        else canonical_root
-        / ".seascape/candidates/seascape"
-        / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    only, skip = tuple(only), tuple(skip)
+    plan = plan_domain_layer_build(
+        config_path=config_path,
+        only=only,
+        skip=skip,
+        candidate_root=candidate_root,
+        stage_definitions=stage_definitions,
     )
+    source_config = plan.source_config
+    canonical_root = plan.canonical_root
+    candidate = plan.candidate_root
     available_stages = tuple(stage_definitions or DOMAIN_LAYER_STAGES)
-    for stage in available_stages:
-        for path in _declared_paths(candidate, stage):
-            if not path.resolve().is_relative_to(candidate):
-                raise ValueError(f"Declared output escapes candidate root: {path}")
     config = (
         source_config
         if dry_run
@@ -1151,7 +1386,7 @@ def run_domain_layer_build(
         **context_kwargs,
     )
     registry = _stage_registry(available_stages)
-    stages = selected_stages(only=only, skip=skip, stages=available_stages)
+    stages = plan.stages
     skip_set = set(skip)
     results: list[StageResult] = []
     status_by_name: dict[str, str] = {}
@@ -1287,7 +1522,14 @@ def run_domain_layer_build(
                     stage.name, "failed", elapsed_seconds=elapsed, error=str(exc)
                 )
             )
-            print(f"[build-domain-layers] {stage.name} failed ({elapsed:.1f}s): {exc}")
+            if _failure_reporter is None:
+                print(
+                    f"[build-domain-layers] {stage.name} failed ({elapsed:.1f}s): {exc}"
+                )
+            else:
+                # CLI presentation must not echo raw sensitive exception text.
+                # The Python default still reports and re-raises the same error.
+                _failure_reporter(stage.name, elapsed, exc)
             if not ctx.continue_on_error:
                 _write_manifest_if_requested(
                     manifest_path, source_config, results, dry_run=False

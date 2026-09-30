@@ -1,150 +1,308 @@
+<p align="center">
+  <img src="docs/assets/seascape-underwater-banner.png" alt="Illustrated sunlit kelp and rocky seafloor; decorative banner, not a data product" width="100%">
+</p>
+
+<div align="center">
+
 # Seascape Toolkit
 
-Species-neutral source acquisition, processing, inspection, and publication of marine seascape
-products. The installable distribution is **`toolkit-seascape`**; the Python package and command
-are **`seascape`**. No OrcaCast checkout or installation is required.
+**The shape, composition, and connectivity of the marine environment.**
 
-## Documentation
+**[Inputs → outputs](#from-sources-to-variables)** &nbsp; · &nbsp; **[Explore the themes](#what-seascape-describes)** &nbsp; · &nbsp; **[Try it](#install-and-get-a-first-result)** &nbsp; · &nbsp; **[Documentation](docs/README.md)**
 
-Start with the [documentation index](docs/README.md) for setup, workflows, configuration,
-architecture and development guidance.
+</div>
 
-## Install
+---
 
-Python 3.11+ on Linux or macOS, with compatible geospatial wheels/libraries (Rasterio/GDAL,
-GeoPandas, PyProj and Shapely). The extraction was executed with Python 3.14; other supported
-versions have syntax coverage but have not yet been exercised locally. Publication uses POSIX
-file locks; native Windows is not supported.
+Seascape turns source datasets into spatial products describing the physical marine environment.
+Use it to work with **depth, seafloor composition, mapped vegetation, coastal geometry, and freshwater
+connections**, together with the spatial support and source evidence needed to interpret them.
 
+Built for GIS users, researchers, and downstream applications. Independently installable; no
+OrcaCast or sibling-toolkit checkout is required.
+
+**Package:** `toolkit-seascape` · **Python / CLI:** `seascape`
+
+> [!NOTE]
+> **New here?** Start with the [offline demo](#install-and-get-a-first-result). It produces a
+> small bathymetry table, a validation report, and two figures without source downloads or credentials.
+
+## From sources to variables
+
+Follow each row from a source dataset, through a Seascape theme, to the variables it produces.
+
+```mermaid
+flowchart LR
+    accTitle: Seascape source data, themes, and variable areas
+    accDescr: Seven thematic routes connect representative source data to Seascape themes and example variable areas. Spatial support is shared by the other families. This conceptual overview is not the execution dependency graph or a complete lineage map.
+
+    subgraph S["01 · SOURCE DATA"]
+        direction TB
+        S1["<b>GEBCO</b><br/>Bathymetry grids"]
+        S2["<b>dbSEABED</b><br/>Composition rasters"]
+        S3["Vegetation maps<br/>and reef evidence"]
+        S4["Shoreline inventories<br/>and coastal geometry"]
+        S5["River, barrier<br/>and estuary inventories"]
+        S6["Mapped structures<br/>and modification inventories"]
+        S7["U.S. / Canadian<br/>marine and land boundaries"]
+    end
+
+    subgraph T["02 · SEASCAPE THEMES"]
+        direction TB
+        T1["Depth and terrain"]
+        T2["Seafloor<br/>composition"]
+        T3["Vegetation and<br/>habitat evidence"]
+        T4["Coastal form"]
+        T5["Freshwater<br/>connections"]
+        T6["Built environment"]
+        T7["Spatial support"]
+    end
+
+    subgraph V["03 · OUTPUT VARIABLES"]
+        direction TB
+        V1["Depth, slope<br/>and geomorphic units"]
+        V2["Modeled rock presence<br/>and sediment texture"]
+        V3["Seagrass, kelp<br/>and rocky-reef evidence"]
+        V4["Shoreline character, proximity<br/>and geometric exposure"]
+        V5["River mouths, barriers<br/>and estuary proximity"]
+        V6["Shoreline modification,<br/>structures and footprints"]
+        V7["H3 water support,<br/>networks and neighborhoods"]
+    end
+
+    S1 --> T1 --> V1
+    S2 --> T2 --> V2
+    S3 --> T3 --> V3
+    S4 --> T4 --> V4
+    S5 --> T5 --> V5
+    S6 --> T6 --> V6
+    S7 --> T7 --> V7
+
+    style S fill:#F3F7F6,stroke:#D7E3DF,color:#123E37,stroke-width:1px,rx:12,ry:12
+    style T fill:#E7F2EE,stroke:#B3D2C8,color:#123E37,stroke-width:1px,rx:12,ry:12
+    style V fill:#F0F9F5,stroke:#D0E7DD,color:#123E37,stroke-width:1px,rx:12,ry:12
+
+    classDef source fill:#FFFFFF,stroke:#B6CCC4,color:#284B43,stroke-width:1px,rx:7,ry:7
+    classDef theme fill:#0F766E,stroke:#0B625C,color:#FFFFFF,stroke-width:1px,rx:7,ry:7
+    classDef variable fill:#ECFDF5,stroke:#8DBFB0,color:#123E37,stroke-width:1px,rx:7,ry:7
+    linkStyle default stroke:#609B91,stroke-width:1.5px
+    class S1,S2,S3,S4,S5,S6,S7 source
+    class T1,T2,T3,T4,T5,T6,T7 theme
+    class V1,V2,V3,V4,V5,V6,V7 variable
+```
+
+*Conceptual overview, not the execution dependency graph. Spatial support is a shared foundation;
+several products combine inputs across these routes. Source availability and acquisition methods
+vary by family. See the [stage inputs](docs/stage-inputs.md) for operational dependencies.*
+
+---
+
+## What Seascape describes
+
+Seven themes organize the toolkit. The examples below describe product capabilities, not a promise
+of complete survey coverage or availability at every location and resolution.
+
+### [Depth and terrain](src/seascape/seafloor_physiography/README.md)
+
+Seafloor depth and shape: bathymetry, depth-band fractions, slope, terrain shape, and geomorphic units.
+
+### [Seafloor composition](src/seascape/benthic_substrate/README.md)
+
+Modeled rock presence and separately reported gravel, sand, and mud texture. The former hardness
+index is unavailable in new candidates until the source measurements support a common denominator.
+
+### [Vegetation and habitat evidence](src/seascape/biogenic_habitat/README.md)
+
+Mapped or derived seagrass, kelp, rocky-reef evidence, and bivalve-bed proxies, with explicit coverage and confidence states.
+
+### [Coastal form](src/seascape/coastal_configuration/README.md)
+
+Shoreline and waterbody geometry: shoreline character and proximity, directional exposure, enclosure, width, and constriction.
+
+### [Freshwater connections](src/seascape/hydrologic_connectivity/README.md)
+
+River and estuary connections to marine waters: river mouths, fluvial connectivity, mapped barriers, passage evidence, and estuary proximity.
+
+### [Built environment](src/seascape/anthropogenic/README.md)
+
+Mapped physical footprints of shoreline modification, overwater structures, dredging, disposal, artificial reefs, and aquaculture.
+
+### [Spatial support](src/seascape/spatial_support/README.md)
+
+Shared geometry and water networks: water polygons, H3 support, passable edges, terminal connectors, and bounded neighborhoods.
+
+Exact field names, units, resolutions, and source notes live in the [product reference](docs/products.md)
+and linked family guides. The checked-in catalog is reference metadata; an audited release records
+what was actually materialized.
+The [capability coverage matrix](docs/capability-coverage.md) separates implemented features from
+unmaterialized methods and source-blocked research.
+
+---
+
+## What you get
+
+![Real GEBCO 2026 mean depth around the San Juan Islands, with named islands, a Pacific Northwest locator map, and a mint-to-deep-teal depth legend. Gray cells have unavailable depth.](docs/assets/san-juan-bathymetry.png)
+
+*Real data, geographic context. The [San Juan exploratory pilot](docs/pilots/san-juan.md)
+shows production H3 R8 mean depths from GEBCO 2026, with a generalized Natural Earth coastline.
+This is a bounded family example, not a complete regional release or navigation chart.
+[Map sources and reproduction](docs/readme-map.md). The offline quickstart below uses a separate
+synthetic fixture; it does not produce this regional map.*
+
+**Physical products** — Parquet/GeoParquet tables and supporting spatial artifacts. Canonical H3 products use R8 and, where implemented, R6. Not every product exists at both resolutions.
+
+**Evidence and quality** — Product-specific coverage, source state, confidence, and quality-control fields. Unknown, unavailable, and observed-zero values remain distinct.
+
+**Reproducible identity** — Source and artifact checksums, configuration and code identity, and manifests. Completed releases retain immutable generations addressable by release ID.
+
+**Inspection and export** — Family-specific inspectors and a release-backed H3 metric matrix with namespaced fields and retained source metadata.
+
+For downstream work, use [product resolution](docs/API.md) rather than hard-coding mutable output
+paths. The [metric-matrix exporter](docs/metric-matrix.md) combines released fields for inspection
+and joins without silently filling nulls or substituting another resolution.
+
+---
+
+## Install and get a first result
+
+Start with a **small synthetic example**, not a regional download. It calls the production
+bathymetry pipeline and leaves its outputs available for inspection.
+
+### Install in an isolated environment
+
+The source ZIP link below is pinned to revision `9755f94` and does not contain the development
+branch's scientific-hardening changes. Download and extract the [pinned source ZIP](https://github.com/MarineCast/toolkit-seascape/archive/9755f94f4ae50957f5c1af5316afb3e3cda26e54.zip).
+Open a terminal in the extracted root containing `pyproject.toml` and `README.md`. A checkout of
+[that revision](https://github.com/MarineCast/toolkit-seascape/tree/9755f94f4ae50957f5c1af5316afb3e3cda26e54)
+also works. To exercise scientific-hardening work before release, use a checkout or source archive
+of this branch with the same commands and interpret its outputs as candidate/software acceptance.
+
+Use Python 3.14 on a tested Linux/macOS environment for this branch; see the
+[platform coverage](docs/environments/README.md#tested-platforms). The pinned source ZIP is an older
+revision with its own package metadata. This is a source installation,
+not an assumed PyPI or tagged release. Installation requires access to declared dependencies.
+
+<!-- BEGIN QUICKSTART install -->
 ```sh
-python -m pip install -e '.[test]'
-seascape --help
-python -m pytest -q
+SEASCAPE_ENV="$PWD/.venv"
+python3.14 -m venv "$SEASCAPE_ENV"
+. "$SEASCAPE_ENV/bin/activate"
+python -m pip install 'pip>=26.2'
+python -m pip install .
+python -m pip check
 ```
+<!-- END QUICKSTART install -->
 
-For a regular installation, use `python -m pip install .` or install a built wheel. Editable
-installation is optional. Source data and generated products are not included in the package.
+### Run the offline demo
 
-## Validate the toolkit
+Leave the source directory and select a fresh workspace. The environment remains active;
+`SEASCAPE_WORKSPACE` identifies where this example writes its files.
 
-Install the test and notebook tooling from the repository root, then run the automated suite and
-the human-readable offline acceptance workflow:
-
+<!-- BEGIN QUICKSTART demo -->
 ```sh
-python -m pip install -e '.[test,notebook]'
-python -m pytest -q
-jupyter lab notebooks/validation/01_TOOLKIT_VALIDATION.ipynb
+cd "$(mktemp -d "${TMPDIR:-/tmp}/seascape-first-result.XXXXXX")"
+export SEASCAPE_WORKSPACE="$PWD/seascape-workspace"
+seascape --workspace "$SEASCAPE_WORKSPACE" demo
+```
+<!-- END QUICKSTART demo -->
+
+The command prints:
+
+```text
+Synthetic software acceptance: PASS (not a regional release)
 ```
 
-The notebook can also run headlessly without modifying the committed copy:
+It also prints the exact paths to the **Parquet table, family manifest, JSON validation report,
+and two PNG figures**. Outputs stay under `$SEASCAPE_WORKSPACE/.seascape/demo/` after the command
+finishes. This example uses a temporary directory, so copy anything you need before system cleanup.
+The [demo guide](docs/demo.md) explains persistent workspace selection and safe reruns.
 
-```sh
-jupyter nbconvert \
-  --to notebook \
-  --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb \
-  --ExecutePreprocessor.timeout=120 \
-  --output seascape-toolkit-validation.ipynb \
-  --output-dir /tmp
-```
+<details>
+<summary><strong>What the demonstration checks</strong></summary>
 
-`pytest` provides automated correctness and regression coverage. The
-[toolkit validation notebook](notebooks/validation/01_TOOLKIT_VALIDATION.ipynb) provides an
-inspectable, offline smoke/acceptance workflow over production APIs. The
-[Data Explorer](notebooks/01_DATA_EXPLORER.ipynb) defaults to live source acquisition and a bounded
-San Juan Islands exploratory build, including a Natural Earth water mask. It writes local data and
-is not a certified regional release or part of clean-checkout CI. Review the
-[notebook guide](notebooks/README.md) before running it.
+The output has one unique `H3_INDEX` per resolution-8 cell. The fixture includes controls for
+known values, sign conversion, nonempty support, missingness, and truthful synthetic provenance.
 
-## Choose a data workspace
+| Synthetic control | Expected interpretation |
+| --- | --- |
+| Constant-depth patch | Mean depth is 5 m; zero spread is a valid observed statistic. |
+| Interior gradient | Mean depth is `5680/47` m, approximately 120.8511 m, from 18 contributing pixels. |
+| Nodata or outside coverage | Null values mean unavailable, not measured zero. |
+| Exact sea level | Excluded by the existing marine mask, not reported as measured zero depth. |
 
-All config, source, candidate, and output paths belong to a workspace. Commands default to the
-current directory; `--workspace` or `SEASCAPE_WORKSPACE` chooses another root. Installed modules
-never infer a writable workspace from `site-packages`. The init command leaves existing files intact.
+See [fixture expectations and tolerances](docs/demo.md). A passing demo establishes software
+acceptance for these inputs, not provider availability, regional accuracy, or a complete release.
+Existing demo output is refused by default; review ownership before using `--overwrite`.
 
-```sh
-seascape --workspace /path/to/seascape-workspace init
-seascape --workspace /path/to/seascape-workspace stages
-seascape --workspace /path/to/seascape-workspace build --dry-run
-```
+</details>
 
-Edit `config/common.yaml` for named geographic areas and `config/data/environment_seascape.yaml`
-for sources, resolutions, processing, outputs and maps. The supplied regional configuration is
-inherited from the Northeast Pacific case study. Some source products require local provision
-or provider access; their `DATA_SOURCES.md` files describe provenance and rights. Initialization
-copies configuration and reference metadata only; it does not download data or certify a release.
+---
 
-## Download, process, inspect
+## Choose your route
 
-```sh
-seascape --workspace /path/to/seascape-workspace download bathymetry --help
-seascape --workspace /path/to/seascape-workspace download bathymetry --config config/data/project.yaml
-seascape --workspace /path/to/seascape-workspace download water-geometry --config config/data/project.yaml
-seascape --workspace /path/to/seascape-workspace build --only seascape-geomorphometry --dry-run
-seascape --workspace /path/to/seascape-workspace build --candidate-root /path/to/seascape-workspace/.seascape/candidate
-seascape --workspace /path/to/seascape-workspace inspect bathymetry --help
-```
+### Try the toolkit
 
-Download commands use each source's existing cache, overwrite and validation behavior. A full
-build expects the configured source inputs to be present. `--only` expands dependencies, `--skip`
-requires validated reusable products, and `--resume` checks configuration, dependencies and output
-checksums. Builds produce isolated candidates. Add **`--publish`** to promote a candidate only after
-its release audit passes. Run inspectors against the candidate's rendered configuration when
-inspecting unpublished products. Do not run two builds against the same candidate directory.
+A small synthetic product with inspectable values, provenance, and validation results.
 
-Acquisition commands exist for water geometry, bathymetry, shoreline characterization, freshwater,
-estuaries, barriers, substrate, hardness, seagrass, kelp, reef, habitat composite and anthropogenic
-structures. Some validate configured local inputs rather than downloading publicly available data.
+[Offline demo](docs/demo.md) or [explanatory notebook](notebooks/README.md)
 
-Python entry points are available under `seascape.<family>`. For example:
+### Process real data
 
-```python
-from seascape.seafloor_physiography.bathymetry import run_pipeline
-run_pipeline(config_path="config/data/project.yaml", skip_download=True, skip_map=True)
-```
+A candidate built from reviewed inputs, with explicit inspection and publication decisions. See the [San Juan pilot](docs/pilots/san-juan.md) for bounded execution evidence and limits.
 
-Set `SEASCAPE_WORKSPACE` when calling Python APIs from a different working directory. Catalog,
-species-neutral feature eligibility, documentation and rebuild comparison tools are installed
-under `seascape.maintenance` and `seascape.governance`; each accepts `--help` through `python -m`.
+[Bounded workflow](docs/WORKFLOWS.md#bounded-real-data-processing), [configuration](docs/CONFIGURATION.md), and [stage inputs](docs/stage-inputs.md)
 
-Applications should resolve immutable canonical products through the public API rather than
-encoding toolkit-internal paths:
+### Use existing products
 
-```python
-from seascape.products import resolve_product
+Exact product/resolution lookup and checksum-verified paths from an existing audited release.
 
-artifact = resolve_product(
-    workspace="/path/to/seascape-workspace",
-    product="bathymetry",
-    resolution=6,
-)
-print(artifact.release_id, artifact.path, artifact.checksum)
-```
+[Release-frozen consumer example](docs/API.md#freeze-and-read-a-release) and [matrix export](docs/metric-matrix.md)
 
-`list_products` and `list_resolutions` provide discovery. Resolution is exact and every returned
-artifact is checked against a completed release. Paths are retained under `.seascape/releases/<release_id>`;
-pass `release_id=artifact.release_id` to select the same release later. See the [API contract](docs/API.md). Applications such as OrcaCast own
-target definition, temporal validation, feature/scale selection, model fitting and evaluation.
+Acquisition, processing, and release promotion are separate operations. Initializing a workspace
+does not download datasets. Review the selected area's inputs and resources before executing
+regional defaults; start with the documented bounded workflow rather than an unrestricted build.
 
-## Products and contracts
+---
 
-- Spatial support: water polygons, H3 grids, full-cell counting universes, marine support,
-  passable water graphs, connectors, neighborhoods, and radius operators.
-- Physical seascape: bathymetry, geomorphometry, geomorphic units, shorelines, proximity,
-  exposure/enclosure and waterbody shape.
-- Hydrology: freshwater sources, fluvial connectivity/barriers and estuarine connectivity.
-- Substrate and habitat structure: classification, hardness, seagrass, kelp, reefs and composites.
-- Physical built-environment structures, source inventories, quality flags and artifact lineage;
-  this is not vessel, access, observer, recreation or effort modeling.
+## Scientific scope
 
-See [scientific and source contracts](docs/CONTRACTS.md), the [product index](docs/products.md),
-the [H3 metric matrix export](docs/metric-matrix.md),
-and the [migration report](docs/MIGRATION.md). The [review remediation record](docs/review-remediation.md) describes scientific validation,
-coastal slope stencil changes, and durable release storage introduced after extraction. Products describe
-physical conditions and evidence, not species occurrence or habitat preference.
+> [!IMPORTANT]
+> **Physical conditions and source evidence are not species occurrence or habitat suitability.**
+> Seascape does not infer ecological absence from missing data or decide which variables belong
+> in a predictive model. An audited software release is not blanket scientific certification.
 
-## Validation boundary
+**Interpretation matters.** Derived hardness is not a direct acoustic measurement. Geometric exposure
+is not modeled weather or waves. A mapped structure is not a measure of vessel traffic or observer
+effort. Vegetation and reef products retain the distinction between mapped evidence and unavailable
+coverage; deep coral/sponge evidence remains explicitly unavailable rather than inferred.
 
-Offline tests cover calculations, acquisition identity, missingness, graph contracts, publication,
-configuration and orchestration. Three tests require materialized regional products and skip in a
-clean checkout. A successful install or test run does not establish a regional rebuild or live
-provider availability. OrcaCast integration is deferred. No datasets have been redistributed.
+Source datasets and regional releases are not bundled. Coverage, survey vintage, source resolution,
+and uncertainty vary. Keep quality-control and evidence fields with the physical variables, and
+read each family's source notes before interpretation or redistribution.
+
+Publication uses POSIX locks; native Windows publication is outside the current supported scope.
+See the [scientific and source contracts](docs/CONTRACTS.md) and
+[validation progress](docs/roadmap/PROGRESS.md) for tested behavior and remaining limits.
+
+---
+
+## Reference and contribution
+
+| Find | Read |
+| --- | --- |
+| Documentation overview | [Documentation index](docs/README.md) |
+| Variables, families, and source notes | [Product reference](docs/products.md) |
+| Setup, preparation, and command side effects | [Workflows](docs/WORKFLOWS.md) · [Configuration](docs/CONFIGURATION.md) |
+| Stable consumer and producer interfaces | [Python API](docs/API.md) · [Metric matrix](docs/metric-matrix.md) |
+| Architecture and contribution checks | [Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) |
+| Validation and release evidence | [Tested environments](docs/environments/README.md) · [Progress](docs/roadmap/PROGRESS.md) · [Release handoff](docs/release-candidate.md) |
+
+Contributions should preserve scientific contracts and include focused tests and updated source
+notes. Follow the [development guide](docs/DEVELOPMENT.md) before changing calculations, schemas,
+configuration, or publication behavior.
+
+---
+
+**Software:** [Apache License 2.0](LICENSE). **Source data:** separate provider-specific rights and
+attribution apply. Installing or running the toolkit does not grant redistribution rights to its inputs.
+
+Part of [MarineCast](https://github.com/MarineCast).

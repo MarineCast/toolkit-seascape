@@ -92,7 +92,10 @@ def _shared_geojson(
                 "type": "Feature",
                 "properties": {
                     "H3_INDEX": str(row["H3_INDEX"]),
-                    **{column: _property(row.get(column)) for column in property_columns},
+                    **{
+                        column: _property(row.get(column))
+                        for column in property_columns
+                    },
                 },
                 "geometry": mapping(cell_to_polygon(str(row["H3_INDEX"]))),
             }
@@ -122,7 +125,9 @@ def _interactive_script(
     payloads = {
         "metrics": metric_configs,
         "palette": palette,
-        "confidenceColors": {str(key): value for key, value in CONFIDENCE_COLORS.items()},
+        "confidenceColors": {
+            str(key): value for key, value in CONFIDENCE_COLORS.items()
+        },
         "confidenceColumn": confidence_column,
         "unmappedColumn": unmapped_column,
         "latestYearColumn": latest_year_column,
@@ -330,7 +335,9 @@ def inspect_habitat_surface(
     confidence_path = config.confidence_path(resolution)
     for path in (feature_path, confidence_path):
         if not path.exists():
-            raise FileNotFoundError(f"Habitat product not found: {path}. Run build.py first.")
+            raise FileNotFoundError(
+                f"Habitat product not found: {path}. Run build.py first."
+            )
     features = pd.read_parquet(feature_path)
     confidence = pd.read_parquet(confidence_path)
     frame = features.merge(
@@ -352,7 +359,9 @@ def inspect_habitat_surface(
     destination = (
         Path(output_path).expanduser().resolve()
         if output_path
-        else settings.export_path(Path(map_subdirectory), f"{map_stem}_RES_{resolution}.html")
+        else settings.export_path(
+            Path(map_subdirectory), f"{map_stem}_RES_{resolution}.html"
+        )
     )
     map_ = new_vector_map(
         settings,
@@ -411,7 +420,8 @@ def inspect_habitat_surface(
         },
     ).add_to(map_)
     selector_id = f"habitat_metric_{map_.get_name()}"
-    map_.get_root().header.add_child(Element("""
+    map_.get_root().header.add_child(
+        Element("""
 <style>
 .habitat-metric-control {
     background: rgba(255, 255, 255, 0.96);
@@ -450,7 +460,8 @@ def inspect_habitat_surface(
     width: 18px;
 }
 </style>
-"""))
+""")
+    )
     control = MacroElement()
     control._template = Template(
         "{% macro script(this, kwargs) %}"

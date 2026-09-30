@@ -89,8 +89,13 @@ def test_portable_artifact_path_preserves_external_disposable_roots(tmp_path) ->
     repository_root = tmp_path / "repository"
     internal = repository_root / "data" / "artifact.parquet"
     external = tmp_path / "disposable" / "artifact.parquet"
-    assert portable_artifact_path(internal, root=repository_root) == "data/artifact.parquet"
-    assert portable_artifact_path(external, root=repository_root) == str(external.resolve())
+    assert (
+        portable_artifact_path(internal, root=repository_root)
+        == "data/artifact.parquet"
+    )
+    assert portable_artifact_path(external, root=repository_root) == str(
+        external.resolve()
+    )
 
 
 def test_atomic_family_publisher_does_not_publish_incomplete_family(tmp_path) -> None:
@@ -107,7 +112,9 @@ def test_incomplete_family_preserves_previous_artifacts(tmp_path) -> None:
     second = tmp_path / "second.txt"
     first.write_text("previous", encoding="utf-8")
     with pytest.raises(FileNotFoundError):
-        with TransactionalFamilyPublisher(tmp_path, run_id="fixture-incomplete") as publisher:
+        with TransactionalFamilyPublisher(
+            tmp_path, run_id="fixture-incomplete"
+        ) as publisher:
             publisher.stage_path(first).write_text("replacement", encoding="utf-8")
             publisher.stage_path(second)
             publisher.publish()
@@ -131,7 +138,9 @@ def test_family_transaction_promotes_manifest_last(tmp_path, monkeypatch) -> Non
         return original_replace(source, destination)
 
     monkeypatch.setattr(artifact_utils.os, "replace", observe)
-    with TransactionalFamilyPublisher(tmp_path, run_id="fixture-transaction") as publisher:
+    with TransactionalFamilyPublisher(
+        tmp_path, run_id="fixture-transaction"
+    ) as publisher:
         publisher.stage_parquet(pd.DataFrame({"H3_INDEX": ["new"]}), artifact)
         publisher.stage_manifest(manifest_path, {"replacement": True})
         publisher.publish()

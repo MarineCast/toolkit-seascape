@@ -22,7 +22,9 @@ if TYPE_CHECKING:
     from .pipeline import BathymetryConfig
 
 LOGGER = logging.getLogger(__name__)
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/seafloor_physiography")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/seafloor_physiography"
+)
 BATHYMETRY_MAP_FILENAME = "bathymetry.html"
 GEBCO_ATTRIBUTION = (
     "GEBCO Bathymetric Compilation Group 2026 (2026), The GEBCO_2026 Grid, "
@@ -56,13 +58,16 @@ def _map_feature(
 ) -> dict[str, Any]:
     geometry = mapping(cell_to_polygon(cell))
     geometry["coordinates"] = [
-        [[round(x, 6), round(y, 6)] for x, y in ring] for ring in geometry["coordinates"]
+        [[round(x, 6), round(y, 6)] for x, y in ring]
+        for ring in geometry["coordinates"]
     ]
     properties: dict[str, Any] = {"H3_INDEX": cell}
     for column in metric_columns:
         value = values[column]
         properties[column] = (
-            None if pd.isna(value) or not np.isfinite(float(value)) else round(float(value), 2)
+            None
+            if pd.isna(value) or not np.isfinite(float(value))
+            else round(float(value), 2)
         )
     return {
         "type": "Feature",
@@ -82,7 +87,11 @@ def _metric_ranges(
     settings: dict[str, dict[str, float | str]] = {}
     for column in metric_columns:
         values = pd.concat([frame[column] for _resolution, frame in frames])
-        values = pd.to_numeric(values, errors="coerce").replace([np.inf, -np.inf], np.nan).dropna()
+        values = (
+            pd.to_numeric(values, errors="coerce")
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+        )
         if values.empty:
             continue
         lower = float(values.min())
@@ -247,7 +256,9 @@ def _add_metric_selector(
     document.querySelector(".bathymetry-metric-control")._bathymetryUpdate();
     """
     element = MacroElement()
-    element._template = Template("{% macro script(this, kwargs) %}" + script + "{% endmacro %}")
+    element._template = Template(
+        "{% macro script(this, kwargs) %}" + script + "{% endmacro %}"
+    )
     bathymetry_map.add_child(element)
 
 
@@ -306,7 +317,12 @@ def _smoothed_bathymetry_image(
     from matplotlib.colors import LinearSegmentedColormap, Normalize
     from rasterio.features import rasterize
     from rasterio.transform import array_bounds, from_origin
-    from rasterio.warp import Resampling, calculate_default_transform, reproject, transform_bounds
+    from rasterio.warp import (
+        Resampling,
+        calculate_default_transform,
+        reproject,
+        transform_bounds,
+    )
 
     valid = frame.dropna(subset=["H3_INDEX", "BATHYMETRY"]).copy()
     valid["geometry"] = valid["H3_INDEX"].astype(str).map(cell_to_polygon)
@@ -323,7 +339,9 @@ def _smoothed_bathymetry_image(
     width = max(1, int(round((east - west) / pixel)))
     height = max(1, int(round((north - south) / pixel)))
     transform = from_origin(west, north, pixel, pixel)
-    shapes = [(mapping(row.geometry), float(row.BATHYMETRY)) for row in grid.itertuples()]
+    shapes = [
+        (mapping(row.geometry), float(row.BATHYMETRY)) for row in grid.itertuples()
+    ]
     support = rasterize(
         [(geometry, 1) for geometry, _value in shapes],
         out_shape=(height, width),
@@ -382,11 +400,15 @@ def _smoothed_bathymetry_image(
         resampling=Resampling.nearest,
     )
     output[~output_support.astype(bool)] = np.nan
-    normalized = Normalize(vmin=vmin, vmax=vmax, clip=True)(np.nan_to_num(output, nan=vmin))
+    normalized = Normalize(vmin=vmin, vmax=vmax, clip=True)(
+        np.nan_to_num(output, nan=vmin)
+    )
     colormap = LinearSegmentedColormap.from_list("bathymetry", list(colors))
     rgba = colormap(normalized)
     rgba[..., 3] = np.where(
-        np.isfinite(output) & output_support.astype(bool), config.smoothing_fill_opacity, 0.0
+        np.isfinite(output) & output_support.astype(bool),
+        config.smoothing_fill_opacity,
+        0.0,
     )
     bounds = transform_bounds(
         config.smoothing_output_crs,
@@ -418,9 +440,14 @@ def build_bathymetry_map(
         if output_path
         else settings.export_path(MAP_EXPORT_SUBDIRECTORY, BATHYMETRY_MAP_FILENAME)
     )
-    primary = Path(parquet_path).expanduser().resolve() if parquet_path else config.processed_path
+    primary = (
+        Path(parquet_path).expanduser().resolve()
+        if parquet_path
+        else config.processed_path
+    )
     layer_sources = [(config.h3_resolution, primary)] + [
-        (export.h3_resolution, export.processed_path) for export in config.additional_exports
+        (export.h3_resolution, export.processed_path)
+        for export in config.additional_exports
     ]
     frames: list[tuple[int, pd.DataFrame]] = []
     metric_columns: list[str] = []
@@ -430,7 +457,9 @@ def build_bathymetry_map(
         frame = pd.read_parquet(source)
         missing = sorted({"H3_INDEX", "BATHYMETRY"}.difference(frame.columns))
         if missing:
-            raise ValueError(f"Bathymetry Parquet is missing columns {missing}: {source}")
+            raise ValueError(
+                f"Bathymetry Parquet is missing columns {missing}: {source}"
+            )
         frame_metrics = [
             column
             for column in frame.columns
@@ -488,7 +517,9 @@ def build_bathymetry_map(
                 ),
                 "color": colors[-1],
                 "weight": 0.25,
-                "fillOpacity": (0.84 if feature["properties"]["BATHYMETRY"] is not None else 0.20),
+                "fillOpacity": (
+                    0.84 if feature["properties"]["BATHYMETRY"] is not None else 0.20
+                ),
             },
             popup=folium.GeoJsonPopup(
                 fields=["H3_INDEX", *metric_columns],
@@ -527,7 +558,9 @@ def build_bathymetry_map(
         'max-width:390px;border-radius:3px;">'
         f"{GEBCO_ATTRIBUTION}. Not for navigation.</div>"
     )
-    bathymetry_map.get_root().header.add_child(folium.Element("<title>Seascape Toolkit Bathymetry</title>"))
+    bathymetry_map.get_root().header.add_child(
+        folium.Element("<title>Seascape Toolkit Bathymetry</title>")
+    )
     bathymetry_map.get_root().html.add_child(folium.Element(attribution))
     destination.parent.mkdir(parents=True, exist_ok=True)
     bathymetry_map.save(destination)
@@ -538,18 +571,25 @@ def build_bathymetry_map(
 def main() -> int:
     """Inspect an existing bathymetry product without rebuilding it."""
     import argparse
+
     from .pipeline import load_bathymetry_config
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="config/data/project.yaml")
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--input", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    print(build_bathymetry_map(
-        load_bathymetry_config(args.config), parquet_path=args.input,
-        presentation_config_path=args.presentation_config, output_path=args.output,
-    ))
+    print(
+        build_bathymetry_map(
+            load_bathymetry_config(args.config),
+            parquet_path=args.input,
+            presentation_config_path=args.presentation_config,
+            output_path=args.output,
+        )
+    )
     return 0
 
 

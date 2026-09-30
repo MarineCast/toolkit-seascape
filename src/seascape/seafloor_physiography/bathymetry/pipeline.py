@@ -8,17 +8,15 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Mapping
 
-import pandas as pd
-
+from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.core.config.presentation import DEFAULT_PRESENTATION_CONFIG_PATH
-from seascape.core.artifacts.checksums import checksum_path
-from seascape.core.geo.h3 import cell_to_parent
 from seascape.publication import (
     TransactionalSeascapePublisher,
 )
+from seascape.spatial_support.provenance import water_geometry_provenance
 from seascape.utils.artifacts import (
     build_manifest,
     capture_staged_parquet_artifact,
@@ -28,9 +26,23 @@ from seascape.utils.config import (
     resolve_project_path,
 )
 
-from .build import DEPTH_BANDS_M, build_bathymetry_parquet
+from .build import build_bathymetry_parquet
 from .download import download_gebco_geotiff
 from .inspect import build_bathymetry_map
+
+GEBCO_TERMS_URL = "https://www.gebco.net/data-products/gridded-bathymetry/terms-of-use"
+GEBCO_RIGHTS = (
+    "Public domain; subject to GEBCO terms of use and source acknowledgement."
+)
+
+
+def _provider_rights(provider: str) -> dict[str, str]:
+    """Offline source-data rights, separate from the toolkit's software license."""
+    if provider == "GEBCO":
+        return {"license": GEBCO_RIGHTS, "terms_url": GEBCO_TERMS_URL}
+    return {
+        "license": "Unverified source-data rights; consult the configured provider's terms."
+    }
 
 
 @dataclass(frozen=True)
@@ -76,6 +88,8 @@ class BathymetryConfig:
     smoothing_gaussian_sigma_km: float
     smoothing_fill_opacity: float
     additional_exports: tuple[BathymetryExportConfig, ...]
+    tid_raw_path: Path | None = None
+    tid_release: str | None = None
 
 
 def _required(section: Mapping[str, Any], name: str, key: str) -> Any:
@@ -100,13 +114,19 @@ def load_bathymetry_config(
 
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
 
     h3_resolution = int(_required(processing, "bathymetry.processing", "h3_resolution"))
     if not 0 <= h3_resolution <= 15:
-        raise ValueError("bathymetry.processing.h3_resolution must be between 0 and 15.")
-    grid_template = str(_required(processing, "bathymetry.processing", "h3_grid_path_template"))
+        raise ValueError(
+            "bathymetry.processing.h3_resolution must be between 0 and 15."
+        )
+    grid_template = str(
+        _required(processing, "bathymetry.processing", "h3_grid_path_template")
+    )
     bathymetry_sign = str(processing.get("bathymetry_sign", "positive_down"))
     if bathymetry_sign not in {"positive_down", "negative_elevation"}:
         raise ValueError(
@@ -116,12 +136,18 @@ def load_bathymetry_config(
 
     quantile_values = processing.get("depth_quantiles", [0.10, 0.25, 0.75, 0.90])
     if not isinstance(quantile_values, list) or not quantile_values:
-        raise ValueError("bathymetry.processing.depth_quantiles must be a non-empty list.")
+        raise ValueError(
+            "bathymetry.processing.depth_quantiles must be a non-empty list."
+        )
     depth_quantiles = tuple(sorted(float(value) for value in quantile_values))
     if any(not 0.0 < value < 1.0 for value in depth_quantiles):
-        raise ValueError("bathymetry.processing.depth_quantiles values must be between 0 and 1.")
+        raise ValueError(
+            "bathymetry.processing.depth_quantiles values must be between 0 and 1."
+        )
     if len(set(depth_quantiles)) != len(depth_quantiles):
-        raise ValueError("bathymetry.processing.depth_quantiles must not contain duplicates.")
+        raise ValueError(
+            "bathymetry.processing.depth_quantiles must not contain duplicates."
+        )
     if 0.5 in depth_quantiles:
         raise ValueError(
             "bathymetry.processing.depth_quantiles must not include 0.5; "
@@ -135,7 +161,8 @@ def load_bathymetry_config(
     anomaly_rings = int(anomaly_config.get("neighborhood_rings", 2))
     if anomaly_rings < 1:
         raise ValueError(
-            "bathymetry.processing.local_depth_anomaly.neighborhood_rings " "must be at least 1."
+            "bathymetry.processing.local_depth_anomaly.neighborhood_rings "
+            "must be at least 1."
         )
     water_network = _mapping(raw.get("water_network"), "water_network")
     water_network_output_dir = resolve_project_path(
@@ -161,19 +188,48 @@ def load_bathymetry_config(
         "levels_m",
     )
     if not isinstance(isobath_values, list) or not isobath_values:
-        raise ValueError("bathymetry.processing.isobaths.levels_m must be a non-empty list.")
+        raise ValueError(
+            "bathymetry.processing.isobaths.levels_m must be a non-empty list."
+        )
     isobath_levels_m = tuple(sorted(float(value) for value in isobath_values))
     if any(value <= 0.0 for value in isobath_levels_m):
-        raise ValueError("bathymetry.processing.isobaths.levels_m values must be positive.")
+        raise ValueError(
+            "bathymetry.processing.isobaths.levels_m values must be positive."
+        )
     if len(set(isobath_levels_m)) != len(isobath_levels_m):
-        raise ValueError("bathymetry.processing.isobaths.levels_m must not contain duplicates.")
+        raise ValueError(
+            "bathymetry.processing.isobaths.levels_m must not contain duplicates."
+        )
 
-    raw_dir = resolve_project_path(_required(source, "bathymetry.source", "raw_dir"), base_dir)
+    raw_dir = resolve_project_path(
+        _required(source, "bathymetry.source", "raw_dir"), base_dir
+    )
     raw_filename = str(_required(source, "bathymetry.source", "raw_filename"))
     if Path(raw_filename).name != raw_filename or not raw_filename.lower().endswith(
         (".tif", ".tiff")
     ):
         raise ValueError("bathymetry.source.raw_filename must be a GeoTIFF filename.")
+    tid_filename = source.get("tid_raw_filename")
+    if tid_filename is not None and (
+        not isinstance(tid_filename, str)
+        or Path(tid_filename).name != tid_filename
+        or not tid_filename.lower().endswith((".tif", ".tiff"))
+    ):
+        raise ValueError(
+            "bathymetry.source.tid_raw_filename must be a GeoTIFF filename."
+        )
+    tid_release = (
+        str(source.get("tid_release", source["release"])) if tid_filename else None
+    )
+    if tid_filename and str(source.get("provider", "GEBCO")) not in {
+        "GEBCO",
+        "SYNTHETIC",
+    }:
+        raise ValueError(
+            "GEBCO TID requires a GEBCO or synthetic fixture depth provider"
+        )
+    if tid_release is not None and tid_release != str(source["release"]):
+        raise ValueError("bathymetry.source.tid_release must match the depth release")
 
     additional_exports: list[BathymetryExportConfig] = []
     for index, value in enumerate(processing.get("additional_exports", [])):
@@ -199,11 +255,17 @@ def load_bathymetry_config(
         bbox=bbox_from_config(section),
         provider=str(source.get("provider", "GEBCO")),
         release=str(_required(source, "bathymetry.source", "release")),
-        native_resolution_arc_seconds=float(source.get("native_resolution_arc_seconds", 15)),
+        native_resolution_arc_seconds=float(
+            source.get("native_resolution_arc_seconds", 15)
+        ),
         grid_name=str(_required(source, "bathymetry.source", "grid_name")),
-        data_source_name=str(_required(source, "bathymetry.source", "data_source_name")),
+        data_source_name=str(
+            _required(source, "bathymetry.source", "data_source_name")
+        ),
         format_name=str(_required(source, "bathymetry.source", "format_name")),
-        api_base_url=str(_required(source, "bathymetry.source", "api_base_url")).rstrip("/"),
+        api_base_url=str(_required(source, "bathymetry.source", "api_base_url")).rstrip(
+            "/"
+        ),
         raw_path=raw_dir / raw_filename,
         request_timeout_seconds=float(source.get("request_timeout_seconds", 120)),
         poll_interval_seconds=float(source.get("poll_interval_seconds", 5)),
@@ -211,9 +273,12 @@ def load_bathymetry_config(
         overwrite=bool(source.get("overwrite", False)),
         h3_resolution=h3_resolution,
         h3_grid_path_template=grid_template,
-        h3_grid_path=resolve_project_path(grid_template.format(res=h3_resolution), base_dir),
+        h3_grid_path=resolve_project_path(
+            grid_template.format(res=h3_resolution), base_dir
+        ),
         water_polygon_path=resolve_project_path(
-            _required(processing, "bathymetry.processing", "water_polygon_path"), base_dir
+            _required(processing, "bathymetry.processing", "water_polygon_path"),
+            base_dir,
         ),
         processed_path=resolve_project_path(
             _required(processing, "bathymetry.processing", "processed_path"), base_dir
@@ -226,59 +291,24 @@ def load_bathymetry_config(
         isobath_distance_projected_crs=str(
             isobath_config.get("distance_projected_crs", "EPSG:32610")
         ),
-        smoothing_projected_crs=str(map_config.get("smoothing_projected_crs", "EPSG:32610")),
+        smoothing_projected_crs=str(
+            map_config.get("smoothing_projected_crs", "EPSG:32610")
+        ),
         smoothing_output_crs=str(map_config.get("smoothing_output_crs", "EPSG:3857")),
         smoothing_analysis_pixel_size_m=float(
             map_config.get("smoothing_analysis_pixel_size_m", 250.0)
         ),
-        smoothing_output_pixel_size_m=float(map_config.get("smoothing_output_pixel_size_m", 100.0)),
-        smoothing_gaussian_sigma_km=float(map_config.get("smoothing_gaussian_sigma_km", 1.5)),
+        smoothing_output_pixel_size_m=float(
+            map_config.get("smoothing_output_pixel_size_m", 100.0)
+        ),
+        smoothing_gaussian_sigma_km=float(
+            map_config.get("smoothing_gaussian_sigma_km", 1.5)
+        ),
         smoothing_fill_opacity=float(map_config.get("smoothing_fill_opacity", 0.82)),
         additional_exports=tuple(additional_exports),
+        tid_raw_path=raw_dir / tid_filename if tid_filename else None,
+        tid_release=tid_release,
     )
-
-
-def recompute_parent_depth_bands(
-    child_path: Path,
-    parent_path: Path,
-    *,
-    parent_resolution: int,
-) -> None:
-    """Replace parent composition counts/fractions with sums of child counts."""
-
-    child = pd.read_parquet(child_path)
-    parent = pd.read_parquet(parent_path)
-    count_columns = [f"BATHYMETRY_PIXEL_COUNT_{token}_M" for token, _lower, _upper in DEPTH_BANDS_M]
-    required = {"H3_INDEX", *count_columns}
-    for name, frame in (("child", child), ("parent", parent)):
-        missing = sorted(required.difference(frame.columns))
-        if missing:
-            raise ValueError(f"Bathymetry {name} table lacks depth-band columns: {missing}")
-    child_counts = child.loc[:, ["H3_INDEX", *count_columns]].copy()
-    child_counts["H3_INDEX"] = (
-        child_counts["H3_INDEX"]
-        .astype(str)
-        .map(lambda cell: cell_to_parent(cell, parent_resolution))
-    )
-    grouped = child_counts.groupby("H3_INDEX", sort=True, observed=True)[count_columns].sum(
-        min_count=1
-    )
-    parent["H3_INDEX"] = parent["H3_INDEX"].astype(str)
-    parent = parent.set_index("H3_INDEX").copy()
-    unknown = sorted(set(grouped.index).difference(parent.index))
-    if unknown:
-        raise ValueError(
-            f"Child bathymetry maps to parents outside canonical support: {unknown[:5]}"
-        )
-    parent.loc[grouped.index, count_columns] = grouped
-    total = parent[count_columns].sum(axis=1, min_count=1)
-    parent["BATHYMETRY_PIXEL_COUNT"] = total
-    for token, _lower, _upper in DEPTH_BANDS_M:
-        count = f"BATHYMETRY_PIXEL_COUNT_{token}_M"
-        fraction = f"BATHYMETRY_FRAC_{token}_M"
-        parent[fraction] = parent[count].div(total.where(total > 0))
-    parent = parent.reset_index()
-    parent.to_parquet(parent_path, index=False)
 
 
 def run_pipeline(
@@ -292,8 +322,44 @@ def run_pipeline(
     """Run download, H3 processing, then inspection-map generation."""
 
     config = load_bathymetry_config(config_path)
+    synthetic = config.provider == "SYNTHETIC"
+    if synthetic and not skip_download:
+        raise ValueError(
+            "SYNTHETIC bathymetry requires skip_download=True; no provider acquisition exists."
+        )
+    if synthetic and not skip_map:
+        raise ValueError(
+            "SYNTHETIC bathymetry requires skip_map=True; use the demo's static figures."
+        )
+    synthetic_source = (
+        {
+            "observation_period": "None: synthetic software fixture",
+            "source_warning": (
+                "Synthetic software acceptance only; not regional data or a navigational survey."
+            ),
+        }
+        if synthetic
+        else {}
+    )
+    synthetic_metadata = (
+        {
+            "synthetic": True,
+            "validation_scope": "software acceptance; not a regional release",
+        }
+        if synthetic
+        else {}
+    )
+    rights = (
+        {
+            "license": "Synthetic fixture generated by toolkit-seascape (Apache-2.0); no survey data."
+        }
+        if synthetic
+        else _provider_rights(config.provider)
+    )
     raw_path = (
-        config.raw_path if skip_download else download_gebco_geotiff(config, overwrite=overwrite)
+        config.raw_path
+        if skip_download
+        else download_gebco_geotiff(config, overwrite=overwrite)
     )
     product_configs = [replace(config, additional_exports=())]
     for export in config.additional_exports:
@@ -310,6 +376,7 @@ def run_pipeline(
             )
         )
     output_dir = config.processed_path.parent
+    provenance = water_geometry_provenance(config.water_polygon_path, project_root())
     with TransactionalSeascapePublisher(output_dir) as publisher:
         staged_configs: list[BathymetryConfig] = []
         for product_config in product_configs:
@@ -321,19 +388,55 @@ def run_pipeline(
             )
         for staged_config in staged_configs:
             build_bathymetry_parquet(staged_config, raster_path=raw_path)
-        staged_by_resolution = {item.h3_resolution: item.processed_path for item in staged_configs}
-        if {6, 8}.issubset(staged_by_resolution):
-            recompute_parent_depth_bands(
-                staged_by_resolution[8],
-                staged_by_resolution[6],
-                parent_resolution=6,
-            )
         processed_paths = [item.processed_path for item in product_configs]
+        if config.tid_raw_path is not None:
+            import pandas as pd
+
+            from .build import load_h3_cells
+            from .tid import build_tid_parquet
+
+            if not config.tid_raw_path.is_file():
+                raise FileNotFoundError(
+                    f"GEBCO TID GeoTIFF not found: {config.tid_raw_path}"
+                )
+            for product_config, staged_config in zip(
+                product_configs, staged_configs, strict=True
+            ):
+                destination = product_config.processed_path.with_name(
+                    f"GEBCO_TID_RES_{product_config.h3_resolution}.parquet"
+                )
+                staged_tid = publisher.stage_path(destination)
+                build_tid_parquet(
+                    depth_path=raw_path,
+                    tid_path=config.tid_raw_path,
+                    output_path=staged_tid,
+                    cells=load_h3_cells(product_config),
+                    resolution=product_config.h3_resolution,
+                    depth_release=config.release,
+                    tid_release=config.tid_release or "",
+                )
+                depth_counts = pd.read_parquet(
+                    staged_config.processed_path,
+                    columns=["H3_INDEX", "BATHYMETRY_PIXEL_COUNT"],
+                ).set_index("H3_INDEX")
+                tid_counts = pd.read_parquet(
+                    staged_tid,
+                    columns=["H3_INDEX", "GEBCO_TID_DEPTH_PIXEL_COUNT"],
+                ).set_index("H3_INDEX")
+                if not depth_counts.index.equals(tid_counts.index) or not depth_counts[
+                    "BATHYMETRY_PIXEL_COUNT"
+                ].fillna(-1).equals(
+                    tid_counts["GEBCO_TID_DEPTH_PIXEL_COUNT"].fillna(-1)
+                ):
+                    raise ValueError(
+                        "GEBCO TID and bathymetry direct pixel support disagree"
+                    )
+                processed_paths.append(destination)
         artifacts = [
             capture_staged_parquet_artifact(publisher, destination)
             for destination in processed_paths
         ]
-        upstream_artifacts = []
+        upstream_artifacts = [provenance["upstream"]] if provenance else []
         for product_config in product_configs:
             for upstream in (
                 product_config.h3_grid_path,
@@ -355,23 +458,90 @@ def run_pipeline(
             sources=[
                 {
                     "name": f"{config.provider} {config.release}",
+                    "version": config.release,
+                    "native_spacing": f"{config.native_resolution_arc_seconds:g} arc seconds",
+                    "sampling_method": "direct assignment of valid native marine pixel centers to H3",
+                    "datum": (
+                        "synthetic; no real-world datum"
+                        if synthetic
+                        else (
+                            "GEBCO compilation approximately mean sea level; constituent sources may differ"
+                            if config.provider == "GEBCO"
+                            else "not verified for the configured provider"
+                        )
+                    ),
+                    "evidence_type": (
+                        "synthetic software fixture"
+                        if synthetic
+                        else (
+                            "compiled gridded elevation, not a direct survey at every pixel"
+                            if config.provider == "GEBCO"
+                            else "configured gridded elevation; source evidence unverified"
+                        )
+                    ),
+                    "uncertainty_availability": (
+                        "not assigned for synthetic fixture"
+                        if synthetic
+                        else "not provided as per-pixel accuracy in the depth grid"
+                    ),
                     "path": str(raw_path),
                     "checksum": checksum_path(raw_path),
-                    "license": "GEBCO data are distributed under the CC BY 4.0 license.",
-                }
+                    **rights,
+                    **synthetic_source,
+                },
+                *(
+                    [
+                        {
+                            "name": f"{config.provider} {config.tid_release} TID categorical source types",
+                            "version": config.tid_release,
+                            "native_spacing": f"{config.native_resolution_arc_seconds:g} arc seconds",
+                            "sampling_method": "aligned categorical pixel center; no interpolation",
+                            "evidence_type": (
+                                "synthetic categorical software fixture"
+                                if synthetic
+                                else "source type identifier, not a survey footprint"
+                            ),
+                            "uncertainty_availability": "TID is not a numeric accuracy estimate",
+                            "path": str(config.tid_raw_path),
+                            "checksum": checksum_path(config.tid_raw_path),
+                            **rights,
+                            **synthetic_source,
+                        }
+                    ]
+                    if config.tid_raw_path is not None
+                    else []
+                ),
             ],
             upstream_artifacts=upstream_artifacts,
             attribution=[
                 {
                     "text": (
+                        f"GEBCO Bathymetric Compilation Group, GEBCO {config.release} Grid; "
+                        "acknowledge the release-specific grid documentation. "
+                        if config.provider == "GEBCO"
+                        else ""
+                    )
+                    + (
                         f"Bathymetry derived from {config.provider} {config.release}; "
                         "not to be used for navigation."
                     ),
-                    "license": "CC BY 4.0",
+                    **(
+                        {"license": "Apache-2.0 synthetic fixture"}
+                        if synthetic
+                        else rights
+                    ),
                 }
             ],
-            source_completeness="complete",
+            source_completeness=provenance["source_completeness"]
+            if provenance
+            else "complete",
             metadata={
+                **synthetic_metadata,
+                **(
+                    {"water_geometry_provenance": provenance["metadata"]}
+                    if provenance
+                    else {}
+                ),
                 "bathymetry_sign": config.bathymetry_sign,
                 "h3_resolutions": [item.h3_resolution for item in product_configs],
                 "depth_band_intervals_m": [
@@ -383,6 +553,16 @@ def run_pipeline(
                     "[200,infinity)",
                 ],
                 "neighborhood_semantics": "water_connected_minimum_hops",
+                "scientific_method_version": "direct_pixel_support_v2",
+                "statistic_sampling_support": "all canonical bathymetry statistics and depth-band counts use the same direct pixel-to-resolution assignment",
+                "isobath_distance_method": "marine_only_marching_squares_segments_straight_line_v2",
+                "isobath_distance_limit": "within source crop only; no contour gives null distance and explicit status",
+                "tid_method_version": "direct_categorical_pixel_support_v1"
+                if config.tid_raw_path
+                else None,
+                "tid_interpretation": "GEBCO source type, not uncertainty or accuracy"
+                if config.tid_raw_path
+                else None,
             },
         )
         publisher.stage_manifest(output_dir / "bathymetry_manifest.json", manifest)

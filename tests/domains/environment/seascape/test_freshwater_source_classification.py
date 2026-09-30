@@ -6,7 +6,9 @@ from seascape.hydrologic_connectivity.freshwater_sources.source_classification i
 
 
 def test_nhd_source_documented_type_and_permanence_are_normalized() -> None:
-    natural = source_classification("US_NHD_SMALL_SCALE", {"FTYPE": "StreamRiver", "FCODE": 46006})
+    natural = source_classification(
+        "US_NHD_SMALL_SCALE", {"FTYPE": "StreamRiver", "FCODE": 46006}
+    )
     assert natural["MOUTH_SOURCE_TYPE"] == "natural_channel"
     assert natural["MOUTH_PERMANENCE_CLASS"] == "perennial"
     assert natural["MOUTH_SOURCE_TYPE_SOURCE_FIELD"] == "FTYPE"

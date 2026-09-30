@@ -89,7 +89,9 @@ NEIGHBORHOOD_REQUIRED_COLUMNS = (
 )
 
 
-def _require_columns(frame: pd.DataFrame, required: tuple[str, ...], label: str) -> None:
+def _require_columns(
+    frame: pd.DataFrame, required: tuple[str, ...], label: str
+) -> None:
     missing = [column for column in required if column not in frame.columns]
     if missing:
         raise ValueError(f"{label} is missing required columns: {missing}")
@@ -98,7 +100,9 @@ def _require_columns(frame: pd.DataFrame, required: tuple[str, ...], label: str)
 def _one_value(frame: pd.DataFrame, column: str, expected: Any, label: str) -> None:
     values = set(frame[column].dropna().tolist())
     if values != {expected}:
-        raise ValueError(f"{label}.{column} expected only {expected!r}; found {values!r}.")
+        raise ValueError(
+            f"{label}.{column} expected only {expected!r}; found {values!r}."
+        )
 
 
 def validate_geometry_products(
@@ -121,12 +125,18 @@ def validate_geometry_products(
             raise ValueError("Full geometry contains an empty H3 polygon.")
         if label == "clipped geometry" and frame.geometry.is_empty.any():
             if "HAS_WATER_OVERLAP" not in frame.columns:
-                raise ValueError("Clipped geometry must identify hierarchy-only empty parents.")
-            invalid_empty = frame.geometry.is_empty & frame["HAS_WATER_OVERLAP"].astype(bool)
+                raise ValueError(
+                    "Clipped geometry must identify hierarchy-only empty parents."
+                )
+            invalid_empty = frame.geometry.is_empty & frame["HAS_WATER_OVERLAP"].astype(
+                bool
+            )
             if invalid_empty.any():
                 raise ValueError("Wet clipped geometry contains an empty polygon.")
     if set(full["H3_INDEX"]) != set(clipped["H3_INDEX"]):
-        raise ValueError("Full and clipped marine geometry must contain identical H3 indexes.")
+        raise ValueError(
+            "Full and clipped marine geometry must contain identical H3 indexes."
+        )
 
 
 def validate_support(
@@ -165,16 +175,22 @@ def validate_support(
     hierarchy_only = frame["IS_HIERARCHY_ONLY_PARENT"].astype(bool).to_numpy()
     has_water = frame["HAS_WATER_OVERLAP"].astype(bool).to_numpy()
     if not np.array_equal(has_water, ~hierarchy_only):
-        raise ValueError("Water-overlap and hierarchy-only parent flags must be complements.")
+        raise ValueError(
+            "Water-overlap and hierarchy-only parent flags must be complements."
+        )
     if (cell_area <= 0).any() or (water_area < 0).any() or (land_area < 0).any():
-        raise ValueError("Marine support has nonpositive cell or negative water/land area.")
+        raise ValueError(
+            "Marine support has nonpositive cell or negative water/land area."
+        )
     if (water_area[has_water] <= 0).any() or (water_area[hierarchy_only] != 0).any():
         raise ValueError(
             "Wet support requires positive water; hierarchy-only parents require zero."
         )
     if (water_area > cell_area + area_tolerance_m2).any():
         raise ValueError("Water area exceeds full-cell area beyond tolerance.")
-    if not np.allclose(cell_area, water_area + land_area, atol=area_tolerance_m2, rtol=1e-9):
+    if not np.allclose(
+        cell_area, water_area + land_area, atol=area_tolerance_m2, rtol=1e-9
+    ):
         raise ValueError("Land area is not the complement of water area.")
     if ((water_fraction < 0) | (water_fraction > 1)).any():
         raise ValueError("Water fraction must be in [0, 1].")
@@ -183,13 +199,17 @@ def validate_support(
     fully = frame["IS_FULLY_WATER"].astype(bool).to_numpy()
     partial = frame["IS_PARTIALLY_WATER"].astype(bool).to_numpy()
     if (fully & partial).any() or (~(fully | partial) & has_water).any():
-        raise ValueError("Every wet cell must be classified as exactly full or partial water.")
+        raise ValueError(
+            "Every wet cell must be classified as exactly full or partial water."
+        )
     if (fully[hierarchy_only] | partial[hierarchy_only]).any():
         raise ValueError("Hierarchy-only parents cannot be classified as wet cells.")
     degree = frame["GRAPH_DEGREE"].to_numpy(dtype="int64")
     if (degree < 0).any():
         raise ValueError("Graph degree cannot be negative.")
-    connected = frame["GRAPH_CONNECTION_STATUS"].isin(("graph_node", "terminal_connector"))
+    connected = frame["GRAPH_CONNECTION_STATUS"].isin(
+        ("graph_node", "terminal_connector")
+    )
     if frame.loc[connected, "WATER_COMPONENT_ID"].isna().any():
         raise ValueError("Connected support rows must have a water component.")
     if frame.loc[~connected, "GRAPH_QC_REASON"].isna().any():
@@ -216,15 +236,21 @@ def validate_edges(
         frame["TARGET_H3_INDEX"]
     ).issubset(support_cells):
         raise ValueError("Water edge references a cell outside canonical support.")
-    for source, target in frame[["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]].itertuples(index=False):
+    for source, target in frame[["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]].itertuples(
+        index=False
+    ):
         if str(target) not in grid_disk_set(str(source), 1):
-            raise ValueError(f"Water edge is not a true H3 neighbor: {source}, {target}")
+            raise ValueError(
+                f"Water edge is not a true H3 neighbor: {source}, {target}"
+            )
     distance = frame["EDGE_DISTANCE_M"].to_numpy(dtype="float64")
     fraction = frame["WATER_PATH_FRACTION"].to_numpy(dtype="float64")
     if not np.isfinite(distance).all() or (distance <= 0).any():
         raise ValueError("Every candidate edge must have a positive finite distance.")
     if not np.isfinite(fraction).all() or ((fraction < 0) | (fraction > 1)).any():
-        raise ValueError("Every candidate edge must have a water-path fraction in [0, 1].")
+        raise ValueError(
+            "Every candidate edge must have a water-path fraction in [0, 1]."
+        )
 
 
 def validate_connectors(
@@ -245,13 +271,17 @@ def validate_connectors(
     accepted = frame["CONNECTOR_IS_WATER_PASSABLE"].astype(bool)
     distance = pd.to_numeric(frame["CONNECTOR_DISTANCE_M"], errors="coerce")
     if distance[accepted].isna().any() or (distance[accepted] <= 0).any():
-        raise ValueError("Accepted terminal connectors require positive finite distance.")
+        raise ValueError(
+            "Accepted terminal connectors require positive finite distance."
+        )
     by_cell = support.set_index("H3_INDEX")
     for connector in frame.loc[accepted].itertuples(index=False):
         support_row = by_cell.loc[str(connector.H3_INDEX)]
         if support_row["GRAPH_CONNECTION_STATUS"] != "terminal_connector":
             raise ValueError("Accepted connector is not reflected in support status.")
-        if str(support_row["CONNECTOR_TARGET_H3_INDEX"]) != str(connector.TARGET_H3_INDEX):
+        if str(support_row["CONNECTOR_TARGET_H3_INDEX"]) != str(
+            connector.TARGET_H3_INDEX
+        ):
             raise ValueError("Support and connector target disagree.")
 
 
@@ -269,7 +299,9 @@ def validate_neighborhoods(
         raise ValueError("Water neighborhood table is empty.")
     _one_value(frame, "H3_RESOLUTION", resolution, "water neighborhood table")
     if frame.duplicated(["SOURCE_H3_INDEX", "TARGET_H3_INDEX"]).any():
-        raise ValueError("Water neighborhood table contains duplicate source-target rows.")
+        raise ValueError(
+            "Water neighborhood table contains duplicate source-target rows."
+        )
     support_cells = set(support["H3_INDEX"].astype(str))
     if set(frame["SOURCE_H3_INDEX"].astype(str)) != support_cells:
         raise ValueError("Every support cell must own at least one neighborhood row.")
@@ -278,26 +310,43 @@ def validate_neighborhoods(
     hops = pd.to_numeric(frame["MINIMUM_HOP_COUNT"], errors="coerce")
     distances = pd.to_numeric(frame["NETWORK_DISTANCE_M"], errors="coerce")
     if hops.isna().any() or ((hops < 0) | (hops > maximum_hops)).any():
-        raise ValueError("Water neighborhood hop counts are outside the configured bound.")
-    if distances.isna().any() or (~np.isfinite(distances)).any() or (distances < 0).any():
+        raise ValueError(
+            "Water neighborhood hop counts are outside the configured bound."
+        )
+    if (
+        distances.isna().any()
+        or (~np.isfinite(distances)).any()
+        or (distances < 0).any()
+    ):
         raise ValueError("Water neighborhood distances must be finite and nonnegative.")
-    self_rows = frame["SOURCE_H3_INDEX"].astype(str).eq(frame["TARGET_H3_INDEX"].astype(str))
+    self_rows = (
+        frame["SOURCE_H3_INDEX"].astype(str).eq(frame["TARGET_H3_INDEX"].astype(str))
+    )
     if not (hops[self_rows] == 0).all() or not (distances[self_rows] == 0).all():
-        raise ValueError("Water neighborhood self rows must use zero hops and distance.")
+        raise ValueError(
+            "Water neighborhood self rows must use zero hops and distance."
+        )
     self_counts = frame.loc[self_rows, "SOURCE_H3_INDEX"].astype(str).value_counts()
     if set(self_counts.index) != support_cells or not (self_counts == 1).all():
-        raise ValueError("Every support cell must have exactly one neighborhood self row.")
+        raise ValueError(
+            "Every support cell must have exactly one neighborhood self row."
+        )
 
 
 def validate_manifest_payload(payload: Mapping[str, Any]) -> None:
     """Validate the minimum manifest contract used by strict loaders."""
 
-    if payload.get("dataset_family") != "environment.seascape.h3_marine_spatial_support":
+    if (
+        payload.get("dataset_family")
+        != "environment.seascape.h3_marine_spatial_support"
+    ):
         raise ValueError("Unexpected water-network dataset family.")
     if str(payload.get("schema_version")) != WATER_NETWORK_SCHEMA_VERSION:
         raise ValueError("Unsupported water-network schema version.")
 
-    validate_common_manifest(payload, project_root=project_root(), verify_artifacts=False)
+    validate_common_manifest(
+        payload, project_root=project_root(), verify_artifacts=False
+    )
     metadata = payload.get("metadata")
     if not isinstance(metadata, Mapping):
         raise ValueError("Water-network manifest metadata is missing.")

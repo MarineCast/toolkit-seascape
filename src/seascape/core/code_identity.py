@@ -17,7 +17,7 @@ def _git(root: Path, *arguments: str) -> str | None:
             capture_output=True,
             text=True,
         )
-    except (OSError, subprocess.SubprocessError):
+    except OSError, subprocess.SubprocessError:
         return None
     return result.stdout.strip()
 

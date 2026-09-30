@@ -81,7 +81,8 @@ def validate_path(path: Path, spec: DatasetSpec) -> ValidationReport:
         for item in parquet_files[1:]:
             other = item.schema_arrow
             if other.names != schema.names or any(
-                other.field(name).type != schema.field(name).type for name in schema.names
+                other.field(name).type != schema.field(name).type
+                for name in schema.names
             ):
                 errors.append("Parquet dataset partitions have inconsistent schemas")
                 schema_valid = False

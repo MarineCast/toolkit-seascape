@@ -22,10 +22,14 @@ def river_mouth_pressure(
     if target_xy.ndim != 2 or target_xy.shape[1] != 2:
         raise ValueError("River-mouth pressure targets must have shape (n, 2).")
     if mouth_xy.ndim != 2 or mouth_xy.shape[1] != 2 or len(mouth_xy) == 0:
-        raise ValueError("River-mouth pressure sources must have nonempty shape (n, 2).")
+        raise ValueError(
+            "River-mouth pressure sources must have nonempty shape (n, 2)."
+        )
     widths = np.asarray(mouth_width_m, dtype="float64")
     if widths.shape != (len(mouth_xy),) or not np.isfinite(widths).all():
-        raise ValueError("River-mouth pressure widths must be finite and align to mouths.")
+        raise ValueError(
+            "River-mouth pressure widths must be finite and align to mouths."
+        )
     if decay_distance_m <= 0 or width_reference_m <= 0 or chunk_size <= 0:
         raise ValueError(
             "River-mouth pressure distance, width reference, and chunk must be positive."

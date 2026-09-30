@@ -75,12 +75,20 @@ def _snap_mouths_to_graph(
         )
         for value in attachment["GRAPH_H3_INDEX"]
     ]
-    projected["GRAPH_SNAP_DISTANCE_M"] = attachment["GRAPH_CONNECTOR_DISTANCE_M"].to_numpy()
-    projected["SOURCE_TO_WATER_DISTANCE_M"] = attachment["SOURCE_TO_WATER_DISTANCE_M"].to_numpy()
-    projected["GRAPH_CONNECTOR_WATER_PATH_FRACTION"] = attachment["WATER_PATH_FRACTION"].to_numpy()
+    projected["GRAPH_SNAP_DISTANCE_M"] = attachment[
+        "GRAPH_CONNECTOR_DISTANCE_M"
+    ].to_numpy()
+    projected["SOURCE_TO_WATER_DISTANCE_M"] = attachment[
+        "SOURCE_TO_WATER_DISTANCE_M"
+    ].to_numpy()
+    projected["GRAPH_CONNECTOR_WATER_PATH_FRACTION"] = attachment[
+        "WATER_PATH_FRACTION"
+    ].to_numpy()
     projected["GRAPH_CONNECTION_QC_REASON"] = attachment["QC_REASON"].astype("string")
     if not (projected["_GRAPH_INDEX"] >= 0).any():
-        raise ValueError("No fluvial mouth has a water-valid canonical graph connector.")
+        raise ValueError(
+            "No fluvial mouth has a water-valid canonical graph connector."
+        )
     dropped = int((projected["_GRAPH_INDEX"] < 0).sum())
     if dropped:
         LOGGER.warning(
@@ -145,12 +153,16 @@ def _build_marine_products(
     mouths["MARINE_NETWORK_COMPONENT_ID"] = [
         graph_lineage.iloc[index]["WATER_COMPONENT_ID"] for index in mouth_graph_indices
     ]
-    component_mouth_counts = mouths["MARINE_NETWORK_COMPONENT_ID"].value_counts().to_dict()
+    component_mouth_counts = (
+        mouths["MARINE_NETWORK_COMPONENT_ID"].value_counts().to_dict()
+    )
 
     target_support = load_model_area_support(config.h3_resolution, config_path)
     target_cells = target_support["H3_INDEX"].astype(str).tolist()
     _, _, target_x, target_y = _cell_centers(target_cells, config.projected_crs)
-    target_graph_indices, target_connectors, target_qc = target_graph_mapping(graph, target_cells)
+    target_graph_indices, target_connectors, target_qc = target_graph_mapping(
+        graph, target_cells
+    )
     mapped = target_graph_indices >= 0
     target_owners = np.full(len(target_cells), -1, dtype=int)
     target_owners[mapped] = graph_owners[target_graph_indices[mapped]]
@@ -216,28 +228,41 @@ def _build_marine_products(
             "OUTLET_SUBBASIN_ID",
             string=True,
         ),
-        "CONNECTED_UPSTREAM_SEGMENT_COUNT": owner_numeric("CONNECTED_UPSTREAM_SEGMENT_COUNT"),
-        "CONNECTED_TRIBUTARY_JUNCTION_COUNT": owner_numeric("CONNECTED_TRIBUTARY_JUNCTION_COUNT"),
+        "CONNECTED_UPSTREAM_SEGMENT_COUNT": owner_numeric(
+            "CONNECTED_UPSTREAM_SEGMENT_COUNT"
+        ),
+        "CONNECTED_TRIBUTARY_JUNCTION_COUNT": owner_numeric(
+            "CONNECTED_TRIBUTARY_JUNCTION_COUNT"
+        ),
         "CONNECTED_HEADWATER_COUNT": owner_numeric("CONNECTED_HEADWATER_COUNT"),
         "CONNECTED_STRAHLER_ORDER": owner_numeric("CONNECTED_STRAHLER_ORDER"),
         "CONNECTED_UPSTREAM_NETWORK_LENGTH_KM": owner_numeric(
             "CONNECTED_UPSTREAM_NETWORK_LENGTH_KM"
         ),
-        "CONNECTED_UPSTREAM_DISTANCE_KM": owner_numeric("CONNECTED_UPSTREAM_DISTANCE_KM"),
+        "CONNECTED_UPSTREAM_DISTANCE_KM": owner_numeric(
+            "CONNECTED_UPSTREAM_DISTANCE_KM"
+        ),
         "CONNECTED_UPSTREAM_DRAINAGE_AREA_KM2": owner_numeric(
             "CONNECTED_UPSTREAM_DRAINAGE_AREA_KM2"
         ),
-        "SOURCE_NETWORK_TOPOLOGY_GAP_COUNT": owner_numeric("SOURCE_NETWORK_TOPOLOGY_GAP_COUNT"),
+        "SOURCE_NETWORK_TOPOLOGY_GAP_COUNT": owner_numeric(
+            "SOURCE_NETWORK_TOPOLOGY_GAP_COUNT"
+        ),
         "MARINE_NETWORK_COMPONENT_ID": target_component_ids.tolist(),
         "MAPPED_FLUVIAL_MOUTH_COUNT_IN_COMPONENT": [
-            int(component_mouth_counts.get(component, 0)) for component in target_component_ids
+            int(component_mouth_counts.get(component, 0))
+            for component in target_component_ids
         ],
         "NETWORK_CONNECTOR_METHOD": canonical_support["CONNECTOR_METHOD"].tolist(),
-        "NETWORK_CONNECTOR_DISTANCE_M": canonical_support["CONNECTOR_DISTANCE_M"].tolist(),
+        "NETWORK_CONNECTOR_DISTANCE_M": canonical_support[
+            "CONNECTOR_DISTANCE_M"
+        ].tolist(),
         "NETWORK_DISTANCE_QC_REASON": np.where(
             reachable,
             target_qc,
-            np.where(pd.isna(target_qc), "no_connected_fluvial_mouth_in_component", target_qc),
+            np.where(
+                pd.isna(target_qc), "no_connected_fluvial_mouth_in_component", target_qc
+            ),
         ),
     }
     features = pd.DataFrame(feature_data).loc[:, FEATURE_COLUMNS]
@@ -286,8 +311,8 @@ def build_fluvial_connectivity(
     """Build fluvial network, mouth, H3 feature, and watershed-crosswalk products."""
 
     config = load_fluvial_connectivity_config(config_path)
-    target_water, context_water, context_box, context_land, coast_boundary = _spatial_support(
-        config
+    target_water, context_water, context_box, context_land, coast_boundary = (
+        _spatial_support(config)
     )
     graph = load_water_graph(
         config.h3_resolution,
@@ -298,7 +323,9 @@ def build_fluvial_connectivity(
     graph_lineage = graph.support.set_index("H3_INDEX").loc[graph_cells]
     from pyproj import Transformer
 
-    transformer = Transformer.from_crs("EPSG:4326", config.projected_crs, always_xy=True)
+    transformer = Transformer.from_crs(
+        "EPSG:4326", config.projected_crs, always_xy=True
+    )
     graph_x, graph_y = transformer.transform(
         graph_lineage["REPRESENTATIVE_POINT_LONGITUDE"].to_numpy(dtype="float64"),
         graph_lineage["REPRESENTATIVE_POINT_LATITUDE"].to_numpy(dtype="float64"),
@@ -362,7 +389,10 @@ def build_fluvial_connectivity(
             },
         ],
         attribution=[
-            {"text": "HydroRIVERS v1.0, HydroSHEDS", "license": "HydroSHEDS licence terms"}
+            {
+                "text": "HydroRIVERS v1.0, HydroSHEDS",
+                "license": "HydroSHEDS licence terms",
+            }
         ],
         source_completeness="partial",
     )

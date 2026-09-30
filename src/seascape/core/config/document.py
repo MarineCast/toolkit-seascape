@@ -39,7 +39,9 @@ def _lookup(mapping: Mapping[str, Any], dotted: str) -> Any:
     return value
 
 
-def _resolve_values(value: Any, root: Mapping[str, Any], stack: tuple[str, ...] = ()) -> Any:
+def _resolve_values(
+    value: Any, root: Mapping[str, Any], stack: tuple[str, ...] = ()
+) -> Any:
     if isinstance(value, Mapping):
         return {key: _resolve_values(item, root, stack) for key, item in value.items()}
     if isinstance(value, list):
@@ -55,17 +57,23 @@ def _resolve_values(value: Any, root: Mapping[str, Any], stack: tuple[str, ...] 
         if ref_match:
             reference = ref_match.group(1)
             if reference in stack:
-                raise ValueError(f"Configuration reference cycle: {' -> '.join((*stack, reference))}")
+                raise ValueError(
+                    f"Configuration reference cycle: {' -> '.join((*stack, reference))}"
+                )
             return _resolve_values(_lookup(root, reference), root, (*stack, reference))
     return value
 
 
 def _redact(value: Any, key: str = "") -> Any:
     if isinstance(value, Mapping):
-        return {item_key: _redact(item, str(item_key)) for item_key, item in value.items()}
+        return {
+            item_key: _redact(item, str(item_key)) for item_key, item in value.items()
+        }
     if isinstance(value, list):
         return [_redact(item, key) for item in value]
-    if any(token in key.lower() for token in ("secret", "token", "password", "api_key")):
+    if any(
+        token in key.lower() for token in ("secret", "token", "password", "api_key")
+    ):
         return "<redacted>"
     return value
 
@@ -92,7 +100,9 @@ class ConfigDocument:
         if allowed_keys is not None:
             unknown = sorted(set(resolved) - set(allowed_keys))
             if unknown:
-                raise ValueError(f"Unknown top-level configuration keys: {', '.join(unknown)}")
+                raise ValueError(
+                    f"Unknown top-level configuration keys: {', '.join(unknown)}"
+                )
         canonical = json.dumps(
             _redact(resolved), sort_keys=True, separators=(",", ":"), default=str
         )
@@ -105,7 +115,11 @@ class ConfigDocument:
 
     def resolve_path(self, value: str | Path) -> Path:
         candidate = Path(value).expanduser()
-        return candidate if candidate.is_absolute() else (project_root() / candidate).resolve()
+        return (
+            candidate
+            if candidate.is_absolute()
+            else (project_root() / candidate).resolve()
+        )
 
     def validate_as(self, model: type[ModelT]) -> ModelT:
         """Validate the resolved document through a strict Pydantic model."""

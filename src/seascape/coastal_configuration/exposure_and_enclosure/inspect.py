@@ -21,7 +21,9 @@ from seascape.utils.vector_inspect import h3_metric_feature
 from .build import OUTPUT_COLUMNS, load_exposure_enclosure_config
 
 LOGGER = logging.getLogger(__name__)
-MAP_EXPORT_SUBDIRECTORY = Path("domains/environmental_layer/seascape/coastal_configuration")
+MAP_EXPORT_SUBDIRECTORY = Path(
+    "domains/environmental_layer/seascape/coastal_configuration"
+)
 EXPOSURE_MAP_FILENAME = "exposure_and_enclosure.html"
 
 
@@ -73,7 +75,11 @@ def inspect_exposure_and_enclosure(
 
     config = load_exposure_enclosure_config(config_path)
     settings = load_presentation_settings(presentation_config_path)
-    source = Path(parquet_path).expanduser().resolve() if parquet_path else config.output_path
+    source = (
+        Path(parquet_path).expanduser().resolve()
+        if parquet_path
+        else config.output_path
+    )
     destination = (
         Path(output_path).expanduser().resolve()
         if output_path
@@ -84,7 +90,9 @@ def inspect_exposure_and_enclosure(
     frame = pl.read_parquet(source)
     missing = sorted(set(OUTPUT_COLUMNS).difference(frame.columns))
     if missing:
-        raise ValueError(f"Exposure-and-enclosure Parquet is missing columns: {missing}")
+        raise ValueError(
+            f"Exposure-and-enclosure Parquet is missing columns: {missing}"
+        )
     if frame.is_empty():
         raise ValueError(f"Exposure-and-enclosure Parquet is empty: {source}")
 
@@ -118,8 +126,8 @@ def inspect_exposure_and_enclosure(
     map_ = folium.Map(**map_options)
     map_name = map_.get_name()
     script = f"""
-    const exposureData = {json.dumps(feature_collection, separators=(',', ':'))};
-    const exposureScales = {json.dumps(scales, separators=(',', ':'))};
+    const exposureData = {json.dumps(feature_collection, separators=(",", ":"))};
+    const exposureScales = {json.dumps(scales, separators=(",", ":"))};
     function exposureHexRgb(hex) {{
       const value = hex.replace('#', '');
       return [parseInt(value.slice(0,2),16), parseInt(value.slice(2,4),16), parseInt(value.slice(4,6),16)];
@@ -186,7 +194,9 @@ def inspect_exposure_and_enclosure(
             "<style>.leaflet-control-layers-expanded{max-height:75vh;overflow-y:auto;}</style>"
         )
     )
-    bounds = [polygon.bounds for polygon in map(cell_to_polygon, frame["H3_INDEX"].to_list())]
+    bounds = [
+        polygon.bounds for polygon in map(cell_to_polygon, frame["H3_INDEX"].to_list())
+    ]
     map_.fit_bounds(
         [
             [min(item[1] for item in bounds), min(item[0] for item in bounds)],

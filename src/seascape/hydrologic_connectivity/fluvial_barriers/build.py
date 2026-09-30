@@ -29,11 +29,9 @@ from seascape.utils.acquisition import (
 )
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.config import resolve_project_path as _resolve
 from seascape.utils.surface import (
     load_surface_config as load_habitat_surface_config,
@@ -96,7 +94,9 @@ def attach_barriers_to_network(
     mouths_lookup = mouths[
         ["FLUVIAL_MOUTH_ID", "RIVER_BASIN_ID", "OUTLET_SUBBASIN_ID"]
     ].drop_duplicates("RIVER_BASIN_ID")
-    joined = joined.merge(mouths_lookup, on="RIVER_BASIN_ID", how="left", suffixes=("", "_MOUTH"))
+    joined = joined.merge(
+        mouths_lookup, on="RIVER_BASIN_ID", how="left", suffixes=("", "_MOUTH")
+    )
     joined["OUTLET_SUBBASIN_ID"] = joined["OUTLET_SUBBASIN_ID"]
     attached = joined["FLUVIAL_SEGMENT_ID"].notna() & joined["FLUVIAL_MOUTH_ID"].notna()
     joined["NETWORK_SNAP_STATUS"] = np.where(attached, "ATTACHED", "UNATTACHED")
@@ -172,19 +172,27 @@ def summarize_mouths(attached: Any, mouths: Any) -> pd.DataFrame:
                 int(records["PASSAGE_STATUS"].eq("UNKNOWN").sum())
             ),
             "NEAREST_MAPPED_BARRIER_FROM_MOUTH_KM": (
-                physical["ALONG_RIVER_DISTANCE_TO_MOUTH_KM"].min() if mapped_count else np.nan
+                physical["ALONG_RIVER_DISTANCE_TO_MOUTH_KM"].min()
+                if mapped_count
+                else np.nan
             ),
             "NEAREST_MAPPED_BLOCKING_BARRIER_FROM_MOUTH_KM": records.loc[
-                records["PASSAGE_STATUS"].isin({"BLOCKED", "PARTIAL", "POTENTIAL_BARRIER"}),
+                records["PASSAGE_STATUS"].isin(
+                    {"BLOCKED", "PARTIAL", "POTENTIAL_BARRIER"}
+                ),
                 "ALONG_RIVER_DISTANCE_TO_MOUTH_KM",
             ].min(),
             "PASSAGE_STATUS_COVERAGE_FRAC": (
                 float(len(assessed) / len(records)) if len(records) else np.nan
             ),
-            "BARRIER_SOURCE_DATASETS": "|".join(sorted(set(records["SOURCE_DATASET"].astype(str))))
+            "BARRIER_SOURCE_DATASETS": "|".join(
+                sorted(set(records["SOURCE_DATASET"].astype(str)))
+            )
             or None,
             "BARRIER_LATEST_ASSESSMENT_YEAR": (
-                pd.to_datetime(records["ASSESSMENT_DATE"], errors="coerce").dt.year.max()
+                pd.to_datetime(
+                    records["ASSESSMENT_DATE"], errors="coerce"
+                ).dt.year.max()
                 if len(records)
                 else np.nan
             ),
@@ -195,7 +203,9 @@ def summarize_mouths(attached: Any, mouths: Any) -> pd.DataFrame:
         rows.append(values)
     summary = pd.DataFrame(rows)
     if len(summary) != len(mouths) or not summary["FLUVIAL_MOUTH_ID"].is_unique:
-        raise ValueError("Mouth barrier summary must retain exactly one row per fluvial mouth.")
+        raise ValueError(
+            "Mouth barrier summary must retain exactly one row per fluvial mouth."
+        )
     return summary
 
 
@@ -229,12 +239,17 @@ def build_r8_features(
     graph = load_water_graph(
         8,
         config_path,
-        bbox=tuple(float(bbox_values[key]) for key in ("min_lon", "min_lat", "max_lon", "max_lat")),
+        bbox=tuple(
+            float(bbox_values[key])
+            for key in ("min_lon", "min_lat", "max_lon", "max_lat")
+        ),
     )
-    affected = mouth_summary.loc[mouth_summary["MAPPED_UPSTREAM_BARRIER_PRESENT"].eq(1.0)].merge(
-        mouths[["FLUVIAL_MOUTH_ID", "geometry"]], on="FLUVIAL_MOUTH_ID", how="left"
+    affected = mouth_summary.loc[
+        mouth_summary["MAPPED_UPSTREAM_BARRIER_PRESENT"].eq(1.0)
+    ].merge(mouths[["FLUVIAL_MOUTH_ID", "geometry"]], on="FLUVIAL_MOUTH_ID", how="left")
+    affected = gpd.GeoDataFrame(affected, geometry="geometry", crs=mouths.crs).to_crs(
+        "EPSG:4326"
     )
-    affected = gpd.GeoDataFrame(affected, geometry="geometry", crs=mouths.crs).to_crs("EPSG:4326")
     nearest_by_cell: dict[str, tuple[float, str]] = {}
     if len(affected):
         attachment = attach_points_to_graph(
@@ -242,14 +257,19 @@ def build_r8_features(
             affected.geometry.x.to_numpy(dtype="float64"),
             affected.geometry.y.to_numpy(dtype="float64"),
             water_geometry,
-            source_water_max_distance_m=float(processing["source_water_max_distance_m"]),
-            graph_connector_max_distance_m=float(processing["graph_connector_max_distance_m"]),
+            source_water_max_distance_m=float(
+                processing["source_water_max_distance_m"]
+            ),
+            graph_connector_max_distance_m=float(
+                processing["graph_connector_max_distance_m"]
+            ),
             candidate_limit=int(processing["graph_connector_candidate_limit"]),
         )
         sources = [
             (
                 str(row.GRAPH_H3_INDEX),
-                float(row.SOURCE_TO_WATER_DISTANCE_M) + float(row.GRAPH_CONNECTOR_DISTANCE_M),
+                float(row.SOURCE_TO_WATER_DISTANCE_M)
+                + float(row.GRAPH_CONNECTOR_DISTANCE_M),
                 int(row.SOURCE_POSITION),
             )
             for row in attachment.itertuples(index=False)
@@ -259,11 +279,20 @@ def build_r8_features(
             distances, owners = multi_source_shortest_paths(graph, sources)
             target_cells = crosswalk["H3_INDEX"].astype(str).tolist()
             positions, connectors, _reasons = target_graph_mapping(graph, target_cells)
-            for cell, position, connector in zip(target_cells, positions, connectors, strict=True):
-                if position < 0 or owners[position] < 0 or not np.isfinite(distances[position]):
+            for cell, position, connector in zip(
+                target_cells, positions, connectors, strict=True
+            ):
+                if (
+                    position < 0
+                    or owners[position] < 0
+                    or not np.isfinite(distances[position])
+                ):
                     continue
                 mouth_id = str(affected.iloc[int(owners[position])]["FLUVIAL_MOUTH_ID"])
-                nearest_by_cell[cell] = (float(distances[position] + connector), mouth_id)
+                nearest_by_cell[cell] = (
+                    float(distances[position] + connector),
+                    mouth_id,
+                )
     output = crosswalk.copy()
     output["H3_INDEX"] = output["H3_INDEX"].astype("string")
     output["H3_RESOLUTION"] = 8
@@ -276,16 +305,16 @@ def build_r8_features(
         }
     )
     output = output.merge(
-        mouth_summary.rename(columns={"FLUVIAL_MOUTH_ID": "NEAREST_FLUVIAL_MOUTH_ID"}).drop(
-            columns=["RIVER_BASIN_ID", "OUTLET_SUBBASIN_ID"]
-        ),
+        mouth_summary.rename(
+            columns={"FLUVIAL_MOUTH_ID": "NEAREST_FLUVIAL_MOUTH_ID"}
+        ).drop(columns=["RIVER_BASIN_ID", "OUTLET_SUBBASIN_ID"]),
         on="NEAREST_FLUVIAL_MOUTH_ID",
         how="left",
         validate="many_to_one",
     )
-    output["WATER_NETWORK_DISTANCE_TO_BARRIER_AFFECTED_MOUTH_M"] = output["H3_INDEX"].map(
-        lambda value: nearest_by_cell.get(str(value), (np.nan, None))[0]
-    )
+    output["WATER_NETWORK_DISTANCE_TO_BARRIER_AFFECTED_MOUTH_M"] = output[
+        "H3_INDEX"
+    ].map(lambda value: nearest_by_cell.get(str(value), (np.nan, None))[0])
     output["NEAREST_BARRIER_AFFECTED_FLUVIAL_MOUTH_ID"] = output["H3_INDEX"].map(
         lambda value: nearest_by_cell.get(str(value), (np.nan, None))[1]
     )
@@ -293,7 +322,9 @@ def build_r8_features(
         {
             "H3_INDEX": output["H3_INDEX"],
             "H3_RESOLUTION": 8,
-            f"{PREFIX}_CONFIDENCE": output["BARRIER_EVIDENCE_CONFIDENCE"].fillna(0).astype("int8"),
+            f"{PREFIX}_CONFIDENCE": output["BARRIER_EVIDENCE_CONFIDENCE"]
+            .fillna(0)
+            .astype("int8"),
             f"{PREFIX}_UNMAPPED_AREA": output["BARRIER_INVENTORY_STATE"].eq(
                 "NO_MAPPED_BARRIER_RECORDS"
             ),

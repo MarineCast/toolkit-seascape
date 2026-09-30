@@ -44,7 +44,7 @@ features; species habitat suitability belongs in a downstream application.
 
 ## Validation and completion
 
-Use isolated Python 3.11+: `python -m pip install -e '.[test]'`.
+Use isolated Python 3.14: `python -m pip install -e '.[test]'`.
 Start behavior validation with `python -m pytest -q tests/<relevant_test>.py`, then the required
 suite below. Documentation-only edits need reference checks and `git diff --check`, not Python tests.
 No local skills are needed yet; load only the task-specific documents routed above.
@@ -66,6 +66,50 @@ the committed notebook:
 ```bash
 jupyter nbconvert --to notebook --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --output seascape-toolkit-validation.ipynb --output-dir /tmp
 ```
+
+## Offline demo checks
+
+For planner/input-preflight changes, run `python -m pytest -q tests/test_preflight.py tests/test_workflow.py`
+then the required full suite. `seascape --workspace /path/to/workspace build --only
+seascape-geomorphometry --dry-run --check-inputs --json` inspects local prerequisites without writes,
+hashes, downloads or producers. A ready report establishes only its stated inspection level;
+missing/invalid/required-unverified checks fail. See [workflow limits](docs/WORKFLOWS.md).
+
+For demo/CLI behavior, run `python -m pytest -q tests/test_demo.py`, then the required suite above.
+For CLI diagnostics, also run `python -m pytest -q tests/test_cli_diagnostics.py tests/test_products.py`
+to verify failure codes, stderr/JSON separation, family help forwarding and unchanged API exceptions.
+`--debug` is a global option before the command; it never relaxes validation.
+`seascape --workspace /path/to/fresh-workspace demo` performs synthetic software acceptance; it
+never establishes a regional release. Keep artifacts in its owned `.seascape/demo` subtree.
+After building/installing a wheel, copy `scripts/check_demo.py` outside the checkout and run it
+with a clean runtime-only interpreter and `--workspace /path/to/fresh-workspace`. No test or
+notebook extras may supply dependencies in that environment. See [demo guide](docs/demo.md).
+
+For portable validation-notebook changes, run `python -m pytest -q tests/test_validation_notebook.py`
+and the required suite. Copy the notebook and `scripts/check_validation_notebook.py` outside the
+checkout; run the helper with an installed-wheel interpreter plus notebook extra, `--notebook`,
+`--output`, `--forbid-root` and optionally `--workspace`. Keep its input directory notebook-only
+and output separate. See [notebook guide](notebooks/README.md). Do not overwrite the committed
+notebook with execution results or register a global kernel for acceptance.
+
+For packaging/consumer acceptance changes, run `python -m pytest -q tests/test_consumer_acceptance.py`
+then the required suite. Install `.[build]` in the build environment and use `python -m build`
+to build the wheel from an sdist. Inspect both with `scripts/check_distribution.py`, then run
+`scripts/check_consumer_install.py --wheel /transferred/wheel.whl --source /explicit/checkout
+--forbid-root /checkout/group --output /fresh/outside/directory`. This creates an isolated consumer
+and runs runtime checks before declared test/notebook extras. Output is refused if it already exists.
+Read [development guide](docs/DEVELOPMENT.md) for the full commands and process-guard limitations.
+Configured hosted jobs are not passed until their real run results exist.
+
+## Documentation checks
+
+For documentation/example changes, run `python scripts/check_docs.py` and
+`python -m pytest -q tests/test_documentation.py`; executable-check changes also require the full
+suite and review-hardening checks. After building an sdist, use `scripts/check_quickstart.py --sdist
+/transferred/source.tar.gz --source /explicit/checkout --forbid-root /checkout/group --output
+/fresh/outside/directory` to execute the marked source-install/demo/plan commands. Installation
+may download declared dependencies; runtime uses the existing Python consumer guard and cannot
+acquire sources. See [development](docs/DEVELOPMENT.md#documentation-and-first-result-acceptance).
 
 ## Codebase navigation
 
@@ -108,9 +152,14 @@ Global skill defaults do not override repository scope or code-only extraction. 
 ## Review-hardening checks
 
 Install `.[test,quality]`, then run `ruff check src tests scripts`, `python -m mypy`, and
-`ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py`.
+`ruff format --check src tests scripts`. Use `ruff format src tests scripts` for formatting;
+keep lint autofixes, import reordering and semantic edits in separate changes. The format gate
+covers all Python in those paths with the existing Ruff defaults and Python 3.14 target;
+there are no additional generated-code exclusions. Mypy checks the 12 interface modules listed
+in `docs/environments/README.md`; skipped external imports remain documented there.
 Run installed-wheel imports using `scripts/check_installed_package.py` from outside the checkout.
-Capture the runtime/test closure with `scripts/environment_snapshot.py --output /tmp/seascape-env`
+Capture the runtime/test/quality closure with `scripts/environment_snapshot.py --extra test
+--extra quality --output /tmp/seascape-env`
 and audit it with `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-env.txt`.
 CI also runs Gitleaks over history and the working tree. Scope and platform limits are documented in
 `docs/environments/README.md`; API/storage changes are documented in `docs/API.md`.

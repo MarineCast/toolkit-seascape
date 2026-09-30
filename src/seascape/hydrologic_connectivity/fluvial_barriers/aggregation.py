@@ -39,7 +39,9 @@ def aggregate_r8_to_r6(
         joined["WATER_NETWORK_DISTANCE_TO_FLUVIAL_MOUTH_M"], errors="coerce"
     ).fillna(np.inf)
     selected = (
-        joined.sort_values(["PARENT_H3_INDEX", "_rank", "_mouth_rank", "CHILD_H3_INDEX"])
+        joined.sort_values(
+            ["PARENT_H3_INDEX", "_rank", "_mouth_rank", "CHILD_H3_INDEX"]
+        )
         .drop_duplicates("PARENT_H3_INDEX")
         .copy()
     )
@@ -69,10 +71,14 @@ def aggregate_r8_to_r6(
                 f"{PREFIX}_UNMAPPED_AREA": bool(rows[f"{PREFIX}_UNMAPPED_AREA"].all()),
                 f"{PREFIX}_SOURCE_DATASETS": "|".join(sources) or None,
                 f"{PREFIX}_EVIDENCE_BASIS": "authoritative mapped inventory; HydroRIVERS topology fallback",
-                f"{PREFIX}_LATEST_SURVEY_YEAR": years.max() if years.notna().any() else np.nan,
+                f"{PREFIX}_LATEST_SURVEY_YEAR": years.max()
+                if years.notna().any()
+                else np.nan,
             }
         )
-    r6_confidence = pd.DataFrame(confidence_rows).sort_values("H3_INDEX").reset_index(drop=True)
+    r6_confidence = (
+        pd.DataFrame(confidence_rows).sort_values("H3_INDEX").reset_index(drop=True)
+    )
     validate_feature_table(r6, 6)
     if set(r6["H3_INDEX"].astype(str)) != set(r6_confidence["H3_INDEX"].astype(str)):
         raise ValueError("Fluvial-barrier r6 feature/confidence support differs.")

@@ -6,8 +6,14 @@ import pytest
 from seascape.utils import habitat_acquisition as module
 
 
-def test_cache_requires_matching_query_bytes_and_preserves_retrieval(tmp_path, monkeypatch):
-    source = {"kind": "arcgis", "layer_url": "https://example.test/0", "raw_filename": "data.json"}
+def test_cache_requires_matching_query_bytes_and_preserves_retrieval(
+    tmp_path, monkeypatch
+):
+    source = {
+        "kind": "arcgis",
+        "layer_url": "https://example.test/0",
+        "raw_filename": "data.json",
+    }
     cfg = module.HabitatDownloadConfig(
         "fixture", {"west": 1.0}, tmp_path, 1.0, 10, False, {"a": source}
     )
@@ -22,7 +28,10 @@ def test_cache_requires_matching_query_bytes_and_preserves_retrieval(tmp_path, m
     original = json.loads(manifest.read_text())
     module.download_habitat_sources("fixture", Path("unused"))
     reused = json.loads(manifest.read_text())
-    assert reused["sources"][0]["retrieved_at_utc"] == original["sources"][0]["retrieved_at_utc"]
+    assert (
+        reused["sources"][0]["retrieved_at_utc"]
+        == original["sources"][0]["retrieved_at_utc"]
+    )
     assert reused["sources"][0]["status"] == "existing"
     source["layer_url"] = "https://example.test/1"
     before = manifest.read_bytes()
@@ -65,9 +74,9 @@ def test_shoreline_collector_installs_validated_acquired_files(tmp_path, monkeyp
     cache = tmp_path / "cache"
     cache.mkdir()
     original = cache / "shore.geojson"
-    gpd.GeoDataFrame({"x": [1]}, geometry=[LineString([(0, 0), (1, 1)])], crs="EPSG:4326").to_file(
-        original, driver="GeoJSON"
-    )
+    gpd.GeoDataFrame(
+        {"x": [1]}, geometry=[LineString([(0, 0), (1, 1)])], crs="EPSG:4326"
+    ).to_file(original, driver="GeoJSON")
     target = tmp_path / "installed/shore.geojson"
     cfg = module.HabitatDownloadConfig(
         "shoreline_characterization",

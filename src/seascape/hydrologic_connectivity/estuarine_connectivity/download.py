@@ -93,12 +93,16 @@ def load_estuarine_download_config(
     raw = load_data_config(path, domains="SEASCAPE_LAYER")
     section = _mapping(raw.get("estuarine_connectivity"), "estuarine_connectivity")
     download = _mapping(section.get("download"), "estuarine_connectivity.download")
-    sources = _mapping(download.get("sources"), "estuarine_connectivity.download.sources")
+    sources = _mapping(
+        download.get("sources"), "estuarine_connectivity.download.sources"
+    )
     bc = _mapping(sources.get("bc_pecp"), "sources.bc_pecp")
     pmep = _mapping(sources.get("us_pmep"), "sources.us_pmep")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     raw_dir = _resolve(download["raw_dir"], base_dir)
     context_buffer_km = float(download.get("context_buffer_km", 75.0))
@@ -154,7 +158,9 @@ def _databasin_authorization(
         payload = _response_json(response, "Data Basin service authorization")
         objects = payload.get("objects")
         if not isinstance(objects, list) or len(objects) != 1:
-            raise RuntimeError("Data Basin returned invalid service-authorization metadata.")
+            raise RuntimeError(
+                "Data Basin returned invalid service-authorization metadata."
+            )
         authorization = objects[0]
         if not isinstance(authorization, dict):
             raise RuntimeError("Data Basin service authorization was not an object.")
@@ -163,10 +169,14 @@ def _databasin_authorization(
             required = {"token", "expires", "host", "version"}
             missing = sorted(required.difference(authorization))
             if missing:
-                raise RuntimeError(f"Data Basin authorization is missing fields: {missing}")
+                raise RuntimeError(
+                    f"Data Basin authorization is missing fields: {missing}"
+                )
             return authorization
         if status == "error":
-            raise RuntimeError("Data Basin could not start the B.C. estuary map service.")
+            raise RuntimeError(
+                "Data Basin could not start the B.C. estuary map service."
+            )
         if status not in {"pending", "starting", "stopping"}:
             raise RuntimeError(f"Unexpected Data Basin service status: {status!r}")
         if time.monotonic() >= deadline:
@@ -175,7 +185,9 @@ def _databasin_authorization(
 
 
 def _databasin_layer_url(dataset_id: str, authorization: Mapping[str, Any]) -> str:
-    expires = datetime.fromisoformat(str(authorization["expires"]).replace("Z", "+00:00"))
+    expires = datetime.fromisoformat(
+        str(authorization["expires"]).replace("Z", "+00:00")
+    )
     expires_epoch = int(expires.timestamp())
     return (
         f"https://databasin.org/ags-proxy/{authorization['token']}/{expires_epoch}/"
@@ -286,7 +298,9 @@ def _download_pmep_estuaries(
         if isinstance(feature, Mapping)
     }
     if geometry_types != {"Point"}:
-        raise RuntimeError(f"PMEP estuary query returned unexpected geometry: {geometry_types}")
+        raise RuntimeError(
+            f"PMEP estuary query returned unexpected geometry: {geometry_types}"
+        )
     _save_geojson(document, config.pmep_raw_path)
     LOGGER.info("Saved PMEP U.S. estuaries (%d points)", len(features))
     return config.pmep_raw_path, len(features)
@@ -304,7 +318,9 @@ def download_estuarine_sources(
     overwrite = config.overwrite if overwrite is None else bool(overwrite)
     config.raw_dir.mkdir(parents=True, exist_ok=True)
     http = session or requests.Session()
-    http.headers.setdefault("User-Agent", "Seascape Toolkit/0.1 estuary-distance builder")
+    http.headers.setdefault(
+        "User-Agent", "Seascape Toolkit/0.1 estuary-distance builder"
+    )
 
     bc_path, bc_count = _download_bc_estuaries(http, config, overwrite=overwrite)
     pmep_path, pmep_count = _download_pmep_estuaries(http, config, overwrite=overwrite)

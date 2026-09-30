@@ -3,11 +3,9 @@
 from .artifacts import atomic_write_parquet as atomic_parquet
 from .habitat_configuration import (
     load_cell_geometry,
-)
-from .habitat_configuration import load_habitat_surface_config as load_surface_config
-from .habitat_configuration import (
     model_bbox_tuple,
 )
+from .habitat_configuration import load_habitat_surface_config as load_surface_config
 
 __all__ = [
     "atomic_parquet",

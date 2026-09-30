@@ -39,7 +39,9 @@ def _family_key(product_id: str, product: Mapping[str, Any]) -> str:
     for family, _label in FAMILY_ORDER:
         if category == family or category.startswith(f"{family}_"):
             return family
-    raise ValueError(f"Seascape product {product_id!r} has an undocumented category {category!r}.")
+    raise ValueError(
+        f"Seascape product {product_id!r} has an undocumented category {category!r}."
+    )
 
 
 def _render_collection_paths(collection_paths: Any) -> str:
@@ -49,7 +51,9 @@ def _render_collection_paths(collection_paths: Any) -> str:
         return "—"
     return "<br>".join(
         f"R{int(resolution)}: `{_markdown_cell(path)}`"
-        for resolution, path in sorted(collection_paths.items(), key=lambda item: int(item[0]))
+        for resolution, path in sorted(
+            collection_paths.items(), key=lambda item: int(item[0])
+        )
     )
 
 
@@ -84,10 +88,17 @@ def _short_description(
     topology = str(feature.get("topology", ""))
     if topology and topology != "within_cell_or_nonspatial":
         description += f"; topology: {topology.replace('_', ' ')}"
+    definition = feature.get("scientific_definition")
+    if definition:
+        description += f"; meaning: {definition}"
+        description += f"; denominator: {feature.get('denominator', 'not stated')}"
+        description += f"; method: {feature.get('method_version', 'not stated')}"
     return _markdown_cell(description + ".")
 
 
-def _seascape_products(catalog: Mapping[str, Any]) -> list[tuple[str, Mapping[str, Any]]]:
+def _seascape_products(
+    catalog: Mapping[str, Any],
+) -> list[tuple[str, Mapping[str, Any]]]:
     products = catalog.get("products")
     if not isinstance(products, Mapping):
         raise ValueError("Environment feature catalog has no products mapping.")
@@ -98,7 +109,9 @@ def _seascape_products(catalog: Mapping[str, Any]) -> list[tuple[str, Mapping[st
     ]
     if not selected:
         raise ValueError("Environment feature catalog contains no seascape products.")
-    return sorted(selected, key=lambda item: (str(item[1].get("metric_subfamily")), item[0]))
+    return sorted(
+        selected, key=lambda item: (str(item[1].get("metric_subfamily")), item[0])
+    )
 
 
 def render_product_index(catalog: Mapping[str, Any]) -> str:
@@ -114,9 +127,15 @@ def render_product_index(catalog: Mapping[str, Any]) -> str:
     products = _seascape_products(catalog)
     for product_id, product in products:
         collection = product.get("collection", {})
-        resolutions = collection.get("resolutions", []) if isinstance(collection, Mapping) else []
-        rendered_resolutions = ", ".join(f"R{int(value)}" for value in resolutions) or "native"
-        feature_count = int(product.get("feature_count", len(product.get("features", {}))))
+        resolutions = (
+            collection.get("resolutions", []) if isinstance(collection, Mapping) else []
+        )
+        rendered_resolutions = (
+            ", ".join(f"R{int(value)}" for value in resolutions) or "native"
+        )
+        feature_count = int(
+            product.get("feature_count", len(product.get("features", {})))
+        )
         lines.append(
             "| `{product}` | `{family}` | {resolutions} | {features} | Materialized |".format(
                 product=product_id,
@@ -127,7 +146,9 @@ def render_product_index(catalog: Mapping[str, Any]) -> str:
         )
 
     contract = catalog.get("catalog_contract", {})
-    role_descriptions = contract.get("roles", {}) if isinstance(contract, Mapping) else {}
+    role_descriptions = (
+        contract.get("roles", {}) if isinstance(contract, Mapping) else {}
+    )
     if not isinstance(role_descriptions, Mapping):
         role_descriptions = {}
     grouped: dict[str, list[tuple[str, Mapping[str, Any]]]] = {
@@ -162,7 +183,9 @@ def render_product_index(catalog: Mapping[str, Any]) -> str:
         for product_id, product in sorted(family_products):
             features = product.get("features", {})
             if not isinstance(features, Mapping):
-                raise ValueError(f"Seascape product {product_id!r} has no features mapping.")
+                raise ValueError(
+                    f"Seascape product {product_id!r} has no features mapping."
+                )
             subfamily = (
                 f"{_markdown_cell(product.get('common_name', product_id))} "
                 f"(`{_markdown_cell(product_id)}`)"
@@ -176,7 +199,9 @@ def render_product_index(catalog: Mapping[str, Any]) -> str:
                 description = _short_description(feature, role_descriptions)
                 paths = _render_collection_paths(feature.get("collection_paths"))
                 column = _markdown_cell(feature.get("column", catalog_column))
-                lines.append(f"| {subfamily} | {variable} | {description} | {paths} | `{column}` |")
+                lines.append(
+                    f"| {subfamily} | {variable} | {description} | {paths} | `{column}` |"
+                )
     lines.append(END_MARKER)
     return "\n".join(lines)
 
@@ -185,7 +210,9 @@ def update_readme(document: str, generated: str) -> str:
     """Replace exactly one generated-index region in a README document."""
 
     if document.count(START_MARKER) != 1 or document.count(END_MARKER) != 1:
-        raise ValueError("Seascape README must contain exactly one generated index marker pair.")
+        raise ValueError(
+            "Seascape README must contain exactly one generated index marker pair."
+        )
     before, remainder = document.split(START_MARKER, 1)
     _, after = remainder.split(END_MARKER, 1)
     return before + generated + after

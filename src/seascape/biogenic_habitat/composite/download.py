@@ -32,7 +32,9 @@ def download_benthic_habitat_sources(
     for paths, manifest in (
         download_substrate_sources(config_path, overwrite=overwrite),
         download_seagrass_sources(config_path, overwrite=overwrite),
-        download_kelp_sources(config_path, include_large=include_large, overwrite=overwrite),
+        download_kelp_sources(
+            config_path, include_large=include_large, overwrite=overwrite
+        ),
         download_reef_sources(config_path, overwrite=overwrite),
     ):
         outputs.extend(paths)
@@ -44,7 +46,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
     large_group = parser.add_mutually_exclusive_group()
-    large_group.add_argument("--include-large", dest="include_large", action="store_true")
+    large_group.add_argument(
+        "--include-large", dest="include_large", action="store_true"
+    )
     large_group.add_argument("--skip-large", dest="include_large", action="store_false")
     parser.set_defaults(include_large=True)
     parser.add_argument("--overwrite", action="store_true", default=None)

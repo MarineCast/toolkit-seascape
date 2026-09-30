@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ['3.11', '3.14']
+        python: ['3.14']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -16,6 +16,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python -m pip install '.[test]'
       - run: python -m pip check
+      - run: python scripts/check_docs.py
       - run: python -m pytest --collect-only -q
       - run: python -m pytest -q
       - run: seascape --help
@@ -27,55 +28,82 @@ jobs:
           test -f "$workspace/config/data/presentation_settings.yaml"
           seascape --workspace "$workspace" build --dry-run
       - run: seascape build --dry-run
-      - run: python -m pip wheel . --no-deps --wheel-dir dist
-      - run: |
-          repo="$PWD"
-          wheel_env="$(mktemp -d)/wheel-env"
-          python -m venv --system-site-packages "$wheel_env"
-          "$wheel_env/bin/python" -m pip install --force-reinstall --no-deps dist/*.whl
-          outside="$(mktemp -d)"
-          workspace="$(mktemp -d)/seascape-workspace"
-          cp tests/test_products.py tests/test_review_regressions.py "$outside/"
-          cd "$outside"
-          "$wheel_env/bin/python" "$repo/scripts/check_installed_package.py"
-          "$wheel_env/bin/python" -m pytest -q --noconftest test_products.py test_review_regressions.py
-          "$wheel_env/bin/seascape" --help
-          "$wheel_env/bin/seascape" --workspace "$workspace" init
-          test -f "$workspace/config/data/project.yaml"
-          test -f "$workspace/config/data/environment_seascape.yaml"
-          test -f "$workspace/config/data/presentation_settings.yaml"
-          "$wheel_env/bin/seascape" --workspace "$workspace" build --dry-run
-          "$wheel_env/bin/python" - <<'PY'
-          from importlib.resources import files
-
-          from seascape.core.data import catalog  # noqa: F401
-          from seascape.core.data.registry import DATASETS
-
-          root = files("seascape")
-          required = (
-              "products.py",
-              "core/data/catalog.py",
-              "core/data/contracts.py",
-              "core/data/registry.py",
-              "core/data/validation.py",
-              "resources/config/common.yaml",
-              "resources/config/data/project.yaml",
-              "resources/config/data/environment_seascape.yaml",
-              "resources/config/data/presentation_settings.yaml",
-          )
-          assert len(tuple(DATASETS)) == 75
-          assert all(root.joinpath(*path.split("/")).is_file() for path in required)
-          assert not root.joinpath("resources/config/feature_catalog.yaml").is_file()
-          assert not root.joinpath("resources/config/model_feature_policy.yaml").is_file()
-          PY
       - run: git diff --check
+  consumer-install:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, python: '3.14', setup_arch: x64, system: Linux, machine: x86_64}
+          - {os: macos-14, python: '3.14', setup_arch: arm64, system: Darwin, machine: arm64}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.setup_arch }}
+      - name: Build isolated sdist and wheel from that sdist
+        run: |
+          python -m pip install '.[build]'
+          python -m build --outdir "$RUNNER_TEMP/seascape-distributions"
+          python scripts/check_distribution.py \
+            --sdist "$RUNNER_TEMP/seascape-distributions"/*.tar.gz \
+            --wheel "$RUNNER_TEMP/seascape-distributions"/*.whl \
+            --output "$RUNNER_TEMP/distribution-report.json"
+      - name: Runtime-first clean consumer and copied notebook
+        run: |
+          python scripts/check_consumer_install.py \
+            --wheel "$RUNNER_TEMP/seascape-distributions"/*.whl \
+            --source "$GITHUB_WORKSPACE" \
+            --forbid-root "$(dirname "$GITHUB_WORKSPACE")" \
+            --output "$RUNNER_TEMP/seascape-consumer"
+      - name: Execute documented source-install quickstart
+        run: |
+          python scripts/check_quickstart.py \
+            --sdist "$RUNNER_TEMP/seascape-distributions"/*.tar.gz \
+            --source "$GITHUB_WORKSPACE" \
+            --forbid-root "$(dirname "$GITHUB_WORKSPACE")" \
+            --output "$RUNNER_TEMP/seascape-quickstart"
+      - name: Verify actual interpreter and architecture
+        run: |
+          python - "$RUNNER_TEMP/seascape-consumer/runtime-environment.json" '${{ matrix.system }}' '${{ matrix.machine }}' '${{ matrix.python }}' <<'PY'
+          import json, sys
+          from pathlib import Path
+          observed = json.loads(Path(sys.argv[1]).read_text())
+          print(json.dumps(observed, indent=2))
+          assert observed["system"] == sys.argv[2]
+          assert observed["machine"] == sys.argv[3]
+          assert observed["python"].split()[0].startswith(sys.argv[4] + ".")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: consumer-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.setup_arch }}
+          include-hidden-files: true
+          path: |
+            ${{ runner.temp }}/distribution-report.json
+            ${{ runner.temp }}/seascape-distributions/*
+            ${{ runner.temp }}/seascape-consumer/report.json
+            ${{ runner.temp }}/seascape-consumer/*environment.json
+            ${{ runner.temp }}/seascape-consumer/logs/
+            ${{ runner.temp }}/seascape-consumer/executed-notebook.*
+            ${{ runner.temp }}/seascape-consumer/runtime-demo/.seascape/demo/
+            ${{ runner.temp }}/seascape-consumer/outbound-demo/.seascape/demo/report.json
+            ${{ runner.temp }}/seascape-quickstart/report.json
+            ${{ runner.temp }}/seascape-quickstart/commands.sh
+            ${{ runner.temp }}/seascape-quickstart/commands.log
+            ${{ runner.temp }}/seascape-quickstart/workspace.txt
+            ${{ runner.temp }}/seascape-quickstart/tmp/**/.seascape/demo/
+      - run: git diff --exit-code
+
   notebook-validation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.14'
       - run: python -m pip install '.[notebook]'
       - run: python -m pip check
       - run: |
@@ -88,23 +116,50 @@ jobs:
       - run: git diff --exit-code
 
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, python: '3.14', arch: x64, constraints: ''}
+          - {os: macos-14, python: '3.14', arch: arm64, constraints: docs/environments/quality-python314-macos-arm64.txt}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - run: python -m pip install '.[test,quality]'
+          python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.arch }}
+      - name: Solve unconstrained or reproduce the compatible baseline
+        env:
+          CONSTRAINTS: ${{ matrix.constraints }}
+        run: |
+          if [ -n "$CONSTRAINTS" ]; then
+            python -m pip install -c "$CONSTRAINTS" '.[test,quality]'
+          else
+            python -m pip install '.[test,quality]'
+          fi
       - run: python -m pip check
       - run: ruff check src tests scripts
-      - run: ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py
+      - run: ruff format --check src tests scripts
       - run: python -m mypy
-      - run: python scripts/environment_snapshot.py --output /tmp/seascape-environment
+      - run: python scripts/environment_snapshot.py --extra test --extra quality --output /tmp/seascape-environment
+      - name: Check baseline dependency and native versions
+        if: matrix.constraints != ''
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected = json.loads(Path("docs/environments/quality-python314-macos-arm64.json").read_text())
+          observed = json.loads(Path("/tmp/seascape-environment.json").read_text())
+          for key in ("dependencies", "extras", "machine", "python_implementation", "gdal", "proj", "geos"):
+              assert expected[key] == observed[key], f"Baseline mismatch: {key}"
+          assert expected["python"].split(".")[:2] == observed["python"].split(".")[:2]
+          PY
       - run: pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-environment.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: scientific-environment
+          name: scientific-environment-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.arch }}
           path: /tmp/seascape-environment.*
 
   secrets:

@@ -1,5 +1,8 @@
 # OrcaCast seascape extraction — 2026-09-15
 
+> Dated historical evidence; follow the [current guide](README.md) and [progress](roadmap/PROGRESS.md)
+> for present behavior and executed checks. Past test/release/integration claims are not new verification.
+
 > This is the dated extraction record. Subsequent clean-checkout repairs, static feature-eligibility
 > ownership, immutable product resolution and validation are recorded in
 > [hardening-review.md](hardening-review.md).

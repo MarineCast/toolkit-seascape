@@ -26,30 +26,46 @@ from seascape.core.config.paths import project_root
 DEFAULT_CATALOG = Path("config/feature_catalog.yaml")
 
 
-def _catalog_tables(catalog: Mapping[str, Any]) -> list[tuple[str, str, Path, list[str]]]:
+def _catalog_tables(
+    catalog: Mapping[str, Any],
+) -> list[tuple[str, str, Path, list[str]]]:
     products = catalog.get("products")
     if not isinstance(products, Mapping):
         raise ValueError("Environment feature catalog has no products mapping.")
 
     tables: list[tuple[str, str, Path, list[str]]] = []
     for product_id, product in products.items():
-        if not isinstance(product, Mapping) or product.get("metric_family") != "seascape":
+        if (
+            not isinstance(product, Mapping)
+            or product.get("metric_family") != "seascape"
+        ):
             continue
         collection = product.get("collection")
         if not isinstance(collection, Mapping):
-            raise ValueError(f"Seascape product {product_id!r} has no collection mapping.")
+            raise ValueError(
+                f"Seascape product {product_id!r} has no collection mapping."
+            )
         paths = collection.get("paths")
         if not isinstance(paths, Mapping):
-            raise ValueError(f"Seascape product {product_id!r} has no collection paths.")
+            raise ValueError(
+                f"Seascape product {product_id!r} has no collection paths."
+            )
         index_columns = [str(value) for value in collection.get("index_columns", [])]
         for resolution, relative_path in paths.items():
             tables.append(
-                (str(product_id), f"R{int(resolution)}", Path(str(relative_path)), index_columns)
+                (
+                    str(product_id),
+                    f"R{int(resolution)}",
+                    Path(str(relative_path)),
+                    index_columns,
+                )
             )
 
     supporting = catalog.get("supporting_products", {})
     if not isinstance(supporting, Mapping):
-        raise ValueError("Environment feature catalog supporting_products must be a mapping.")
+        raise ValueError(
+            "Environment feature catalog supporting_products must be a mapping."
+        )
     for product_id, product in supporting.items():
         if not isinstance(product, Mapping):
             continue
@@ -84,16 +100,20 @@ def _h3_hash(frame: pd.DataFrame) -> str | None:
 def _sorted(frame: pd.DataFrame, index_columns: list[str]) -> pd.DataFrame:
     usable = [column for column in index_columns if column in frame.columns]
     if not usable:
-        usable = sorted(column for column in frame.columns if column.endswith("H3_INDEX"))
-    if usable:
-        return frame.sort_values(usable, kind="mergesort", na_position="last").reset_index(
-            drop=True
+        usable = sorted(
+            column for column in frame.columns if column.endswith("H3_INDEX")
         )
+    if usable:
+        return frame.sort_values(
+            usable, kind="mergesort", na_position="last"
+        ).reset_index(drop=True)
     return frame.reset_index(drop=True)
 
 
 def _numeric_summary(series: pd.Series) -> dict[str, float | int | None]:
-    finite = series[np.isfinite(series.to_numpy(dtype=float, na_value=np.nan))].astype(float)
+    finite = series[np.isfinite(series.to_numpy(dtype=float, na_value=np.nan))].astype(
+        float
+    )
     if finite.empty:
         return {"count": 0, "min": None, "median": None, "max": None, "mean": None}
     return {
@@ -128,9 +148,15 @@ def compare_table(
 
     failures: list[str] = []
     if not canonical_path.exists():
-        return {"passed": False, "failures": [f"missing canonical table: {canonical_path}"]}
+        return {
+            "passed": False,
+            "failures": [f"missing canonical table: {canonical_path}"],
+        }
     if not candidate_path.exists():
-        return {"passed": False, "failures": [f"missing candidate table: {candidate_path}"]}
+        return {
+            "passed": False,
+            "failures": [f"missing candidate table: {candidate_path}"],
+        }
 
     canonical_schema = pq.read_schema(canonical_path)
     candidate_schema = pq.read_schema(candidate_path)
@@ -141,7 +167,9 @@ def compare_table(
     canonical = _sorted(pd.read_parquet(canonical_path), index_columns)
     candidate = _sorted(pd.read_parquet(candidate_path), index_columns)
     if canonical.shape != candidate.shape:
-        failures.append(f"shape differs: canonical={canonical.shape}, candidate={candidate.shape}")
+        failures.append(
+            f"shape differs: canonical={canonical.shape}, candidate={candidate.shape}"
+        )
     if canonical.columns.tolist() != candidate.columns.tolist():
         failures.append("column order differs")
 
@@ -150,8 +178,12 @@ def compare_table(
     if canonical_hash != candidate_hash:
         failures.append("H3 cell hash differs")
 
-    canonical_nulls = {column: int(value) for column, value in canonical.isna().sum().items()}
-    candidate_nulls = {column: int(value) for column, value in candidate.isna().sum().items()}
+    canonical_nulls = {
+        column: int(value) for column, value in canonical.isna().sum().items()
+    }
+    candidate_nulls = {
+        column: int(value) for column, value in candidate.isna().sum().items()
+    }
     if canonical_nulls != candidate_nulls:
         failures.append("null counts differ")
 
@@ -159,12 +191,16 @@ def compare_table(
     candidate_infinities: dict[str, int] = {}
     numerical_summaries: dict[str, dict[str, Any]] = {}
     categorical_counts: dict[str, dict[str, Any]] = {}
-    common_columns = [column for column in canonical.columns if column in candidate.columns]
+    common_columns = [
+        column for column in canonical.columns if column in candidate.columns
+    ]
     same_shape = canonical.shape[0] == candidate.shape[0]
     for column in common_columns:
         left = canonical[column]
         right = candidate[column]
-        if pd.api.types.is_numeric_dtype(left.dtype) and pd.api.types.is_numeric_dtype(right.dtype):
+        if pd.api.types.is_numeric_dtype(left.dtype) and pd.api.types.is_numeric_dtype(
+            right.dtype
+        ):
             left_values = left.to_numpy(dtype=float, na_value=np.nan)
             right_values = right.to_numpy(dtype=float, na_value=np.nan)
             canonical_infinities[column] = int(np.isinf(left_values).sum())
@@ -187,11 +223,19 @@ def compare_table(
             if not left_values.equals(right_values):
                 failures.append(f"categorical values differ: {column}")
             if max(left_values.nunique(), right_values.nunique()) <= 100:
-                left_counts = left_values.value_counts(dropna=False).sort_index().to_dict()
-                right_counts = right_values.value_counts(dropna=False).sort_index().to_dict()
+                left_counts = (
+                    left_values.value_counts(dropna=False).sort_index().to_dict()
+                )
+                right_counts = (
+                    right_values.value_counts(dropna=False).sort_index().to_dict()
+                )
                 categorical_counts[column] = {
-                    "canonical": {str(key): int(value) for key, value in left_counts.items()},
-                    "candidate": {str(key): int(value) for key, value in right_counts.items()},
+                    "canonical": {
+                        str(key): int(value) for key, value in left_counts.items()
+                    },
+                    "candidate": {
+                        str(key): int(value) for key, value in right_counts.items()
+                    },
                 }
                 if left_counts != right_counts:
                     failures.append(f"categorical counts differ: {column}")
@@ -233,7 +277,9 @@ def main() -> int:
     catalog = yaml.safe_load(catalog_path.read_text(encoding="utf-8"))
 
     table_reports: dict[str, Any] = {}
-    for product_id, resolution, relative_path, index_columns in _catalog_tables(catalog):
+    for product_id, resolution, relative_path, index_columns in _catalog_tables(
+        catalog
+    ):
         key = f"{product_id}:{resolution}"
         table_reports[key] = compare_table(
             canonical_root / relative_path,

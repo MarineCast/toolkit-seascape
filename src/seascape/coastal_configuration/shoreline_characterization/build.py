@@ -16,9 +16,9 @@ import pandas as pd
 from shapely import points
 from shapely.strtree import STRtree
 
+from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.publication import (
     TransactionalSeascapePublisher,
@@ -99,18 +99,26 @@ def load_shoreline_config(
         section.get("processing"),
         "shoreline_characterization.processing",
     )
-    sources = require_mapping(section.get("sources"), "shoreline_characterization.sources")
+    from .download import load_source_config
+
+    sources = load_source_config(config_path)["sources"]
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     resolutions = tuple(
         dict.fromkeys(int(value) for value in processing.get("resolutions", [6, 8]))
     )
     if set(resolutions) != {6, 8}:
-        raise ValueError("Shoreline characterization requires exactly H3 resolutions 6 and 8.")
+        raise ValueError(
+            "Shoreline characterization requires exactly H3 resolutions 6 and 8."
+        )
     output_dir = resolve_project_path(processing["output_dir"], base_dir)
-    inventory_filename = str(processing.get("inventory_filename", "SHORELINE_SEGMENTS.parquet"))
+    inventory_filename = str(
+        processing.get("inventory_filename", "SHORELINE_SEGMENTS.parquet")
+    )
     return ShorelineConfig(
         resolutions=resolutions,
         projected_crs=str(processing.get("projected_crs", "EPSG:32610")),
@@ -161,7 +169,9 @@ def _segment_record(
         "RAW_CLASSIFICATION": raw_classification,
         "IS_PHYSICALLY_CLASSIFIED": bool(classified),
         "MAPPING_STATUS": "classified" if classified else "unmapped_or_unsupported",
-        **{f"IS_{token}_SHORE": bool(flags.get(token, False)) for token in CLASS_TOKENS},
+        **{
+            f"IS_{token}_SHORE": bool(flags.get(token, False)) for token in CLASS_TOKENS
+        },
         "geometry": geometry,
     }
 
@@ -192,7 +202,9 @@ def _normalize_wa(
             "CLIFF": "cliff" in labels or "plunging rocky shoreline" in labels,
             "BLUFF": "bluff" in labels,
             "DELTAIC": _text(item.DeltaPres) in {"1", "1.0"} or "delta" in labels,
-            "ESTUARINE": any(value in labels for value in ("estuary", "lagoon", "marsh")),
+            "ESTUARINE": any(
+                value in labels for value in ("estuary", "lagoon", "marsh")
+            ),
         }
         rows.append(
             _segment_record(
@@ -253,7 +265,9 @@ def _normalize_bc(
             "CLIFF": "cliff" in labels,
             "BLUFF": "bluff" in labels,
             "DELTAIC": "delta" in labels,
-            "ESTUARINE": any(value in labels for value in ("estuary", "lagoon", "marsh")),
+            "ESTUARINE": any(
+                value in labels for value in ("estuary", "lagoon", "marsh")
+            ),
         }
         source_id = _text(item.PHYIDENT) or str(position)
         rows.append(
@@ -287,7 +301,9 @@ def normalize_inventory(
     for name, (path, source) in sorted(sources.items()):
         normalizer_name = str(source.get("normalizer", ""))
         if normalizer_name not in normalizers:
-            raise ValueError(f"Unsupported shoreline normalizer {normalizer_name!r} for {name}.")
+            raise ValueError(
+                f"Unsupported shoreline normalizer {normalizer_name!r} for {name}."
+            )
         frames.append(normalizers[normalizer_name](path, name, source))
     inventory = gpd.GeoDataFrame(
         pd.concat(frames, ignore_index=True),
@@ -295,7 +311,9 @@ def normalize_inventory(
         crs="EPSG:4326",
     )
     if inventory.empty or inventory["SEGMENT_ID"].duplicated().any():
-        raise ValueError("Normalized shoreline inventory must be nonempty with unique IDs.")
+        raise ValueError(
+            "Normalized shoreline inventory must be nonempty with unique IDs."
+        )
     return inventory.sort_values("SEGMENT_ID").reset_index(drop=True)
 
 
@@ -313,7 +331,9 @@ def _aggregate_lengths(
     positions = {str(cell): index for index, cell in enumerate(cells["H3_INDEX"])}
     total = np.zeros(len(cells), dtype="float64")
     classified = np.zeros(len(cells), dtype="float64")
-    class_lengths = {token: np.zeros(len(cells), dtype="float64") for token in CLASS_TOKENS}
+    class_lengths = {
+        token: np.zeros(len(cells), dtype="float64") for token in CLASS_TOKENS
+    }
     for item in shore.itertuples(index=False):
         for candidate in tree.query(item.geometry, predicate="intersects"):
             candidate = int(candidate)
@@ -350,7 +370,9 @@ def _aggregate_lengths(
         )
     if set(positions) != set(values["H3_INDEX"]):
         raise ValueError("Shoreline geometry and support identifiers are misaligned.")
-    return align_to_model_support(support, values, feature_label="shoreline length metrics")
+    return align_to_model_support(
+        support, values, feature_label="shoreline length metrics"
+    )
 
 
 def _straight_distances(
@@ -400,7 +422,9 @@ def recompute_parent_shoreline_lengths(
             raise ValueError(f"Shoreline {name} table is missing columns: {missing}")
     values = child.loc[:, ["H3_INDEX", *SHORELINE_LENGTH_COLUMNS]].copy()
     values["H3_INDEX"] = (
-        values["H3_INDEX"].astype(str).map(lambda cell: cell_to_parent(cell, parent_resolution))
+        values["H3_INDEX"]
+        .astype(str)
+        .map(lambda cell: cell_to_parent(cell, parent_resolution))
     )
     grouped = values.groupby("H3_INDEX", sort=True, observed=True)[
         list(SHORELINE_LENGTH_COLUMNS)
@@ -410,11 +434,15 @@ def recompute_parent_shoreline_lengths(
     output = output.set_index("H3_INDEX")
     unknown = sorted(set(grouped.index).difference(output.index))
     if unknown:
-        raise ValueError(f"R8 shoreline cells map outside canonical R6 support: {unknown[:5]}")
+        raise ValueError(
+            f"R8 shoreline cells map outside canonical R6 support: {unknown[:5]}"
+        )
     output.loc[grouped.index, list(SHORELINE_LENGTH_COLUMNS)] = grouped
     total = output["SHORELINE_TOTAL_MAPPED_LENGTH_M"]
     classified = output["SHORELINE_CLASSIFIED_LENGTH_M"]
-    output["SHORELINE_CLASSIFIED_COVERAGE_FRAC"] = classified.div(total.where(total > 0))
+    output["SHORELINE_CLASSIFIED_COVERAGE_FRAC"] = classified.div(
+        total.where(total > 0)
+    )
     for token in CLASS_TOKENS:
         output[f"{token}_SHORE_FRAC"] = output[f"{token}_SHORE_LENGTH_M"].div(
             classified.where(classified > 0)
@@ -431,7 +459,9 @@ def _network_distances(
     reasons = np.full(len(support), "shoreline_class_not_mapped", dtype=object)
     if not source_cells:
         return distances, reasons
-    source_positions, source_connectors, _source_reasons = target_graph_mapping(graph, source_cells)
+    source_positions, source_connectors, _source_reasons = target_graph_mapping(
+        graph, source_cells
+    )
     seeds: list[tuple[str, float, int]] = []
     for owner, (position, connector) in enumerate(
         zip(source_positions, source_connectors, strict=True)
@@ -449,11 +479,17 @@ def _network_distances(
     for index, (position, connector) in enumerate(
         zip(target_positions, target_connectors, strict=True)
     ):
-        if position >= 0 and np.isfinite(connector) and np.isfinite(graph_distances[position]):
+        if (
+            position >= 0
+            and np.isfinite(connector)
+            and np.isfinite(graph_distances[position])
+        ):
             distances[index] = float(graph_distances[position] + connector)
             reasons[index] = target_reasons[index]
         else:
-            reasons[index] = target_reasons[index] or "shoreline_class_graph_disconnected"
+            reasons[index] = (
+                target_reasons[index] or "shoreline_class_graph_disconnected"
+            )
     return distances, reasons
 
 
@@ -467,14 +503,18 @@ def _build_resolution(
     support = load_model_area_support(resolution, config_path)
     geometry_path = config.full_geometry_path(resolution)
     if not geometry_path.exists():
-        raise FileNotFoundError(f"Canonical full-cell geometry not found: {geometry_path}")
+        raise FileNotFoundError(
+            f"Canonical full-cell geometry not found: {geometry_path}"
+        )
     cell_geometry = gpd.read_parquet(geometry_path)
     support_cells = set(support["H3_INDEX"].astype(str))
     cell_geometry = cell_geometry.loc[
         cell_geometry["H3_INDEX"].astype(str).isin(support_cells)
     ].copy()
     if set(cell_geometry["H3_INDEX"].astype(str)) != support_cells:
-        raise ValueError(f"H3 r{resolution} full geometry does not match canonical support.")
+        raise ValueError(
+            f"H3 r{resolution} full geometry does not match canonical support."
+        )
     output = _aggregate_lengths(
         inventory,
         cell_geometry,
@@ -544,7 +584,8 @@ def build_shoreline_characterization(
             by_resolution[resolution] = frame
             destinations.append(destination)
         artifacts = [
-            capture_staged_parquet_artifact(publisher, destination) for destination in destinations
+            capture_staged_parquet_artifact(publisher, destination)
+            for destination in destinations
         ]
         source_records = []
         for name, (path, source) in resolved_sources.items():
@@ -556,8 +597,12 @@ def build_shoreline_characterization(
                     "license": source.get("license"),
                     "attribution": source.get("attribution"),
                     "observation_date": source.get("observation_date"),
-                    "source_completeness_warning": source.get("source_completeness_warning"),
-                    "redistribution_restrictions": source.get("redistribution_restrictions"),
+                    "source_completeness_warning": source.get(
+                        "source_completeness_warning"
+                    ),
+                    "redistribution_restrictions": source.get(
+                        "redistribution_restrictions"
+                    ),
                 }
             )
         manifest = build_manifest(
@@ -597,7 +642,10 @@ def main() -> int:
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
     print(
-        json.dumps([str(path) for path in build_shoreline_characterization(args.config)], indent=2)
+        json.dumps(
+            [str(path) for path in build_shoreline_characterization(args.config)],
+            indent=2,
+        )
     )
     return 0
 

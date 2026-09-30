@@ -21,7 +21,10 @@ from shapely.geometry import box
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.geo.geometry import normalize_polygonal_geometry, safe_polygonal_union
+from seascape.core.geo.geometry import (
+    normalize_polygonal_geometry,
+    safe_polygonal_union,
+)
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
 )
@@ -75,6 +78,10 @@ BEARING_LABELS = (
 )
 OUTPUT_COLUMNS = [
     "H3_INDEX",
+    *[f"GEOMETRIC_FETCH_{bearing}_M" for bearing in BEARING_LABELS],
+    *[f"GEOMETRIC_FETCH_{bearing}_CENSORED" for bearing in BEARING_LABELS],
+    "GEOMETRIC_FETCH_MAX_SEARCH_M",
+    "GEOMETRIC_FETCH_SOURCE_STATUS",
     "OPENNESS_TO_OCEAN_INDEX",
     "ENCLOSURE_INDEX",
     "EMBAYMENT_INDEX",
@@ -121,7 +128,9 @@ def load_exposure_enclosure_config(
     )
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     resolution = int(processing.get("h3_resolution", 8))
     if resolution != 8:
@@ -176,7 +185,9 @@ def _spatial_support(config: ExposureEnclosureConfig):
     target_water = safe_polygonal_union(water, clip_geometry=target_box)
     fetch_mask_water = safe_polygonal_union(water, clip_geometry=fetch_mask_box)
     guarded_land = safe_polygonal_union(land, clip_geometry=land_guard_box)
-    fetch_mask_land = normalize_polygonal_geometry(guarded_land.intersection(fetch_mask_box))
+    fetch_mask_land = normalize_polygonal_geometry(
+        guarded_land.intersection(fetch_mask_box)
+    )
     return target_water, graph_box, fetch_mask_box, fetch_mask_land, fetch_mask_water
 
 
@@ -204,7 +215,9 @@ def _directional_fetch_matrix(
                 water_geometry,
             )
         if (index + 1) % 10_000 == 0:
-            LOGGER.info("Calculated directional fetch for %d/%d cells", index + 1, len(cells))
+            LOGGER.info(
+                "Calculated directional fetch for %d/%d cells", index + 1, len(cells)
+            )
     return np.clip(output, 0.0, maximum_fetch_m)
 
 
@@ -238,11 +251,23 @@ def _build_output(
     # High values identify cells with one relatively open outlet but low mean
     # exposure, a scale-explicit geometric signature of embayment.
     embayment = np.clip(fetch_max / maximum_fetch_m - openness, 0.0, 1.0)
-    aperture = (target_fetch >= maximum_fetch_m * config.open_bearing_fetch_fraction).sum(
-        axis=1
-    ) * (360.0 / len(BEARING_LABELS))
+    aperture = (
+        target_fetch >= maximum_fetch_m * config.open_bearing_fetch_fraction
+    ).sum(axis=1) * (360.0 / len(BEARING_LABELS))
     data: dict[str, Any] = {
         "H3_INDEX": target_cells,
+        **{
+            f"GEOMETRIC_FETCH_{bearing}_M": target_fetch[:, index]
+            for index, bearing in enumerate(BEARING_LABELS)
+        },
+        **{
+            f"GEOMETRIC_FETCH_{bearing}_CENSORED": np.isclose(
+                target_fetch[:, index], maximum_fetch_m, atol=1e-6
+            )
+            for index, bearing in enumerate(BEARING_LABELS)
+        },
+        "GEOMETRIC_FETCH_MAX_SEARCH_M": maximum_fetch_m,
+        "GEOMETRIC_FETCH_SOURCE_STATUS": "land_and_water_geometry_available",
         "OPENNESS_TO_OCEAN_INDEX": openness,
         "ENCLOSURE_INDEX": enclosure,
         "EMBAYMENT_INDEX": embayment,
@@ -259,11 +284,14 @@ def _build_output(
             pl.col("H3_INDEX").cast(pl.String),
             pl.exclude(
                 "H3_INDEX",
+                "GEOMETRIC_FETCH_SOURCE_STATUS",
+                *[f"GEOMETRIC_FETCH_{bearing}_CENSORED" for bearing in BEARING_LABELS],
                 "WATER_COMPONENT_ID",
                 "NETWORK_CONNECTOR_METHOD",
                 "NETWORK_DISTANCE_QC_REASON",
             ).cast(pl.Float64),
             pl.col("WATER_COMPONENT_ID").cast(pl.String),
+            pl.col("GEOMETRIC_FETCH_SOURCE_STATUS").cast(pl.String),
             pl.col("NETWORK_CONNECTOR_METHOD").cast(pl.String),
             pl.col("NETWORK_DISTANCE_QC_REASON").cast(pl.String),
         )
@@ -280,8 +308,8 @@ def build_exposure_and_enclosure(
     import h3
 
     config = load_exposure_enclosure_config(config_path)
-    target_water, graph_box, fetch_mask_box, fetch_mask_land, fetch_mask_water = _spatial_support(
-        config
+    target_water, graph_box, fetch_mask_box, fetch_mask_land, fetch_mask_water = (
+        _spatial_support(config)
     )
     target_support = load_model_area_support(config.h3_resolution, config_path)
     target_cells = target_support["H3_INDEX"].astype(str).tolist()
@@ -300,11 +328,15 @@ def build_exposure_and_enclosure(
     )
     graph_cells = graph.cells.astype(str).tolist()
     graph_lineage = graph.support.set_index("H3_INDEX").loc[graph_cells]
-    graph_lon = graph_lineage["REPRESENTATIVE_POINT_LONGITUDE"].to_numpy(dtype="float64")
+    graph_lon = graph_lineage["REPRESENTATIVE_POINT_LONGITUDE"].to_numpy(
+        dtype="float64"
+    )
     graph_lat = graph_lineage["REPRESENTATIVE_POINT_LATITUDE"].to_numpy(dtype="float64")
     from pyproj import Transformer
 
-    transformer = Transformer.from_crs("EPSG:4326", config.projected_crs, always_xy=True)
+    transformer = Transformer.from_crs(
+        "EPSG:4326", config.projected_crs, always_xy=True
+    )
     graph_x, graph_y = transformer.transform(graph_lon, graph_lat)
     graph_x = np.asarray(graph_x, dtype="float64")
     graph_y = np.asarray(graph_y, dtype="float64")
@@ -314,7 +346,9 @@ def build_exposure_and_enclosure(
         bbox=tuple(fetch_mask_box.bounds),
     )
     fetch_mask_set = set(
-        fetch_support.loc[fetch_support["WATER_COMPONENT_ID"].notna(), "H3_INDEX"].astype(str)
+        fetch_support.loc[
+            fetch_support["WATER_COMPONENT_ID"].notna(), "H3_INDEX"
+        ].astype(str)
     )
     LOGGER.info(
         "Exposure support: %d target cells, %d graph cells, %d fetch-mask cells",
@@ -361,7 +395,9 @@ def build_exposure_and_enclosure(
     mapped, connectors, qc_reasons = target_graph_mapping(graph, target_cells)
     target_distance_to_open = np.full(len(target_cells), np.nan, dtype="float64")
     graph_mapped = mapped >= 0
-    reachable = graph_mapped & np.isfinite(graph_distance_to_open[np.maximum(mapped, 0)])
+    reachable = graph_mapped & np.isfinite(
+        graph_distance_to_open[np.maximum(mapped, 0)]
+    )
     target_distance_to_open[reachable] = (
         graph_distance_to_open[mapped[reachable]] + connectors[reachable]
     )
@@ -415,6 +451,14 @@ def build_exposure_and_enclosure(
             "algorithm_semantics": (
                 "Directional exposure and line-of-sight use geometric ray casting; distance "
                 "to open water follows the canonical water-passable graph."
+            ),
+            "scientific_method_version": "geometric_fetch_16_bearings_v1",
+            "geometric_fetch_bearings_degrees_clockwise_from_north": {
+                bearing: index * 22.5 for index, bearing in enumerate(BEARING_LABELS)
+            },
+            "geometric_fetch_censoring": (
+                "At maximum search distance the true unobstructed fetch is unknown; "
+                "CENSORED is true, not a measured coastline intersection."
             ),
             "open_water_openness_threshold": config.open_water_openness_threshold,
             "open_water_seed_definition": (

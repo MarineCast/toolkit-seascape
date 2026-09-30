@@ -34,7 +34,9 @@ def geodesic_distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> f
     except Exception as e:
         raise ImportError("Install pyproj to use geodesic_distance_m.") from e
 
-    _, _, dist_m = Geod(ellps="WGS84").inv(float(lon1), float(lat1), float(lon2), float(lat2))
+    _, _, dist_m = Geod(ellps="WGS84").inv(
+        float(lon1), float(lat1), float(lon2), float(lat2)
+    )
     return float(dist_m)
 
 

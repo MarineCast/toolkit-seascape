@@ -13,7 +13,7 @@ workspace (otherwise `SEASCAPE_WORKSPACE`, then cwd); optional `release_id` sele
 | `list_products(*, workspace=None, release_id=None)` | Sorted `tuple[str, ...]` of logical products |
 | `list_resolutions(product, *, workspace=None, release_id=None)` | Sorted `tuple[int, ...]`; empty for an ungridded product; unknown product raises `KeyError` |
 | `resolve_product(*, product, resolution=None, workspace=None, release_id=None)` | `ProductArtifact`; exact requested resolution, never a fallback; unknown product/resolution raises `KeyError` |
-| `ProductArtifact` | Frozen dataclass: `Path` path/optional manifest_path, checksum and algorithm, release/product/dataset/schema identity, optional integer resolution, tuple grain and source vintage, immutable nested provenance/support/coverage/rights mappings |
+| `ProductArtifact` | Frozen dataclass: `Path` path/optional manifest_path, checksum and algorithm, release/product/dataset/schema identity, optional integer resolution, tuple grain and source vintage, scientific method version, immutable nested provenance/support/coverage/rights mappings |
 
 Discovery validates completed release metadata and governed/family checksums. Resolution also
 validates the selected artifact bytes. Missing files raise `FileNotFoundError`; invalid identity,
@@ -27,6 +27,41 @@ publications retain those bytes. Store the release ID for reproducible future re
 republished; there is no automatic migration or garbage collection. Administrators must preserve
 retained generations while consumers reference them. Checksums detect tampering at resolution,
 not arbitrary filesystem edits after resolution. Returned paths do not require an open reader lock.
+
+## Freeze and read a release
+
+Set `SEASCAPE_WORKSPACE` to an **existing audited schema-3 workspace** (an absolute path placeholder
+is shown in the workflow guide). A demo or initialized workspace is insufficient. This example
+selects R6 bathymetry once, retains its release ID, then uses that same ID for discovery and reads.
+It performs no acquisition, rebuilding, promotion or ecological feature selection.
+
+<!-- BEGIN CONSUMER EXAMPLE -->
+```python
+import os
+from pathlib import Path
+
+import pyarrow.parquet as pq
+
+from seascape.products import list_products, list_resolutions, resolve_product
+
+workspace = Path(os.environ["SEASCAPE_WORKSPACE"])
+selected = resolve_product(workspace=workspace, product="bathymetry", resolution=6)
+release_id = selected.release_id  # Save this identity with downstream run metadata.
+print(list_products(workspace=workspace, release_id=release_id))
+print(list_resolutions("bathymetry", workspace=workspace, release_id=release_id))
+artifact = resolve_product(
+    workspace=workspace, product="bathymetry", resolution=6, release_id=release_id
+)
+table = pq.read_table(artifact.path)
+print(release_id, artifact.checksum, table.num_rows, table.column_names)
+print(artifact.spatial_support, artifact.source_vintage, artifact.rights)
+print(artifact.scientific_method_version, artifact.source_support)
+```
+<!-- END CONSUMER EXAMPLE -->
+
+Choose a different resolution only if discovery says it is present; there is no R8/R6 fallback.
+Keep keys, physical units/sign, nulls, QC/evidence columns and source rights intact in downstream joins.
+Checksum verification covers bytes at resolution time; it does not authorize mutation of retained files.
 
 ## Producer entry points
 
@@ -45,11 +80,73 @@ The supported bathymetry facade is `seascape.seafloor_physiography.bathymetry`:
 - `build_bathymetry_parquet(config, raster_path=...)` returns the written `Path`; it requires
   configured support inputs and does not alone publish a complete family/release manifest.
 
+New bathymetry candidates use direct native-pixel assignment at each H3 resolution for **all**
+depth statistics, counts and bands. H3 hierarchical parenting and direct coarser assignment can
+differ at boundaries, so a hierarchy-only R6 parent retains null direct depth and counts. Older
+releases with mixed-support R6 counts remain immutable and must be interpreted under their
+archived method. See the [historical pilot boundary case](pilots/san-juan.md#acceptance-and-measured-envelope)
+and the [hardening register](scientific-hardening.md).
+
+When a selected water mask has `water_geometry_manifest.json`, H3/support and bathymetry
+builders verify its artifact identity before publication and retain its source/completeness and
+manifest lineage. Explicit exploratory support stays model-ineligible in additive
+`metadata.water_geometry_provenance`; no schema or scientific formula changes. The San Juan
+helper now publishes an exploratory mask manifest and uses explicit exploratory support versions.
+An older San Juan mask bearing its exploratory `AREA` label without a manifest is rejected;
+rebuild it in an approved disposable workspace rather than relabeling historical products.
+Legacy masks without that declaration retain existing absence behavior. These checks do not
+independently certify a source boundary's legal authority or grant release eligibility.
+
 Invalid configuration or scientific inputs raise `ValueError`; absent inputs raise
 `FileNotFoundError`. Acquisition can propagate HTTP/network exceptions and output failures can
 propagate `OSError`. Inspect signatures for optional parameters; do not infer consistent signatures
 across other family modules. Other family CLI commands remain supported workflow entry points;
 individual implementation imports are not a stable downstream API.
+
+Candidate planning adds `build --dry-run --check-inputs [--json]`. It inspects selected local
+configuration, readability and GeoTIFF headers without creating a candidate or executing builders.
+JSON schema 1 includes stage order, destinations, publication intent, checks and limitations;
+required missing/invalid/unverified prerequisites produce exit 1. Failed configuration checks
+add optional `detail` (safe reason) and `error_type` (exception class name), preserving all schema-1
+required fields and statuses. Readers must tolerate optional fields. `path` identifies the failing
+include/document when available, otherwise the selected configuration entry point; YAML reasons
+include one-based line/column without source snippets. `ready` is preflight evidence,
+not scientific or release acceptance. Plain `--dry-run` remains supported. Plan objects and input
+inspection adapters are internal helpers; see [workflow inspection limits](WORKFLOWS.md).
+
+The installed CLI translates identified missing files, existing destinations, configuration
+validators, blocked dependencies and release/publication failures into guidance on stderr and
+exit 1. Family argument errors still exit 2; forwarded help still exits 0, and family return codes
+are retained. JSON planning stdout remains one report, including on failure. Python API exception
+types, exception causes, return values and release checks are unchanged. Workflow callers retain
+the existing re-raise default and `continue_on_error` result behavior. The private workflow failure
+reporter only lets the CLI suppress raw stage exception text; it is not a supported producer API.
+
+Unlisted calculation, dependency or programming errors still raise with their traceback. Only
+known validator sites are translated; an arbitrary `ValueError` or `RuntimeError` is not assumed
+to be a user mistake. To expose chained detail for translated failures, put the global option
+**before the command**: `seascape --workspace PATH --debug build ...` (also supported for demo,
+download, inspect and export). The private preflight failure reporter passes the original caught
+exception only to the explicitly requested CLI debug sink, never into JSON or process-global
+state. Debug writes unfiltered tracebacks to stderr, including with `--json`, and keeps the same
+failure status. It does not execute a failed preflight or bypass any gate.
+Tracebacks can contain sensitive provider/configuration detail; review them before sharing.
+See [diagnostic examples and operation effects](WORKFLOWS.md#common-problems).
+
+## Synthetic demo
+
+`seascape.demo.run_demo(workspace, *, overwrite=False)` returns `DemoResult` with demo-root,
+Parquet, manifest, report and figure paths, validation checks and execution metadata. It writes
+only beneath `<workspace>/.seascape/demo`, invokes production bathymetry with acquisition and
+interactive maps disabled, and restores environment overrides. Destination safety failures raise
+`DemoWorkspaceError`; calculation, validation and filesystem errors propagate with a FAIL report
+once execution starts. Existing output requires explicit overwrite and an intact ownership marker.
+See [the demo guide](demo.md) for overwrite limits and process-global environment constraints.
+
+The reserved bathymetry provider `SYNTHETIC` emits explicit synthetic source/license/validation
+metadata and requires both `skip_download=True` and `skip_map=True`. Real-provider configuration,
+calculation formulas, schemas and release gates are unchanged. This does not create a new live
+provider or certify a full release.
 
 ## Internal ownership
 

@@ -6,8 +6,6 @@ import pandas as pd
 import pyarrow.parquet as pq
 import pytest
 
-from seascape.core.config.paths import project_root
-from seascape.core.data.registry import DATASETS
 from seascape.coastal_configuration.exposure_and_enclosure.build import (
     OUTPUT_COLUMNS as EXPOSURE_COLUMNS,
 )
@@ -17,17 +15,17 @@ from seascape.coastal_configuration.shoreline_proximity.build import (
 from seascape.coastal_configuration.waterbody_morphometry.build import (
     OUTPUT_COLUMNS as MORPHOMETRY_COLUMNS,
 )
+from seascape.core.config.paths import project_root
+from seascape.core.data.registry import DATASETS
 from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
     BC_SOURCE,
+    US_SOURCE,
 )
 from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
     ESTUARY_COLUMNS as MAPPED_ESTUARY_COLUMNS,
 )
 from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
     FEATURE_COLUMNS as ESTUARY_COLUMNS,
-)
-from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
-    US_SOURCE,
 )
 from seascape.hydrologic_connectivity.estuarine_connectivity.build import (
     _validate as validate_estuarine_connectivity,
@@ -43,28 +41,21 @@ def test_private_graph_migrations_have_no_remaining_consumer_entrypoints():
 
     modules = (
         importlib.import_module(
-            "seascape.coastal_configuration."
-            "exposure_and_enclosure.build"
+            "seascape.coastal_configuration.exposure_and_enclosure.build"
         ),
         importlib.import_module(
-            "seascape.coastal_configuration."
-            "shoreline_proximity.build"
+            "seascape.coastal_configuration.shoreline_proximity.build"
         ),
         importlib.import_module(
-            "seascape.coastal_configuration."
-            "waterbody_morphometry.build"
+            "seascape.coastal_configuration.waterbody_morphometry.build"
         ),
         importlib.import_module(
-            "seascape.hydrologic_connectivity."
-            "estuarine_connectivity.build"
+            "seascape.hydrologic_connectivity.estuarine_connectivity.build"
         ),
         importlib.import_module(
-            "seascape.hydrologic_connectivity."
-            "fluvial_connectivity.build"
+            "seascape.hydrologic_connectivity.fluvial_connectivity.build"
         ),
-        importlib.import_module(
-            "seascape.spatial_support.h3_geometry.build"
-        ),
+        importlib.import_module("seascape.spatial_support.h3_geometry.build"),
     )
     retired = {
         "_adjacency",
@@ -215,7 +206,9 @@ def test_materialized_network_consumers_match_producer_contracts():
     if not all((root / path).exists() for path in contracts):
         pytest.skip("materialized seascape artifacts are not part of a clean checkout")
     for relative_path, columns in contracts.items():
-        assert set(pq.read_schema(root / relative_path).names) == set(columns), relative_path
+        assert set(pq.read_schema(root / relative_path).names) == set(columns), (
+            relative_path
+        )
 
 
 def test_canonical_workflow_rebuilds_network_consumers_after_water_graph():
@@ -245,7 +238,8 @@ def test_dataset_catalog_registers_reproducible_seascape_dependencies():
     ):
         DATASETS.get(dataset_id)
     reef_dependencies = {
-        str(value) for value in DATASETS.get("environment.seascape.reef_habitat_r8").dependencies
+        str(value)
+        for value in DATASETS.get("environment.seascape.reef_habitat_r8").dependencies
     }
     assert "environment.seascape.bathymetry_r8" in reef_dependencies
     assert "environment.seascape.geomorphometry_r8" in reef_dependencies
@@ -253,7 +247,9 @@ def test_dataset_catalog_registers_reproducible_seascape_dependencies():
         for resolution in (6, 8):
             dependencies = {
                 str(value)
-                for value in DATASETS.get(f"environment.seascape.{name}_r{resolution}").dependencies
+                for value in DATASETS.get(
+                    f"environment.seascape.{name}_r{resolution}"
+                ).dependencies
             }
             assert "environment.seascape.h3_marine_support_r8" in dependencies
             assert "environment.seascape.h3_water_edges_r8" in dependencies

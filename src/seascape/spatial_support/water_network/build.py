@@ -25,8 +25,8 @@ from shapely.geometry.polygon import orient
 from shapely.prepared import prep
 from shapely.strtree import STRtree
 
-from seascape.core.config.paths import project_root
 from seascape.core.artifacts.checksums import checksum_path
+from seascape.core.config.paths import project_root
 from seascape.core.geo.geometry import safe_polygonal_union
 from seascape.core.geo.h3 import (
     cell_to_latlng,
@@ -37,6 +37,7 @@ from seascape.core.geo.h3 import (
 from seascape.publication import (
     TransactionalSeascapePublisher,
 )
+from seascape.spatial_support.provenance import water_geometry_provenance
 from seascape.utils.artifacts import (
     build_manifest,
     capture_staged_parquet_artifact,
@@ -121,10 +122,14 @@ def _densified_geodesic_polygon(polygon: Polygon, maximum_segment_m: float) -> P
 
 def _load_water_geometry(config: WaterNetworkConfig):
     if not config.water_polygon_path.exists():
-        raise FileNotFoundError(f"Canonical water geometry not found: {config.water_polygon_path}")
+        raise FileNotFoundError(
+            f"Canonical water geometry not found: {config.water_polygon_path}"
+        )
     frame = gpd.read_parquet(config.water_polygon_path)
     if frame.crs is None:
-        raise ValueError(f"Canonical water geometry has no CRS: {config.water_polygon_path}")
+        raise ValueError(
+            f"Canonical water geometry has no CRS: {config.water_polygon_path}"
+        )
     frame = frame.to_crs("EPSG:4326")
     bounds = box(
         config.bbox["min_lon"],
@@ -202,7 +207,11 @@ def _build_geometry_and_base_support(
     cells: list[str] | None = None,
 ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, pd.DataFrame]:
     stage_started = time.perf_counter()
-    cells = _tiled_overlap_cells(water_geometry, resolution) if cells is None else sorted(cells)
+    cells = (
+        _tiled_overlap_cells(water_geometry, resolution)
+        if cells is None
+        else sorted(cells)
+    )
     if not cells:
         raise ValueError(f"No H3 r{resolution} cells overlap canonical water geometry.")
     LOGGER.info(
@@ -247,7 +256,9 @@ def _build_geometry_and_base_support(
                 "H3_INDEX": h3_index,
                 "H3_RESOLUTION": resolution,
                 "geometry": (
-                    polygon_parts[0] if len(polygon_parts) == 1 else union_all(polygon_parts)
+                    polygon_parts[0]
+                    if len(polygon_parts) == 1
+                    else union_all(polygon_parts)
                 ),
             }
         )
@@ -380,8 +391,12 @@ def _build_geometry_and_base_support(
             "WATER_COMPONENT_ID": pd.Series([None] * len(cells), dtype="string"),
             "WATER_MASK_VERSION": config.water_mask_version,
             "SPATIAL_SUPPORT_VERSION": config.spatial_support_version,
-            "REPRESENTATIVE_POINT_LONGITUDE": [point.x for point in representative_points],
-            "REPRESENTATIVE_POINT_LATITUDE": [point.y for point in representative_points],
+            "REPRESENTATIVE_POINT_LONGITUDE": [
+                point.x for point in representative_points
+            ],
+            "REPRESENTATIVE_POINT_LATITUDE": [
+                point.y for point in representative_points
+            ],
             "GRAPH_NODE_ELIGIBLE": (
                 (water_fraction >= config.minimum_water_fraction)
                 & (water_area >= config.minimum_water_area_m2)
@@ -438,7 +453,9 @@ def _append_hierarchy_only_parents(
         {
             "H3_INDEX": missing,
             "H3_RESOLUTION": resolution,
-            "PARENT_H3_INDEX": [cell_to_parent(cell, resolution - 1) for cell in missing],
+            "PARENT_H3_INDEX": [
+                cell_to_parent(cell, resolution - 1) for cell in missing
+            ],
             "CELL_AREA_M2": cell_area,
             "WATER_AREA_M2": np.zeros(len(missing)),
             "LAND_AREA_M2": cell_area,
@@ -449,7 +466,8 @@ def _append_hierarchy_only_parents(
             "IS_FULLY_WATER": False,
             "IS_PARTIALLY_WATER": False,
             "INTERSECTS_SHORELINE": [
-                bool(water_geometry.boundary.intersects(value)) for value in parent_full.geometry
+                bool(water_geometry.boundary.intersects(value))
+                for value in parent_full.geometry
             ],
             "IS_AOI_BOUNDARY_CELL": [
                 bool(aoi.boundary.intersects(value)) for value in parent_full.geometry
@@ -457,12 +475,18 @@ def _append_hierarchy_only_parents(
             "WATER_COMPONENT_ID": pd.Series([None] * len(missing), dtype="string"),
             "WATER_MASK_VERSION": config.water_mask_version,
             "SPATIAL_SUPPORT_VERSION": config.spatial_support_version,
-            "REPRESENTATIVE_POINT_LONGITUDE": [longitude for latitude, longitude in centers],
-            "REPRESENTATIVE_POINT_LATITUDE": [latitude for latitude, longitude in centers],
+            "REPRESENTATIVE_POINT_LONGITUDE": [
+                longitude for latitude, longitude in centers
+            ],
+            "REPRESENTATIVE_POINT_LATITUDE": [
+                latitude for latitude, longitude in centers
+            ],
             "GRAPH_NODE_ELIGIBLE": False,
             "GRAPH_DEGREE": np.zeros(len(missing), dtype=np.int32),
             "GRAPH_CONNECTION_STATUS": "disconnected",
-            "CONNECTOR_TARGET_H3_INDEX": pd.Series([None] * len(missing), dtype="string"),
+            "CONNECTOR_TARGET_H3_INDEX": pd.Series(
+                [None] * len(missing), dtype="string"
+            ),
             "CONNECTOR_METHOD": pd.Series([None] * len(missing), dtype="string"),
             "CONNECTOR_DISTANCE_M": np.full(len(missing), np.nan),
             "CONNECTOR_WATER_PATH_FRACTION": np.full(len(missing), np.nan),
@@ -475,10 +499,14 @@ def _append_hierarchy_only_parents(
         resolution,
     )
     return (
-        gpd.GeoDataFrame(pd.concat([full, parent_full], ignore_index=True), crs=full.crs)
+        gpd.GeoDataFrame(
+            pd.concat([full, parent_full], ignore_index=True), crs=full.crs
+        )
         .sort_values("H3_INDEX")
         .reset_index(drop=True),
-        gpd.GeoDataFrame(pd.concat([clipped, parent_clipped], ignore_index=True), crs=clipped.crs)
+        gpd.GeoDataFrame(
+            pd.concat([clipped, parent_clipped], ignore_index=True), crs=clipped.crs
+        )
         .sort_values("H3_INDEX")
         .reset_index(drop=True),
         pd.concat([support, parent_support], ignore_index=True)
@@ -519,10 +547,15 @@ def build_marine_spatial_support(
         )
     if {6, 8}.issubset(selected):
         destinations.append(config.parent_child_path)
-    destinations.extend((config.radius_sum_operator_path, config.reachable_water_area_path))
+    destinations.extend(
+        (config.radius_sum_operator_path, config.reachable_water_area_path)
+    )
     existing = [path for path in destinations if path.exists()]
     if existing and not overwrite:
-        raise FileExistsError(f"Marine support artifacts exist; pass --overwrite: {existing[0]}")
+        raise FileExistsError(
+            f"Marine support artifacts exist; pass --overwrite: {existing[0]}"
+        )
+    provenance = water_geometry_provenance(config.water_polygon_path, project_root())
     water_geometry, aoi = _load_water_geometry(config)
     water_checksum = checksum_path(config.water_polygon_path)
     run = run_id or f"marine-spatial-support-{uuid.uuid4().hex[:12]}"
@@ -546,7 +579,9 @@ def build_marine_spatial_support(
                     cell_to_parent(cell, 6) for cell in model_cells_by_resolution[8]
                 }
                 candidate_cells = sorted(
-                    set(_tiled_overlap_cells(water_geometry, resolution)).union(required_parents)
+                    set(_tiled_overlap_cells(water_geometry, resolution)).union(
+                        required_parents
+                    )
                 )
             full, clipped, support = _build_geometry_and_base_support(
                 water_geometry,
@@ -590,19 +625,26 @@ def build_marine_spatial_support(
                     .iloc[0]
                 )
                 projected_clipped = clipped.to_crs("EPSG:6933")
-                positive_overlap = projected_clipped.geometry.intersection(model_bounds).area.gt(0)
+                positive_overlap = projected_clipped.geometry.intersection(
+                    model_bounds
+                ).area.gt(0)
                 model_cells_by_resolution[8] = set(
                     clipped.loc[positive_overlap.to_numpy(), "H3_INDEX"].astype(str)
                 )
             elif resolution == 6:
                 if 8 not in model_cells_by_resolution:
-                    raise ValueError("R8 model support must be derived before R6 support.")
+                    raise ValueError(
+                        "R8 model support must be derived before R6 support."
+                    )
                 model_cells_by_resolution[6] = {
                     cell_to_parent(cell, 6) for cell in model_cells_by_resolution[8]
                 }
             for destination, frame in (
                 (config.full_geometry_path(resolution), full.sort_values("H3_INDEX")),
-                (config.clipped_geometry_path(resolution), clipped.sort_values("H3_INDEX")),
+                (
+                    config.clipped_geometry_path(resolution),
+                    clipped.sort_values("H3_INDEX"),
+                ),
             ):
                 candidate = publisher.stage_path(destination)
                 frame.to_parquet(candidate, index=False)
@@ -639,9 +681,14 @@ def build_marine_spatial_support(
             validate_edges(edges, support, resolution)
             validate_connectors(connectors, support, resolution)
             model_support = support.loc[
-                support["H3_INDEX"].astype(str).isin(model_cells_by_resolution[resolution])
+                support["H3_INDEX"]
+                .astype(str)
+                .isin(model_cells_by_resolution[resolution])
             ].copy()
-            if set(model_support["H3_INDEX"].astype(str)) != model_cells_by_resolution[resolution]:
+            if (
+                set(model_support["H3_INDEX"].astype(str))
+                != model_cells_by_resolution[resolution]
+            ):
                 missing = sorted(
                     model_cells_by_resolution[resolution].difference(
                         model_support["H3_INDEX"].astype(str)
@@ -689,7 +736,11 @@ def build_marine_spatial_support(
             candidate = publisher.stage_path(config.parent_child_path)
             crosswalk.to_parquet(candidate, index=False)
             staged[config.parent_child_path] = candidate
-        model_r8 = model_support_by_resolution[8].sort_values("H3_INDEX").reset_index(drop=True)
+        model_r8 = (
+            model_support_by_resolution[8]
+            .sort_values("H3_INDEX")
+            .reset_index(drop=True)
+        )
         passable_r8 = edges_by_resolution[8].loc[
             edges_by_resolution[8]["EDGE_IS_WATER_PASSABLE"].astype(bool)
         ]
@@ -767,10 +818,14 @@ def build_marine_spatial_support(
                     model_support_by_resolution[resolution]["H3_INDEX"]
                 ),
                 "neighborhood_rows": int(
-                    pq.ParquetFile(staged[config.neighborhood_path(resolution)]).metadata.num_rows
+                    pq.ParquetFile(
+                        staged[config.neighborhood_path(resolution)]
+                    ).metadata.num_rows
                 ),
                 "candidate_edges": int(
-                    pq.ParquetFile(staged[config.edge_path(resolution)]).metadata.num_rows
+                    pq.ParquetFile(
+                        staged[config.edge_path(resolution)]
+                    ).metadata.num_rows
                 ),
             }
             for resolution, support in support_by_resolution.items()
@@ -781,7 +836,9 @@ def build_marine_spatial_support(
             resolved_config=asdict(config),
             artifacts=artifacts,
             project_root=project_root(),
-            sources=[
+            sources=provenance["sources"]
+            if provenance
+            else [
                 {
                     "name": "Canonical Seascape Toolkit territorial-water geometry",
                     "path": str(config.water_polygon_path),
@@ -797,15 +854,20 @@ def build_marine_spatial_support(
                 }
             ],
             upstream_artifacts=[
-                {"path": str(config.water_polygon_path), "checksum": water_checksum}
+                {"path": str(config.water_polygon_path), "checksum": water_checksum},
+                *([provenance["upstream"]] if provenance else []),
             ],
-            attribution=[
+            attribution=provenance["attribution"]
+            if provenance
+            else [
                 {
                     "text": "Canonical Seascape Toolkit territorial-water geometry",
                     "license": "See water_geometry source manifest and seascape documentation",
                 }
             ],
-            source_completeness="complete",
+            source_completeness=provenance["source_completeness"]
+            if provenance
+            else "complete",
             semantic_contracts=default_semantic_contracts(
                 aggregation=(
                     "The 5 km radius operator uses exact water-network distance with terminal "
@@ -813,6 +875,11 @@ def build_marine_spatial_support(
                 )
             ),
             metadata={
+                **(
+                    {"water_geometry_provenance": provenance["metadata"]}
+                    if provenance
+                    else {}
+                ),
                 "water_mask_version": config.water_mask_version,
                 "spatial_support_version": config.spatial_support_version,
                 "summary": summary,
@@ -833,7 +900,9 @@ def build_marine_spatial_support(
         publisher.stage_manifest(config.manifest_path, payload)
         publisher.publish()
         destinations.append(config.manifest_path)
-        LOGGER.info("Published canonical marine support manifest: %s", config.manifest_path)
+        LOGGER.info(
+            "Published canonical marine support manifest: %s", config.manifest_path
+        )
         return tuple(destinations)
     finally:
         publisher.__exit__(None, None, None)
@@ -850,7 +919,9 @@ def _parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = _parser().parse_args()
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+    )
     outputs = build_marine_spatial_support(
         args.config,
         resolutions=tuple(args.resolutions) if args.resolutions else None,

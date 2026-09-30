@@ -26,7 +26,9 @@ from seascape.hydrologic_connectivity.fluvial_barriers.sources import (
 )
 
 
-def _source_record(record_id: str, priority: int, longitude: float) -> dict[str, object]:
+def _source_record(
+    record_id: str, priority: int, longitude: float
+) -> dict[str, object]:
     return _record(
         source_name=record_id,
         source_id="1",
@@ -71,7 +73,9 @@ def test_deduplication_retains_lineage_and_authoritative_precedence() -> None:
         crs="EPSG:4326",
     )
     inventory, lineage = deduplicate_inventory(frame, tolerance_m=100.0)
-    authoritative = inventory.loc[inventory["SOURCE_DATASET"].eq("authoritative")].iloc[0]
+    authoritative = inventory.loc[inventory["SOURCE_DATASET"].eq("authoritative")].iloc[
+        0
+    ]
     secondary = inventory.loc[inventory["SOURCE_DATASET"].eq("secondary")].iloc[0]
     assert bool(authoritative["IS_CANONICAL"])
     assert not bool(secondary["IS_CANONICAL"])
@@ -157,7 +161,9 @@ def test_r8_to_r6_uses_nearest_barrier_affected_child() -> None:
     assert r6_confidence.loc[0, f"{PREFIX}_CONFIDENCE"] == 3
 
 
-def test_inspector_uses_hydrologic_connectivity_output_directory(monkeypatch, tmp_path) -> None:
+def test_inspector_uses_hydrologic_connectivity_output_directory(
+    monkeypatch, tmp_path
+) -> None:
     captured = {}
     monkeypatch.setattr(
         inspector,
@@ -172,5 +178,7 @@ def test_inspector_uses_hydrologic_connectivity_output_directory(monkeypatch, tm
     monkeypatch.setattr(inspector, "inspect_habitat_surface", fake_inspect)
     result = inspector.inspect_fluvial_barriers(output_path=tmp_path / "map.html")
     assert result == tmp_path / "map.html"
-    assert str(captured["map_subdirectory"]).endswith("hydrologic_connectivity/fluvial_barriers")
+    assert str(captured["map_subdirectory"]).endswith(
+        "hydrologic_connectivity/fluvial_barriers"
+    )
     assert captured["map_stem"] == "fluvial_barriers"

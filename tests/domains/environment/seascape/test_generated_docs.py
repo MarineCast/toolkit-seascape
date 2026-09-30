@@ -21,7 +21,10 @@ def test_generated_index_filters_and_orders_seascape_products() -> None:
                     "SECOND_COLUMN": {
                         "common_name": "Second variable",
                         "column": "SECOND_COLUMN",
-                        "collection_paths": {6: "second-r6.parquet", 8: "second-r8.parquet"},
+                        "collection_paths": {
+                            6: "second-r6.parquet",
+                            8: "second-r8.parquet",
+                        },
                         "unit": "m2",
                         "role": "predictor",
                         "topology": "water_network",
@@ -62,7 +65,12 @@ def test_generated_index_filters_and_orders_seascape_products() -> None:
     assert "#### Biogenic habitat" in rendered
     assert "#### Anthropogenic" in rendered
     assert "| First product (`first`) | First variable |" in rendered
-    assert "Presence, absence, reachability, or another explicit state; unit: count." in rendered
-    assert "Model-facing numeric covariate; unit: m²; topology: water network." in rendered
+    assert (
+        "Presence, absence, reachability, or another explicit state; unit: count."
+        in rendered
+    )
+    assert (
+        "Model-facing numeric covariate; unit: m²; topology: water network." in rendered
+    )
     assert "R8: `first.parquet`" in rendered
     assert "`FIRST_COLUMN`" in rendered

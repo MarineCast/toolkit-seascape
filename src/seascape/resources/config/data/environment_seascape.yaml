@@ -81,6 +81,10 @@ bathymetry:
     api_base_url: https://download.gebco.net/api
     raw_dir: data/raw/bathymetry
     raw_filename: GEBCO_2026_MODEL_AREA.tif
+    # Optional local companion. When supplied, the release must match and the
+    # categorical raster must align exactly with the depth grid; no download occurs.
+    # tid_raw_filename: GEBCO_2026_TID_MODEL_AREA.tif
+    # tid_release: "2026"
     request_timeout_seconds: 120
     poll_interval_seconds: 5
     poll_timeout_seconds: 1800
@@ -324,6 +328,96 @@ freshwater_sources:
     river_simplify_tolerance_m: 75
 
 # SEASCAPE - HYDROLOGIC CONNECTIVITY: FLUVIAL CONNECTIVITY
+# Optional SV-01 build. Set exact FLUVIAL_MOUTH_ID values from the normalized
+# HydroRIVERS mouth inventory before selecting seascape-selected-outlets.
+selected_outlets:
+  selected_ids: []
+  resolutions: [8, 6]
+  max_pairs: 200000
+  max_search_m: null
+  output_dir: data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets
+
+# Optional SV-02 bounded candidate. Set selected_h3_indices for a reviewed area;
+# an empty selection is accepted only when the complete R8 support fits max_cells.
+nearshore_transitions:
+  selected_h3_indices: []
+  threshold_m: 100
+  band_width_m: 1000
+  station_spacing_m: 250
+  tangent_scale_m: 500
+  transect_step_m: 100
+  transect_max_m: 5000
+  max_cells: 200
+  max_transects: 200
+  max_component_pixels: 500000
+  output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions
+
+# Optional SV-03 candidate. Supply a reviewed GeoParquet with stable PASSAGE_ID,
+# polygon geometry, CENTERLINE_WKT in source CRS, source/rights and vertical datum.
+passage_sections:
+  registry_path: null
+  mapped_sills_path: null
+  projected_crs: EPSG:32610
+  section_spacing_m: 1000
+  half_length_m: 5000
+  sample_step_m: 500
+  threshold_m: 50
+  tangent_scale_m: 1000
+  minimum_sill_relief_m: 10
+  max_passages: 2
+  max_sections: 100
+  max_sills: 100
+  max_cells: 200
+  output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections
+
+# Optional SV-04. Reviewed source geometry and canonical water-valid attachment
+# table are separate; no gateway is inferred from whale or model observations.
+geographic_gateways:
+  registry_path: null
+  attachments_path: null
+  routes_path: null
+  basins_path: null
+  corridors_path: null
+  projected_crs: EPSG:32610
+  resolutions: [8, 6]
+  selected_h3_indices: []
+  max_cells: 200
+  max_pairs: 200000
+  max_distance_m: null
+  attachment_tolerance_m: 1000
+  corridor_max_offset_m: 1000
+  output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways
+
+# Optional SV-05. Supply full source land components and their context polygon;
+# H3 clipping is applied only after complete island IDs and boundary QC exist.
+coast_complexity:
+  land_components_path: null
+  source_context_path: null
+  selected_h3_indices: []
+  sinuosity_scales_m: [500, 2000]
+  minimum_island_area_m2: 1000
+  orientation_probe_m: 10
+  headland_smoothing_m: 500
+  headland_station_spacing_m: 250
+  headland_minimum_turn_degrees: 20
+  max_cells: 200
+  max_coast_segments: 200
+  max_headland_candidates: 200
+  output_dir: data/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity
+
+# Optional SV-06. Supply reviewed normalized polygon evidence and an independent
+# tidal-frame support when intertidal classes are present. No provider is bundled.
+mapped_habitat_mosaic:
+  inventory_path: null
+  intertidal_support_path: null
+  selected_h3_indices: []
+  equal_area_crs: EPSG:6933
+  as_of_year: 2026
+  max_cells: 200
+  max_records: 10000
+  max_radius_searches: 2000
+  output_dir: data/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic
+
 fluvial_connectivity:
   area: model_area
 

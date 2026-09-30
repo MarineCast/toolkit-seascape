@@ -17,6 +17,9 @@ import requests
 from shapely.geometry import box
 import yaml
 
+from seascape.core.artifacts.checksums import checksum_path
+from seascape.publication import TransactionalSeascapePublisher
+from seascape.utils.artifacts import build_manifest, stage_parquet_artifact
 
 NATURAL_EARTH_LAND_URL = (
     "https://naturalearth.s3.amazonaws.com/10m_physical/ne_10m_land.zip"
@@ -53,6 +56,8 @@ def prepare_workspace(
         {
             "area": "model_area",
             "model_area": "model_area",
+            "water_mask_version": "san_juan_natural_earth_land_exploratory_v1",
+            "spatial_support_version": "marine_spatial_support_exploratory_v1",
             "resolutions": list(resolutions),
             "max_workers": 4,
         }
@@ -164,12 +169,58 @@ def build_exploratory_water_mask(
         / "data/processed/domain/environmental_layer/seascape/spatial_support"
         / "water_geometry/TERRITORIAL_WATER_POLYGON.parquet"
     )
-    output.parent.mkdir(parents=True, exist_ok=True)
-    gpd.GeoDataFrame(
+    version_path = next(extract_root.rglob("ne_10m_land.VERSION.txt"), None)
+    version = version_path.read_text().strip() if version_path else "not declared"
+    frame = gpd.GeoDataFrame(
         {"AREA": ["SAN_JUAN_EXPLORATORY_NATURAL_EARTH_10M"]},
         geometry=[water],
         crs=4326,
-    ).to_parquet(output, index=False)
+    )
+    warning = (
+        "Exploratory AOI-minus-land mask at 1:10 million cartographic scale, not canonical "
+        "territorial waters, legal boundaries, navigation support or model-ready evidence."
+    )
+    with TransactionalSeascapePublisher(output.parent) as publisher:
+        artifact = stage_parquet_artifact(publisher, frame, output)
+        manifest = build_manifest(
+            dataset_family="environment.seascape.exploratory_water_geometry",
+            run_id=publisher.run_id,
+            resolved_config={
+                "bbox_wgs84": bbox,
+                "source_version": version,
+                "mask_method": "AOI minus Natural Earth land",
+            },
+            artifacts=[artifact],
+            project_root=workspace_root,
+            sources=[
+                {
+                    "name": "Natural Earth land " + version,
+                    "provider": "Natural Earth",
+                    "release": version,
+                    "path": str(archive_path),
+                    "checksum": checksum_path(archive_path),
+                    "license": "Public domain; credit optional; source accuracy limitations apply.",
+                    "terms_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+                    "observation_period": "Static cartographic snapshot; version is not a survey observation date.",
+                    "source_warning": warning,
+                }
+            ],
+            upstream_artifacts=[],
+            attribution=[
+                {"text": "Natural Earth land; " + warning, "license": "Public domain"}
+            ],
+            source_completeness="partial",
+            metadata={
+                "support_kind": "exploratory",
+                "model_eligible": False,
+                "mask_method": "AOI minus Natural Earth land",
+                "cartographic_scale": "1:10 million",
+            },
+        )
+        publisher.stage_manifest(
+            output.with_name("water_geometry_manifest.json"), manifest
+        )
+        publisher.publish()
     print(f"Exploratory water mask: {output}")
     return output
 

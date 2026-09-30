@@ -61,12 +61,20 @@ def _isobath_distance_column(level_m: float) -> str:
     return f"DISTANCE_TO_ISOBATH_{_number_token(level_m)}_M"
 
 
+def _isobath_status_column(level_m: float) -> str:
+    return f"DISTANCE_TO_ISOBATH_{_number_token(level_m)}_STATUS"
+
+
 def _output_columns(
     depth_quantiles: tuple[float, ...],
     isobath_levels_m: tuple[float, ...],
 ) -> list[str]:
     quantile_columns = [_quantile_column(value) for value in depth_quantiles]
-    isobath_columns = [_isobath_distance_column(value) for value in isobath_levels_m]
+    isobath_columns = [
+        column
+        for value in isobath_levels_m
+        for column in (_isobath_distance_column(value), _isobath_status_column(value))
+    ]
     band_columns = [
         column
         for token, _lower, _upper in DEPTH_BANDS_M
@@ -96,16 +104,21 @@ def load_h3_cells(config: BathymetryConfig) -> list[str]:
 
     if not config.h3_grid_path.exists():
         raise FileNotFoundError(
-            "Canonical model-area support is required before bathymetry: " f"{config.h3_grid_path}"
+            "Canonical model-area support is required before bathymetry: "
+            f"{config.h3_grid_path}"
         )
     cells = _cells_from_existing_grid(config)
     source = config.h3_grid_path
     if not cells:
-        raise ValueError(f"No H3 cells found in the configured model area using {source}.")
+        raise ValueError(
+            f"No H3 cells found in the configured model area using {source}."
+        )
     import h3
 
     unexpected = sorted(
-        {int(h3.get_resolution(cell)) for cell in cells}.difference({config.h3_resolution})
+        {int(h3.get_resolution(cell)) for cell in cells}.difference(
+            {config.h3_resolution}
+        )
     )
     if unexpected:
         raise ValueError(
@@ -120,14 +133,20 @@ def load_h3_cells(config: BathymetryConfig) -> list[str]:
     return cells
 
 
-def _pixel_centers(transform: Any, shape: tuple[int, int]) -> tuple[np.ndarray, np.ndarray]:
+def _pixel_centers(
+    transform: Any, shape: tuple[int, int]
+) -> tuple[np.ndarray, np.ndarray]:
     rows, columns = np.indices(shape, dtype=float)
-    longitudes = transform.c + (columns + 0.5) * transform.a + (rows + 0.5) * transform.b
+    longitudes = (
+        transform.c + (columns + 0.5) * transform.a + (rows + 0.5) * transform.b
+    )
     latitudes = transform.f + (columns + 0.5) * transform.d + (rows + 0.5) * transform.e
     return latitudes, longitudes
 
 
-def _latlngs_to_h3(latitudes: np.ndarray, longitudes: np.ndarray, resolution: int) -> list[str]:
+def _latlngs_to_h3(
+    latitudes: np.ndarray, longitudes: np.ndarray, resolution: int
+) -> list[str]:
     import h3
 
     return [
@@ -159,8 +178,12 @@ def _local_depth_anomaly(
     missing = sorted(required.difference(neighborhoods.columns))
     if missing:
         raise ValueError(f"Water-neighborhood table is missing columns: {missing}")
-    selected = neighborhoods.loc[neighborhoods["MINIMUM_HOP_COUNT"].between(1, neighborhood_rings)]
-    targets_by_source = selected.groupby("SOURCE_H3_INDEX", sort=False)["TARGET_H3_INDEX"].agg(list)
+    selected = neighborhoods.loc[
+        neighborhoods["MINIMUM_HOP_COUNT"].between(1, neighborhood_rings)
+    ]
+    targets_by_source = selected.groupby("SOURCE_H3_INDEX", sort=False)[
+        "TARGET_H3_INDEX"
+    ].agg(list)
     for index, cell in enumerate(cells):
         focal_depth = depth_by_cell.get(cell)
         if focal_depth is None:
@@ -231,11 +254,17 @@ def _isobath_crossings(
             out=fraction,
             where=np.abs(denominator) > np.finfo("float64").eps,
         )
-        crossing_lat = first_lat[crossing] + fraction * (second_lat[crossing] - first_lat[crossing])
-        crossing_lon = first_lon[crossing] + fraction * (second_lon[crossing] - first_lon[crossing])
+        crossing_lat = first_lat[crossing] + fraction * (
+            second_lat[crossing] - first_lat[crossing]
+        )
+        crossing_lon = first_lon[crossing] + fraction * (
+            second_lon[crossing] - first_lon[crossing]
+        )
         crossing_parts.append(np.column_stack((crossing_lon, crossing_lat)))
     if not crossing_parts:
-        raise ValueError(f"GEBCO raster does not cross the configured {level_m:g} m isobath.")
+        raise ValueError(
+            f"GEBCO raster does not cross the configured {level_m:g} m isobath."
+        )
     return np.concatenate(crossing_parts, axis=0)
 
 
@@ -248,12 +277,14 @@ def _distance_to_isobaths(
     isobath_levels_m: tuple[float, ...],
     projected_crs: str,
 ) -> dict[str, np.ndarray]:
-    """Measure H3-center distance to native-raster isobath crossings."""
+    """Measure straight-line H3-center distance to marine-only contour segments."""
 
     import h3
     from pyproj import Transformer
+    from shapely import linestrings, points
+    from shapely.strtree import STRtree
+
     from seascape.core.geo.crs import require_metric_crs
-    from scipy.spatial import cKDTree
 
     target_crs = require_metric_crs(projected_crs)
     transformer = Transformer.from_crs("EPSG:4326", target_crs, always_xy=True)
@@ -262,34 +293,119 @@ def _distance_to_isobaths(
         [longitude for _latitude, longitude in cell_latlngs],
         [latitude for latitude, _longitude in cell_latlngs],
     )
-    cell_points = np.column_stack((cell_x, cell_y))
+    cell_points = points(np.column_stack((cell_x, cell_y)))
 
     distances: dict[str, np.ndarray] = {}
     for level_m in isobath_levels_m:
-        crossings = _isobath_crossings(
+        segments = _isobath_segments(
             contour_depth,
             marine_mask,
             latitudes,
             longitudes,
             level_m,
         )
-        crossing_x, crossing_y = transformer.transform(crossings[:, 0], crossings[:, 1])
-        crossing_points = np.column_stack((crossing_x, crossing_y))
-        crossing_points = crossing_points[np.isfinite(crossing_points).all(axis=1)]
-        if crossing_points.size == 0:
-            raise ValueError(f"No projectable crossings found for the {level_m:g} m isobath.")
-        nearest_distance, _nearest_index = cKDTree(crossing_points).query(
-            cell_points,
-            workers=-1,
-        )
         column = _isobath_distance_column(level_m)
-        distances[column] = nearest_distance.astype("float64", copy=False)
+        if not len(segments):
+            distances[column] = np.full(len(cells), np.nan)
+            distances[_isobath_status_column(level_m)] = np.full(
+                len(cells), "contour_not_found_within_source_crop", dtype=object
+            )
+            continue
+        x, y = transformer.transform(segments[:, :, 0], segments[:, :, 1])
+        projected = np.stack((x, y), axis=-1)
+        projected = projected[np.isfinite(projected).all(axis=(1, 2))]
+        if not len(projected):
+            distances[column] = np.full(len(cells), np.nan)
+            distances[_isobath_status_column(level_m)] = np.full(
+                len(cells), "contour_not_projectable", dtype=object
+            )
+            continue
+        lines = linestrings(projected)
+        tree = STRtree(lines)
+        nearest_indices = tree.nearest(cell_points)
+        distances[column] = np.asarray(
+            [
+                point.distance(lines[int(index)])
+                for point, index in zip(cell_points, nearest_indices, strict=True)
+            ],
+            dtype="float64",
+        )
+        distances[_isobath_status_column(level_m)] = np.full(
+            len(cells), "measured_within_source_crop", dtype=object
+        )
         LOGGER.info(
-            "Measured %s from %d native-raster contour crossings",
+            "Measured %s from %d native-raster contour segments",
             column,
-            len(crossing_points),
+            len(projected),
         )
     return distances
+
+
+def _isobath_segments(
+    contour_depth: np.ndarray,
+    marine_mask: np.ndarray,
+    latitudes: np.ndarray,
+    longitudes: np.ndarray,
+    level_m: float,
+) -> np.ndarray:
+    """Marching squares with no segment through a land/nodata corner."""
+
+    if min(contour_depth.shape) < 2:
+        return np.empty((0, 2, 2), dtype="float64")
+    corners = (
+        contour_depth[:-1, :-1],
+        contour_depth[:-1, 1:],
+        contour_depth[1:, 1:],
+        contour_depth[1:, :-1],
+    )
+    marine_corners = (
+        marine_mask[:-1, :-1],
+        marine_mask[:-1, 1:],
+        marine_mask[1:, 1:],
+        marine_mask[1:, :-1],
+    )
+    valid = np.logical_and.reduce(
+        [marine & np.isfinite(depth) for marine, depth in zip(marine_corners, corners)]
+    )
+    signs = [depth >= level_m for depth in corners]
+    crossing = [signs[index] != signs[(index + 1) % 4] for index in range(4)]
+    candidates = np.argwhere(valid & np.logical_or.reduce(crossing))
+    segments: list[np.ndarray] = []
+    for row, column in candidates:
+        values = [float(depth[row, column]) for depth in corners]
+        positions = [
+            np.asarray(
+                [longitudes[row + dy, column + dx], latitudes[row + dy, column + dx]],
+                dtype="float64",
+            )
+            for dy, dx in ((0, 0), (0, 1), (1, 1), (1, 0))
+        ]
+        edges: dict[int, np.ndarray] = {}
+        for index in range(4):
+            other = (index + 1) % 4
+            if (values[index] >= level_m) == (values[other] >= level_m):
+                continue
+            fraction = (level_m - values[index]) / (values[other] - values[index])
+            edges[index] = positions[index] + fraction * (
+                positions[other] - positions[index]
+            )
+        if len(edges) == 2:
+            pairings = [tuple(edges)]
+        elif len(edges) == 4:
+            # Asymptotic decider: isolate corners opposite the bilinear center.
+            center_high = sum(values) / 4 >= level_m
+            pairings = (
+                [(0, 1), (2, 3)]
+                if (values[0] >= level_m) == center_high
+                else [(0, 3), (1, 2)]
+            )
+        else:
+            continue
+        for first, second in pairings:
+            segment = np.stack((edges[first], edges[second]))
+            if np.linalg.norm(segment[1] - segment[0]) > 0:
+                segments.append(segment)
+    return np.stack(segments) if segments else np.empty((0, 2, 2), dtype="float64")
 
 
 def _aggregate_raster(
@@ -322,7 +438,9 @@ def _aggregate_raster(
     in_grid = np.fromiter((cell in cell_set for cell in pixel_cells), dtype=bool)
     selected_cells = np.asarray(pixel_cells, dtype=object)[in_grid]
     if selected_cells.size == 0:
-        raise ValueError("No marine GEBCO pixels overlap the configured water H3 cells.")
+        raise ValueError(
+            "No marine GEBCO pixels overlap the configured water H3 cells."
+        )
 
     depth = marine_depth[marine][in_grid]
     if bathymetry_sign == "negative_elevation":
@@ -347,7 +465,9 @@ def _aggregate_raster(
     }
     for quantile in depth_quantiles:
         aggregations[_quantile_column(quantile)] = (
-            lambda values, selected_quantile=quantile: values.quantile(selected_quantile)
+            lambda values, selected_quantile=quantile: values.quantile(
+                selected_quantile
+            )
         )
     grouped = samples.groupby("H3_INDEX", sort=False, observed=True)["BATHYMETRY"].agg(
         **aggregations
@@ -358,7 +478,8 @@ def _aggregate_raster(
     grouped = grouped.join(band_counts, how="left")
     for token, _lower, _upper in DEPTH_BANDS_M:
         grouped[f"BATHYMETRY_FRAC_{token}_M"] = (
-            grouped[f"BATHYMETRY_PIXEL_COUNT_{token}_M"] / grouped["BATHYMETRY_PIXEL_COUNT"]
+            grouped[f"BATHYMETRY_PIXEL_COUNT_{token}_M"]
+            / grouped["BATHYMETRY_PIXEL_COUNT"]
         )
     grouped["BATHYMETRY_RANGE"] = grouped["BATHYMETRY_MAX"] - grouped["BATHYMETRY_MIN"]
     result = pd.DataFrame({"H3_INDEX": cells}).merge(
@@ -390,7 +511,9 @@ def build_bathymetry_parquet(
 ) -> Path:
     """Aggregate GEBCO depth and direct depth summaries into configured H3 cells."""
 
-    source = Path(raster_path).expanduser().resolve() if raster_path else config.raw_path
+    source = (
+        Path(raster_path).expanduser().resolve() if raster_path else config.raw_path
+    )
     if not source.exists():
         raise FileNotFoundError(f"GEBCO GeoTIFF not found: {source}")
     cells = load_h3_cells(config)

@@ -8,7 +8,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-VERIFIED_SOURCE_COVERAGE_STATUSES = frozenset({"configured_verified", "request_complete"})
+VERIFIED_SOURCE_COVERAGE_STATUSES = frozenset(
+    {"configured_verified", "request_complete"}
+)
 VERIFIED_SNAPSHOT_COVERAGE_STATUSES = frozenset({"verified_intersection"})
 
 
@@ -72,7 +74,8 @@ class DataSnapshotMetadata:
     def from_dict(cls, value: Mapping[str, Any]) -> "DataSnapshotMetadata":
         payload = dict(value)
         payload["source_watermarks"] = tuple(
-            SourceWatermark.from_dict(item) for item in payload.get("source_watermarks", ())
+            SourceWatermark.from_dict(item)
+            for item in payload.get("source_watermarks", ())
         )
         coverage_status = str(payload.get("coverage_status") or "legacy_unverified")
         if coverage_status not in VERIFIED_SNAPSHOT_COVERAGE_STATUSES:
@@ -107,7 +110,9 @@ class ArtifactRef:
     temporal_coverage: Mapping[str, Any] | None = None
     data_snapshot: DataSnapshotMetadata | None = None
     sensitivity: str = "internal"
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
@@ -123,7 +128,9 @@ class ArtifactRef:
         payload["path"] = Path(payload["path"])
         payload["inputs"] = tuple(payload.get("inputs", ()))
         if payload.get("data_snapshot") is not None:
-            payload["data_snapshot"] = DataSnapshotMetadata.from_dict(payload["data_snapshot"])
+            payload["data_snapshot"] = DataSnapshotMetadata.from_dict(
+                payload["data_snapshot"]
+            )
         return cls(**payload)
 
 
@@ -145,7 +152,9 @@ class RunManifest:
     schema_version: str = "1"
     stage_signature: str | None = None
     data_snapshot: DataSnapshotMetadata | None = None
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
 
     def to_dict(self) -> dict[str, Any]:
         payload = {
@@ -177,7 +186,9 @@ def atomic_write_json(
     if destination.exists() and not overwrite:
         raise FileExistsError(f"Artifact already exists: {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary = tempfile.mkstemp(prefix=f".{destination.name}.", dir=destination.parent)
+    fd, temporary = tempfile.mkstemp(
+        prefix=f".{destination.name}.", dir=destination.parent
+    )
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             json.dump(payload, handle, indent=2, sort_keys=True, default=str)
@@ -198,7 +209,9 @@ def atomic_write_text(
     if destination.exists() and not overwrite:
         raise FileExistsError(f"Artifact already exists: {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary = tempfile.mkstemp(prefix=f".{destination.name}.", dir=destination.parent)
+    fd, temporary = tempfile.mkstemp(
+        prefix=f".{destination.name}.", dir=destination.parent
+    )
     try:
         with os.fdopen(fd, "w", encoding=encoding) as handle:
             handle.write(text)

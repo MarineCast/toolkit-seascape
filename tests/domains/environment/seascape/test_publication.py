@@ -57,26 +57,33 @@ def test_release_publisher_promotes_manifest_last(tmp_path: Path, monkeypatch) -
         return replace(source, destination)
 
     monkeypatch.setattr(os, "replace", observe)
-    with SeascapeReleasePublisher(canonical, candidate, run_id="release-fixture") as publisher:
+    with SeascapeReleasePublisher(
+        canonical, candidate, run_id="release-fixture"
+    ) as publisher:
         publisher.stage_candidate("seascape_release_manifest.json", manifest=True)
         publisher.stage_candidate("artifact.txt")
         publisher.publish()
 
     assert canonical.joinpath("artifact.txt").read_text() == "new-artifact"
-    assert json.loads(canonical.joinpath("seascape_release_manifest.json").read_text()) == {
-        "generation": 2
-    }
+    assert json.loads(
+        canonical.joinpath("seascape_release_manifest.json").read_text()
+    ) == {"generation": 2}
     assert promoted[-1] == "seascape_release_manifest.json"
 
 
-def test_repeated_release_does_not_self_catalog_prior_release_manifest(tmp_path: Path) -> None:
+def test_repeated_release_does_not_self_catalog_prior_release_manifest(
+    tmp_path: Path,
+) -> None:
     canonical = tmp_path / "canonical"
     candidate = tmp_path / "candidate"
     processed = candidate / "data/processed/domain/environmental_layer/seascape"
     processed.mkdir(parents=True)
     (processed / "fixture_manifest.json").write_text('{"schema_version": "3.0.0"}')
     (processed / "seascape_release_manifest.json").write_text('{"generation": "prior"}')
-    audit = candidate / "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"
+    audit = (
+        candidate
+        / "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"
+    )
     audit.parent.mkdir(parents=True)
     audit.write_text(
         '{"artifact_release_passed": true, "feature_eligibility_complete": true}'
@@ -119,7 +126,9 @@ def test_snapshot_recovers_interrupted_release_before_read(tmp_path: Path) -> No
                 "items": [
                     {
                         "destination": str(destination),
-                        "candidate": str(canonical / ".staging/interrupted/000_artifact.txt"),
+                        "candidate": str(
+                            canonical / ".staging/interrupted/000_artifact.txt"
+                        ),
                         "backup": str(backup),
                         "had_destination": True,
                         "promoted": True,
@@ -134,9 +143,14 @@ def test_snapshot_recovers_interrupted_release_before_read(tmp_path: Path) -> No
     assert not transaction.exists()
 
 
-def test_snapshot_recovers_nested_family_transaction_before_read(tmp_path: Path) -> None:
+def test_snapshot_recovers_nested_family_transaction_before_read(
+    tmp_path: Path,
+) -> None:
     canonical = tmp_path / "canonical"
-    family = canonical / "data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp"
+    family = (
+        canonical
+        / "data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp"
+    )
     family.mkdir(parents=True)
     destination = family / "kelp.parquet"
     destination.write_text("partial")
@@ -151,7 +165,9 @@ def test_snapshot_recovers_nested_family_transaction_before_read(tmp_path: Path)
                 "items": [
                     {
                         "destination": str(destination),
-                        "candidate": str(family / ".staging/interrupted/000_kelp.parquet"),
+                        "candidate": str(
+                            family / ".staging/interrupted/000_kelp.parquet"
+                        ),
                         "backup": str(backup),
                         "had_destination": True,
                         "promoted": True,
@@ -188,7 +204,9 @@ def test_shared_snapshot_blocks_release_writer(tmp_path: Path) -> None:
     assert process.exitcode == 0
 
 
-@pytest.mark.parametrize("failed_destination", ["first.txt", "second.txt", "manifest.json"])
+@pytest.mark.parametrize(
+    "failed_destination", ["first.txt", "second.txt", "manifest.json"]
+)
 def test_release_rolls_back_failure_at_each_promotion(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -259,7 +277,9 @@ def test_release_rolls_back_failure_at_each_journal_update(
         staticmethod(fail_selected_update),
     )
     with pytest.raises(OSError, match="failed journal update"):
-        with SeascapeReleasePublisher(canonical, candidate, run_id="journal-failure") as publisher:
+        with SeascapeReleasePublisher(
+            canonical, candidate, run_id="journal-failure"
+        ) as publisher:
             publisher.stage_candidate("artifact.txt")
             publisher.stage_candidate("manifest.json", manifest=True)
             publisher.publish()

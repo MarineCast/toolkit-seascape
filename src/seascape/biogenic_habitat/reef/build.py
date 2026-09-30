@@ -14,8 +14,6 @@ import numpy as np
 import pandas as pd
 from shapely import area, intersection, union_all
 
-from seascape.core.config.data import load_data_config
-from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.benthic_substrate.bottom_hardness.build import (
     PREFIX as HARDNESS_PREFIX,
 )
@@ -28,6 +26,8 @@ from seascape.benthic_substrate.classification.build import (
 from seascape.benthic_substrate.classification.download import (
     SECTION_NAME as SUBSTRATE_SECTION,
 )
+from seascape.core.config.data import load_data_config
+from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
 )
@@ -41,11 +41,9 @@ from seascape.spatial_support.water_network.radius_operator import (
 )
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.config import require_mapping as _mapping
 from seascape.utils.config import resolve_project_path as _resolve
 from seascape.utils.habitat_acquisition import (
@@ -85,7 +83,9 @@ def _reef_processing(config_path: str | Path) -> dict[str, Any]:
     processing = _mapping(section.get("processing"), f"{SECTION_NAME}.processing")
     base_value = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = base_value if base_value.is_absolute() else project_root() / base_value
-    processing["geomorphometry_path"] = _resolve(processing["geomorphometry_path"], base_dir)
+    processing["geomorphometry_path"] = _resolve(
+        processing["geomorphometry_path"], base_dir
+    )
     processing["bathymetry_path"] = _resolve(processing["bathymetry_path"], base_dir)
     return processing
 
@@ -132,8 +132,10 @@ def load_reef_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
 
     config = load_habitat_download_config(SECTION_NAME, config_path)
     frames = []
-    wdfw_path = config.raw_dir / str(config.sources["wa_wdfw_shellfish"]["raw_filename"])
-    if wdfw_path.exists():
+    wdfw_path = config.raw_dir / str(
+        config.sources["wa_wdfw_shellfish"]["raw_filename"]
+    )
+    if config.sources["wa_wdfw_shellfish"].get("enabled", True) and wdfw_path.exists():
         wdfw = gpd.read_file(wdfw_path).to_crs("EPSG:4326")
         description = wdfw["shellfish_description"].astype(str).str.lower()
         wdfw = wdfw.loc[description.str.contains("oyster")].copy()
@@ -146,8 +148,13 @@ def load_reef_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
                 subtype="oyster_bed",
             )
         )
-    bc_path = config.raw_dir / str(config.sources["bc_shorezone_bivalves"]["raw_filename"])
-    if bc_path.exists():
+    bc_path = config.raw_dir / str(
+        config.sources["bc_shorezone_bivalves"]["raw_filename"]
+    )
+    if (
+        config.sources["bc_shorezone_bivalves"].get("enabled", True)
+        and bc_path.exists()
+    ):
         bc = gpd.read_file(bc_path).to_crs("EPSG:4326")
         species = bc["SPECIES_NAME"].astype(str).str.lower()
         keep = species.str.contains("mytilus|crassostrea|ostrea", regex=True)
@@ -184,7 +191,9 @@ def load_reef_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
 def _clip_score(values: pd.Series, maximum: float) -> np.ndarray:
     if maximum <= 0:
         raise ValueError("Rocky-reef score thresholds must be positive.")
-    return np.clip(pd.to_numeric(values, errors="coerce").to_numpy(dtype="float64") / maximum, 0, 1)
+    return np.clip(
+        pd.to_numeric(values, errors="coerce").to_numpy(dtype="float64") / maximum, 0, 1
+    )
 
 
 def _rocky_potential(
@@ -216,7 +225,9 @@ def _rocky_potential(
         )
     )
     scores = {
-        "hardness": pd.to_numeric(terrain["BOTTOM_HARDNESS_INDEX"], errors="coerce").to_numpy(),
+        "hardness": pd.to_numeric(
+            terrain["BOTTOM_HARDNESS_INDEX"], errors="coerce"
+        ).to_numpy(),
         "slope": _clip_score(
             terrain["SLOPE_MEAN_RING_1"], float(processing["slope_full_score_degrees"])
         ),
@@ -224,33 +235,44 @@ def _rocky_potential(
             terrain["LOCAL_RELIEF_RING_2_M"], float(processing["relief_full_score_m"])
         ),
         "ruggedness": _clip_score(
-            terrain["VECTOR_RUGGEDNESS_RING_1"], float(processing["ruggedness_full_score"])
+            terrain["VECTOR_RUGGEDNESS_RING_1"],
+            float(processing["ruggedness_full_score"]),
         ),
     }
-    depth = pd.to_numeric(terrain["BATHYMETRY_MEDIAN"], errors="coerce").to_numpy(dtype="float64")
+    depth = pd.to_numeric(terrain["BATHYMETRY_MEDIAN"], errors="coerce").to_numpy(
+        dtype="float64"
+    )
     full_depth = float(processing["depth_full_score_max_m"])
     zero_depth = float(processing["depth_zero_score_m"])
     if zero_depth <= full_depth:
-        raise ValueError("Rocky-reef depth zero-score threshold must exceed full-score depth.")
+        raise ValueError(
+            "Rocky-reef depth zero-score threshold must exceed full-score depth."
+        )
     scores["depth"] = np.clip((zero_depth - depth) / (zero_depth - full_depth), 0, 1)
     weights = {
         key: float(value)
-        for key, value in _mapping(processing["potential_weights"], "potential_weights").items()
+        for key, value in _mapping(
+            processing["potential_weights"], "potential_weights"
+        ).items()
     }
     if set(weights) != set(scores) or any(value <= 0 for value in weights.values()):
-        raise ValueError("Rocky-reef potential weights must be positive for every score family.")
+        raise ValueError(
+            "Rocky-reef potential weights must be positive for every score family."
+        )
     numerator = np.zeros(len(terrain), dtype="float64")
     denominator = np.zeros(len(terrain), dtype="float64")
     for name, values in scores.items():
         valid = np.isfinite(values)
         numerator[valid] += values[valid] * weights[name]
         denominator[valid] += weights[name]
-    return np.divide(
+    potential = np.divide(
         numerator,
         denominator,
         out=np.full(len(terrain), np.nan, dtype="float64"),
         where=denominator > 0,
     )
+    potential[~np.isfinite(scores["hardness"])] = np.nan
+    return potential
 
 
 def _rocky_fraction(
@@ -261,10 +283,12 @@ def _rocky_fraction(
     """Return mapped hard-substrate fraction without converting unknown cells to zero."""
 
     substrate_conf = substrate_confidence.set_index("H3_INDEX").loc[target_cells]
-    fraction = pd.to_numeric(base["SUBSTRATE_HARD_SUBSTRATE_FRAC"], errors="coerce").astype(
-        "float64"
+    fraction = pd.to_numeric(
+        base["SUBSTRATE_HARD_SUBSTRATE_FRAC"], errors="coerce"
+    ).astype("float64")
+    unmapped = (
+        substrate_conf["SUBSTRATE_UNMAPPED_AREA"].fillna(True).to_numpy(dtype=bool)
     )
-    unmapped = substrate_conf["SUBSTRATE_UNMAPPED_AREA"].fillna(True).to_numpy(dtype=bool)
     fraction.loc[unmapped] = np.nan
     return fraction, substrate_conf
 
@@ -287,7 +311,9 @@ def _biogenic_metrics(
     source_sets: list[set[str]] = [set() for _ in target_cells]
     confidence = np.zeros(len(target_cells), dtype="int8")
     for subtype in ("oyster_bed", "mussel_bed"):
-        records = projected_inventory.loc[projected_inventory["REEF_SUBTYPE"].eq(subtype)]
+        records = projected_inventory.loc[
+            projected_inventory["REEF_SUBTYPE"].eq(subtype)
+        ]
         if records.empty:
             subtype_area[subtype] = np.zeros(len(target_cells), dtype="float64")
             continue
@@ -302,7 +328,9 @@ def _biogenic_metrics(
             cell_geometry = projected_cells.geometry.iloc[index]
             matching = records.loc[records.geometry.intersects(cell_geometry)]
             source_sets[index].update(matching["SOURCE_DATASET"].astype(str))
-            confidence[index] = max(confidence[index], int(matching["CONFIDENCE_CLASS"].max()))
+            confidence[index] = max(
+                confidence[index], int(matching["CONFIDENCE_CLASS"].max())
+            )
     total_area = np.minimum(
         water_area,
         subtype_area["oyster_bed"] + subtype_area["mussel_bed"],
@@ -397,14 +425,18 @@ def _r8_tables(
             validate="one_to_one",
         )
     )
-    rocky_fraction, substrate_conf = _rocky_fraction(base, substrate_confidence, target_cells)
-    rocky_area = rocky_fraction.fillna(0.0).to_numpy() * support["WATER_AREA_M2"].to_numpy(
+    rocky_fraction, substrate_conf = _rocky_fraction(
+        base, substrate_confidence, target_cells
+    )
+    rocky_area = rocky_fraction.to_numpy() * support["WATER_AREA_M2"].to_numpy(
         dtype="float64"
     )
     rocky_area_5km = radius_operator.apply(
         rocky_area,
         eligible_sources=np.isfinite(rocky_area) & (rocky_area > 0),
     )
+    if not np.isfinite(rocky_area).any():
+        rocky_area_5km[:] = np.nan
     potential = _rocky_potential(base, geomorphometry, bathymetry, processing)
     biogenic, biogenic_confidence = _biogenic_metrics(
         inventory,
@@ -420,7 +452,9 @@ def _r8_tables(
             "H3_INDEX": target_cells,
             "H3_RESOLUTION": 8,
             "ROCKY_REEF_FRAC": rocky_fraction.to_numpy(),
-            "ROCKY_REEF_DISTANCE_M": base["SUBSTRATE_DISTANCE_TO_HARD_SUBSTRATE_M"].to_numpy(),
+            "ROCKY_REEF_DISTANCE_M": base[
+                "SUBSTRATE_DISTANCE_TO_HARD_SUBSTRATE_M"
+            ].to_numpy(),
             "ROCKY_REEF_AREA_WITHIN_5KM_M2": rocky_area_5km,
             "POTENTIAL_ROCKY_REEF_SUITABILITY": potential,
             "BIOGENIC_REEF_FRAC": biogenic["BIOGENIC_REEF_FRAC"].to_numpy(),
@@ -454,14 +488,18 @@ def _r8_tables(
                 "modeled_dbseabed_substrate_plus_modeled_potential",
                 np.where(np.isfinite(potential), "modeled_potential", None),
             ),
-            "ROCKY_REEF_UNMAPPED_AREA": substrate_conf["SUBSTRATE_UNMAPPED_AREA"].to_numpy(),
+            "ROCKY_REEF_UNMAPPED_AREA": substrate_conf[
+                "SUBSTRATE_UNMAPPED_AREA"
+            ].to_numpy(),
             "BIOGENIC_REEF_SOURCE_DATASETS": biogenic_confidence[
                 "BIOGENIC_REEF_SOURCE_DATASETS"
             ].to_numpy(),
             "BIOGENIC_REEF_SOURCE_COUNT": biogenic_confidence[
                 "BIOGENIC_REEF_SOURCE_COUNT"
             ].to_numpy(),
-            "BIOGENIC_REEF_CONFIDENCE": biogenic_confidence["BIOGENIC_REEF_CONFIDENCE"].to_numpy(),
+            "BIOGENIC_REEF_CONFIDENCE": biogenic_confidence[
+                "BIOGENIC_REEF_CONFIDENCE"
+            ].to_numpy(),
             "BIOGENIC_REEF_OBSERVED_VS_MODELED": biogenic_confidence[
                 "BIOGENIC_REEF_OBSERVED_VS_MODELED"
             ].to_numpy(),
@@ -531,7 +569,9 @@ def _r6_tables(
         for column in fraction_columns:
             valid = rows[column].notna()
             row[column] = (
-                float((rows.loc[valid, column].astype(float) * weights.loc[valid]).sum())
+                float(
+                    (rows.loc[valid, column].astype(float) * weights.loc[valid]).sum()
+                )
                 / parent_area
                 if valid.all()
                 else np.nan
@@ -539,7 +579,12 @@ def _r6_tables(
         for column in mean_columns:
             valid = rows[column].notna()
             row[column] = (
-                float(np.average(rows.loc[valid, column].astype(float), weights=weights.loc[valid]))
+                float(
+                    np.average(
+                        rows.loc[valid, column].astype(float),
+                        weights=weights.loc[valid],
+                    )
+                )
                 if valid.any()
                 else np.nan
             )
@@ -548,8 +593,12 @@ def _r6_tables(
         row.update(
             {
                 "WATER_COMPONENT_ID": support.loc[str(parent), "WATER_COMPONENT_ID"],
-                "NETWORK_CONNECTOR_METHOD": support.loc[str(parent), "CONNECTOR_METHOD"],
-                "NETWORK_CONNECTOR_DISTANCE_M": support.loc[str(parent), "CONNECTOR_DISTANCE_M"],
+                "NETWORK_CONNECTOR_METHOD": support.loc[
+                    str(parent), "CONNECTOR_METHOD"
+                ],
+                "NETWORK_CONNECTOR_DISTANCE_M": support.loc[
+                    str(parent), "CONNECTOR_DISTANCE_M"
+                ],
                 "NETWORK_DISTANCE_QC_REASON": (
                     None
                     if rows["ROCKY_REEF_DISTANCE_M"].notna().any()
@@ -567,10 +616,18 @@ def _r6_tables(
                 "ROCKY_REEF_OBSERVED_VS_MODELED": _pipe_union(
                     rows["ROCKY_REEF_OBSERVED_VS_MODELED"]
                 ),
-                "ROCKY_REEF_UNMAPPED_AREA": bool(rows["ROCKY_REEF_UNMAPPED_AREA"].any()),
-                "BIOGENIC_REEF_SOURCE_DATASETS": _pipe_union(rows["BIOGENIC_REEF_SOURCE_DATASETS"]),
+                "ROCKY_REEF_UNMAPPED_AREA": bool(
+                    rows["ROCKY_REEF_UNMAPPED_AREA"].any()
+                ),
+                "BIOGENIC_REEF_SOURCE_DATASETS": _pipe_union(
+                    rows["BIOGENIC_REEF_SOURCE_DATASETS"]
+                ),
                 "BIOGENIC_REEF_SOURCE_COUNT": (
-                    len((_pipe_union(rows["BIOGENIC_REEF_SOURCE_DATASETS"]) or "").split("|"))
+                    len(
+                        (
+                            _pipe_union(rows["BIOGENIC_REEF_SOURCE_DATASETS"]) or ""
+                        ).split("|")
+                    )
                     if _pipe_union(rows["BIOGENIC_REEF_SOURCE_DATASETS"])
                     else 0
                 ),
@@ -601,8 +658,12 @@ def build_reef_habitat(
     graph = load_water_graph(8, config_path, bbox=bbox, bbox_buffer_m=35_000.0)
     radius_operator = load_radius_sum_operator(config_path)
     network = load_water_network_config(config_path)
-    substrate = load_habitat_surface_config(SUBSTRATE_SECTION, SUBSTRATE_PREFIX, config_path)
-    hardness = load_habitat_surface_config(HARDNESS_SECTION, HARDNESS_PREFIX, config_path)
+    substrate = load_habitat_surface_config(
+        SUBSTRATE_SECTION, SUBSTRATE_PREFIX, config_path
+    )
+    hardness = load_habitat_surface_config(
+        HARDNESS_SECTION, HARDNESS_PREFIX, config_path
+    )
     required = [
         substrate.feature_path(8),
         substrate.confidence_path(8),
@@ -640,9 +701,13 @@ def build_reef_habitat(
     support_r6 = load_model_area_support(6, config_path)
     support_r6 = support_r6.loc[support_r6["H3_INDEX"].astype(str).isin(parents)].copy()
     crosswalk = crosswalk.loc[
-        crosswalk["PARENT_H3_INDEX"].astype(str).isin(set(support_r6["H3_INDEX"].astype(str)))
+        crosswalk["PARENT_H3_INDEX"]
+        .astype(str)
+        .isin(set(support_r6["H3_INDEX"].astype(str)))
     ].copy()
-    r6_features, r6_confidence = _r6_tables(r8_features, r8_confidence, crosswalk, support_r6)
+    r6_features, r6_confidence = _r6_tables(
+        r8_features, r8_confidence, crosswalk, support_r6
+    )
     paths = (
         config.inventory_path,
         config.feature_path(8),
@@ -669,8 +734,12 @@ def build_reef_habitat(
             "name": name,
             "license": source.get("license") or "See authoritative source terms",
             "attribution": source.get("attribution") or name,
-            "status": "disabled" if not bool(source.get("enabled", True)) else "configured",
-            "source_url": source.get("url", source.get("layer_url", source.get("dataset_url"))),
+            "status": "disabled"
+            if not bool(source.get("enabled", True))
+            else "configured",
+            "source_url": source.get(
+                "url", source.get("layer_url", source.get("dataset_url"))
+            ),
         }
         if raw_path is not None:
             record["path"] = str(raw_path)
@@ -698,10 +767,13 @@ def build_reef_habitat(
             ]
         ],
         attribution=[
-            {"text": source["attribution"], "license": source["license"]} for source in sources
+            {"text": source["attribution"], "license": source["license"]}
+            for source in sources
         ],
         source_completeness="partial",
         metadata={
+            "scientific_method_version": "reef_no_unverified_hardness_v2",
+            "modeled_rock_area_status": "unavailable: source rock presence is not verified areal cover",
             "radius_operator_lineage": {
                 "path": str(network.radius_sum_operator_path),
                 "checksum": _sha256(network.radius_sum_operator_path),

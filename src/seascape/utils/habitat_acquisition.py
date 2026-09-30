@@ -44,6 +44,32 @@ class HabitatDownloadConfig:
     sources: dict[str, dict[str, Any]]
 
 
+def _source_applies(name: str, source: Mapping[str, Any], active: set[str]) -> bool:
+    """Use declared jurisdiction (or the repository's bc_/wa_ source convention)."""
+
+    jurisdiction = source.get("jurisdiction")
+    if jurisdiction is None:
+        jurisdiction = (
+            "bc" if name.startswith("bc_") else "wa" if name.startswith("wa_") else None
+        )
+    return jurisdiction is None or str(jurisdiction).lower() in active
+
+
+def _active_jurisdictions(download: Mapping[str, Any], section_name: str) -> set[str]:
+    active_raw = download.get("active_jurisdictions", ["bc", "wa"])
+    if (
+        not isinstance(active_raw, list)
+        or not active_raw
+        or any(not isinstance(value, str) for value in active_raw)
+        or set(active_raw) - {"bc", "wa"}
+        or len(active_raw) != len(set(active_raw))
+    ):
+        raise ValueError(
+            f"{section_name}.download.active_jurisdictions must contain bc and/or wa."
+        )
+    return set(active_raw)
+
+
 def load_habitat_download_config(
     section_name: str,
     config_path: str | Path,
@@ -56,7 +82,9 @@ def load_habitat_download_config(
     download = _mapping(section.get("download"), f"{section_name}.download")
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     timeout = float(download.get("request_timeout_seconds", 180.0))
     page_size = int(download.get("page_size", 2_000))
@@ -65,6 +93,15 @@ def load_habitat_download_config(
     sources = _mapping(download.get("sources"), f"{section_name}.download.sources")
     if not sources:
         raise ValueError(f"{section_name}.download.sources must not be empty.")
+    active = _active_jurisdictions(download, section_name)
+    resolved_sources: dict[str, dict[str, Any]] = {}
+    for name, value in sources.items():
+        source_value = _mapping(value, f"{section_name}.sources.{name}")
+        resolved_sources[name] = {
+            **source_value,
+            "enabled": bool(source_value.get("enabled", True))
+            and _source_applies(name, source_value, active),
+        }
     return HabitatDownloadConfig(
         section_name=section_name,
         bbox=bbox_from_config(section),
@@ -72,10 +109,7 @@ def load_habitat_download_config(
         request_timeout_seconds=timeout,
         page_size=page_size,
         overwrite=bool(download.get("overwrite", False)),
-        sources={
-            name: _mapping(value, f"{section_name}.sources.{name}")
-            for name, value in sources.items()
-        },
+        sources=resolved_sources,
     )
 
 
@@ -151,15 +185,21 @@ def _download_http_file(
             with zipfile.ZipFile(destination) as archive:
                 bad_member = archive.testzip()
                 if bad_member:
-                    raise RuntimeError(f"Downloaded ZIP has a corrupt member: {bad_member}")
+                    raise RuntimeError(
+                        f"Downloaded ZIP has a corrupt member: {bad_member}"
+                    )
         except zipfile.BadZipFile as exc:
-            raise RuntimeError(f"Downloaded archive is not a valid ZIP: {destination}") from exc
+            raise RuntimeError(
+                f"Downloaded archive is not a valid ZIP: {destination}"
+            ) from exc
     _validate_expected_file(destination, source)
     return int(destination.stat().st_size)
 
 
 def _query_envelope(bbox: Mapping[str, float]) -> str:
-    return ",".join(str(float(bbox[key])) for key in ("min_lon", "min_lat", "max_lon", "max_lat"))
+    return ",".join(
+        str(float(bbox[key])) for key in ("min_lon", "min_lat", "max_lon", "max_lat")
+    )
 
 
 def _build_overpass_query(
@@ -174,7 +214,12 @@ def _build_overpass_query(
     clean_filters: list[str] = []
     for value in filters:
         item = str(value).strip()
-        if not item.startswith("[") or not item.endswith("]") or ";" in item or "\n" in item:
+        if (
+            not item.startswith("[")
+            or not item.endswith("]")
+            or ";" in item
+            or "\n" in item
+        ):
             raise ValueError(f"Unsafe or invalid Overpass filter: {item!r}")
         clean_filters.append(item)
     south = float(bbox["min_lat"])
@@ -189,7 +234,10 @@ def _build_overpass_query(
     geometry_mode = str(source.get("geometry_mode", "geom")).strip().lower()
     if geometry_mode not in {"geom", "center"}:
         raise ValueError("Overpass geometry_mode must be 'geom' or 'center'.")
-    return f"[out:json][timeout:{timeout}];\n(\n{statements}\n);\n" f"out meta {geometry_mode};"
+    return (
+        f"[out:json][timeout:{timeout}];\n(\n{statements}\n);\n"
+        f"out meta {geometry_mode};"
+    )
 
 
 def _overpass_metadata(document: Mapping[str, Any]) -> dict[str, Any]:
@@ -220,8 +268,12 @@ def _overpass_tiles(
     size = float(tile_degrees)
     if size <= 0:
         raise ValueError("Overpass tile_degrees must be positive when configured.")
-    lon_count = max(1, math.ceil((float(bbox["max_lon"]) - float(bbox["min_lon"])) / size))
-    lat_count = max(1, math.ceil((float(bbox["max_lat"]) - float(bbox["min_lat"])) / size))
+    lon_count = max(
+        1, math.ceil((float(bbox["max_lon"]) - float(bbox["min_lon"])) / size)
+    )
+    lat_count = max(
+        1, math.ceil((float(bbox["max_lat"]) - float(bbox["min_lat"])) / size)
+    )
     tiles: list[dict[str, float]] = []
     for lat_index in range(lat_count):
         min_lat = float(bbox["min_lat"]) + lat_index * size
@@ -255,14 +307,18 @@ def _download_overpass(
         configured_endpoints = [source.get("url")]
     if not isinstance(configured_endpoints, list):
         raise ValueError("Overpass endpoints must be a list.")
-    endpoints = [str(value).strip() for value in configured_endpoints if str(value).strip()]
+    endpoints = [
+        str(value).strip() for value in configured_endpoints if str(value).strip()
+    ]
     if not endpoints:
         raise ValueError("Overpass sources require at least one endpoint.")
     attempts = int(source.get("attempts_per_endpoint", 2))
     backoff = float(source.get("retry_backoff_seconds", 2.0))
     request_delay = float(source.get("request_delay_seconds", 0.0))
     if attempts < 1 or backoff < 0 or request_delay < 0:
-        raise ValueError("Overpass retry settings must be non-negative and attempts positive.")
+        raise ValueError(
+            "Overpass retry settings must be non-negative and attempts positive."
+        )
     tiles = _overpass_tiles(bbox, source.get("tile_degrees"))
     queries = [_build_overpass_query(source, tile) for tile in tiles]
     query_sha256 = hashlib.sha256("\n".join(queries).encode("utf-8")).hexdigest()
@@ -275,8 +331,12 @@ def _download_overpass(
         for endpoint in endpoints:
             for attempt in range(attempts):
                 try:
-                    response = session.post(endpoint, data={"data": query}, timeout=timeout)
-                    tile_document = _response_json(response, f"Overpass query for {endpoint}")
+                    response = session.post(
+                        endpoint, data={"data": query}, timeout=timeout
+                    )
+                    tile_document = _response_json(
+                        response, f"Overpass query for {endpoint}"
+                    )
                     elements = tile_document.get("elements")
                     if not isinstance(elements, list):
                         raise RuntimeError(
@@ -365,7 +425,9 @@ def _download_arcgis(
         )
     fields = source.get("fields", "*")
     out_fields = (
-        ",".join(str(value) for value in fields) if isinstance(fields, list) else str(fields)
+        ",".join(str(value) for value in fields)
+        if isinstance(fields, list)
+        else str(fields)
     )
     features: list[dict[str, Any]] = []
     for offset in range(0, len(object_ids), page_size):
@@ -423,7 +485,8 @@ def _download_wfs(
         query_bbox = _query_envelope(bbox)
     elif axis_order == "lat_lon":
         query_bbox = ",".join(
-            str(float(bbox[key])) for key in ("min_lat", "min_lon", "max_lat", "max_lon")
+            str(float(bbox[key]))
+            for key in ("min_lat", "min_lon", "max_lat", "max_lon")
         )
     else:
         raise ValueError("WFS bbox_axis_order must be 'lon_lat' or 'lat_lon'.")
@@ -453,15 +516,21 @@ def _download_wfs(
             try:
                 expected = int(payload["numberMatched"])
             except (KeyError, TypeError, ValueError) as exc:
-                raise RuntimeError(f"WFS source omitted numberMatched: {type_name}") from exc
+                raise RuntimeError(
+                    f"WFS source omitted numberMatched: {type_name}"
+                ) from exc
             if expected < 1:
                 raise RuntimeError(f"WFS source returned no features: {type_name}")
         if not batch:
-            raise RuntimeError(f"WFS pagination ended before numberMatched for {type_name}")
+            raise RuntimeError(
+                f"WFS pagination ended before numberMatched for {type_name}"
+            )
         features.extend(batch)
         start_index += len(batch)
     if expected is None or len(features) != expected:
-        raise RuntimeError(f"WFS source returned {len(features)} of {expected} expected features.")
+        raise RuntimeError(
+            f"WFS source returned {len(features)} of {expected} expected features."
+        )
     _atomic_json({"type": "FeatureCollection", "features": features}, destination)
     return len(features)
 
@@ -500,9 +569,13 @@ def acquisition_identity(source: Mapping[str, Any], bbox: Mapping[str, float]) -
     return hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
 
 
-def validate_cached_source(path: Path, identity: str, previous: Mapping[str, Any]) -> None:
+def validate_cached_source(
+    path: Path, identity: str, previous: Mapping[str, Any]
+) -> None:
     """Never assign a new source identity or retrieval date to unverified old bytes."""
-    if previous.get("acquisition_identity") != identity or previous.get("sha256") != _sha256(path):
+    if previous.get("acquisition_identity") != identity or previous.get(
+        "sha256"
+    ) != _sha256(path):
         raise ValueError(
             f"Cached source identity or checksum is unverified/changed: {path}. "
             "Recollect with --overwrite; the previous manifest is preserved."
@@ -522,16 +595,24 @@ def download_habitat_sources(
     replace = config.overwrite if overwrite is None else bool(overwrite)
     config.raw_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = config.raw_dir / "download_manifest.json"
-    previous_manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
-    previous_sources = {item["name"]: item for item in previous_manifest.get("sources", [])}
+    previous_manifest = (
+        json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    )
+    previous_sources = {
+        item["name"]: item for item in previous_manifest.get("sources", [])
+    }
     # Preflight every reused source before any network request or mutation.
     for name, source in config.sources.items():
-        if not source.get("enabled", True) or (source.get("large", False) and not include_large):
+        if not source.get("enabled", True) or (
+            source.get("large", False) and not include_large
+        ):
             continue
         path = config.raw_dir / str(source["raw_filename"])
         if path.exists() and not replace:
             validate_cached_source(
-                path, acquisition_identity(source, config.bbox), previous_sources.get(name, {})
+                path,
+                acquisition_identity(source, config.bbox),
+                previous_sources.get(name, {}),
             )
     outputs: list[Path] = []
     manifest_sources: list[dict[str, Any]] = []
@@ -541,7 +622,9 @@ def download_habitat_sources(
             source_metadata = {
                 "name": name,
                 "kind": source.get("kind"),
-                "source_url": source.get("url", source.get("layer_url", source.get("dataset_url"))),
+                "source_url": source.get(
+                    "url", source.get("layer_url", source.get("dataset_url"))
+                ),
                 "endpoints": source.get("endpoints"),
                 "dataset_url": source.get("dataset_url"),
                 "dataset_version": source.get("dataset_version"),
@@ -573,7 +656,9 @@ def download_habitat_sources(
                 status = "existing"
             elif kind == "local_raster":
                 if not destination.exists():
-                    raise FileNotFoundError(f"Place the configured local raster at {destination}")
+                    raise FileNotFoundError(
+                        f"Place the configured local raster at {destination}"
+                    )
                 # Explicit --overwrite imports caller-supplied bytes; never claim a retrieval.
                 count = _validate_existing(destination, kind)
                 status = "supplied_local"
@@ -615,7 +700,9 @@ def download_habitat_sources(
                 )
                 status = "downloaded"
             else:
-                raise ValueError(f"Unsupported habitat source kind {kind!r} for {name}.")
+                raise ValueError(
+                    f"Unsupported habitat source kind {kind!r} for {name}."
+                )
             _validate_expected_file(destination, source)
             if bool(source.get("extract", False)):
                 extract_dir = config.raw_dir / str(
@@ -632,7 +719,11 @@ def download_habitat_sources(
                     "retrieved_at_utc": (
                         previous_sources[name].get("retrieved_at_utc")
                         if status == "existing"
-                        else (None if status == "supplied_local" else datetime.now(UTC).isoformat())
+                        else (
+                            None
+                            if status == "supplied_local"
+                            else datetime.now(UTC).isoformat()
+                        )
                     ),
                     "path": str(destination),
                     "count_or_bytes": count,

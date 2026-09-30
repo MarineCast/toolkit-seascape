@@ -37,7 +37,10 @@ def inspect_anthropogenic_seascape(
             ("DISTANCE_TO_BREAKWATER_M", "Marine-connected distance to breakwater (m)"),
             ("DISTANCE_TO_JETTY_M", "Marine-connected distance to jetty or groyne (m)"),
             ("DISTANCE_TO_CAUSEWAY_M", "Marine-connected distance to causeway (m)"),
-            ("DISTANCE_TO_PIER_M", "Marine-connected distance to pier, dock, or wharf (m)"),
+            (
+                "DISTANCE_TO_PIER_M",
+                "Marine-connected distance to pier, dock, or wharf (m)",
+            ),
             (
                 "DISTANCE_TO_FERRY_TERMINAL_M",
                 "Marine-connected distance to ferry terminal (m)",
@@ -85,7 +88,9 @@ def inspect_anthropogenic_seascape(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
-    parser.add_argument("--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH)
+    parser.add_argument(
+        "--presentation-config", default=DEFAULT_PRESENTATION_CONFIG_PATH
+    )
     parser.add_argument("--resolution", type=int, choices=(6, 8), default=6)
     parser.add_argument("--output")
     args = parser.parse_args()

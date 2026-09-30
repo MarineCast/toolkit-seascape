@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import pyarrow as pa
+
 from .contracts import (
     DatasetFormat,
     DatasetId,
@@ -205,6 +207,16 @@ def register_builtin_datasets():
             primary_key=("H3_INDEX",),
             schema_version="1",
         )
+        _register(
+            f"environment.seascape.gebco_tid_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            f"{{data_root}}/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/GEBCO_TID_RES_{resolution}.parquet",
+            "environment.seascape.seafloor_physiography.bathymetry.tid",
+            dependencies=(f"environment.seascape.bathymetry_r{resolution}",),
+            primary_key=("H3_INDEX",),
+            schema_version="1",
+        )
     _register(
         "environment.seascape.geomorphometry_r8",
         DatasetLayer.DOMAIN,
@@ -301,6 +313,225 @@ def register_builtin_datasets():
         primary_key=("H3_INDEX",),
         schema_version="2",
     )
+    _register(
+        "environment.seascape.selected_outlet_inventory",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets/SELECTED_OUTLET_INVENTORY.parquet",
+        "environment.seascape.hydrologic_connectivity.fluvial_connectivity.selected_outlets_build",
+        dependencies=("environment.seascape.fluvial_connectivity_r8",),
+        primary_key=("OUTLET_ID",),
+        schema_version="1",
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.outlet_relationships_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/selected_outlets/OUTLET_RELATIONSHIPS_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.hydrologic_connectivity.fluvial_connectivity.selected_outlets_build",
+            dependencies=(
+                "environment.seascape.selected_outlet_inventory",
+                f"environment.seascape.h3_marine_support_r{resolution}",
+                f"environment.seascape.h3_water_edges_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "OUTLET_ID"),
+            schema_version="1",
+        )
+    _register(
+        "environment.seascape.shoreline_stations",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/SHORELINE_STATIONS.parquet",
+        "environment.seascape.coastal_configuration.nearshore_build",
+        dependencies=("environment.seascape.shoreline_characterization_r8",),
+        primary_key=("STATION_ID",),
+    )
+    _register(
+        "environment.seascape.nearshore_deep_components",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/NEARSHORE_DEEP_COMPONENTS.parquet",
+        "environment.seascape.coastal_configuration.nearshore_build",
+        dependencies=("environment.seascape.shoreline_stations",),
+        primary_key=("DEEP_COMPONENT_ID",),
+    )
+    _register(
+        "environment.seascape.shoreline_transects",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/SHORELINE_TRANSECTS.parquet",
+        "environment.seascape.coastal_configuration.nearshore_build",
+        dependencies=("environment.seascape.shoreline_stations",),
+        primary_key=("STATION_ID", "DEPTH_THRESHOLD_M"),
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.nearshore_transitions_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/nearshore_transitions/NEARSHORE_TRANSITIONS_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.coastal_configuration.nearshore_build",
+            dependencies=(
+                "environment.seascape.shoreline_stations",
+                f"environment.seascape.h3_marine_support_r{resolution}",
+                f"environment.seascape.bathymetry_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "DEPTH_THRESHOLD_M"),
+        )
+    _register(
+        "environment.seascape.passage_inventory",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/PASSAGE_INVENTORY.parquet",
+        "environment.seascape.coastal_configuration.passage_build",
+        primary_key=("PASSAGE_ID",),
+    )
+    _register(
+        "environment.seascape.passage_cross_sections",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/PASSAGE_CROSS_SECTIONS.parquet",
+        "environment.seascape.coastal_configuration.passage_build",
+        dependencies=("environment.seascape.passage_inventory",),
+        primary_key=("SECTION_ID",),
+    )
+    _register(
+        "environment.seascape.sill_candidates",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/SILL_CANDIDATES.parquet",
+        "environment.seascape.coastal_configuration.passage_build",
+        dependencies=("environment.seascape.passage_cross_sections",),
+        primary_key=("SILL_CANDIDATE_ID",),
+    )
+    _register(
+        "environment.seascape.mapped_sills",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/MAPPED_SILLS.parquet",
+        "environment.seascape.coastal_configuration.passage_build",
+        dependencies=("environment.seascape.passage_inventory",),
+        primary_key=("SILL_ID",),
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.h3_passage_associations_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/passage_sections/H3_PASSAGE_ASSOCIATIONS_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.coastal_configuration.passage_build",
+            dependencies=(
+                "environment.seascape.passage_inventory",
+                f"environment.seascape.h3_marine_support_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "PASSAGE_ID"),
+        )
+    _register(
+        "environment.seascape.gateway_inventory",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_INVENTORY.parquet",
+        "environment.seascape.coastal_configuration.gateway_build",
+        primary_key=("GATEWAY_ID",),
+    )
+    _register(
+        "environment.seascape.gateway_attachments",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_ATTACHMENTS.parquet",
+        "environment.seascape.coastal_configuration.gateway_build",
+        dependencies=("environment.seascape.gateway_inventory",),
+        primary_key=("GATEWAY_ID", "H3_RESOLUTION", "GRAPH_H3_INDEX"),
+    )
+    _register(
+        "environment.seascape.gateway_route_diagnostics",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.PARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_ROUTE_DIAGNOSTICS.parquet",
+        "environment.seascape.coastal_configuration.gateway_build",
+        dependencies=("environment.seascape.gateway_attachments",),
+        primary_key=("ROUTE_ID", "H3_RESOLUTION"),
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.gateway_relationships_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/geographic_gateways/GATEWAY_RELATIONSHIPS_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.coastal_configuration.gateway_build",
+            dependencies=(
+                "environment.seascape.gateway_attachments",
+                f"environment.seascape.h3_marine_support_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "GATEWAY_ID"),
+        )
+    _register(
+        "environment.seascape.land_component_inventory",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/LAND_COMPONENT_INVENTORY.parquet",
+        "environment.seascape.coastal_configuration.coast_complexity_build",
+        primary_key=("LAND_COMPONENT_ID",),
+    )
+    _register(
+        "environment.seascape.headland_candidates",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/HEADLAND_CANDIDATES.parquet",
+        "environment.seascape.coastal_configuration.coast_complexity_build",
+        primary_key=("HEADLAND_CANDIDATE_ID",),
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.coast_complexity_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/coastal_configuration/coast_complexity/COAST_COMPLEXITY_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.coastal_configuration.coast_complexity_build",
+            dependencies=(
+                "environment.seascape.land_component_inventory",
+                f"environment.seascape.h3_marine_support_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION"),
+        )
+    _register(
+        "environment.seascape.normalized_mapped_habitat_inventory",
+        DatasetLayer.DOMAIN,
+        DatasetFormat.GEOPARQUET,
+        "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/NORMALIZED_MAPPED_HABITAT_INVENTORY.parquet",
+        "environment.seascape.biogenic_habitat.mosaic_build",
+        primary_key=("RECORD_ID",),
+    )
+    for resolution in (6, 8):
+        _register(
+            f"environment.seascape.mapped_habitat_support_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.GEOPARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/MAPPED_HABITAT_SUPPORT_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.biogenic_habitat.mosaic_build",
+            dependencies=(f"environment.seascape.h3_marine_support_r{resolution}",),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "SUPPORT_TYPE"),
+        )
+        _register(
+            f"environment.seascape.mapped_habitat_mosaic_r{resolution}",
+            DatasetLayer.DOMAIN,
+            DatasetFormat.PARQUET,
+            "{data_root}/processed/domain/environmental_layer/seascape/biogenic_habitat/mosaic/MAPPED_HABITAT_MOSAIC_RES_"
+            f"{resolution}.parquet",
+            "environment.seascape.biogenic_habitat.mosaic_build",
+            dependencies=(
+                "environment.seascape.normalized_mapped_habitat_inventory",
+                f"environment.seascape.mapped_habitat_support_r{resolution}",
+            ),
+            primary_key=("H3_INDEX", "H3_RESOLUTION", "SUPPORT_TYPE", "HABITAT_TYPE"),
+        )
     _register(
         "environment.seascape.estuarine_connectivity_r8",
         DatasetLayer.DOMAIN,

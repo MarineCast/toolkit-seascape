@@ -1,7 +1,9 @@
 """Regression checks for extraction, workspace ownership and installed entry points."""
+
 from __future__ import annotations
 
 import ast
+import tomllib
 from importlib.resources import files
 from pathlib import Path
 
@@ -13,6 +15,13 @@ from seascape.core.data.registry import DATASETS
 from seascape.workflow import selected_stages
 
 
+def test_package_targets_python_314_only():
+    project = tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text())
+    assert project["project"]["requires-python"] == ">=3.14,<3.15"
+    assert project["tool"]["ruff"]["target-version"] == "py314"
+    assert project["tool"]["mypy"]["python_version"] == "3.14"
+
+
 def test_source_has_no_application_imports():
     source = Path(__file__).parents[1] / "src/seascape"
     for path in source.rglob("*.py"):
@@ -22,13 +31,17 @@ def test_source_has_no_application_imports():
                 modules = [alias.name for alias in node.names]
             elif isinstance(node, ast.ImportFrom) and node.module:
                 modules = [node.module]
-            assert not any(m == "orcacast" or m.startswith("orcacast.") for m in modules), path
+            assert not any(
+                m == "orcacast" or m.startswith("orcacast.") for m in modules
+            ), path
 
 
 def test_dataset_dependencies_are_owned_by_toolkit():
     specs = tuple(DATASETS)
     assert specs
-    assert all(str(spec.dataset_id).startswith("environment.seascape.") for spec in specs)
+    assert all(
+        str(spec.dataset_id).startswith("environment.seascape.") for spec in specs
+    )
     for spec in specs:
         for dependency in spec.dependencies:
             DATASETS.get(dependency)
@@ -43,7 +56,8 @@ def test_workspace_init_is_portable_and_preserves_edits(tmp_path, monkeypatch):
     documentation = workspace / "docs/products.md"
     assert config.is_file()
     assert documentation.is_file()
-    from seascape.maintenance.update_seascape_docs import START_MARKER, END_MARKER
+    from seascape.maintenance.update_seascape_docs import END_MARKER, START_MARKER
+
     assert documentation.read_text().count(START_MARKER) == 1
     assert documentation.read_text().count(END_MARKER) == 1
     config.write_text(config.read_text() + "# user edit\n")
@@ -55,17 +69,36 @@ def test_workspace_init_is_portable_and_preserves_edits(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     assert project_root() == workspace
     assert resolve_config_path("config/data/project.yaml") == config
-    from seascape.seafloor_physiography.bathymetry.pipeline import load_bathymetry_config
+    from seascape.seafloor_physiography.bathymetry.pipeline import (
+        load_bathymetry_config,
+    )
+
     assert load_bathymetry_config(config).raw_path.is_relative_to(workspace)
 
 
 def test_packaged_templates_match_editable_checkout():
     root = Path(__file__).parents[1]
-    editable_templates = [root / "config/common.yaml", *(root / "config/data").glob("*.yaml")]
+    editable_templates = [
+        root / "config/common.yaml",
+        *(root / "config/data").glob("*.yaml"),
+    ]
     for path in editable_templates:
-        assert files("seascape").joinpath("resources", str(path.relative_to(root))).read_bytes() == path.read_bytes()
-    assert not files("seascape").joinpath("resources/config/feature_catalog.yaml").is_file()
-    assert not files("seascape").joinpath("resources/config/model_feature_policy.yaml").is_file()
+        assert (
+            files("seascape")
+            .joinpath("resources", str(path.relative_to(root)))
+            .read_bytes()
+            == path.read_bytes()
+        )
+    assert (
+        not files("seascape")
+        .joinpath("resources/config/feature_catalog.yaml")
+        .is_file()
+    )
+    assert (
+        not files("seascape")
+        .joinpath("resources/config/model_feature_policy.yaml")
+        .is_file()
+    )
 
 
 def test_required_modules_and_editable_templates_are_in_installed_package():
@@ -89,7 +122,11 @@ def test_release_plan_is_seascape_only():
     assert stages[-1].name == "seascape-release"
     assert any(stage.name == "seascape-feature-eligibility" for stage in stages)
     assert not any(stage.name == "seascape-model-policy" for stage in stages)
-    assert not any("meteorological" in output for stage in stages for output in stage.declared_outputs)
+    assert not any(
+        "meteorological" in output
+        for stage in stages
+        for output in stage.declared_outputs
+    )
 
 
 @pytest.mark.parametrize("family", DOWNLOAD_FAMILIES)

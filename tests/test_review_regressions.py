@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -154,11 +153,11 @@ def test_scientific_configuration_rejects_nonmetric_crs(workspace, crs):
 
 @pytest.mark.parametrize("sign", [None, "negative_elevation"])
 def test_terrain_rejects_unsupported_depth_sign_before_io(workspace, sign):
-    from seascape.seafloor_physiography.geomorphic_units.build import (
-        load_geomorphic_units_config,
-    )
     from seascape.coastal_configuration.waterbody_morphometry.build import (
         load_waterbody_morphometry_config,
+    )
+    from seascape.seafloor_physiography.geomorphic_units.build import (
+        load_geomorphic_units_config,
     )
 
     path = workspace / "config/data/environment_seascape.yaml"
@@ -184,9 +183,9 @@ def test_q90_schema_rejects_other_quantiles(workspace):
 
 
 def _raster(tmp_path, *, rotate=False, coastal=False):
+    import h3
     import rasterio
     from rasterio.transform import Affine, from_origin
-    import h3
 
     transform = from_origin(-123, 48.5, 0.001, 0.001)
     if rotate:
@@ -306,8 +305,8 @@ def test_resume_tracks_common_extends_and_environment(workspace, monkeypatch):
 
 
 def test_candidate_uses_same_composed_values_and_frozen_common(workspace):
-    from seascape.core.config.data import load_data_config
     from seascape.core.config.common_areas import bbox_for_area
+    from seascape.core.config.data import load_data_config
 
     base = workspace / "base.yaml"
     base.write_text("value: 12\nnested:\n  a: 1\n")

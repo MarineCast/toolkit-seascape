@@ -26,7 +26,10 @@ from shapely.geometry import box
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
-from seascape.core.geo.geometry import normalize_polygonal_geometry, safe_polygonal_union
+from seascape.core.geo.geometry import (
+    normalize_polygonal_geometry,
+    safe_polygonal_union,
+)
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
 )
@@ -143,7 +146,9 @@ def load_waterbody_morphometry_config(
     )
     configured_base = Path(str(raw.get("base_directory", "."))).expanduser()
     base_dir = (
-        configured_base if configured_base.is_absolute() else project_root() / configured_base
+        configured_base
+        if configured_base.is_absolute()
+        else project_root() / configured_base
     ).resolve()
     resolution = int(processing.get("h3_resolution", 8))
     if resolution != 8:
@@ -167,7 +172,9 @@ def load_waterbody_morphometry_config(
             f"bearing_count must be {len(BEARING_LABELS)} for the named bearing schema."
         )
     if context_buffer_km <= maximum_search_km:
-        raise ValueError("network_context_buffer_km must exceed maximum_shore_search_km.")
+        raise ValueError(
+            "network_context_buffer_km must exceed maximum_shore_search_km."
+        )
     if constriction_rings < 1 or local_radius < 1 or sill_rings < 1:
         raise ValueError("All H3 neighborhood ring settings must be positive.")
     if narrows_width_km <= 0.0 or sill_max_width_km <= 0.0:
@@ -211,13 +218,17 @@ def _spatial_support(config: WaterbodyMorphometryConfig):
         config.bbox["max_lat"],
     )
     graph_box = _expanded_bbox(config.bbox, config.network_context_buffer_km)
-    fetch_mask_km = config.network_context_buffer_km + config.maximum_shore_search_km + 2.0
+    fetch_mask_km = (
+        config.network_context_buffer_km + config.maximum_shore_search_km + 2.0
+    )
     fetch_mask_box = _expanded_bbox(config.bbox, fetch_mask_km)
     land_guard_box = _expanded_bbox(config.bbox, fetch_mask_km + 10.0)
     target_water = safe_polygonal_union(water, clip_geometry=target_box)
     fetch_mask_water = safe_polygonal_union(water, clip_geometry=fetch_mask_box)
     guarded_land = safe_polygonal_union(land, clip_geometry=land_guard_box)
-    fetch_mask_land = normalize_polygonal_geometry(guarded_land.intersection(fetch_mask_box))
+    fetch_mask_land = normalize_polygonal_geometry(
+        guarded_land.intersection(fetch_mask_box)
+    )
     return target_water, graph_box, fetch_mask_box, fetch_mask_land, fetch_mask_water
 
 
@@ -237,12 +248,15 @@ def _directional_shore_distances(
         zip(cells, latitudes, longitudes, strict=True)
     ):
         for bearing_index, bearing in enumerate(bearings):
-            output[index, bearing_index] = maximum_search_m * directional_water_fraction(
-                float(longitude),
-                float(latitude),
-                float(bearing),
-                maximum_search_m,
-                water_geometry,
+            output[index, bearing_index] = (
+                maximum_search_m
+                * directional_water_fraction(
+                    float(longitude),
+                    float(latitude),
+                    float(bearing),
+                    maximum_search_m,
+                    water_geometry,
+                )
             )
         if (index + 1) % 10_000 == 0:
             LOGGER.info(
@@ -258,7 +272,9 @@ def _width_metrics(
     maximum_search_m: float,
 ) -> dict[str, np.ndarray]:
     axis_widths = rays[:, :8] + rays[:, 8:]
-    axis_censored = (rays[:, :8] >= maximum_search_m) | (rays[:, 8:] >= maximum_search_m)
+    axis_censored = (rays[:, :8] >= maximum_search_m) | (
+        rays[:, 8:] >= maximum_search_m
+    )
     nearest_bearing = np.argmin(rays, axis=1)
     opposite_bearing = (nearest_bearing + 8) % len(BEARING_LABELS)
     rows = np.arange(len(rays))
@@ -275,7 +291,9 @@ def _width_metrics(
         "WATERBODY_WIDTH_STD_M": axis_widths.std(axis=1),
         "WATERBODY_WIDTH_CENSORED_FRACTION": axis_censored.mean(axis=1),
         "DISTANCE_TO_OPPOSITE_SHORE_M": opposite_distance,
-        "OPPOSITE_SHORE_CENSORED": (opposite_distance >= maximum_search_m).astype("float64"),
+        "OPPOSITE_SHORE_CENSORED": (opposite_distance >= maximum_search_m).astype(
+            "float64"
+        ),
     }
 
 
@@ -286,7 +304,9 @@ def _constriction_indices(
 ) -> np.ndarray:
     output = np.zeros(len(adjacency), dtype="float64")
     for index in range(len(adjacency)):
-        neighborhood = _bounded_adjacency_positions(index, adjacency, neighborhood_rings)
+        neighborhood = _bounded_adjacency_positions(
+            index, adjacency, neighborhood_rings
+        )
         reference = float(np.median(widths[neighborhood]))
         if reference > 0.0:
             output[index] = max(0.0, 1.0 - float(widths[index]) / reference)
@@ -340,12 +360,15 @@ def _local_water_space_metrics(
                     queue.append(neighbor)
         reachable = set(distances)
         boundary_edges = sum(
-            6 - sum(neighbor in reachable for neighbor in adjacency[index]) for index in reachable
+            6 - sum(neighbor in reachable for neighbor in adjacency[index])
+            for index in reachable
         )
         area = float(cell_areas_km2[list(reachable)].sum())
         perimeter = float(boundary_edges) * edge_length_km
         compactness = (
-            min(1.0, 4.0 * math.pi * area / (perimeter * perimeter)) if perimeter > 0.0 else 0.0
+            min(1.0, 4.0 * math.pi * area / (perimeter * perimeter))
+            if perimeter > 0.0
+            else 0.0
         )
         outer = {index for index, step in distances.items() if step == radius_rings}
         branches = 0
@@ -355,7 +378,9 @@ def _local_water_space_metrics(
             branch_queue = [remaining.pop()]
             while branch_queue:
                 index = branch_queue.pop()
-                connected = [neighbor for neighbor in adjacency[index] if neighbor in remaining]
+                connected = [
+                    neighbor for neighbor in adjacency[index] if neighbor in remaining
+                ]
                 for neighbor in connected:
                     remaining.remove(neighbor)
                     branch_queue.append(neighbor)
@@ -391,7 +416,9 @@ def _sill_candidates(
     constriction: np.ndarray,
 ) -> np.ndarray:
     if not config.bathymetry_path.exists():
-        raise FileNotFoundError(f"Bathymetry source not found: {config.bathymetry_path}")
+        raise FileNotFoundError(
+            f"Bathymetry source not found: {config.bathymetry_path}"
+        )
     bathymetry = pl.read_parquet(
         config.bathymetry_path,
         columns=["H3_INDEX", "BATHYMETRY"],
@@ -442,7 +469,9 @@ def _build_output(
     data["DISTANCE_TO_CONSTRICTED_PASSAGE_M"] = distance_to_narrows
     data["DISTANCE_TO_SILL_CANDIDATE_M"] = distance_to_sill
     data["WATER_COMPONENT_ID"] = nullable_string_values(lineage["WATER_COMPONENT_ID"])
-    data["NETWORK_CONNECTOR_METHOD"] = nullable_string_values(lineage["CONNECTOR_METHOD"])
+    data["NETWORK_CONNECTOR_METHOD"] = nullable_string_values(
+        lineage["CONNECTOR_METHOD"]
+    )
     data["NETWORK_CONNECTOR_DISTANCE_M"] = lineage["CONNECTOR_DISTANCE_M"].tolist()
     data["NETWORK_DISTANCE_QC_REASON"] = nullable_string_values(qc_reasons)
     return (
@@ -472,8 +501,8 @@ def build_waterbody_morphometry(
     import h3
 
     config = load_waterbody_morphometry_config(config_path)
-    target_water, graph_box, fetch_mask_box, fetch_mask_land, fetch_mask_water = _spatial_support(
-        config
+    target_water, graph_box, fetch_mask_box, fetch_mask_land, fetch_mask_water = (
+        _spatial_support(config)
     )
     target_support = load_model_area_support(config.h3_resolution, config_path)
     target_cells = target_support["H3_INDEX"].astype(str).tolist()
@@ -490,11 +519,15 @@ def build_waterbody_morphometry(
     )
     graph_cells = graph.cells.astype(str).tolist()
     graph_lineage = graph.support.set_index("H3_INDEX").loc[graph_cells]
-    graph_lon = graph_lineage["REPRESENTATIVE_POINT_LONGITUDE"].to_numpy(dtype="float64")
+    graph_lon = graph_lineage["REPRESENTATIVE_POINT_LONGITUDE"].to_numpy(
+        dtype="float64"
+    )
     graph_lat = graph_lineage["REPRESENTATIVE_POINT_LATITUDE"].to_numpy(dtype="float64")
     from pyproj import Transformer
 
-    transformer = Transformer.from_crs("EPSG:4326", config.projected_crs, always_xy=True)
+    transformer = Transformer.from_crs(
+        "EPSG:4326", config.projected_crs, always_xy=True
+    )
     graph_x, graph_y = transformer.transform(graph_lon, graph_lat)
     graph_x = np.asarray(graph_x, dtype="float64")
     graph_y = np.asarray(graph_y, dtype="float64")
@@ -534,9 +567,14 @@ def build_waterbody_morphometry(
         adjacency,
         config.constriction_neighborhood_rings,
     )
-    graph_constriction[graph_width_metrics["_LOCAL_WATERBODY_WIDTH_CENSORED"] > 0.5] = 0.0
+    graph_constriction[graph_width_metrics["_LOCAL_WATERBODY_WIDTH_CENSORED"] > 0.5] = (
+        0.0
+    )
     narrows_candidates = np.flatnonzero(
-        (graph_width_metrics["LOCAL_WATERBODY_WIDTH_M"] <= config.narrows_max_width_km * 1_000.0)
+        (
+            graph_width_metrics["LOCAL_WATERBODY_WIDTH_M"]
+            <= config.narrows_max_width_km * 1_000.0
+        )
         & (graph_constriction >= config.narrows_constriction_threshold)
         & (graph_width_metrics["_LOCAL_WATERBODY_WIDTH_CENSORED"] < 0.5)
     )
@@ -564,8 +602,12 @@ def build_waterbody_morphometry(
             graph,
             [(graph_cells[index], 0.0, int(index)) for index in sill_candidates],
         )
-    source_indices, connector_distances, qc_reasons = target_graph_mapping(graph, target_cells)
-    cell_areas_km2 = graph_lineage["CELL_AREA_M2"].to_numpy(dtype="float64") / 1_000_000.0
+    source_indices, connector_distances, qc_reasons = target_graph_mapping(
+        graph, target_cells
+    )
+    cell_areas_km2 = (
+        graph_lineage["CELL_AREA_M2"].to_numpy(dtype="float64") / 1_000_000.0
+    )
     local_metrics = _local_water_space_metrics(
         source_indices,
         adjacency,
@@ -588,13 +630,16 @@ def build_waterbody_morphometry(
     narrows_reachable = valid & np.isfinite(
         graph_distance_to_narrows[np.maximum(source_indices, 0)]
     )
-    sill_reachable = valid & np.isfinite(graph_distance_to_sill[np.maximum(source_indices, 0)])
+    sill_reachable = valid & np.isfinite(
+        graph_distance_to_sill[np.maximum(source_indices, 0)]
+    )
     distance_to_narrows[narrows_reachable] = (
         graph_distance_to_narrows[source_indices[narrows_reachable]]
         + connector_distances[narrows_reachable]
     )
     distance_to_sill[sill_reachable] = (
-        graph_distance_to_sill[source_indices[sill_reachable]] + connector_distances[sill_reachable]
+        graph_distance_to_sill[source_indices[sill_reachable]]
+        + connector_distances[sill_reachable]
     )
     qc_reasons[~valid & pd.isna(qc_reasons)] = "unreachable_in_canonical_water_graph"
     lineage = target_support.set_index("H3_INDEX").loc[target_cells]
@@ -609,7 +654,9 @@ def build_waterbody_morphometry(
         qc_reasons,
     )
     if output["H3_INDEX"].n_unique() != output.height:
-        raise ValueError("Waterbody-morphometry output contains duplicate H3_INDEX values.")
+        raise ValueError(
+            "Waterbody-morphometry output contains duplicate H3_INDEX values."
+        )
     numeric = output.select(pl.selectors.numeric()).to_numpy()
     if np.isinf(numeric).any():
         raise ValueError("Waterbody-morphometry output contains infinite values.")

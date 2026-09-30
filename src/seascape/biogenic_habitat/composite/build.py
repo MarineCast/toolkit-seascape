@@ -10,7 +10,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from seascape.core.config.paths import project_root
 from seascape.benthic_substrate.classification.build import (
     PREFIX as SUBSTRATE_PREFIX,
 )
@@ -31,13 +30,12 @@ from seascape.biogenic_habitat.seagrass.build import (
 from seascape.biogenic_habitat.seagrass.download import (
     SECTION_NAME as SEAGRASS_SECTION,
 )
+from seascape.core.config.paths import project_root
 from seascape.utils.artifacts import (
     build_manifest,
-)
-from seascape.utils.artifacts import checksum_artifact as _sha256
-from seascape.utils.artifacts import (
     stage_parquet_family,
 )
+from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.habitat_configuration import (
     load_habitat_surface_config,
 )
@@ -64,10 +62,14 @@ CORE_FEATURES = [
 
 def _family_configs(config_path: str | Path) -> dict[str, Any]:
     return {
-        "seagrass": load_habitat_surface_config(SEAGRASS_SECTION, SEAGRASS_PREFIX, config_path),
+        "seagrass": load_habitat_surface_config(
+            SEAGRASS_SECTION, SEAGRASS_PREFIX, config_path
+        ),
         "kelp": load_habitat_surface_config(KELP_SECTION, KELP_PREFIX, config_path),
         "reef": load_habitat_surface_config(REEF_SECTION, REEF_PREFIX, config_path),
-        "substrate": load_habitat_surface_config(SUBSTRATE_SECTION, SUBSTRATE_PREFIX, config_path),
+        "substrate": load_habitat_surface_config(
+            SUBSTRATE_SECTION, SUBSTRATE_PREFIX, config_path
+        ),
     }
 
 
@@ -107,18 +109,27 @@ def _build_resolution(
     substrate_conf = pd.read_parquet(configs["substrate"].confidence_path(resolution))
     keys = ["H3_INDEX", "H3_RESOLUTION"]
     inputs = {
-        "seagrass": seagrass, "kelp": kelp, "reef": reef,
-        "seagrass confidence": seagrass_conf, "kelp confidence": kelp_conf,
-        "reef confidence": reef_conf, "substrate confidence": substrate_conf,
+        "seagrass": seagrass,
+        "kelp": kelp,
+        "reef": reef,
+        "seagrass confidence": seagrass_conf,
+        "kelp confidence": kelp_conf,
+        "reef confidence": reef_conf,
+        "substrate confidence": substrate_conf,
     }
     reference = None
     for name, table in inputs.items():
         if not set(keys).issubset(table.columns):
             raise ValueError(f"{name} is missing composite identity columns.")
-        if (table.empty or table[keys].isna().any().any()
-                or table.duplicated(keys).any()
-                or not table["H3_RESOLUTION"].eq(resolution).all()):
-            raise ValueError(f"{name} requires unique non-null keys at resolution {resolution}.")
+        if (
+            table.empty
+            or table[keys].isna().any().any()
+            or table.duplicated(keys).any()
+            or not table["H3_RESOLUTION"].eq(resolution).all()
+        ):
+            raise ValueError(
+                f"{name} requires unique non-null keys at resolution {resolution}."
+            )
         support = pd.MultiIndex.from_frame(table[keys])
         if reference is None:
             reference = support
@@ -150,9 +161,9 @@ def _build_resolution(
     if missing_core:
         raise ValueError(f"Benthic composite is missing core features: {missing_core}")
     output = values.loc[:, [*keys, *CORE_FEATURES]].copy()
-    confidence = seagrass_conf.merge(kelp_conf, on=keys, how="inner", validate="one_to_one").merge(
-        reef_conf, on=keys, how="inner", validate="one_to_one"
-    )
+    confidence = seagrass_conf.merge(
+        kelp_conf, on=keys, how="inner", validate="one_to_one"
+    ).merge(reef_conf, on=keys, how="inner", validate="one_to_one")
     confidence = confidence.merge(
         substrate_conf[
             [
@@ -166,16 +177,22 @@ def _build_resolution(
         validate="one_to_one",
     )
     # One authoritative ordering before Series masks or numpy arrays are used.
-    confidence = values[keys].merge(confidence, on=keys, how="left", validate="one_to_one")
+    confidence = values[keys].merge(
+        confidence, on=keys, how="left", validate="one_to_one"
+    )
     output["BENTHIC_HABITAT_RICHNESS"] = _coverage_gated_richness(values, confidence)
-    edge_density = pd.to_numeric(values["SEAGRASS_EDGE_DENSITY_M_PER_KM2"], errors="coerce").fillna(
-        0
-    ) + pd.to_numeric(values["KELP_EDGE_DENSITY_M_PER_KM2"], errors="coerce").fillna(0)
+    edge_density = pd.to_numeric(
+        values["SEAGRASS_EDGE_DENSITY_M_PER_KM2"], errors="coerce"
+    ).fillna(0) + pd.to_numeric(
+        values["KELP_EDGE_DENSITY_M_PER_KM2"], errors="coerce"
+    ).fillna(0)
     edge_coverage_complete = ~(
         confidence["SEAGRASS_UNMAPPED_AREA"].astype(bool)
         | confidence["KELP_UNMAPPED_AREA"].astype(bool)
     )
-    output["BENTHIC_EDGE_DENSITY_M_PER_KM2"] = edge_density.where(edge_coverage_complete, np.nan)
+    output["BENTHIC_EDGE_DENSITY_M_PER_KM2"] = edge_density.where(
+        edge_coverage_complete, np.nan
+    )
     rocky_observed_confidence = np.where(
         output["ROCKY_REEF_FRAC"].fillna(0).to_numpy() > 0,
         confidence["SUBSTRATE_CONFIDENCE"].to_numpy(dtype="float64"),
@@ -194,12 +211,18 @@ def _build_resolution(
             "H3_INDEX": confidence["H3_INDEX"].astype("string"),
             "H3_RESOLUTION": resolution,
             "SEAGRASS_CONFIDENCE": confidence["SEAGRASS_CONFIDENCE"].to_numpy(),
-            "SEAGRASS_SURVEY_COVERAGE": confidence["SEAGRASS_SURVEYED_AREA_FRAC"].to_numpy(),
+            "SEAGRASS_SURVEY_COVERAGE": confidence[
+                "SEAGRASS_SURVEYED_AREA_FRAC"
+            ].to_numpy(),
             "KELP_CONFIDENCE": confidence["KELP_CONFIDENCE"].to_numpy(),
             "KELP_SURVEY_COVERAGE": confidence["KELP_SURVEYED_AREA_FRAC"].to_numpy(),
             "ROCKY_REEF_CONFIDENCE": confidence["ROCKY_REEF_CONFIDENCE"].to_numpy(),
-            "BIOGENIC_REEF_CONFIDENCE": confidence["BIOGENIC_REEF_CONFIDENCE"].to_numpy(),
-            "DEEP_CORAL_SPONGE_CONFIDENCE": confidence["DEEP_CORAL_SPONGE_CONFIDENCE"].to_numpy(),
+            "BIOGENIC_REEF_CONFIDENCE": confidence[
+                "BIOGENIC_REEF_CONFIDENCE"
+            ].to_numpy(),
+            "DEEP_CORAL_SPONGE_CONFIDENCE": confidence[
+                "DEEP_CORAL_SPONGE_CONFIDENCE"
+            ].to_numpy(),
             "BENTHIC_SURVEY_CONFIDENCE": survey_matrix.mean(axis=1),
             "BENTHIC_HABITAT_CONFIDENCE": np.max(survey_matrix, axis=1),
             "BENTHIC_HABITAT_UNMAPPED_AREA": (
@@ -222,7 +245,10 @@ def build_benthic_habitat_composite(
         path
         for family in families.values()
         for resolution in (8, 6)
-        for path in (family.feature_path(resolution), family.confidence_path(resolution))
+        for path in (
+            family.feature_path(resolution),
+            family.confidence_path(resolution),
+        )
     ]
     missing = [path for path in input_paths if not path.exists()]
     if missing:
