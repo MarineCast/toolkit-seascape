@@ -1,0 +1,78 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the immutable tagged commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - name: Set up release Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Verify clean checkout and tag/version identity
+        run: |
+          test -z "$(git status --porcelain)"
+          test "$(git describe --tags --exact-match HEAD)" = "$GITHUB_REF_NAME"
+          python scripts/check_release_version.py "$GITHUB_REF_NAME"
+      - name: Install build validation tools
+        run: python -m pip install '.[build]'
+      - name: Build wheel and source distribution once
+        run: python -m build --outdir "$RUNNER_TEMP/seascape-distributions"
+      - name: Validate distribution metadata and contents
+        run: |
+          python -m twine check "$RUNNER_TEMP/seascape-distributions"/*
+          python scripts/check_distribution.py \
+            --sdist "$RUNNER_TEMP/seascape-distributions"/*.tar.gz \
+            --wheel "$RUNNER_TEMP/seascape-distributions"/*.whl \
+            --output "$RUNNER_TEMP/distribution-report.json"
+      - name: Install as a clean consumer and run the offline demo
+        run: |
+          python scripts/check_consumer_install.py \
+            --wheel "$RUNNER_TEMP/seascape-distributions"/*.whl \
+            --source "$GITHUB_WORKSPACE" \
+            --forbid-root "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/seascape-release-consumer"
+      - name: Create immutable GitHub Release with software artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          notes="$RUNNER_TEMP/release-notes.md"
+          cat > "$notes" <<EOF
+          # toolkit-seascape $GITHUB_REF_NAME
+
+          ## Status
+
+          Public preview. The 0.x API and schemas may change in documented minor releases.
+
+          ## Installation
+
+          \`pip install toolkit-seascape==$version\`
+
+          ## Scientific changes and limitations
+
+          Review the versioned [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/CHANGELOG.md)
+          for method identities, scientific changes, compatibility, and limitations. These assets
+          contain software only; they are not a regional scientific data release.
+          EOF
+          gh release create "$GITHUB_REF_NAME" \
+            "$RUNNER_TEMP/seascape-distributions"/*.whl \
+            "$RUNNER_TEMP/seascape-distributions"/*.tar.gz \
+            --verify-tag \
+            --title "toolkit-seascape $GITHUB_REF_NAME" \
+            --notes-file "$notes"
+
+      # Future PyPI Trusted Publishing must consume the artifacts built above rather
+      # than rebuilding. No credentials or production publication are enabled here.

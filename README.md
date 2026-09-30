@@ -12,6 +12,24 @@ Seascape Toolkit turns reviewed geospatial sources into reproducible physical an
 
 The toolkit is for researchers, GIS users, and downstream applications that need analysis-ready features with source lineage, spatial support, and explicit missingness. Physical conditions and mapped evidence do **not** establish species occurrence or habitat suitability. Regional source data and an audited regional release are not bundled.
 
+## v0.1.0 status and compatibility
+
+**v0.1.0 is a public preview**, not a stable `1.0` contract. It supports Python 3.14 on the Linux
+x86_64 and macOS ARM64 environments exercised by CI. Other operating systems are not currently
+claimed. During `0.x`, documented minor releases may change APIs, CLI behavior, schemas, variables,
+or scientific methods; patch releases preserve intended public and scientific contracts.
+
+The toolkit records source lineage, configuration, checksums, spatial support, missingness, and
+versioned scientific interpretations so results can be reproduced and compared. Those records do
+not remove source-specific limitations: regional coverage, rights, horizontal CRS, vertical datum,
+resolution, and accuracy must be reviewed for each data release. The synthetic demo does not
+validate regional accuracy, species habitat, navigation safety, or predictive fitness.
+
+Software, scientific interpretation, and materialized data have deliberately separate identities.
+See the [release process](docs/development/releases.md) and [changelog](CHANGELOG.md) for the identity
+model, Semantic Versioning policy, method changes, and immutable-release rules. Rebuilding data does
+not by itself create a Python package version, Git tag, or GitHub Release.
+
 ## Install and get a first result
 
 Use a Python 3.14 source checkout with `pyproject.toml` at its root. Clone [the repository](https://github.com/MarineCast/toolkit-seascape), then run these commands from the checkout. Installation retrieves declared Python dependencies; the demo itself does not need source downloads or credentials.
@@ -48,6 +66,6 @@ The CLI prints `Synthetic software acceptance: PASS (not a regional release)` af
 | Review sources and calculations | [Data sources](https://marinecast.github.io/toolkit-seascape/data-sources/) · [Methodology](https://marinecast.github.io/toolkit-seascape/methodology/) · [Scientific contracts](docs/CONTRACTS.md) |
 | Process real inputs | [Bounded workflow](docs/WORKFLOWS.md#bounded-real-data-processing) · [Stage prerequisites](docs/stage-inputs.md) |
 | Read a completed release | [Python API](docs/API.md) · [Metric matrix](docs/metric-matrix.md) |
-| Contribute | [Development guide](docs/DEVELOPMENT.md) · [Documentation site source](docs/index.md) |
+| Contribute or release | [Development guide](docs/DEVELOPMENT.md) · [Release process](docs/development/releases.md) · [Documentation site source](docs/index.md) |
 
 Source rights and attribution are provider-specific; the software license is [Apache-2.0](LICENSE). The [documentation site](https://marinecast.github.io/toolkit-seascape/) is built with MkDocs Material and deployed from `main` by GitHub Actions. Contributors can run it locally with `python -m pip install -e ".[docs]"`, `mkdocs serve`, and `mkdocs build --strict`.
