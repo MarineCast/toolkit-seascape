@@ -147,12 +147,13 @@ python scripts/check_quickstart.py --sdist "$DIST_DIR"/*.tar.gz \
   --source "$PWD" --forbid-root "$(dirname "$PWD")" --output "$QUICKSTART_DIR"
 ```
 
-This transfers an sdist to a disposable directory, runs the README's normal isolated source install,
-then runs its demo and the workflow's init/stages/dry-run outside both source trees. The CLI runner
-rejects Python checkout reads, socket activity and child processes, and verifies a normal installed
-package with no pytest/Jupyter. Installation may contact dependency indexes; runtime uses the existing
-consumer guard, with the same native-network limitation described above. Reports retain the exact
-blocks, traced shell commands and logs. Existing output is refused and failure preserves evidence.
+This transfers an sdist to a disposable directory, runs the README's isolated developer source
+install, then runs its demo and the workflow's init/stages/dry-run outside both source trees. The
+CLI runner rejects Python checkout reads, socket activity and child processes, and verifies a
+normal installed package with no pytest/Jupyter. Installation may contact dependency indexes;
+runtime uses the existing consumer guard, with the same native-network limitation described
+above. Reports retain the exact blocks, traced shell commands and logs. Existing output is refused
+and failure preserves evidence.
 CI executes this on each consumer platform and uploads its report/log/demo artifacts.
 
 `python -m pytest -q tests/test_documentation.py` tests link/anchor/template/command drift and executes

@@ -21,6 +21,11 @@ not a guarantee for all dependency lower bounds, OS versions or architectures.
 | Local macOS 26.6.2 ARM64, CPython 3.14.6 | SS-09 full suite/clean consumer/source quickstart; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1 |
 | Native Windows | Not supported for the existing POSIX publication locks; no Windows acceptance claimed |
 
+As of 2026-09-30, Rasterio 1.5.2 offers a Python 3.14 ARM wheel for macOS 15 but not macOS 14.
+The current source metadata limits Rasterio to versions below 1.5.2 so macOS 14 resolves the
+1.5.1 wheel used in the recorded environment baseline. The already tagged `v0.1.0` package
+metadata cannot be changed and does not contain this limit.
+
 In SS-09, Linux 3.11.16/3.14.7 each ran 368 tests with three absent-regional-artifact skips. All three
 hosted consumer cases completed 16 expected-exit wheel steps and the documented source quickstart
 (12 shell lines, 15 demo checks). Linux 3.11 used GDAL 3.10.3 / PROJ 9.5.1 / GEOS 3.13.1;
