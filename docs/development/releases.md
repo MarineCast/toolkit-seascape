@@ -87,6 +87,12 @@ release a new version from reviewed source rather than replacing `v0.1.0` assets
 after the `v0.1.0` tag cannot appear in its immutable wheel or sdist; they will appear in the next
 version built from the updated source.
 
+The tagged `v0.1.0` metadata also retains an unbounded Rasterio dependency. As of 2026-09-30,
+an ordinary Python 3.14 installation on macOS 14 can select Rasterio 1.5.2, which lacks a
+compatible macOS 14 wheel and needs a separate GDAL source-build setup. The new source metadata
+caps Rasterio below 1.5.2, but the backfill cannot change `v0.1.0`. Review this limitation before
+choosing the first PyPI publication version.
+
 ## Scientific method versions
 
 Each scientifically meaningful producer or transformation records an explicit identity, such as:
