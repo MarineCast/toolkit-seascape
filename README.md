@@ -2,184 +2,19 @@
   <img src="docs/assets/seascape-underwater-banner.png" alt="Illustrated sunlit kelp and rocky seafloor; decorative banner, not a data product" width="100%">
 </p>
 
-<div align="center">
-
 # Seascape Toolkit
 
 **The shape, composition, and connectivity of the marine environment.**
 
-**[Inputs → outputs](#from-sources-to-variables)** &nbsp; · &nbsp; **[Explore the themes](#what-seascape-describes)** &nbsp; · &nbsp; **[Try it](#install-and-get-a-first-result)** &nbsp; · &nbsp; **[Documentation](docs/README.md)**
+[Documentation site](https://marinecast.github.io/toolkit-seascape/) · [Variables](https://marinecast.github.io/toolkit-seascape/variables/) · [Methods](https://marinecast.github.io/toolkit-seascape/methodology/) · [Examples](https://marinecast.github.io/toolkit-seascape/examples/)
 
-</div>
+Seascape Toolkit turns reviewed geospatial sources into reproducible physical and structural marine features. It supports bathymetry and terrain, modeled substrate, shoreline and waterbody geometry, freshwater connections, mapped vegetation and reef evidence, built coastal features, and the H3 water support that relates them. It is an independently installable Python package; no OrcaCast checkout is required.
 
----
-
-Seascape turns source datasets into spatial products describing the physical marine environment.
-Use it to work with **depth, seafloor composition, mapped vegetation, coastal geometry, and freshwater
-connections**, together with the spatial support and source evidence needed to interpret them.
-
-Built for GIS users, researchers, and downstream applications. Independently installable; no
-OrcaCast or sibling-toolkit checkout is required.
-
-**Package:** `toolkit-seascape` · **Python / CLI:** `seascape`
-
-> [!NOTE]
-> **New here?** Start with the [offline demo](#install-and-get-a-first-result). It produces a
-> small bathymetry table, a validation report, and two figures without source downloads or credentials.
-
-## From sources to variables
-
-Follow each row from a source dataset, through a Seascape theme, to the variables it produces.
-
-```mermaid
-flowchart LR
-    accTitle: Seascape source data, themes, and variable areas
-    accDescr: Seven thematic routes connect representative source data to Seascape themes and example variable areas. Spatial support is shared by the other families. This conceptual overview is not the execution dependency graph or a complete lineage map.
-
-    subgraph S["01 · SOURCE DATA"]
-        direction TB
-        S1["<b>GEBCO</b><br/>Bathymetry grids"]
-        S2["<b>dbSEABED</b><br/>Composition rasters"]
-        S3["Vegetation maps<br/>and reef evidence"]
-        S4["Shoreline inventories<br/>and coastal geometry"]
-        S5["River, barrier<br/>and estuary inventories"]
-        S6["Mapped structures<br/>and modification inventories"]
-        S7["U.S. / Canadian<br/>marine and land boundaries"]
-    end
-
-    subgraph T["02 · SEASCAPE THEMES"]
-        direction TB
-        T1["Depth and terrain"]
-        T2["Seafloor<br/>composition"]
-        T3["Vegetation and<br/>habitat evidence"]
-        T4["Coastal form"]
-        T5["Freshwater<br/>connections"]
-        T6["Built environment"]
-        T7["Spatial support"]
-    end
-
-    subgraph V["03 · OUTPUT VARIABLES"]
-        direction TB
-        V1["Depth, slope<br/>and geomorphic units"]
-        V2["Modeled rock presence<br/>and sediment texture"]
-        V3["Seagrass, kelp<br/>and rocky-reef evidence"]
-        V4["Shoreline character, proximity<br/>and geometric exposure"]
-        V5["River mouths, barriers<br/>and estuary proximity"]
-        V6["Shoreline modification,<br/>structures and footprints"]
-        V7["H3 water support,<br/>networks and neighborhoods"]
-    end
-
-    S1 --> T1 --> V1
-    S2 --> T2 --> V2
-    S3 --> T3 --> V3
-    S4 --> T4 --> V4
-    S5 --> T5 --> V5
-    S6 --> T6 --> V6
-    S7 --> T7 --> V7
-
-    style S fill:#F3F7F6,stroke:#D7E3DF,color:#123E37,stroke-width:1px,rx:12,ry:12
-    style T fill:#E7F2EE,stroke:#B3D2C8,color:#123E37,stroke-width:1px,rx:12,ry:12
-    style V fill:#F0F9F5,stroke:#D0E7DD,color:#123E37,stroke-width:1px,rx:12,ry:12
-
-    classDef source fill:#FFFFFF,stroke:#B6CCC4,color:#284B43,stroke-width:1px,rx:7,ry:7
-    classDef theme fill:#0F766E,stroke:#0B625C,color:#FFFFFF,stroke-width:1px,rx:7,ry:7
-    classDef variable fill:#ECFDF5,stroke:#8DBFB0,color:#123E37,stroke-width:1px,rx:7,ry:7
-    linkStyle default stroke:#609B91,stroke-width:1.5px
-    class S1,S2,S3,S4,S5,S6,S7 source
-    class T1,T2,T3,T4,T5,T6,T7 theme
-    class V1,V2,V3,V4,V5,V6,V7 variable
-```
-
-*Conceptual overview, not the execution dependency graph. Spatial support is a shared foundation;
-several products combine inputs across these routes. Source availability and acquisition methods
-vary by family. See the [stage inputs](docs/stage-inputs.md) for operational dependencies.*
-
----
-
-## What Seascape describes
-
-Seven themes organize the toolkit. The examples below describe product capabilities, not a promise
-of complete survey coverage or availability at every location and resolution.
-
-### [Depth and terrain](src/seascape/seafloor_physiography/README.md)
-
-Seafloor depth and shape: bathymetry, depth-band fractions, slope, terrain shape, and geomorphic units.
-
-### [Seafloor composition](src/seascape/benthic_substrate/README.md)
-
-Modeled rock presence and separately reported gravel, sand, and mud texture. The former hardness
-index is unavailable in new candidates until the source measurements support a common denominator.
-
-### [Vegetation and habitat evidence](src/seascape/biogenic_habitat/README.md)
-
-Mapped or derived seagrass, kelp, rocky-reef evidence, and bivalve-bed proxies, with explicit coverage and confidence states.
-
-### [Coastal form](src/seascape/coastal_configuration/README.md)
-
-Shoreline and waterbody geometry: shoreline character and proximity, directional exposure, enclosure, width, and constriction.
-
-### [Freshwater connections](src/seascape/hydrologic_connectivity/README.md)
-
-River and estuary connections to marine waters: river mouths, fluvial connectivity, mapped barriers, passage evidence, and estuary proximity.
-
-### [Built environment](src/seascape/anthropogenic/README.md)
-
-Mapped physical footprints of shoreline modification, overwater structures, dredging, disposal, artificial reefs, and aquaculture.
-
-### [Spatial support](src/seascape/spatial_support/README.md)
-
-Shared geometry and water networks: water polygons, H3 support, passable edges, terminal connectors, and bounded neighborhoods.
-
-Exact field names, units, resolutions, and source notes live in the [product reference](docs/products.md)
-and linked family guides. The checked-in catalog is reference metadata; an audited release records
-what was actually materialized.
-The [capability coverage matrix](docs/capability-coverage.md) separates implemented features from
-unmaterialized methods and source-blocked research.
-
----
-
-## What you get
-
-![Real GEBCO 2026 mean depth around the San Juan Islands, with named islands, a Pacific Northwest locator map, and a mint-to-deep-teal depth legend. Gray cells have unavailable depth.](docs/assets/san-juan-bathymetry.png)
-
-*Real data, geographic context. The [San Juan exploratory pilot](docs/pilots/san-juan.md)
-shows production H3 R8 mean depths from GEBCO 2026, with a generalized Natural Earth coastline.
-This is a bounded family example, not a complete regional release or navigation chart.
-[Map sources and reproduction](docs/readme-map.md). The offline quickstart below uses a separate
-synthetic fixture; it does not produce this regional map.*
-
-**Physical products** — Parquet/GeoParquet tables and supporting spatial artifacts. Canonical H3 products use R8 and, where implemented, R6. Not every product exists at both resolutions.
-
-**Evidence and quality** — Product-specific coverage, source state, confidence, and quality-control fields. Unknown, unavailable, and observed-zero values remain distinct.
-
-**Reproducible identity** — Source and artifact checksums, configuration and code identity, and manifests. Completed releases retain immutable generations addressable by release ID.
-
-**Inspection and export** — Family-specific inspectors and a release-backed H3 metric matrix with namespaced fields and retained source metadata.
-
-For downstream work, use [product resolution](docs/API.md) rather than hard-coding mutable output
-paths. The [metric-matrix exporter](docs/metric-matrix.md) combines released fields for inspection
-and joins without silently filling nulls or substituting another resolution.
-
----
+The toolkit is for researchers, GIS users, and downstream applications that need analysis-ready features with source lineage, spatial support, and explicit missingness. Physical conditions and mapped evidence do **not** establish species occurrence or habitat suitability. Regional source data and an audited regional release are not bundled.
 
 ## Install and get a first result
 
-Start with a **small synthetic example**, not a regional download. It calls the production
-bathymetry pipeline and leaves its outputs available for inspection.
-
-### Install in an isolated environment
-
-The source ZIP link below is pinned to revision `9755f94` and does not contain the development
-branch's scientific-hardening changes. Download and extract the [pinned source ZIP](https://github.com/MarineCast/toolkit-seascape/archive/9755f94f4ae50957f5c1af5316afb3e3cda26e54.zip).
-Open a terminal in the extracted root containing `pyproject.toml` and `README.md`. A checkout of
-[that revision](https://github.com/MarineCast/toolkit-seascape/tree/9755f94f4ae50957f5c1af5316afb3e3cda26e54)
-also works. To exercise scientific-hardening work before release, use a checkout or source archive
-of this branch with the same commands and interpret its outputs as candidate/software acceptance.
-
-Use Python 3.14 on a tested Linux/macOS environment for this branch; see the
-[platform coverage](docs/environments/README.md#tested-platforms). The pinned source ZIP is an older
-revision with its own package metadata. This is a source installation,
-not an assumed PyPI or tagged release. Installation requires access to declared dependencies.
+Use a Python 3.14 source checkout with `pyproject.toml` at its root. Clone [the repository](https://github.com/MarineCast/toolkit-seascape), then run these commands from the checkout. Installation retrieves declared Python dependencies; the demo itself does not need source downloads or credentials.
 
 <!-- BEGIN QUICKSTART install -->
 ```sh
@@ -192,10 +27,7 @@ python -m pip check
 ```
 <!-- END QUICKSTART install -->
 
-### Run the offline demo
-
-Leave the source directory and select a fresh workspace. The environment remains active;
-`SEASCAPE_WORKSPACE` identifies where this example writes its files.
+Leave the checkout and select a fresh owned workspace:
 
 <!-- BEGIN QUICKSTART demo -->
 ```sh
@@ -205,104 +37,17 @@ seascape --workspace "$SEASCAPE_WORKSPACE" demo
 ```
 <!-- END QUICKSTART demo -->
 
-The command prints:
+The CLI prints `Synthetic software acceptance: PASS (not a regional release)` after validating the production bathymetry transform on synthetic inputs. It reports paths to Parquet, manifest, JSON report, and figures under `$SEASCAPE_WORKSPACE/.seascape/demo/`. Missing depth stays null; this is a software check, not a regional accuracy claim. See the [full quick start](https://marinecast.github.io/toolkit-seascape/getting-started/quick-start/) and [demo guide](docs/demo.md).
 
-```text
-Synthetic software acceptance: PASS (not a regional release)
-```
+## What to read next
 
-It also prints the exact paths to the **Parquet table, family manifest, JSON validation report,
-and two PNG figures**. Outputs stay under `$SEASCAPE_WORKSPACE/.seascape/demo/` after the command
-finishes. This example uses a temporary directory, so copy anything you need before system cleanup.
-The [demo guide](docs/demo.md) explains persistent workspace selection and safe reruns.
-
-<details>
-<summary><strong>What the demonstration checks</strong></summary>
-
-The output has one unique `H3_INDEX` per resolution-8 cell. The fixture includes controls for
-known values, sign conversion, nonempty support, missingness, and truthful synthetic provenance.
-
-| Synthetic control | Expected interpretation |
+| Goal | Documentation |
 | --- | --- |
-| Constant-depth patch | Mean depth is 5 m; zero spread is a valid observed statistic. |
-| Interior gradient | Mean depth is `5680/47` m, approximately 120.8511 m, from 18 contributing pixels. |
-| Nodata or outside coverage | Null values mean unavailable, not measured zero. |
-| Exact sea level | Excluded by the existing marine mask, not reported as measured zero depth. |
+| Install and configure | [Installation](https://marinecast.github.io/toolkit-seascape/getting-started/installation/) · [Configuration](docs/CONFIGURATION.md) |
+| Find exact fields and coverage limits | [Variable catalog](https://marinecast.github.io/toolkit-seascape/variables/) · [Product index](docs/products.md) · [Capability coverage](docs/capability-coverage.md) |
+| Review sources and calculations | [Data sources](https://marinecast.github.io/toolkit-seascape/data-sources/) · [Methodology](https://marinecast.github.io/toolkit-seascape/methodology/) · [Scientific contracts](docs/CONTRACTS.md) |
+| Process real inputs | [Bounded workflow](docs/WORKFLOWS.md#bounded-real-data-processing) · [Stage prerequisites](docs/stage-inputs.md) |
+| Read a completed release | [Python API](docs/API.md) · [Metric matrix](docs/metric-matrix.md) |
+| Contribute | [Development guide](docs/DEVELOPMENT.md) · [Documentation site source](docs/index.md) |
 
-See [fixture expectations and tolerances](docs/demo.md). A passing demo establishes software
-acceptance for these inputs, not provider availability, regional accuracy, or a complete release.
-Existing demo output is refused by default; review ownership before using `--overwrite`.
-
-</details>
-
----
-
-## Choose your route
-
-### Try the toolkit
-
-A small synthetic product with inspectable values, provenance, and validation results.
-
-[Offline demo](docs/demo.md) or [explanatory notebook](notebooks/README.md)
-
-### Process real data
-
-A candidate built from reviewed inputs, with explicit inspection and publication decisions. See the [San Juan pilot](docs/pilots/san-juan.md) for bounded execution evidence and limits.
-
-[Bounded workflow](docs/WORKFLOWS.md#bounded-real-data-processing), [configuration](docs/CONFIGURATION.md), and [stage inputs](docs/stage-inputs.md)
-
-### Use existing products
-
-Exact product/resolution lookup and checksum-verified paths from an existing audited release.
-
-[Release-frozen consumer example](docs/API.md#freeze-and-read-a-release) and [matrix export](docs/metric-matrix.md)
-
-Acquisition, processing, and release promotion are separate operations. Initializing a workspace
-does not download datasets. Review the selected area's inputs and resources before executing
-regional defaults; start with the documented bounded workflow rather than an unrestricted build.
-
----
-
-## Scientific scope
-
-> [!IMPORTANT]
-> **Physical conditions and source evidence are not species occurrence or habitat suitability.**
-> Seascape does not infer ecological absence from missing data or decide which variables belong
-> in a predictive model. An audited software release is not blanket scientific certification.
-
-**Interpretation matters.** Derived hardness is not a direct acoustic measurement. Geometric exposure
-is not modeled weather or waves. A mapped structure is not a measure of vessel traffic or observer
-effort. Vegetation and reef products retain the distinction between mapped evidence and unavailable
-coverage; deep coral/sponge evidence remains explicitly unavailable rather than inferred.
-
-Source datasets and regional releases are not bundled. Coverage, survey vintage, source resolution,
-and uncertainty vary. Keep quality-control and evidence fields with the physical variables, and
-read each family's source notes before interpretation or redistribution.
-
-Publication uses POSIX locks; native Windows publication is outside the current supported scope.
-See the [scientific and source contracts](docs/CONTRACTS.md) and
-[validation progress](docs/roadmap/PROGRESS.md) for tested behavior and remaining limits.
-
----
-
-## Reference and contribution
-
-| Find | Read |
-| --- | --- |
-| Documentation overview | [Documentation index](docs/README.md) |
-| Variables, families, and source notes | [Product reference](docs/products.md) |
-| Setup, preparation, and command side effects | [Workflows](docs/WORKFLOWS.md) · [Configuration](docs/CONFIGURATION.md) |
-| Stable consumer and producer interfaces | [Python API](docs/API.md) · [Metric matrix](docs/metric-matrix.md) |
-| Architecture and contribution checks | [Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) |
-| Validation and release evidence | [Tested environments](docs/environments/README.md) · [Progress](docs/roadmap/PROGRESS.md) · [Release handoff](docs/release-candidate.md) |
-
-Contributions should preserve scientific contracts and include focused tests and updated source
-notes. Follow the [development guide](docs/DEVELOPMENT.md) before changing calculations, schemas,
-configuration, or publication behavior.
-
----
-
-**Software:** [Apache License 2.0](LICENSE). **Source data:** separate provider-specific rights and
-attribution apply. Installing or running the toolkit does not grant redistribution rights to its inputs.
-
-Part of [MarineCast](https://github.com/MarineCast).
+Source rights and attribution are provider-specific; the software license is [Apache-2.0](LICENSE). The [documentation site](https://marinecast.github.io/toolkit-seascape/) is built with MkDocs Material and deployed from `main` by GitHub Actions. Contributors can run it locally with `python -m pip install -e ".[docs]"`, `mkdocs serve`, and `mkdocs build --strict`.

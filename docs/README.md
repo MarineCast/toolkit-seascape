@@ -1,5 +1,8 @@
 # Seascape documentation
 
+The [documentation site](index.md) is the primary entry point. This page is a map of deeper
+reference and historical records retained in the repository.
+
 Start with the [installation and first result](../README.md#install-and-get-a-first-result).
 The software package supplies algorithms, configuration templates and an offline demo; it does
 not include regional source datasets or an audited release.

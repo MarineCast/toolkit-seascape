@@ -26,6 +26,7 @@ notebook = [
   "jupyterlab>=4",
   "nbconvert>=7",
 ]
+docs = ["mkdocs-material>=9.6,<10"]
 
 [project.scripts]
 seascape = "seascape.cli:main"

@@ -6,6 +6,7 @@ __pycache__/
 .mypy_cache/
 /build/
 /dist/
+/site/
 /data/
 /outputs/
 /notebooks/outputs/
