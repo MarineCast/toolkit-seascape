@@ -1,8 +1,8 @@
 # Seascape: Quality and New-User Readiness Roadmap
 
-**Repository:** `MarineCast/toolkit-seascape`  
-**Prepared:** September 26, 2026  
-**Reviewed baseline:** `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4`  
+**Repository:** `MarineCast/toolkit-seascape`\
+**Prepared:** September 26, 2026\
+**Reviewed baseline:** `f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4`\
 **Status:** Implementation specification. No roadmap tasks or acceptance tests have been executed as part of preparing this document.
 
 ## 1. Mission and definition of success
@@ -82,8 +82,8 @@ Store machine-specific logs under an ignored validation directory or CI artifact
 | SS-10 | Prepare and execute an authorized bounded real-data pilot | SS-04, SS-08, SS-09; approved inputs/network scope | `real-data-pilot` |
 | SS-11 | Complete release-candidate review and maintainer handoff | All software gates; evidence from SS-10 or explicit limitation | `release-readiness` |
 
-Checkpoint A, after SS-03: a genuinely new installation produces and explains a useful offline result.  
-Checkpoint B, after SS-08: execution behavior, scientific contracts, and consumer interfaces have stronger evidence.  
+Checkpoint A, after SS-03: a genuinely new installation produces and explains a useful offline result.\
+Checkpoint B, after SS-08: execution behavior, scientific contracts, and consumer interfaces have stronger evidence.\
 Checkpoint C, after SS-11: a reviewable release candidate has truthful documentation and explicit remaining limits.
 
 Do not parallelize formatting with behavioral edits. Read-only review and documentation drafting may occur independently, but separate agents should not edit the same files or shared working tree. The table specifies review boundaries, not permission to auto-merge a chain of dependent pull requests.
