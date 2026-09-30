@@ -27,6 +27,7 @@ scientific validation, universal coverage, or a regional product built in this b
 | Passage sections and sill candidates (SV-03) | Executable and fixture-tested; reviewed registry absent | Candidate shoals are section-maximum proxies. Optional reviewed mapped/validated crest registry is supported but not populated regionally; independent validation pending. |
 | Geographic gateways (SV-04) | Executable and fixture-tested; reviewed registry absent | Reviewed graph attachments and crossing edges required; no regional materialization. |
 | Mapped habitat mosaic (SV-06) | Generic ingestion and producer fixture-tested; regional providers absent | Distinct marine/intertidal supports; provider rights, time, footprint and class semantics require review. |
+| OrcaCast SV-01–SV-06 output | Exact-release consumer implemented; regional output absent | Requires all 27 released products from one audited release; copies native-grain tables and provenance without activating model predictors. |
 | Outer-coast shelf geometry (SV-07) | Source blocked | Reviewed shelf delineation unavailable; no product advertised. |
 | Estuarine polygons/classes | Data/harmonization blocked | Preserve native B.C./Washington classes until cross-border definitions and tidal support are reviewed. |
 

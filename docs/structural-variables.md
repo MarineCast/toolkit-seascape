@@ -6,8 +6,10 @@ These are species-neutral physical or mapped-source products. A distance, candid
 or mapped habitat area is not prey abundance, whale use, habitat quality, or evidence of
 predictive value. All six implemented stages are **optional**; the ordinary demo and
 default build do not require these regional inventories. The methods below are fixture
-tested, but no new regional candidate, release, independent physical validation, or
-OrcaCast consumer integration was run for this branch. Product IDs are registered in
+tested, but no new regional candidate, release, or independent physical validation
+was run for these additions. OrcaCast has an exact-release consumer export for all
+six families; its fixture tests and notebook preview do not constitute a regional
+run or forecast integration. Product IDs are registered in
 `src/seascape/core/data/catalog.py`; materialized files appear only after a selected
 stage succeeds. The checked-in catalog predates these candidate products.
 
@@ -46,6 +48,36 @@ geometric H3 R6 polygon. R6 network point distances use a water-valid R6
 representative/attachment, not a child minimum. Existing bathymetry still uses its
 own direct-pixel support. Source resolution is retained; resampling does not create
 new bathymetric information.
+
+## OrcaCast handoff
+
+The OrcaCast application selects all required SV-01–SV-06 product IDs through
+`orcacast.features.seascape_structural`. In an OrcaCast checkout with the pinned
+toolkit installed, first inspect an audited schema-3 release and then export it:
+
+```sh
+python -m orcacast.features.seascape_structural --workspace "$SEASCAPE_WORKSPACE" --release-id "$SEASCAPE_RELEASE_ID" --output-root data/seascape/processed --dry-run
+python -m orcacast.features.seascape_structural --workspace "$SEASCAPE_WORKSPACE" --release-id "$SEASCAPE_RELEASE_ID" --output-root data/seascape/processed
+```
+
+`SEASCAPE_RELEASE_ID` must be the exact 64-character release identity. The export
+requires 27 products across the six families and includes `mapped_sills` if that
+reviewed optional product exists. A missing required product, mismatched release,
+invalid key, or size-limit breach stops the export. It writes separate Parquet tables
+under `data/seascape/processed/<release-id>/tables/`, plus `manifest.json` with
+producer identity, coverage, rights, source support, checksums and key-check status,
+and `feature_catalog.parquet` with every column. No long table is collapsed to one
+row per H3, and source nulls and status/QC values remain intact. OrcaCast marks
+these products model-ineligible by default; selecting predictors and validating
+forecast-time availability are separate application work.
+
+The OrcaCast Seascape feature notebook can select the six optional producer stages
+after reviewed regional inputs are configured and can call the same export using
+`STRUCTURAL_RELEASE_ID`. The notebook defaults to preview and cannot supply missing
+sources or an audited release. The toolkit remains independently installable and
+does not import OrcaCast.
+
+## Product definitions
 
 | Addition | Registered principal products and key | Physical definitions and status |
 | --- | --- | --- |
