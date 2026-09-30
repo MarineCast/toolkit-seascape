@@ -93,6 +93,9 @@ compatible macOS 14 wheel and needs a separate GDAL source-build setup. The new 
 caps Rasterio below 1.5.2, but the backfill cannot change `v0.1.0`. Review this limitation before
 choosing the first PyPI publication version.
 
+For the first PyPI publication, use the normal `v0.1.1` tag-triggered workflow after its
+release checks pass. Do not dispatch the `v0.1.0` backfill for this release.
+
 ## Scientific method versions
 
 Each scientifically meaningful producer or transformation records an explicit identity, such as:
