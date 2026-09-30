@@ -1,0 +1,97 @@
+site_name: Seascape Toolkit
+site_description: Source-backed geospatial tools for physical and structural marine seascapes
+site_url: https://marinecast.github.io/toolkit-seascape/
+repo_name: MarineCast/toolkit-seascape
+repo_url: https://github.com/MarineCast/toolkit-seascape
+edit_uri: edit/main/docs/
+copyright: Copyright MarineCast contributors · Apache-2.0 software license
+
+theme:
+  name: material
+  icon:
+    logo: material/waves
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+
+hooks:
+  - scripts/mkdocs_hooks.py
+
+# docs/README.md remains a GitHub-readable legacy reference map. MkDocs uses
+# docs/index.md as the site homepage; publishing both would create a URL conflict.
+exclude_docs: |
+  /README.md
+
+nav:
+  - Home: index.md
+  - Get started:
+      - Installation: getting-started/installation.md
+      - Quick start: getting-started/quick-start.md
+  - Understand:
+      - Seascape concepts: concepts/index.md
+      - Data sources: data-sources/index.md
+      - Processing and methods: methodology/index.md
+  - Variables:
+      - Catalog guide: variables/index.md
+      - Product and field index: products.md
+      - Structural variables: structural-variables.md
+      - Capability coverage: capability-coverage.md
+  - Examples:
+      - Choose a workflow: examples/index.md
+      - Offline demo: demo.md
+      - San Juan pilot: pilots/san-juan.md
+  - API:
+      - API overview: api/index.md
+      - Python reference: API.md
+      - Metric matrix: metric-matrix.md
+  - Reference:
+      - Scientific contracts: CONTRACTS.md
+      - Configuration: CONFIGURATION.md
+      - Workflows: WORKFLOWS.md
+      - Stage inputs: stage-inputs.md
+      - Architecture: ARCHITECTURE.md
+      - Development: DEVELOPMENT.md
+
+validation:
+  nav:
+    omitted_files: info
+  links:
+    not_found: warn
+    anchors: warn
+    unrecognized_links: warn

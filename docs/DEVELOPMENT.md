@@ -13,7 +13,7 @@ reusable behavior in toolkit helpers. Do not introduce application imports or si
 
 | Change | Appropriate checks |
 | --- | --- |
-| Documentation only | `python scripts/check_docs.py`; inspect diff; `git diff --check`; execute quickstart acceptance if examples change |
+| Documentation only | `python scripts/check_docs.py`; `mkdocs build --strict`; inspect diff; `git diff --check`; execute quickstart acceptance if examples change |
 | Formatting only | `ruff format --check src tests scripts`, full offline suite and an AST comparison ignoring location metadata |
 | Calculation or loader | Focused family tests, meaningful synthetic fixtures and applicable scientific contracts |
 | CLI, configuration or package layout | Standalone-package tests, command help, build dry run and wheel installation |
@@ -29,6 +29,30 @@ python -m pytest -q tests/test_standalone_package.py tests/test_workflow.py
 seascape build --dry-run
 git diff --check
 ```
+
+## Documentation site
+
+The site uses `mkdocs.yml`, Material for MkDocs, and Markdown under `docs/`. The
+navigation starts with installation and a safe offline example, then links to the
+generated historical field index, current method/source guides, and public API.
+The historical catalog remains generated from checked-in configuration; do not
+hand-edit its field block. `scripts/mkdocs_hooks.py` turns existing references from
+`docs/` to repository source files into GitHub links for the hosted site. The
+offline `check_docs.py` command still validates those local targets and headings.
+
+```sh
+python -m pip install -e '.[docs]'
+mkdocs serve
+mkdocs build --strict
+python scripts/check_docs.py
+```
+
+The local server is at <http://127.0.0.1:8000/toolkit-seascape/>. CI builds strictly on pull
+requests. After a push to `main`, `.github/workflows/docs.yml` uploads the
+generated `site/` as a GitHub Pages artifact and deploys it. Repository Pages
+settings must select **GitHub Actions** as the publishing source; an environment
+or branch protection rule may also govern deployment. The generated site is ignored
+by Git and no `gh-pages` branch is needed.
 
 The [observed platform table](environments/README.md#tested-platforms) records actual CI evidence.
 The [CI workflow](../.github/workflows/ci.yml) defines Python 3.14 jobs. A configured job

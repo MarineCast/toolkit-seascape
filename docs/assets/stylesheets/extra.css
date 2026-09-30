@@ -1,0 +1,22 @@
+:root {
+  --md-primary-fg-color: #0b625c;
+  --md-accent-fg-color: #0f766e;
+}
+
+.md-typeset .seascape-lead {
+  font-size: 1.15rem;
+  max-width: 47rem;
+}
+
+.md-typeset .seascape-hero {
+  border-radius: 0.5rem;
+  display: block;
+  width: 100%;
+  max-height: 22rem;
+  object-fit: cover;
+  object-position: center;
+}
+
+.md-typeset .grid.cards > ul > li {
+  border-top: 3px solid #0f766e;
+}
