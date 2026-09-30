@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/seascape-underwater-banner.png" alt="Illustrated sunlit kelp and rocky seafloor; decorative banner, not a data product" width="100%">
+  <img src="https://raw.githubusercontent.com/MarineCast/toolkit-seascape/main/docs/assets/seascape-underwater-banner.png" alt="Illustrated sunlit kelp and rocky seafloor; decorative banner, not a data product" width="100%">
 </p>
 
 # Seascape Toolkit
@@ -12,9 +12,9 @@ Seascape Toolkit turns reviewed geospatial sources into reproducible physical an
 
 The toolkit is for researchers, GIS users, and downstream applications that need analysis-ready features with source lineage, spatial support, and explicit missingness. Physical conditions and mapped evidence do **not** establish species occurrence or habitat suitability. Regional source data and an audited regional release are not bundled.
 
-## v0.1.0 status and compatibility
+## v0.1.1 status and compatibility
 
-**v0.1.0 is a public preview**, not a stable `1.0` contract. It supports Python 3.14 on the Linux
+**v0.1.1 is a public preview**, not a stable `1.0` contract. It supports Python 3.14 on the Linux
 x86_64 and macOS ARM64 environments exercised by CI. Other operating systems are not currently
 claimed. During `0.x`, documented minor releases may change APIs, CLI behavior, schemas, variables,
 or scientific methods; patch releases preserve intended public and scientific contracts.
@@ -42,7 +42,7 @@ python -m pip install toolkit-seascape
 ```
 
 For a reproducible installation, pin a published version, for example
-`python -m pip install toolkit-seascape==0.1.0` once that version is available on PyPI.
+`python -m pip install toolkit-seascape==0.1.1` once that version is available on PyPI.
 Installation retrieves declared Python dependencies; the package does not include regional
 scientific datasets or an audited data release.
 

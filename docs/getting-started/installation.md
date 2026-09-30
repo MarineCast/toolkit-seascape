@@ -12,7 +12,7 @@ seascape --help
 ```
 
 To reproduce a specific published software version, use
-`python -m pip install toolkit-seascape==0.1.0` once that version is on PyPI.
+`python -m pip install toolkit-seascape==0.1.1` once that version is on PyPI.
 Installation downloads declared Python dependencies. The package does **not** install regional
 rasters, shoreline inventories, or an audited data release. Review
 [tested environments](../environments/README.md) if native geospatial dependencies need

@@ -18,6 +18,16 @@ identities and data-release identities are tracked separately from software vers
 
 ### Removed
 
+## [0.1.1] - 2026-09-30
+
+### Documentation and packaging
+
+- Use an absolute HTTPS URL for the README banner so it renders on PyPI.
+- Include documentation, repository, and issue-tracker URLs in package metadata.
+- Publish the validated wheel and source distribution through GitHub OIDC Trusted Publishing after
+  the GitHub Release is created and the `pypi` environment approves the deployment.
+- Limit Rasterio below 1.5.2 so Python 3.14 installs on macOS 14 select a compatible wheel.
+
 ## [0.1.0] - 2026-09-30
 
 ### Added
@@ -56,5 +66,6 @@ identities and data-release identities are tracked separately from software vers
 - Python 3.14 package metadata, wheel and source-distribution builds, installed-wheel consumer
   checks, and Linux/macOS CI coverage are provided for the public preview.
 
-[Unreleased]: https://github.com/MarineCast/toolkit-seascape/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/MarineCast/toolkit-seascape/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/MarineCast/toolkit-seascape/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/MarineCast/toolkit-seascape/releases/tag/v0.1.0

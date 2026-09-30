@@ -27,16 +27,16 @@ def test_runtime_and_project_versions_match():
     declared = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"][
         "version"
     ]
-    assert declared == "0.1.0"
+    assert declared == "0.1.1"
     assert seascape.__version__ == declared
     assert importlib.metadata.version("toolkit-seascape") == declared
 
 
 def test_release_tag_must_match_static_project_version():
     checker = load_checker()
-    assert checker.validate("v0.1.0", ROOT / "pyproject.toml") == "0.1.0"
+    assert checker.validate("v0.1.1", ROOT / "pyproject.toml") == "0.1.1"
     with pytest.raises(ValueError, match="does not match"):
-        checker.validate("v0.1.1", ROOT / "pyproject.toml")
+        checker.validate("v0.1.0", ROOT / "pyproject.toml")
     with pytest.raises(ValueError, match="form vX.Y.Z"):
         checker.validate("0.1.0", ROOT / "pyproject.toml")
     with pytest.raises(ValueError, match="form vX.Y.Z"):
