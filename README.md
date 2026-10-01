@@ -1,8 +1,11 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/MarineCast/toolkit-seascape/main/docs/assets/seascape-underwater-banner.png" alt="Illustrated sunlit kelp and rocky seafloor; decorative banner, not a data product" width="100%">
-</p>
-
 # Seascape Toolkit
+
+<p align="center">
+  <picture>
+    <source srcset="docs/assets/seascape-underwater-banner.png">
+    <img src="https://raw.githubusercontent.com/MarineCast/toolkit-seascape/main/docs/assets/seascape-underwater-banner.png" alt="Ink coastal cross-section showing islands, seafloor terrain, and kelp" width="100%">
+  </picture>
+</p>
 
 **The shape, composition, and connectivity of the marine environment.**
 
