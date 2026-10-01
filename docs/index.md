@@ -1,6 +1,6 @@
 # Seascape Toolkit
 
-<img class="seascape-hero" src="assets/seascape-underwater-banner.png" alt="Illustrated kelp and rocky seafloor; decorative artwork, not a data product">
+<img class="seascape-hero" src="assets/seascape-underwater-banner.png" alt="Ink coastal cross-section showing islands, seafloor terrain, and kelp; decorative artwork, not a data product">
 
 <p class="seascape-lead">Reproducible geospatial tools for describing the <strong>physical shape, composition, and connectivity</strong> of marine environments.</p>
 
