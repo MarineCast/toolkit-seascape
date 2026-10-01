@@ -1,10 +1,8 @@
-<p align="center">
-  <img src="docs/assets/seascape-underwater-banner.png" alt="Illustrated sunlit kelp and rocky seafloor; decorative banner, not a data product" width="100%">
-</p>
+# Seascape Toolkit
+
+<img src="docs/assets/seascape-toolkit-banner.png" alt="Ink coastal cross-section showing islands, seafloor terrain, and kelp" width="100%">
 
 <div align="center">
-
-# Seascape Toolkit
 
 **The shape, composition, and connectivity of the marine environment.**
 

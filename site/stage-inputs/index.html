@@ -1,0 +1,1725 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Source-backed geospatial tools for physical and structural marine seascapes">
+      
+      
+      
+        <link rel="canonical" href="https://marinecast.github.io/toolkit-seascape/stage-inputs/">
+      
+      
+        <link rel="prev" href="../WORKFLOWS/">
+      
+      
+        <link rel="next" href="../ARCHITECTURE/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Stage inputs - Seascape Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#default-stage-input-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Seascape Toolkit" class="md-header__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Seascape Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Stage inputs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../concepts/" class="md-tabs__link">
+          
+  
+  
+  Understand
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../variables/" class="md-tabs__link">
+          
+  
+  
+  Variables
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../CONTRACTS/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Seascape Toolkit" class="md-nav__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    Seascape Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seascape concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processing and methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Variables
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalog guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../products/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and field index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structural-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structural variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../capability-coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choose a workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Offline demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pilots/san-juan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    San Juan pilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metric-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metric matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONTRACTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scientific contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONFIGURATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WORKFLOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="default-stage-input-reference">Default stage input reference</h1>
+<p><a href="../">Documentation index</a> · <a href="../WORKFLOWS/#plan-and-build-a-candidate">Edited-config preflight</a></p>
+<p>This table is generated from the existing workflow and preflight against packaged default
+configuration in a disposable workspace. It lists local prerequisites, not a second planner
+or acquisition recipe. <code>.seascape/docs-preview</code> paths are candidate-generated dependencies;
+raw paths must be provided/reviewed. For edited settings, use your own <code>--dry-run --check-inputs</code>.
+An empty initialized workspace is expected to fail required input checks.</p>
+<p>Source rights, datum, coverage and scientific eligibility are not established by a path declaration.
+Read each source's <code>DATA_SOURCES.md</code> via the <a href="../products/#family-guides">family guides</a>.
+Default bounds can be very large. No download size, performance or regional scaling promise is made;
+the measured real-data operating envelope remains the separate SS-10 task.</p>
+<p>Maintainers regenerate only this metadata reference with
+<code>python scripts/check_docs.py --write-stage-reference</code>, then inspect the diff. The checker never
+materializes datasets or regenerates the authoritative product catalog. CI checks drift offline.</p>
+<!-- BEGIN GENERATED STAGE INPUTS -->
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Direct dependencies</th>
+<th>Configured local prerequisites (R=required, O=optional)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>seascape-water-geometry</code></td>
+<td>—</td>
+<td>R: ca_regions_path — <code>data/raw/gis/marine/FederalMarineBioregions_SHP/FederalMarineBioregions.shp</code><br>R: tz_file_path — <code>data/raw/gis/marine/World_12NM_v4_20231025/eez_12nm_v4.shp</code><br>R: us_coastline_path — <code>data/raw/gis/marine/tl_2022_us_coastline/tl_2022_us_coastline.shp</code><br>R: us_waters_path — <code>data/raw/gis/marine/USMaritimeLimitsAndBoundariesSHP/USMaritimeLimitsNBoundaries.shp</code><br>R: ws_marine_shoreline_type_path — <code>data/raw/gis/marine/shstmp-ps-marine-shorelines-2018-nwfsc/SHSTMP_PS_Marine_Shorelines_2018.shp</code><br>R: wsdot_shorelines_path — <code>data/raw/gis/marine/WSDOT_-_Major_Shorelines/WSDOT_-_Major_Shorelines.shp</code></td>
+</tr>
+<tr>
+<td><code>h3-water-universe</code></td>
+<td><code>seascape-water-geometry</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code></td>
+</tr>
+<tr>
+<td><code>h3-marine-spatial-support</code></td>
+<td><code>h3-water-universe</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-shoreline-characterization</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: wa_nwfsc_shoreline_typology — <code>data/raw/gis/marine/shstmp-ps-marine-shorelines-2018-nwfsc/SHSTMP_PS_Marine_Shorelines_2018.shp</code><br>R: bc_shorezone_shore_units — <code>data/raw/environment/seascape/anthropogenic/BC_SHOREZONE_SHORE_UNIT_CLASS_LINES.geojson</code><br>R: full geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_FULL_CELL_GEOMETRY_RES_6.parquet</code><br>R: full geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_FULL_CELL_GEOMETRY_RES_8.parquet</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-bathymetry</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: source raster — <code>data/raw/bathymetry/GEBCO_2026_MODEL_AREA.tif</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: water neighborhoods r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_NEIGHBORHOODS_RES_8.parquet</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: water neighborhoods r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_NEIGHBORHOODS_RES_6.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-geomorphometry</code></td>
+<td><code>seascape-bathymetry</code></td>
+<td>R: bathymetry_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY.parquet</code><br>R: native_raster_path — <code>data/raw/bathymetry/GEBCO_2026_MODEL_AREA.tif</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: water neighborhoods — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_NEIGHBORHOODS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-shoreline-proximity</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: water_polygon_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: land_polygon_path — <code>data/raw/gis/land/ne_10m_land.shp</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-exposure-and-enclosure</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: water_polygon_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: land_polygon_path — <code>data/raw/gis/land/ne_10m_land.shp</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-waterbody-morphometry</code></td>
+<td><code>seascape-bathymetry</code></td>
+<td>R: water_polygon_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: land_polygon_path — <code>data/raw/gis/land/ne_10m_land.shp</code><br>R: bathymetry_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY.parquet</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-geomorphic-units</code></td>
+<td><code>seascape-geomorphometry</code>, <code>seascape-waterbody-morphometry</code></td>
+<td>R: bathymetry_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY.parquet</code><br>R: geomorphometry_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/seafloor_physiography/geomorphometry/GEOMORPHOMETRY_RES_8.parquet</code><br>R: waterbody_morphometry_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/coastal_configuration/waterbody_morphometry/WATERBODY_MORPHOMETRY_RES_8.parquet</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-freshwater-sources</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: water_polygon_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: bc_stream_network — <code>data/raw/environment/seascape/hydrologic_connectivity/freshwater_sources/BC_FWA_STREAM_NETWORK.geojson</code><br>R: bc_river_polygons — <code>data/raw/environment/seascape/hydrologic_connectivity/freshwater_sources/BC_FWA_RIVER_POLYGONS.geojson</code><br>R: us_network_flowlines — <code>data/raw/environment/seascape/hydrologic_connectivity/freshwater_sources/US_NHD_SMALL_SCALE_TERMINAL_FLOWLINES.geojson</code><br>R: us_river_polygons — <code>data/raw/environment/seascape/hydrologic_connectivity/freshwater_sources/US_NHDPLUS_HR_RIVER_POLYGONS.geojson</code><br>R: HydroRIVERS extracted shapefile — <code>data/raw/environment/seascape/hydrologic_connectivity/freshwater_sources/HydroRIVERS_v10_na_shp</code></td>
+</tr>
+<tr>
+<td><code>seascape-fluvial-connectivity</code></td>
+<td><code>seascape-freshwater-sources</code></td>
+<td>R: water_polygon_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: land_polygon_path — <code>data/raw/gis/land/ne_10m_land.shp</code><br>R: hydrorivers_path — <code>data/raw/environment/seascape/hydrologic_connectivity/freshwater_sources/HydroRIVERS_v10_na_shp/HydroRIVERS_v10_na_shp/HydroRIVERS_v10_na.shp</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-estuarine-connectivity</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: water_polygon_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: land_polygon_path — <code>data/raw/gis/land/ne_10m_land.shp</code><br>R: bc_estuaries_path — <code>data/raw/environment/seascape/hydrologic_connectivity/estuarine_connectivity/BC_PECP_ESTUARIES.geojson</code><br>R: us_estuary_points_path — <code>data/raw/environment/seascape/hydrologic_connectivity/estuarine_connectivity/US_PMEP_ESTUARY_POINTS.geojson</code><br>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-fluvial-barriers</code></td>
+<td><code>seascape-fluvial-connectivity</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: parent child crosswalk — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_PARENT_CHILD_RES_8_TO_RES_6.parquet</code><br>R: bc_pscis_assessments — <code>data/raw/environment/seascape/hydrologic_connectivity/fluvial_barriers/BC_PSCIS_ASSESSMENTS.geojson</code><br>R: bc_provincial_obstacles — <code>data/raw/environment/seascape/hydrologic_connectivity/fluvial_barriers/BC_PROVINCIAL_FISH_OBSTACLES.geojson</code><br>R: bc_dams — <code>data/raw/environment/seascape/hydrologic_connectivity/fluvial_barriers/BC_DAMS_PUBLIC.geojson</code><br>R: bc_flood_appurtenances — <code>data/raw/environment/seascape/hydrologic_connectivity/fluvial_barriers/BC_FLOOD_PROTECTION_APPURTENANCES.geojson</code><br>R: wa_wdfw_fish_passage_sites — <code>data/raw/environment/seascape/hydrologic_connectivity/fluvial_barriers/WA_WDFW_FISH_PASSAGE_SITES.geojson</code><br>R: wa_wdfw_tidal_restrictions — <code>data/raw/environment/seascape/hydrologic_connectivity/fluvial_barriers/WA_WDFW_TIDAL_RESTRICTIONS.geojson</code><br>R: usgs_waterfalls — <code>data/raw/environment/seascape/hydrologic_connectivity/fluvial_barriers/USGS_NHD_WATERFALLS_RAPIDS.geojson</code><br>R: water_polygon_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: fluvial_segments_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/FLUVIAL_NETWORK_SEGMENTS.parquet</code><br>R: fluvial_mouths_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/FLUVIAL_NETWORK_MOUTHS.parquet</code><br>R: watershed_crosswalk_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/hydrologic_connectivity/fluvial_connectivity/WATERSHED_MARINE_CROSSWALK_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-substrate-classification</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: parent child crosswalk — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_PARENT_CHILD_RES_8_TO_RES_6.parquet</code><br>R: dbseabed_rock — <code>data/raw/environment/seascape/benthic_substrate/classification/DBSEABED_ROCK_PERCENT.tif</code><br>R: dbseabed_gravel — <code>data/raw/environment/seascape/benthic_substrate/classification/DBSEABED_GRAVEL_PERCENT.tif</code><br>R: dbseabed_sand — <code>data/raw/environment/seascape/benthic_substrate/classification/DBSEABED_SAND_PERCENT.tif</code><br>R: dbseabed_mud — <code>data/raw/environment/seascape/benthic_substrate/classification/DBSEABED_MUD_PERCENT.tif</code></td>
+</tr>
+<tr>
+<td><code>seascape-bottom-hardness</code></td>
+<td><code>seascape-substrate-classification</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: parent child crosswalk — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_PARENT_CHILD_RES_8_TO_RES_6.parquet</code><br>R: substrate feature_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/classification/BENTHIC_SUBSTRATE_CLASSIFICATION_RES_6.parquet</code><br>R: substrate confidence_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/classification/BENTHIC_SUBSTRATE_CONFIDENCE_RES_6.parquet</code><br>R: substrate feature_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/classification/BENTHIC_SUBSTRATE_CLASSIFICATION_RES_8.parquet</code><br>R: substrate confidence_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/classification/BENTHIC_SUBSTRATE_CONFIDENCE_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-seagrass-habitat</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: parent child crosswalk — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_PARENT_CHILD_RES_8_TO_RES_6.parquet</code><br>R: global_sentinel2_seagrass_2023_2024 — <code>data/raw/environment/seascape/biogenic_habitat/seagrass/GlobalSeagrass2023_2024.zip</code></td>
+</tr>
+<tr>
+<td><code>seascape-kelp-habitat</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: parent child crosswalk — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_PARENT_CHILD_RES_8_TO_RES_6.parquet</code><br>R: wa_dnr_annual_floating_kelp — <code>data/raw/environment/seascape/biogenic_habitat/kelp/WA_floating_kelp_coast_strait_reserves.zip</code><br>O: wa_dnr_kelp_persistence — <code>data/raw/environment/seascape/biogenic_habitat/kelp/WA_DNR_FLOATING_KELP_PERSISTENCE.geojson</code><br>O: wa_dnr_shorezone_floating_kelp — <code>data/raw/environment/seascape/biogenic_habitat/kelp/WA_DNR_SHOREZONE_FLOATING_KELP.geojson</code><br>O: bc_crims_kelp — <code>data/raw/environment/seascape/biogenic_habitat/kelp/BC_CRIMS_KELP_BEDS.geojson</code></td>
+</tr>
+<tr>
+<td><code>seascape-reef-habitat</code></td>
+<td><code>seascape-bottom-hardness</code>, <code>seascape-geomorphometry</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: parent child crosswalk — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_PARENT_CHILD_RES_8_TO_RES_6.parquet</code><br>O: wa_wdfw_shellfish — <code>data/raw/environment/seascape/biogenic_habitat/reef/WA_WDFW_MAPPED_OYSTER_BEDS.geojson</code><br>O: bc_shorezone_bivalves — <code>data/raw/environment/seascape/biogenic_habitat/reef/BC_SHOREZONE_OBSERVED_BIVALVES.geojson</code><br>R: geomorphometry_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/seafloor_physiography/geomorphometry/GEOMORPHOMETRY_RES_8.parquet</code><br>R: bathymetry_path — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/seafloor_physiography/bathymetry/BATHYMETRY.parquet</code><br>R: benthic_substrate_classification — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/classification/BENTHIC_SUBSTRATE_CLASSIFICATION_RES_6.parquet</code><br>R: benthic_substrate_classification — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/classification/BENTHIC_SUBSTRATE_CLASSIFICATION_RES_8.parquet</code><br>R: bottom_hardness — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/bottom_hardness/BOTTOM_HARDNESS_RES_6.parquet</code><br>R: bottom_hardness — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/bottom_hardness/BOTTOM_HARDNESS_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-benthic-habitat-composite</code></td>
+<td><code>seascape-seagrass-habitat</code>, <code>seascape-kelp-habitat</code>, <code>seascape-reef-habitat</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: parent child crosswalk — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_PARENT_CHILD_RES_8_TO_RES_6.parquet</code><br>R: seagrass feature_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet</code><br>R: seagrass confidence_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet</code><br>R: seagrass feature_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet</code><br>R: seagrass confidence_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet</code><br>R: kelp feature_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet</code><br>R: kelp confidence_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet</code><br>R: kelp feature_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet</code><br>R: kelp confidence_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet</code><br>R: reef feature_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/reef/REEF_HABITAT_RES_6.parquet</code><br>R: reef confidence_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/reef/REEF_HABITAT_CONFIDENCE_RES_6.parquet</code><br>R: reef feature_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/reef/REEF_HABITAT_RES_8.parquet</code><br>R: reef confidence_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/biogenic_habitat/reef/REEF_HABITAT_CONFIDENCE_RES_8.parquet</code><br>R: substrate confidence_path r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/classification/BENTHIC_SUBSTRATE_CONFIDENCE_RES_6.parquet</code><br>R: substrate confidence_path r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/benthic_substrate/classification/BENTHIC_SUBSTRATE_CONFIDENCE_RES_8.parquet</code></td>
+</tr>
+<tr>
+<td><code>seascape-anthropogenic</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>R: water polygon — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/TERRITORIAL_WATER_POLYGON.parquet</code><br>R: network manifest — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/_dataset_manifest.json</code><br>R: model support r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_6.parquet</code><br>R: clipped geometry r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet</code><br>R: water edges r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_6.parquet</code><br>R: water connectors r6 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_6.parquet</code><br>R: model support r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MODEL_AREA_SUPPORT_RES_8.parquet</code><br>R: clipped geometry r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet</code><br>R: water edges r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_PASSABLE_EDGES_RES_8.parquet</code><br>R: water connectors r8 — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_CONNECTORS_RES_8.parquet</code><br>R: parent child crosswalk — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_PARENT_CHILD_RES_8_TO_RES_6.parquet</code><br>R: osm_cross_border_anthropogenic — <code>data/raw/environment/seascape/anthropogenic/OSM_ANTHROPOGENIC_FEATURES.json</code><br>R: wa_dnr_shoreline_modification — <code>data/raw/environment/seascape/anthropogenic/WA_DNR_SHORELINE_MODIFICATION.geojson</code><br>R: bc_shorezone_shore_units — <code>data/raw/environment/seascape/anthropogenic/BC_SHOREZONE_SHORE_UNIT_CLASS_LINES.geojson</code><br>R: noaa_coastal_maintained_channels — <code>data/raw/environment/seascape/anthropogenic/NOAA_COASTAL_MAINTAINED_CHANNELS.geojson</code><br>R: wa_ecology_disposal_sites — <code>data/raw/environment/seascape/anthropogenic/WA_ECOLOGY_OCEAN_DISPOSAL_SITES.geojson</code><br>R: ca_active_disposal_sites — <code>data/raw/environment/seascape/anthropogenic/CANADA_ACTIVE_DISPOSAL_AT_SEA_SITES.geojson</code><br>R: wa_ecology_commercial_shellfish — <code>data/raw/environment/seascape/anthropogenic/WA_ECOLOGY_COMMERCIAL_SHELLFISH.geojson</code><br>R: bc_dfo_shellfish_licences — <code>data/raw/environment/seascape/anthropogenic/BC_DFO_SHELLFISH_AQUACULTURE_LICENCES.csv</code><br>R: bc_dfo_marine_finfish_licences — <code>data/raw/environment/seascape/anthropogenic/BC_DFO_MARINE_FINFISH_AQUACULTURE_LICENCES.csv</code><br>R: radius operator — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_WATER_RADIUS_OPERATOR_RES_8_5000M.npz</code><br>R: reachable water area — <code>.seascape/docs-preview/data/processed/domain/environmental_layer/seascape/spatial_support/water_network/H3_REACHABLE_WATER_AREA_RES_8_5000M.parquet</code></td>
+</tr>
+<tr>
+<td><code>environment-feature-catalog</code></td>
+<td><code>seascape-shoreline-characterization</code>, <code>seascape-geomorphic-units</code>, <code>seascape-shoreline-proximity</code>, <code>seascape-exposure-and-enclosure</code>, <code>seascape-fluvial-barriers</code>, <code>seascape-estuarine-connectivity</code>, <code>seascape-benthic-habitat-composite</code>, <code>seascape-anthropogenic</code></td>
+<td>Existing dependency outputs / stage validation</td>
+</tr>
+<tr>
+<td><code>seascape-feature-eligibility</code></td>
+<td><code>environment-feature-catalog</code></td>
+<td>Existing dependency outputs / stage validation</td>
+</tr>
+<tr>
+<td><code>seascape-documentation</code></td>
+<td><code>environment-feature-catalog</code></td>
+<td>Existing dependency outputs / stage validation</td>
+</tr>
+<tr>
+<td><code>seascape-release-audit</code></td>
+<td><code>seascape-feature-eligibility</code>, <code>seascape-documentation</code></td>
+<td>Existing dependency outputs / stage validation</td>
+</tr>
+<tr>
+<td><code>seascape-release</code></td>
+<td><code>seascape-release-audit</code></td>
+<td>Existing dependency outputs / stage validation</td>
+</tr>
+<tr>
+<td><code>seascape-selected-outlets</code></td>
+<td><code>seascape-fluvial-connectivity</code></td>
+<td>Selected only; set its explicit source registry and bounds in <code>config/data/environment_seascape.yaml</code>, then run read-only preflight.</td>
+</tr>
+<tr>
+<td><code>seascape-nearshore-transitions</code></td>
+<td><code>seascape-bathymetry</code>, <code>seascape-shoreline-characterization</code></td>
+<td>Selected only; set its explicit source registry and bounds in <code>config/data/environment_seascape.yaml</code>, then run read-only preflight.</td>
+</tr>
+<tr>
+<td><code>seascape-passage-sections</code></td>
+<td><code>seascape-bathymetry</code></td>
+<td>Selected only; set its explicit source registry and bounds in <code>config/data/environment_seascape.yaml</code>, then run read-only preflight.</td>
+</tr>
+<tr>
+<td><code>seascape-geographic-gateways</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>Selected only; set its explicit source registry and bounds in <code>config/data/environment_seascape.yaml</code>, then run read-only preflight.</td>
+</tr>
+<tr>
+<td><code>seascape-coast-complexity</code></td>
+<td><code>seascape-shoreline-characterization</code></td>
+<td>Selected only; set its explicit source registry and bounds in <code>config/data/environment_seascape.yaml</code>, then run read-only preflight.</td>
+</tr>
+<tr>
+<td><code>seascape-mapped-habitat-mosaic</code></td>
+<td><code>h3-marine-spatial-support</code></td>
+<td>Selected only; set its explicit source registry and bounds in <code>config/data/environment_seascape.yaml</code>, then run read-only preflight.</td>
+</tr>
+</tbody>
+</table>
+<!-- END GENERATED STAGE INPUTS -->
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../WORKFLOWS/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflows">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Workflows
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ARCHITECTURE/" class="md-footer__link md-footer__link--next" aria-label="Next: Architecture">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Architecture
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright MarineCast contributors · Apache-2.0 software license
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

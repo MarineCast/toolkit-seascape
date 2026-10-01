@@ -1,0 +1,1931 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Source-backed geospatial tools for physical and structural marine seascapes">
+      
+      
+      
+        <link rel="canonical" href="https://marinecast.github.io/toolkit-seascape/DEVELOPMENT/">
+      
+      
+        <link rel="prev" href="../ARCHITECTURE/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Development - Seascape Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#development-and-validation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Seascape Toolkit" class="md-header__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Seascape Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Development
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../concepts/" class="md-tabs__link">
+          
+  
+  
+  Understand
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../variables/" class="md-tabs__link">
+          
+  
+  
+  Variables
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../CONTRACTS/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Seascape Toolkit" class="md-nav__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    Seascape Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seascape concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processing and methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Variables
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalog guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../products/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and field index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structural-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structural variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../capability-coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choose a workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Offline demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pilots/san-juan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    San Juan pilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metric-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metric matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONTRACTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scientific contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONFIGURATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WORKFLOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stage-inputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#working-in-this-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Working in this repository
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checks-by-change-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checks by change type
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation site
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clean-consumer-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clean consumer acceptance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-and-first-result-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation and first-result acceptance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scientific-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scientific changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generated-metadata-and-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generated metadata and documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-family-or-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a family or product
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#working-in-this-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Working in this repository
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checks-by-change-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checks by change type
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation site
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clean-consumer-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clean consumer acceptance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-and-first-result-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation and first-result acceptance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scientific-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scientific changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generated-metadata-and-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generated metadata and documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-family-or-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a family or product
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="development-and-validation">Development and validation</h1>
+<p><a href="../">Documentation index</a></p>
+<h2 id="working-in-this-repository">Working in this repository</h2>
+<p>Read <a href="https://github.com/MarineCast/toolkit-seascape/blob/main/AGENTS.md">AGENTS.md</a>, inspect <code>git status --short</code>, and preserve unrelated work. This is
+an independent repository: run installation, tests and package builds here. Follow the
+<a href="../ARCHITECTURE/">architecture map</a> to put source-specific behavior with its owning family and
+reusable behavior in toolkit helpers. Do not introduce application imports or sibling-path imports.</p>
+<h2 id="checks-by-change-type">Checks by change type</h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Appropriate checks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Documentation only</td>
+<td><code>python scripts/check_docs.py</code>; <code>mkdocs build --strict</code>; inspect diff; <code>git diff --check</code>; execute quickstart acceptance if examples change</td>
+</tr>
+<tr>
+<td>Formatting only</td>
+<td><code>ruff format --check src tests scripts</code>, full offline suite and an AST comparison ignoring location metadata</td>
+</tr>
+<tr>
+<td>Calculation or loader</td>
+<td>Focused family tests, meaningful synthetic fixtures and applicable scientific contracts</td>
+</tr>
+<tr>
+<td>CLI, configuration or package layout</td>
+<td>Standalone-package tests, command help, build dry run and wheel installation</td>
+</tr>
+<tr>
+<td>Publication or orchestration</td>
+<td>Workflow/publication tests, dependency ordering and reuse/failure cases</td>
+</tr>
+<tr>
+<td>Regional processing semantics</td>
+<td>Materialized-product checks and candidate/canonical comparison with matching inputs</td>
+</tr>
+</tbody>
+</table>
+<p>From the checkout after installing <code>.[test]</code>:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>scripts/check_docs.py
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>tests/test_standalone_package.py<span class="w"> </span>tests/test_workflow.py
+seascape<span class="w"> </span>build<span class="w"> </span>--dry-run
+git<span class="w"> </span>diff<span class="w"> </span>--check
+</code></pre></div>
+<h2 id="documentation-site">Documentation site</h2>
+<p>The site uses <code>mkdocs.yml</code>, Material for MkDocs, and Markdown under <code>docs/</code>. The
+navigation starts with installation and a safe offline example, then links to the
+generated historical field index, current method/source guides, and public API.
+The historical catalog remains generated from checked-in configuration; do not
+hand-edit its field block. <code>scripts/mkdocs_hooks.py</code> turns existing references from
+<code>docs/</code> to repository source files into GitHub links for the hosted site. The
+offline <code>check_docs.py</code> command still validates those local targets and headings.</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[docs]&#39;</span>
+mkdocs<span class="w"> </span>serve
+mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
+python<span class="w"> </span>scripts/check_docs.py
+</code></pre></div>
+<p>The local server is at <a href="http://127.0.0.1:8000/toolkit-seascape/">http://127.0.0.1:8000/toolkit-seascape/</a>. CI builds strictly on pull
+requests. After a push to <code>main</code>, <code>.github/workflows/docs.yml</code> uploads the
+generated <code>site/</code> as a GitHub Pages artifact and deploys it. Repository Pages
+settings must select <strong>GitHub Actions</strong> as the publishing source; an environment
+or branch protection rule may also govern deployment. The generated site is ignored
+by Git and no <code>gh-pages</code> branch is needed.</p>
+<p>The <a href="../environments/#tested-platforms">observed platform table</a> records actual CI evidence.
+The <a href="https://github.com/MarineCast/toolkit-seascape/blob/main/.github/workflows/ci.yml">CI workflow</a> defines Python 3.14 jobs. A configured job
+is not evidence it ran. The offline suite includes tests that skip without regional materialized
+products; report skips separately from passed checks. Do not infer live provider availability,
+map rendering, a full regional rebuild or application compatibility from unit tests.</p>
+<p>Formatting uses the existing Ruff defaults and Python 3.14 target in <code>pyproject.toml</code>. Contributor
+and CI format checks cover all Python under <code>src/</code>, <code>tests/</code> and <code>scripts/</code>, with no additional
+generated-code exclusions:</p>
+<div class="highlight"><pre><span></span><code>ruff<span class="w"> </span>format<span class="w"> </span>src<span class="w"> </span>tests<span class="w"> </span>scripts
+ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>src<span class="w"> </span>tests<span class="w"> </span>scripts
+</code></pre></div>
+<p>Keep formatter changes separate from lint autofixes, import reordering, API/type changes and
+scientific edits. For a broad formatting change, compare parsed ASTs before/after with location
+metadata ignored, investigate any difference, and run the full suite. Source-byte changes alter
+package code identity and can invalidate recorded resume state; retain those existing checks.</p>
+<h2 id="clean-consumer-acceptance">Clean consumer acceptance</h2>
+<p>The <code>consumer-install</code> CI job targets Linux Python 3.14 (x86_64) and macOS Python 3.14
+(arm64, <code>macos-14</code>). It asserts the observed interpreter/system/architecture and saves native
+library versions. Runner labels follow the <a href="https://docs.github.com/en/actions/reference/runners/github-hosted-runners">GitHub runner reference</a>;
+the saved environment, rather than the label alone, identifies what actually ran. The first
+<a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36322829881">hosted acceptance run</a>
+passed all three consumer cases on commit <code>6ddd5ca</code>; see <a href="../roadmap/PROGRESS/">progress</a> for versions
+and limits. Other revisions/platforms remain unverified until executed; local macOS evidence
+does not establish Linux or hosted acceptance.</p>
+<p>Use a build environment with the declared <code>build</code> extra. Python build's default command builds
+an sdist and then a wheel from that sdist. Set <code>DIST_DIR</code> and <code>CONSUMER_DIR</code> to new paths outside
+the checkout/group being forbidden; the absolute paths below are placeholders.</p>
+<div class="highlight"><pre><span></span><code><span class="nv">DIST_DIR</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>mktemp<span class="w"> </span>-d<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nv">CONSUMER_DIR</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>mktemp<span class="w"> </span>-d<span class="k">)</span><span class="s2">/consumer&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;.[build]&#39;</span>
+python<span class="w"> </span>-m<span class="w"> </span>build<span class="w"> </span>--outdir<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DIST_DIR</span><span class="s2">&quot;</span>
+python<span class="w"> </span>scripts/check_distribution.py<span class="w"> </span>--sdist<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DIST_DIR</span><span class="s2">&quot;</span>/*.tar.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--wheel<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DIST_DIR</span><span class="s2">&quot;</span>/*.whl<span class="w"> </span>--output<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DIST_DIR</span><span class="s2">/distribution-report.json&quot;</span>
+python<span class="w"> </span>scripts/check_consumer_install.py<span class="w"> </span>--wheel<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DIST_DIR</span><span class="s2">&quot;</span>/*.whl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source<span class="w"> </span>/absolute/path/to/toolkit-seascape<span class="w"> </span>--forbid-root<span class="w"> </span>/absolute/path/to/checkout-group<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CONSUMER_DIR</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p>The controller copies only acceptance files from the explicit source location, creates a fresh
+venv without inherited/user packages, clears source/workspace overrides and installs the wheel
+normally with declared runtime dependencies. Before extras, it runs <code>pip check</code>, every installed
+module with OrcaCast blocked, required packaged resources, CLI help/init/dry run and the synthetic
+demo. No notebook file, pytest or Jupyter is present in that phase. Then it installs the same wheel's
+declared test/notebook extras, runs copied product/review/demo/matrix tests and the copied-only notebook
+with an interpreter-pinned temporary kernel. Production calculations/validation are reused.</p>
+<p>Negative probes require an import-denied runtime dependency and a source import to fail, remove
+and restore one known config only in the throwaway installation, and inject an outbound attempt
+into the demo's pipeline call. The latter must leave a FAIL report. Import denial simulates an
+absent runtime module; it is not a live-provider test. Existing source or consumer output is never
+cleaned or overwritten. Demo artifacts stay in their owned <code>.seascape/demo</code> subtrees.</p>
+<p>Dependency installation permits network access. The invoked Python runtime/test processes then
+reject socket/DNS activity, child processes and checkout/group reads. The notebook kernel uses
+its existing guard, allowing Jupyter loopback. Guard rejection is tested explicitly. This is Python
+process evidence, not an OS firewall or protection against native-extension networking.</p>
+<p><code>report.json</code> records each exact argv/cwd, expected and actual exit, status, duration and log.
+<code>runtime-environment.json</code> and <code>extras-environment.json</code> inventory their separate layers without
+requiring pytest for a runtime snapshot. Failure preserves logs and a FAIL report; CI uploads these,
+distribution checks/hashes, executed notebook and synthetic demo outputs on success or failure.
+It does not upload the venv, acquire real sources or publish a package.</p>
+<p>Focused regression command: <code>python -m pytest -q tests/test_consumer_acceptance.py</code>.</p>
+<h2 id="documentation-and-first-result-acceptance">Documentation and first-result acceptance</h2>
+<p><code>python scripts/check_docs.py</code> checks local links and heading fragments, fenced CLI command/stage
+names, the checked-in catalog's generated reference block and byte-identical packaged configuration
+templates. External URL availability is deliberately outside this offline check. It compares the
+<a href="../stage-inputs/">stage-input reference</a> with the existing planner/preflight metadata from temporary
+templates; it runs no producers and generates no authoritative product catalog.</p>
+<p>After deliberately changing stage declarations, review <code>python scripts/check_docs.py --write-stage-reference</code>
+and its diff. Catalog/eligibility/product-document generation still requires materialized products.</p>
+<p>Using the distributions built above, execute all three marked first-result blocks verbatim:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">QUICKSTART_DIR</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>mktemp<span class="w"> </span>-d<span class="k">)</span><span class="s2">/quickstart&quot;</span>
+python<span class="w"> </span>scripts/check_quickstart.py<span class="w"> </span>--sdist<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DIST_DIR</span><span class="s2">&quot;</span>/*.tar.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">&quot;</span><span class="w"> </span>--forbid-root<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>dirname<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span>--output<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$QUICKSTART_DIR</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p>This transfers an sdist to a disposable directory, runs the README's normal isolated source install,
+then runs its demo and the workflow's init/stages/dry-run outside both source trees. The CLI runner
+rejects Python checkout reads, socket activity and child processes, and verifies a normal installed
+package with no pytest/Jupyter. Installation may contact dependency indexes; runtime uses the existing
+consumer guard, with the same native-network limitation described above. Reports retain the exact
+blocks, traced shell commands and logs. Existing output is refused and failure preserves evidence.
+CI executes this on each consumer platform and uploads its report/log/demo artifacts.</p>
+<p><code>python -m pytest -q tests/test_documentation.py</code> tests link/anchor/template/command drift and executes
+the API's freeze-and-read example through the real publisher/resolver using a small publication
+fixture. That fixture is software boundary evidence, not a full regional scientific release audit.</p>
+<p>Before proposing a release, review the full offline/quality/consumer/notebook results, source rights,
+real-data limitations and progress record. Preserve retained releases; remote publishing and the
+bounded real-data pilot require their own authorization. Release-candidate review remains SS-11.</p>
+<h2 id="scientific-changes">Scientific changes</h2>
+<p>Preserve row identity, units, CRS, vertical datum, resolution, source coverage and missingness.
+Test boundary cases such as disconnected graphs, duplicate keys, absent source coverage and
+non-finite values. Document intentional formula or schema changes and their downstream impact.
+The <a href="../CONTRACTS/">contracts</a> and family source guides are the detailed reference.</p>
+<p>To compare already-built candidate and canonical products:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>seascape.maintenance.validate_seascape_rebuild<span class="w"> </span>--canonical-root<span class="w"> </span>/path/to/seascape-workspace<span class="w"> </span>--candidate-root<span class="w"> </span>/path/to/seascape-workspace/.seascape/candidate<span class="w"> </span>--output<span class="w"> </span>/path/to/comparison.json
+</code></pre></div>
+<p>The comparator reads matching catalog paths and checks schemas, identity, missingness, numeric
+values and categorical distributions. It does not build either side. Review its report together
+with provenance and configuration differences before concluding that two regional builds agree.</p>
+<h2 id="generated-metadata-and-documentation">Generated metadata and documentation</h2>
+<p>The workflow runs catalog, static eligibility and documentation stages after product construction. Maintainers
+can also inspect their interfaces directly:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>seascape.maintenance.update_seascape_feature_catalog<span class="w"> </span>--help
+python<span class="w"> </span>-m<span class="w"> </span>seascape.governance.feature_eligibility<span class="w"> </span>--help
+python<span class="w"> </span>-m<span class="w"> </span>seascape.maintenance.update_seascape_docs<span class="w"> </span>--help
+</code></pre></div>
+<p>Catalog generation requires materialized products. Do not regenerate it against an incomplete
+workspace and describe the result as a validated release. The product index contains a generated
+block; update that block through the generator rather than editing field rows by hand.</p>
+<p>After changing editable configuration templates, copy <code>config/common.yaml</code> and <code>config/data/*.yaml</code>
+into <code>src/seascape/resources/config/</code>. Generated catalog, eligibility, and product-index artifacts
+are intentionally absent from packaged init resources. The standalone-package tests check the
+editable copies. Repository guides in <code>docs/</code> are not copied by <code>seascape init</code>.</p>
+<h2 id="adding-a-family-or-product">Adding a family or product</h2>
+<ol>
+<li>Define the source rights, output grain, spatial support, units, missingness and provenance.</li>
+<li>Implement acquisition/validation and builders in the owning family with offline fixtures.</li>
+<li>Register applicable dataset identities and dependencies in <code>core/data/catalog.py</code>.</li>
+<li>Add workflow stages and declared outputs/manifests to <code>workflow.py</code>.</li>
+<li>Update CLI family selectors when exposing download or inspection commands.</li>
+<li>Update the catalog generator's product definitions, release requirements, configuration and
+   packaged templates as needed; keep identifiers and source module paths consistent.</li>
+<li>Update the product/source guides and run checks for the affected behavior.</li>
+</ol>
+<p>Record what was actually executed, what required missing data, and what remains unverified.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ARCHITECTURE/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Architecture">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Architecture
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright MarineCast contributors · Apache-2.0 software license
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

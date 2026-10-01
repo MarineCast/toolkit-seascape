@@ -1,0 +1,3606 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Source-backed geospatial tools for physical and structural marine seascapes">
+      
+      
+      
+        <link rel="canonical" href="https://marinecast.github.io/toolkit-seascape/roadmap/PROGRESS/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Seascape roadmap progress - Seascape Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#seascape-roadmap-progress" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Seascape Toolkit" class="md-header__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Seascape Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Seascape roadmap progress
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concepts/" class="md-tabs__link">
+          
+  
+  
+  Understand
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../variables/" class="md-tabs__link">
+          
+  
+  
+  Variables
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../CONTRACTS/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Seascape Toolkit" class="md-nav__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    Seascape Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seascape concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processing and methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Variables
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalog guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../products/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and field index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../structural-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structural variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../capability-coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choose a workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Offline demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pilots/san-juan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    San Juan pilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metric-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metric matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CONTRACTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scientific contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CONFIGURATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../WORKFLOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stage-inputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ss-00-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-00 baseline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-01-portable-demo-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-01 portable demo — passed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-02-portable-notebook-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-02 portable notebook — passed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-03-clean-consumer-install-acceptance-blocked-on-hosted-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-03 clean consumer-install acceptance — blocked on hosted execution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-04-read-only-prerequisite-checks-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-04 read-only prerequisite checks — passed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-05-cli-diagnostics-and-operation-effects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-05 CLI diagnostics and operation effects
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-06-formatting-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-06 formatting baseline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-07-static-checks-and-reproducibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-07 static checks and reproducibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-03-acceptance-closure-recheck-blocked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-03 acceptance closure recheck — blocked
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-03-hosted-acceptance-closure-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-03 hosted acceptance closure — passed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-08-scientific-publication-and-export-acceptance-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-08 scientific, publication and export acceptance — passed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-09-three-user-journeys-acceptance-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-09 three user journeys — acceptance passed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-10-bounded-san-juan-pilot-blocked-execution-runbook-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-10 bounded San Juan pilot — blocked execution, runbook complete
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ss-11-release-candidate-review-owner-gates-pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SS-11 release-candidate review — owner gates pending
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#focused-review-fixes-september-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Focused review fixes (September 27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pilot-01-continuation-execution-approval-pending-september-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PILOT-01 continuation — execution approval pending (September 27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pilot-01-execution-passed-within-approved-exploratory-scope-september-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PILOT-01 execution — passed within approved exploratory scope (September 27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-314-only-support-september-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python 3.14-only support — September 29
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="seascape-roadmap-progress">Seascape roadmap progress</h1>
+<p>Implemented scope: SS-00 through SS-10; the approved PILOT-01 exploratory family gate passed.
+SS-11 candidate review/handoff prepared; human and owner gates remain pending.
+SS-03 hosted acceptance passed; no complete audited regional release is claimed.
+<a href="../SEASCAPE_CODEX_ROADMAP/">Specification</a>.
+SS-00 base/current commit: <code>f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4</code> (no reset).
+Initial state: clean <code>main</code>; remote <code>https://github.com/MarineCast/toolkit-seascape.git</code>.
+Working branch: <code>feature/seascape-repository-organization-updates</code>. Feature-branch pushes authorized
+on September 27; no merge, tag or package publication. Earlier entries retain their dated evidence.
+Current next task: ACCEPT-01, continuing SS-11's unavailable human trial and owner version,
+classic-protection, merge and release decisions. FIX-01/FIX-02/VERIFY-01 remain passed.
+PILOT-01 used approved cached inputs and explicitly exploratory support; canonical water inputs
+remain unavailable. No SS-12 started.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Status</th>
+<th>Evidence / next gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SS-00</td>
+<td>passed</td>
+<td>Baseline classified; notebook PASS (12 code cells, no errors)</td>
+</tr>
+<tr>
+<td>SS-01</td>
+<td>passed</td>
+<td>21 regressions, runtime-only guarded wheel demo; full suite 241 passed / 3 skipped</td>
+</tr>
+<tr>
+<td>SS-02</td>
+<td>passed</td>
+<td>Portable copied notebook; 7 regressions; full suite 248 passed / 3 skipped</td>
+</tr>
+<tr>
+<td>SS-03</td>
+<td>passed</td>
+<td>All three hosted consumer cases passed; run 36322829881, tested commit 6ddd5ca</td>
+</tr>
+<tr>
+<td>SS-04</td>
+<td>passed</td>
+<td>Read-only input preflight; 34 new regressions; guarded runtime-only wheel acceptance</td>
+</tr>
+<tr>
+<td>SS-05</td>
+<td>passed</td>
+<td>CLI-only guidance/debug, side-effect contracts, 29 regressions; runtime-only wheel acceptance</td>
+</tr>
+<tr>
+<td>SS-06</td>
+<td>passed</td>
+<td>Ruff baseline; 209 ASTs unchanged; full suite 322 passed / 3 skipped</td>
+</tr>
+<tr>
+<td>SS-07</td>
+<td>passed</td>
+<td>Local expanded lint/type gates; fresh constrained/range solves and audits; broad ignored-cache secret scan failed</td>
+</tr>
+<tr>
+<td>SS-08</td>
+<td>passed</td>
+<td>Analytic/matrix/publication evidence; local and hosted 352 passed / 3 skipped; run 36324502530, 9/9 jobs</td>
+</tr>
+<tr>
+<td>SS-09</td>
+<td>passed</td>
+<td>Three journeys, guarded source quickstart, docs drift checks; local/hosted 368 passed / 3 skipped; run 36327449869, 9/9 jobs</td>
+</tr>
+<tr>
+<td>SS-10</td>
+<td>passed, bounded exploratory scope</td>
+<td>PILOT-01: two fresh cached-input realizations, exact keyed comparison, measured caps and six inspected maps; no whole release</td>
+</tr>
+<tr>
+<td>SS-11</td>
+<td>blocked</td>
+<td>Exact candidate software checks passed; handoff prepared; human/version/admin/release-owner gates pending</td>
+</tr>
+<tr>
+<td>FIX-01</td>
+<td>passed</td>
+<td>Future GEBCO rights corrected; 32 focused tests; retained fixture/data bytes preserved</td>
+</tr>
+<tr>
+<td>FIX-02</td>
+<td>passed</td>
+<td>113 focused regressions; safe detail, original debug, unchanged gates</td>
+</tr>
+<tr>
+<td>VERIFY-01</td>
+<td>passed</td>
+<td>Corrected 50675db; local package acceptance and 9/9 hosted jobs; dated evidence preserved</td>
+</tr>
+<tr>
+<td>PILOT-01</td>
+<td>passed, bounded exploratory scope</td>
+<td>Installed package 232ac30 at execution HEAD 5d9faaf; two R6/R8 family realizations; see final evidence below</td>
+</tr>
+<tr>
+<td>ACCEPT-01</td>
+<td>pending</td>
+<td>No unfamiliar tester; owner decisions and authorization remain outstanding</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ss-00-baseline">SS-00 baseline</h2>
+<p>Current source matches the reviewed baseline. Entry points (source/tests are authoritative):</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Symbols</th>
+<th>Existing tests</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Init / CLI</td>
+<td><code>cli.initialize_workspace</code>, <code>cli.main</code></td>
+<td><code>test_standalone_package.py</code></td>
+</tr>
+<tr>
+<td>Bathymetry</td>
+<td><code>bathymetry.load_bathymetry_config</code>, <code>run_pipeline</code>, <code>build_bathymetry_parquet</code></td>
+<td><code>test_bathymetry_contracts.py</code>, validation notebook</td>
+</tr>
+<tr>
+<td>Planning</td>
+<td><code>workflow.selected_stages</code>, <code>run_domain_layer_build</code></td>
+<td><code>test_workflow.py</code></td>
+</tr>
+<tr>
+<td>Publication</td>
+<td><code>publication.TransactionalSeascapePublisher</code>, <code>publication.SeascapeReleasePublisher</code></td>
+<td><code>test_publication.py</code>, <code>test_release.py</code>, <code>test_review_regressions.py</code></td>
+</tr>
+<tr>
+<td>Resolution</td>
+<td><code>products.list_products</code>, <code>list_resolutions</code>, <code>resolve_product</code></td>
+<td><code>test_products.py</code>, <code>test_review_regressions.py</code></td>
+</tr>
+<tr>
+<td>Matrix</td>
+<td><code>metric_matrix.build_metric_matrix</code></td>
+<td><code>test_metric_matrix.py</code></td>
+</tr>
+</tbody>
+</table>
+<p>Isolated development venv: <code>/tmp/seascape-roadmap-dev</code>, no inherited site packages.
+Python 3.14.6, macOS 26.6.2 ARM64; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1.
+Exact commands/exit codes and dependency/native versions: <code>/tmp/seascape-roadmap-evidence/baseline-commands.json</code>
+and <code>baseline-environment.{json,txt}</code>. Logs are local machine evidence, not committed artifacts.</p>
+<ul>
+<li><code>python -m pip install -e '.[test,quality,notebook]'</code>: initial sandbox run exit 1 (PyPI DNS,
+  not a demonstrated dependency defect); network-enabled retry exit 0. Install logs under <code>/tmp</code>.</li>
+<li><code>python -m pip check</code>: exit 0.</li>
+<li><code>python -m pytest -q</code>: exit 0, <strong>220 passed / 0 failed / 3 skipped</strong>. Two feature-catalog tests
+  and one network-consumer test require absent regional artifacts. Ten upstream/deprecation warnings.</li>
+<li><code>ruff check src tests scripts</code>, <code>python -m mypy</code>, current four-module <code>ruff format --check</code>: exit 0 each.</li>
+<li><code>seascape --help</code>: exit 0.</li>
+<li><code>seascape --workspace /tmp/seascape-roadmap-evidence/baseline-workspace init</code> and
+  <code>seascape --workspace /tmp/seascape-roadmap-evidence/baseline-workspace build --dry-run</code>: exit 0 each;
+  fresh workspace, 26 stages, no acquisition/publication.</li>
+<li><code>python scripts/environment_snapshot.py --output /tmp/seascape-roadmap-evidence/baseline-environment</code>: exit 0.</li>
+<li>Notebook: initial run exit 1 (sandbox loopback bind denied); local-socket retry exit 1
+  (venv CLI missing from PATH); corrected PATH/local-socket retry exit 0, 12 executed code cells, PASS marker and zero errors.
+  Output <code>seascape-toolkit-validation.ipynb</code> under the evidence directory. Committed notebook untouched.</li>
+<li>GitHub connector <code>fetch_commit_workflow_runs</code> for this exact commit returned an empty list;
+  hosted CI has no available execution evidence. Historical remediation counts are dated evidence.</li>
+</ul>
+<p>No production behavior changed during SS-00. No unrelated edits existed to preserve. Live acquisition,
+regional rebuild, consumer integration and remote release checks remain outside scope.</p>
+<h2 id="ss-01-portable-demo-passed">SS-01 portable demo — passed</h2>
+<p>Implementation and local acceptance complete. Base: <code>0d6963b284e51184292cbf591abeeac977cca445</code>;
+this record's containing implementation commit is the SS-01 handoff. Final Git identity is also
+saved in <code>/tmp/seascape-roadmap-evidence/final-git-state.json</code> and reported in the task handoff.</p>
+<ul>
+<li>Added <code>demo.run_demo(workspace, *, overwrite=False)</code> / <code>DemoResult</code> and <code>seascape demo</code>.
+  The 48×48 notebook recipe feeds the existing <code>bathymetry.run_pipeline</code> with download/map off.
+  Packaged configuration, transactional family publication, checksums and atomic writers are reused.</li>
+<li>All paths belong to <code>.seascape/demo</code>; ordinary configs/canonical products/releases are preserved.
+  Ownership/symlink/path-type/transaction checks and a POSIX lock guard reruns. Only known files
+  are replaced; previous PASS is invalidated before computation, including metadata failures.</li>
+<li>Reserved provider <code>SYNTHETIC</code> records fixture licensing/warnings and requires acquisition and
+  interactive maps disabled. Existing real-provider metadata defaults are regression-tested.
+  No scientific formulas, thresholds, default regional configs, schemas or release gates changed.</li>
+<li>14 executed checks cover actual nonempty output, exact H3 r8 support, 2016 eligible pixels,
+  5 m constant depth, observed zero statistics/fractions, null nodata/outside/sea-level support,
+  finite values, sign/CRS, provenance, family/source/upstream checksums and returned paths.</li>
+<li><strong>21 focused tests passed / 0 failed / 0 skipped</strong>; full suite <strong>241 passed / 0 failed / 3 skipped</strong>
+  (same absent regional artifacts as SS-00). Full run: 31 dependency/deprecation warnings.</li>
+<li>Runtime-only wheel acceptance: 14/14 checks, 0 network attempts, pytest/Jupyter absent and their
+  imports forbidden. Installed package imported from consumer <code>site-packages</code>, arbitrary cwd <code>/tmp</code>,
+  source overrides cleared. Audit guard verifies outbound rejection and demo filesystem confinement;
+  two Matplotlib font-discovery child attempts were denied, with successful bundled-font fallback.
+  This is Python process evidence, not an OS-level firewall or a sandbox for native extensions.</li>
+<li>Both static PNGs were opened and visually inspected: extent/orientation, synthetic titles,
+  meter/sign labels and grey unavailable cells. Figures generated without basemap/display server.</li>
+<li>Final existing notebook: 12 executed code cells, PASS marker, zero errors. Notebook/config/resource
+  diffs remain empty. Portable thin-client conversion is SS-02 and was not started.</li>
+</ul>
+<p>Commands ran from the owning checkout with <code>/tmp/seascape-roadmap-dev/bin</code> on PATH unless indicated.
+Machine logs and exact baseline/final static commands: <code>/tmp/seascape-roadmap-evidence/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Command / evidence</th>
+<th>Exit / result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python -m pytest -q tests/test_demo.py</code> (<code>demo-tests-final.log</code>)</td>
+<td>0; 21 passed</td>
+</tr>
+<tr>
+<td><code>python -m pytest -q</code> (<code>final-tests.log</code>)</td>
+<td>0; 241 passed, 3 regional skips</td>
+</tr>
+<tr>
+<td><code>ruff check src tests scripts</code>; <code>python -m mypy</code></td>
+<td>0 each; typing retains existing four-module scope</td>
+</tr>
+<tr>
+<td>Current four-module format gate plus <code>src/seascape/demo.py</code>, <code>src/seascape/cli.py</code>, <code>tests/test_demo.py</code>, <code>scripts/check_demo.py</code></td>
+<td>0; 8 formatted files; full command in <code>final-commands.json</code></td>
+</tr>
+<tr>
+<td><code>python -m pip check</code> (development and runtime consumer)</td>
+<td>0 each</td>
+</tr>
+<tr>
+<td><code>python -m pip wheel . --no-deps --no-build-isolation --wheel-dir /tmp/seascape-roadmap-evidence/wheels</code></td>
+<td>First failed (exit code not captured): setuptools absent in venv; declared build requirements installed; final exit 0</td>
+</tr>
+<tr>
+<td><code>python -m pip install 'setuptools&gt;=80' wheel</code> (development venv)</td>
+<td>0; declared build prerequisites</td>
+</tr>
+<tr>
+<td>Consumer <code>python -m pip install /tmp/seascape-roadmap-evidence/wheels/toolkit_seascape-0.1.0-py3-none-any.whl</code></td>
+<td>First exit 1: wheel not yet built; final fresh runtime/dependency install exit 0, no inherited packages</td>
+</tr>
+<tr>
+<td>Consumer <code>python -m pip install --no-deps --force-reinstall /tmp/seascape-roadmap-evidence/wheels/toolkit_seascape-0.1.0-py3-none-any.whl</code></td>
+<td>0; final wheel refresh after runtime dependencies were already installed normally</td>
+</tr>
+<tr>
+<td>From <code>/tmp</code>: <code>env -u PYTHONPATH -u SEASCAPE_WORKSPACE -u SEASCAPE_CANDIDATE_ROOT /tmp/seascape-roadmap-consumer/bin/python /tmp/seascape-roadmap-evidence/check_demo.py --workspace /private/tmp/seascape-roadmap-evidence/consumer-demo-confined2</code></td>
+<td>0; 14/14, confinement and outbound guard; <code>consumer-demo-confined2.log</code></td>
+</tr>
+<tr>
+<td>Copied <code>check_installed_package.py</code>, consumer Python from <code>/tmp</code>, PYTHONPATH cleared</td>
+<td>0; 161 modules imported with OrcaCast blocked; <code>consumer-imports.log</code></td>
+</tr>
+<tr>
+<td>Consumer <code>seascape --help</code></td>
+<td>0; <code>consumer-help.log</code></td>
+</tr>
+<tr>
+<td>Consumer <code>seascape --workspace /private/tmp/seascape-roadmap-evidence/consumer-demo-confined2 demo</code></td>
+<td>1 expected; existing output refused, PASS report retained</td>
+</tr>
+<tr>
+<td><code>jupyter nbconvert --to notebook --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --output seascape-toolkit-validation-final.ipynb --output-dir /tmp/seascape-roadmap-evidence</code></td>
+<td>0 with local kernel sockets and development venv PATH; <code>final-notebook.log</code></td>
+</tr>
+<tr>
+<td><code>pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-roadmap-evidence/baseline-environment.txt</code></td>
+<td>0; no known vulnerabilities; <code>dependency-audit.log</code></td>
+</tr>
+<tr>
+<td><code>gitleaks git . --redact --no-banner --log-opts="--all"</code></td>
+<td>0; no leaks in history</td>
+</tr>
+<tr>
+<td><code>gitleaks dir . --redact --no-banner</code></td>
+<td>1; pre-existing ignored <code>graphify-out/cache/stat-index.json</code>, generic-api-key false positive on a 64-character file hash under <code>hashes["docs/api.md"]</code></td>
+</tr>
+<tr>
+<td><code>gitleaks dir /tmp/seascape-roadmap-evidence/review-files --redact --no-banner</code></td>
+<td>0; copied tracked + nonignored files; cache preserved, no ignore added</td>
+</tr>
+<tr>
+<td>Local Markdown references in 6 changed guides; <code>git diff --check</code></td>
+<td>0; links exist and diff clean</td>
+</tr>
+<tr>
+<td><code>git diff --exit-code -- notebooks config src/seascape/resources</code></td>
+<td>0; no notebook/template edits</td>
+</tr>
+</tbody>
+</table>
+<p>Earlier consumer guard trials failed on metadata's <code>platform.platform()</code> subprocess and font
+probing (RuntimeError did not permit Matplotlib's expected fallback), then descriptor-relative
+publisher cleanup was incorrectly interpreted relative to cwd. Final code removes metadata's
+subprocess, records RUNNING before metadata, denies children with PermissionError, and tracks
+file-descriptor bases in the acceptance helper. Final guarded execution passed; failures were not
+counted as passes. Wheel/environment evidence: <code>wheel-build-final.log</code>, <code>consumer-environment.json</code>,
+<code>consumer-demo-confined2/.seascape/demo/report.json</code> and its figures beneath the evidence directory.</p>
+<p>Files: <code>src/seascape/demo.py</code>, <code>src/seascape/cli.py</code>, bathymetry <code>pipeline.py</code>, <code>tests/test_demo.py</code>,
+<code>scripts/check_demo.py</code>, <code>AGENTS.md</code>, <code>README.md</code>, <code>docs/{API,README,demo}.md</code>, this progress record.
+No new runtime dependencies. No unrelated initial edits existed; existing configuration, retained
+products, sibling repositories and local graph cache were preserved. No remote changes performed.</p>
+<p>Known limits: local macOS ARM64 Python 3.14.6 evidence only; no available hosted CI result for baseline,
+no Linux/other-interpreter acceptance, no live providers/regional rebuild/downstream integration,
+no human newcomer trial. Process-global environment selection is not thread-safe; separate-process
+writers are guarded. All these external checks remain unrun, not software acceptance blockers.
+The SS-01 handoff recommended SS-02; its subsequent implementation is recorded below.</p>
+<h2 id="ss-02-portable-notebook-passed">SS-02 portable notebook — passed</h2>
+<p>Base: <code>4017612214878ce181bde69c909b3c718142d74a</code>; clean initial working tree on the existing
+<code>feature/seascape-first-run-demo</code> branch. This record's containing commit is the SS-02 handoff;
+exact final Git identity is in <code>/tmp/seascape-ss02-evidence/final-git-state.json</code>.
+SS-01 prerequisites were reverified against current <code>run_demo</code>, CLI delegation, packaged resources,
+production bathymetry and tests. Its unchanged runtime wheel was reused, not rebuilt or relabeled:
+SHA-256 <code>503b38e2972ff61be2a2a307e77dba319df7fbdffdb33582e683372fab8b1682</code>.
+No baseline reset, live exploration or runtime-only acceptance redo.</p>
+<ul>
+<li>Replaced checkout discovery and fixture/orchestration cells with installed <code>run_demo</code>.
+  Twelve readable code cells inspect environment, selected workspace, generated configuration,
+  input raster/support, output grain/schema/control values, the API's two figures, actual checks
+  and synthetic provenance. Default temporary products persist after kernel shutdown; optional
+  <code>SEASCAPE_DEMO_WORKSPACE</code> selects a workspace. Explicit overwrite remains false by default.</li>
+<li>Added truthful presentation gates for empty/failed checks, report disagreement and environment
+  restoration. Corrected Data Explorer claims: its actual helper performs live San Juan bathymetry
+  exploration with an exploratory water mask, not completed-release inspection/certification.</li>
+<li>Added copied-notebook acceptance with a temporary interpreter-pinned kernel, no global kernel
+  registration, checkout-read rejection, outbound Python socket/DNS rejection and provider denial.
+  Guard self-test rejects outbound access; loopback remains allowed. This is process evidence,
+  not an OS firewall or native-extension network sandbox.</li>
+<li>Both default and chosen-workspace guarded runs passed <strong>14 production / 15 notebook checks</strong>,
+  displayed <strong>2 PNGs</strong>, retained synthetic reports after kernel shutdown, restored all four inspected
+  environment variables (including sentinel overrides), and recorded <strong>0 acquisition / 0 outbound
+  attempts</strong>. The consumer has notebook extras but still no pytest; imports resolve in its isolated
+  wheel <code>site-packages</code>. Each input directory contains only its copied notebook.</li>
+<li>Plain <code>nbconvert</code> also passed: <strong>12 executed code cells, 0 errors, 2 PNGs</strong>, actual PASS marker,
+  explicit interpreter/import paths. Source is unexecuted, contains no machine paths/embedded
+  outputs, and stayed byte-identical through execution. Final source SHA-256:
+  <code>f618fc5df6bc2d68eeda842e6e22f135da80827dde85b1adac1382a1b3c545b3</code>.</li>
+</ul>
+<p>Exact command lines, cwd, exit codes and logs: <code>/tmp/seascape-ss02-evidence/commands.json</code>.
+Development interpreter <code>/tmp/seascape-roadmap-dev/bin/python</code>; consumer
+<code>/tmp/seascape-roadmap-consumer/bin/python</code>. Python 3.14.6, macOS 26.6.2 ARM64;
+GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1. Environment inventories:
+<code>development-environment.{json,txt}</code>, <code>consumer-environment.json</code> under that evidence directory.</p>
+<table>
+<thead>
+<tr>
+<th>Command / evidence</th>
+<th>Exit / result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Consumer <code>python -m pip install 'toolkit-seascape[notebook] @ file:///private/tmp/seascape-roadmap-evidence/wheels/toolkit_seascape-0.1.0-py3-none-any.whl'</code></td>
+<td>0; declared optional extra, no runtime install redo</td>
+</tr>
+<tr>
+<td>Development <code>python -m pytest -q tests/test_validation_notebook.py</code></td>
+<td>0; 7 passed, 0 failed/skipped; <code>focused-tests-final.log</code></td>
+</tr>
+<tr>
+<td>Development <code>python -m pytest -q</code></td>
+<td>0; 248 passed, 0 failed, 3 skipped; <code>full-tests-final.log</code>; 31 dependency/deprecation warnings</td>
+</tr>
+<tr>
+<td>Consumer copied <code>check_validation_notebook.py</code>, chosen workspace + four sentinel overrides</td>
+<td>0; <code>selected-verified-executed.{ipynb,json}</code>, <code>selected-verified-notebook.log</code></td>
+</tr>
+<tr>
+<td>Consumer copied helper, default temporary workspace + four environment variables unset</td>
+<td>0; <code>default-verified-executed.{ipynb,json}</code>, <code>default-verified-notebook.log</code></td>
+</tr>
+<tr>
+<td>Consumer <code>python -m jupyter nbconvert --to notebook --execute 01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --ExecutePreprocessor.kernel_name=seascape-ss02 --output plain-verified-executed.ipynb --output-dir /tmp/seascape-ss02-evidence</code></td>
+<td>0; cwd <code>plain-verified-copy</code>, explicit local kernel/PATH/JUPYTER_PATH; <code>plain-verified-notebook.log</code></td>
+</tr>
+<tr>
+<td><code>ruff check src tests scripts</code>; current four-module format gate + two new Python files; <code>python -m mypy</code></td>
+<td>0 each; existing typing scope preserved; <code>ruff-check.log</code>, <code>ruff-format.log</code>, <code>mypy.log</code></td>
+</tr>
+<tr>
+<td>Consumer <code>python -m pip check</code></td>
+<td>0; <code>consumer-pip-check.log</code></td>
+</tr>
+<tr>
+<td>Existing environment snapshot helper: consumer / development</td>
+<td>1 / 0; helper requires absent consumer pytest; consumer versions captured separately without installing pytest</td>
+</tr>
+<tr>
+<td>Evidence source/reference inspection; <code>git diff --check</code>; production/config/dependency/CI/live-notebook diff guard</td>
+<td>0 each; 22 local links, unchanged copied bytes and isolated execution verified</td>
+</tr>
+</tbody>
+</table>
+<p>The three skips are two feature-catalog tests and one network-consumer test requiring absent
+materialized regional artifacts. Earlier notebook executions passed before final review exposed
+Pandas truncation of the import path. Plain-text paths were added and all final executions rerun.
+Two evidence-inspection trials failed on raw JSON stream-list handling and that path truncation;
+the normalized final inspection passed. These inspection failures were not counted as passes.
+Jupyter's local TCP transport warning is retained in logs; no external connections were authorized.</p>
+<p>Files: <code>AGENTS.md</code>, <code>README.md</code>, <code>docs/demo.md</code>, <code>notebooks/README.md</code>,
+<code>notebooks/validation/01_TOOLKIT_VALIDATION.ipynb</code>, <code>scripts/check_validation_notebook.py</code>,
+<code>tests/test_validation_notebook.py</code>, this progress record. No production API, formula, units/sign,
+missingness, schema, dependency declaration, default configuration or scientific/release gate change.
+No unrelated initial edits existed. Production source, canonical products/retained releases,
+other notebooks, graph cache and sibling repositories were preserved; all demo artifacts remain
+in demo-owned subtrees. Remote changes: <strong>none</strong>.</p>
+<p>No implementation/acceptance blocker remains. Linux, other interpreters, hosted consumer CI,
+live providers, regional scientific validity, downstream integration and a human newcomer trial
+remain <strong>not_run</strong>. Security/dependency audits already recorded in SS-01 were not rerun for this
+notebook-only task. Next: <strong>SS-03 — clean consumer-install acceptance</strong>. Stop before SS-03.</p>
+<h2 id="ss-03-clean-consumer-install-acceptance-blocked-on-hosted-execution">SS-03 clean consumer-install acceptance — blocked on hosted execution</h2>
+<p>Implementation complete; local acceptance passed. Full task acceptance remains blocked by the
+unexecuted hosted matrix. Base: <code>c1cab8b44990f9e86d4a4bac26d88bddab0eb30a</code>, clean tree on
+<code>feature/seascape-first-run-demo</code>. This record's containing commit is the implementation handoff;
+final Git identity is in <code>/tmp/seascape-ss03-evidence/final-git-state.json</code>.
+Reverified SS-01/SS-02 APIs, resource loading, notebook source/hash and existing wheel/CI helpers.
+The inherited-site-package CI wheel check was still present; no prior task or baseline was reset.</p>
+<ul>
+<li>Replaced that check with Linux Python 3.11/3.14 x86_64 and macOS Python 3.14 arm64 (<code>macos-14</code>)
+  consumer jobs. They build an isolated sdist, build the wheel from that sdist, inspect critical
+  files/all packaged resources, then install normally into a fresh venv with no inherited/user
+  site packages. Added only the declared optional build tools; runtime requirements unchanged.</li>
+<li>Runtime layer runs dependency checks, 161 installed-module imports with OrcaCast blocked,
+  packaged-resource checks, the actual installed console script's help/init/26-stage dry run,
+  and the existing guarded demo before pytest/Jupyter or the notebook file is present.</li>
+<li>Four expected nonzero probes passed: import-denied Rasterio (simulated dependency absence),
+  attempted source import rejected, actual installed config removal/restoration rejected by the
+  resource checker, and injected outbound demo activity rejected with a retained <strong>FAIL</strong> report.
+  Source config and ordinary/canonical/release directories are not used for these probes.</li>
+<li>Only after runtime PASS, installed declared test/notebook extras; <strong>55 copied tests passed</strong>
+  (0 failed/skipped, 25 warnings) and the notebook-only copy passed <strong>14 production / 15 notebook
+  checks</strong>, 2 figures, no acquisition/outbound attempts, restored environment and retained artifacts.
+  Its source hash remains <code>f618fc5df6bc2d68eeda842e6e22f135da80827dde85b1adac1382a1b3c545b3</code>.</li>
+<li>Python process guards self-test denied network/checkout access and deny child escapes. Jupyter
+  uses the existing loopback-aware kernel guard. This is not an OS/native-extension firewall.
+  CI asserts observed interpreter/system/architecture and uploads concise evidence on failure
+  or success, including hidden demo files, without uploading the consumer venv.
+  Existing notebook/security jobs and quality checks are retained; format targets add only this patch.</li>
+</ul>
+<p>Local environment: macOS <strong>26.6.2</strong>, Darwin <strong>25.6.0</strong>, arm64, Python <strong>3.14.6</strong>;
+GDAL <strong>3.12.4</strong>, PROJ <strong>9.8.1</strong>, GEOS <strong>3.13.1</strong>. Separate runtime/extras inventories and exact
+consumer argv/cwd/expected/actual exits: <code>acceptance-verified/{runtime-environment.json,
+extras-environment.json,report.json}</code> under <code>/tmp/seascape-ss03-evidence/</code>.
+Host commands/exits: <code>commands.json</code>; archive hashes/resource evidence: <code>distribution-report.json</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Executed command / evidence</th>
+<th>Exit / result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Development <code>python -m pip install 'build&gt;=1.2'</code></td>
+<td>0; newly declared build tool; existing setuptools/wheel already present</td>
+</tr>
+<tr>
+<td><code>python -m build --outdir /tmp/seascape-ss03-evidence/distributions</code></td>
+<td>0; isolated sdist then wheel from sdist; <code>distribution-build.log</code></td>
+</tr>
+<tr>
+<td><code>python scripts/check_distribution.py --sdist …tar.gz --wheel …whl --output …/distribution-report.json</code></td>
+<td>0; 9 required files and all 5 packaged resources preserved</td>
+</tr>
+<tr>
+<td><code>python -m pytest -q tests/test_consumer_acceptance.py</code></td>
+<td>0; <strong>11 passed / 0 failed / 0 skipped</strong>; <code>focused-tests-verified.log</code></td>
+</tr>
+<tr>
+<td><code>python -m pytest -q</code></td>
+<td>0; <strong>259 passed / 0 failed / 3 skipped</strong>; 31 warnings; <code>full-tests-verified.log</code></td>
+</tr>
+<tr>
+<td><code>python scripts/check_consumer_install.py --wheel …whl --source &lt;checkout&gt; --forbid-root &lt;MarineCast&gt; --output …/acceptance-verified</code></td>
+<td>0; all 16 steps met expected exits; <code>consumer-run-verified.log</code>, consumer <code>report.json</code></td>
+</tr>
+<tr>
+<td><code>ruff check src tests scripts</code>; existing four-module + seven changed Python-file format gate; <code>python -m mypy</code></td>
+<td>0 each; existing four-module typing scope retained</td>
+</tr>
+<tr>
+<td>Final YAML parse / all shell steps <code>bash -n</code>, guide reference checks, security/quality preservation, copied-file/hash checks, <code>git diff --check</code></td>
+<td>0; evidence <code>review-check.json</code>, <code>source-reference-ci-check.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>The same two feature-catalog tests and one network-consumer test skip for absent materialized
+regional artifacts. Earlier consumer runs exited <strong>1</strong>: first the helper incorrectly used
+<code>python -m seascape.cli</code> (no module entry point), then its outbound probe patched an unbound
+pipeline alias. Init-file and expected-denial assertions caught both. Corrected console dispatch
+and bound-call injection have regressions; fresh final acceptance passed. Earlier failures remain
+in <code>acceptance/</code> and <code>acceptance-final/</code>; they were not relabeled or counted as complete passes.</p>
+<p>Files: <code>.github/workflows/ci.yml</code>, <code>AGENTS.md</code>, <code>pyproject.toml</code>, <code>docs/{DEVELOPMENT,demo}.md</code>,
+<code>notebooks/README.md</code>, <code>scripts/{check_installed_package,check_demo,check_distribution,
+check_consumer_install,check_consumer_failures,consumer_guard}.py</code>,
+<code>tests/test_consumer_acceptance.py</code>, this progress record. Scientific/public API behavior changed:
+<strong>no</strong>; formulas, missingness, schemas, release gates, production source, configurations, notebook
+source, canonical products/retained releases and siblings preserved. No unrelated initial edits.
+No live acquisition, remote mutation, release publication or history rewrite.</p>
+<p>Hosted Linux 3.11/3.14 and macOS-14 3.14 arm64 jobs: <strong>not_run</strong>. No local Linux/container runtime
+or Python 3.11 was available; new hosted jobs cannot execute without an authorized remote update.
+Local macOS-26 evidence does not establish the hosted macOS-14 job. Security/dependency audits
+were not rerun; their existing CI gates remain unchanged. Regional/live/downstream/human checks
+remain outside scope. Next: <strong>SS-04 — read-only prerequisite checks</strong>, with SS-03 hosted acceptance
+still pending before integration. Stop before SS-04. Remote changes: <strong>none</strong>.</p>
+<h2 id="ss-04-read-only-prerequisite-checks-passed">SS-04 read-only prerequisite checks — passed</h2>
+<p>Base: <code>368ee1b2400415a298dd742f4d6cad3fe4990af8</code>; the containing implementation commit is this
+handoff (exact final identity also in <code>/tmp/seascape-ss04-evidence/final-git-state.json</code>).
+Clean initial tree; retained <code>feature/seascape-first-run-demo</code>. SS-00 prerequisites reverified
+against current CLI, stage registry, family loaders, candidate rebasing and scientific contracts.
+SS-03 implementation is present; its hosted acceptance remains blocked, not relabeled passed.</p>
+<ul>
+<li>Added <code>build --dry-run --check-inputs [--json]</code>; flags require <code>--dry-run</code>. Plain dry-run stays
+  unchanged. JSON-only planning explicitly reports inspection <code>not_run</code>; checked failures emit
+  parseable JSON and exit 1. Report schema 1 includes workspace/config/candidate, stage expansion,
+  configured/default destinations, publication intent, checks, required/optional status and actions.</li>
+<li>Execution and preflight share <code>plan_domain_layer_build</code> and candidate configuration rendering.
+  Existing family loaders inspect a context-local copy in memory; common/workspace overrides are
+  restored. No second stage registry, data hashes, acquisition, builder, cleanup or candidate writes.
+  Exact upstream output paths are <code>generated_by_plan</code>; absent external inputs remain distinct.</li>
+<li>Existing CRS/unit/sign/H3/scale validation is reused. Native raster header checks were factored
+  out of the slope function and reused without reading pixels; formulas, thresholds, masks,
+  defaults, schemas and release validation remain unchanged. Header inspection accepts local TIFF
+  signatures/GTiff only, disables GDAL auxiliary writes and rejects disguised remote VRT sources.</li>
+<li>Readability is not schema/coverage validation. Vector/Parquet headers, source values, datum,
+  checksum/reuse identity, directory/archive usability and release approval remain unverified.
+  Required skip reuse, kelp annual-layer usability and reef partial-inventory usability fail as
+  <code>unverified</code>; optional limits cannot turn them into PASS. All 26 packaged stages report their
+  selected prerequisites without execution. Configured fluvial barrier dependencies are included.</li>
+<li><strong>43 focused passed / 0 failed / 0 skipped</strong> (34 new plus 9 existing workflow tests); final full
+  suite <strong>293 passed / 0 failed / 3 skipped</strong>, 65 dependency/deprecation warnings. Same two
+  feature-catalog and one network-consumer tests skip for absent materialized regional artifacts.</li>
+<li>Final wheel built from its sdist, required resources compared, then force-reinstalled into the
+  fresh runtime-only consumer (initial normal wheel install resolved all declared dependencies;
+  no inherited site packages). Guarded imports: 162 modules, OrcaCast/source access blocked.
+  Ready/missing cases passed with pytest/Jupyter absent and imports blocked, Python outbound/child
+  guards active, zero Python write attempts, identical workspace bytes and environment after
+  each call. Installed console help/negative JSON case also ran. This is Python guard evidence,
+  not an OS/native firewall. Fixtures explicitly label synthetic path/header acceptance only.</li>
+<li>Validation notebook/demo/configuration resources are unchanged; this additive planning command
+  needs no thin-client notebook change. Their existing production regressions ran in the full suite;
+  copied-notebook/headless/SS-03 matrix acceptance was not redone. No real data or release created.</li>
+</ul>
+<p>Commands below ran in the owning checkout, with <code>/tmp/seascape-roadmap-dev/bin</code> as the development
+interpreter/tool prefix. Evidence root <code>E=/tmp/seascape-ss04-evidence</code>; <code>C=$E/consumer/bin/python</code>.
+These prefixes abbreviate absolute paths only. Final static argv/exit records are in
+<code>static-commands.json</code>; installed-console argv/cwd/expected/actual exits in <code>consumer-commands-final.json</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Exit / evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python -m pytest -q tests/test_preflight.py tests/test_workflow.py</code></td>
+<td>0; <code>focused-tests-final.log</code>, 43 passed</td>
+</tr>
+<tr>
+<td><code>python -m pytest -q</code></td>
+<td>0; <code>full-tests-final.log</code>, 293 passed / 3 skipped</td>
+</tr>
+<tr>
+<td><code>ruff check src tests scripts</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>python -m mypy</code></td>
+<td>0; existing 4-module scope</td>
+</tr>
+<tr>
+<td><code>ruff format --check src/seascape/products.py src/seascape/core/geo/crs.py src/seascape/core/artifacts/confinement.py src/seascape/seafloor_physiography/depth.py src/seascape/preflight.py src/seascape/cli.py src/seascape/core/config/data.py tests/test_preflight.py</code></td>
+<td>0; 8 files</td>
+</tr>
+<tr>
+<td><code>python scripts/environment_snapshot.py --output /tmp/seascape-ss04-evidence/environment</code></td>
+<td>0; <code>environment.{json,txt}</code></td>
+</tr>
+<tr>
+<td><code>pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-ss04-evidence/environment.txt</code></td>
+<td>0; no known vulnerabilities; <code>dependency-audit.log</code></td>
+</tr>
+<tr>
+<td><code>gitleaks git . --redact --no-banner --log-opts=--all</code></td>
+<td>0; 13 base commits; <code>gitleaks-history.log</code></td>
+</tr>
+<tr>
+<td><code>gitleaks dir . --redact --no-banner</code></td>
+<td><strong>1</strong>; ignored local cache finding, below</td>
+</tr>
+<tr>
+<td><code>gitleaks dir . --redact --no-banner --report-format json --report-path /tmp/seascape-ss04-evidence/gitleaks-tree-report.json</code></td>
+<td><strong>1</strong>; redacted diagnostic</td>
+</tr>
+<tr>
+<td><code>gitleaks dir /tmp/seascape-ss04-evidence/tracked-scan --redact --no-banner</code></td>
+<td>0; current tracked source plus the two new task files, copied read-only; <code>gitleaks-tracked.log</code></td>
+</tr>
+<tr>
+<td><code>python -m build --no-isolation --outdir /tmp/seascape-ss04-evidence/distributions-final</code></td>
+<td>0; sdist then wheel from sdist using installed declared build tools; <code>build-final.log</code></td>
+</tr>
+<tr>
+<td><code>python scripts/check_distribution.py --wheel /tmp/seascape-ss04-evidence/distributions-final/toolkit_seascape-0.1.0-py3-none-any.whl --sdist /tmp/seascape-ss04-evidence/distributions-final/toolkit_seascape-0.1.0.tar.gz --output /tmp/seascape-ss04-evidence/distribution-final.json</code></td>
+<td>0; 9 required files, 5 resources</td>
+</tr>
+<tr>
+<td><code>python -m venv /tmp/seascape-ss04-evidence/consumer</code> then <code>$C -m pip install /tmp/seascape-ss04-evidence/distributions/toolkit_seascape-0.1.0-py3-none-any.whl</code></td>
+<td>0; fresh consumer, <code>install.log</code></td>
+</tr>
+<tr>
+<td><code>$C -m pip install --force-reinstall --no-deps /tmp/seascape-ss04-evidence/distributions-final/toolkit_seascape-0.1.0-py3-none-any.whl</code></td>
+<td>0; final wheel, <code>install-final.log</code></td>
+</tr>
+<tr>
+<td><code>$C -m pip check</code></td>
+<td>0; <code>pip-check-final.log</code></td>
+</tr>
+<tr>
+<td><code>$C $E/consumer_guard.py --forbid-root /Users/tylerstevenson/Documents/Code_Repos/MarineCast --script $E/check_installed_package.py -- --snapshot $E/consumer-environment-final.json</code></td>
+<td>0; <code>imports-final.log</code>, 162 imports</td>
+</tr>
+<tr>
+<td><code>$C $E/consumer_guard.py --forbid-root /Users/tylerstevenson/Documents/Code_Repos/MarineCast --script $E/preflight_acceptance_final.py</code></td>
+<td>0; <code>consumer-preflight-final.log</code>, ready/missing reports</td>
+</tr>
+<tr>
+<td><code>$C $E/consumer_guard.py --forbid-root /Users/tylerstevenson/Documents/Code_Repos/MarineCast --script $E/consumer/bin/seascape -- --workspace $E/workspace-final build --only seascape-geomorphometry --dry-run --check-inputs --json</code></td>
+<td>1 <strong>expected</strong>; missing raster, parseable JSON, <code>console-missing.log</code></td>
+</tr>
+<tr>
+<td><code>$C $E/consumer_guard.py --forbid-root /Users/tylerstevenson/Documents/Code_Repos/MarineCast --script $E/consumer/bin/seascape -- build --help</code></td>
+<td>0; both flags exposed, <code>console-help.log</code></td>
+</tr>
+<tr>
+<td><code>git diff --check</code></td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Consumer commands clear <code>PYTHONPATH</code>/<code>PYTHONHOME</code> and set <code>PYTHONDONTWRITEBYTECODE=1</code>; scripts
+are copied outside the checkout. Python 3.14.6, macOS 26.6.2 arm64; GDAL 3.12.4, PROJ 9.8.1,
+GEOS 3.13.1. Final wheel SHA-256 <code>f68ef744a9adea081280205cd4393ec4cd411a3390889b6e9ce688a99cc96867</code>;
+sdist <code>0f32cbf1ecc871acb81747eeddf40731b07f32293b647c6e5db3d0a36fa802f8</code>.
+An earlier focused run exited 1 (one assertion counted the newly added destination-access check
+as a source input: 41 passed / 1 failed); corrected assertion scopes source inputs. Initial archive
+helper invocation omitted required <code>--output</code> (exit 2); corrected inspection passed. Earlier
+34/42-test runs and initial wheel acceptance passed, but final counts/artifact above supersede them.</p>
+<p>Broad directory secret scan is <strong>failed</strong>, not passed: one <code>generic-api-key</code> finding at ignored
+<code>graphify-out/cache/stat-index.json:1</code>, a 64-hex documentation hash under
+<code>docs/API.md -&gt; hashes -&gt; docs/api.md</code>. This pre-existing developer cache is unmodified. The
+tracked-source scan passed; no security gate or ignore/allowlist was weakened. Its redacted report
+is local evidence, not a published artifact. Hosted Linux/macOS SS-03 checks remain <strong>not_run</strong>
+because remote updates are not authorized. Regional/live/downstream/human acceptance is not_run.</p>
+<p>Changed files: <code>AGENTS.md</code>, <code>docs/{API,WORKFLOWS}.md</code>, <code>src/seascape/{cli,workflow,preflight}.py</code>,
+<code>src/seascape/core/config/data.py</code>, <code>src/seascape/seafloor_physiography/geomorphometry/build.py</code>,
+<code>tests/test_preflight.py</code>, this progress record. Scientific behavior changed: <strong>no</strong>. Additive CLI
+planning/report behavior; existing producer/consumer signatures and numerical behavior preserved.
+No unrelated tracked edits existed; configurations, canonical products, retained releases,
+notebook source, ignored cache and sibling repositories preserved. Next: <strong>SS-05</strong>, CLI diagnostics
+and side-effect contracts. Stop before SS-05. Remote changes: <strong>none</strong>.</p>
+<h2 id="ss-05-cli-diagnostics-and-operation-effects">SS-05 CLI diagnostics and operation effects</h2>
+<p><strong>passed</strong> (local implementation/acceptance). Base <code>7ebdb999d80ecce934169a4cb1b52de107be245b</code>;
+current commit is the SS-05 commit containing this record. Preserved
+<code>feature/seascape-first-run-demo</code>. SS-01/SS-04 prerequisites were satisfied; source reinspection
+confirmed family forwarding/restoration, existing config validators, stage re-raise behavior,
+candidate runners disabling acquisition, immutable release checks and transaction recovery.</p>
+<p>Identified CLI failures now report operation/stage, reason, nonsecret path/setting, corrective
+action and guide on stderr, with exit 1. Translation uses known validation sites/resource failure
+types; unlisted calculation/programming failures still raise. Global <code>--debug</code> <strong>before</strong> the
+command exposes original chained tracebacks. Family help (0), parser errors (2), nonzero family
+returns, workspace/argv restoration and Python exception types/causes remain intact. An internal
+workflow callback changes only CLI stage-failure presentation; normal API re-raise/results are
+unchanged. JSON preflight schema/stdout are unchanged; failure guidance is additive stderr.
+The workflow guide now lists prerequisites, network/write/replacement/reuse behavior and
+candidate/family/whole-release effects, including direct-family and inspection hazards.</p>
+<p>Final verification below ran in the owning checkout unless the command uses the copied helpers
+under <code>E</code> (those ran from <code>E</code>, outside the checkout). Exact command prefixes:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">D</span><span class="o">=</span>/tmp/seascape-roadmap-dev/bin
+<span class="nv">R</span><span class="o">=</span>/tmp/seascape-ss04-evidence/consumer/bin
+<span class="nv">E</span><span class="o">=</span>/tmp/seascape-ss05-evidence
+<span class="nv">F</span><span class="o">=</span>/Users/tylerstevenson/Documents/Code_Repos/MarineCast
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>tests/test_cli_diagnostics.py<span class="w"> </span>tests/test_products.py<span class="w"> </span>tests/test_demo.py<span class="w"> </span>tests/test_preflight.py<span class="w"> </span>tests/test_workflow.py
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q
+<span class="nv">$D</span>/ruff<span class="w"> </span>check<span class="w"> </span>src<span class="w"> </span>tests<span class="w"> </span>scripts
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>mypy
+<span class="nv">$D</span>/ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>src/seascape/products.py<span class="w"> </span>src/seascape/core/geo/crs.py<span class="w"> </span>src/seascape/core/artifacts/confinement.py<span class="w"> </span>src/seascape/seafloor_physiography/depth.py<span class="w"> </span>src/seascape/cli.py<span class="w"> </span>src/seascape/_cli_diagnostics.py<span class="w"> </span>tests/test_cli_diagnostics.py
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>build<span class="w"> </span>--no-isolation<span class="w"> </span>--outdir<span class="w"> </span><span class="nv">$E</span>/distributions-final
+<span class="nv">$D</span>/python<span class="w"> </span>scripts/check_distribution.py<span class="w"> </span>--sdist<span class="w"> </span><span class="nv">$E</span>/distributions-final/toolkit_seascape-0.1.0.tar.gz<span class="w"> </span>--wheel<span class="w"> </span><span class="nv">$E</span>/distributions-final/toolkit_seascape-0.1.0-py3-none-any.whl<span class="w"> </span>--output<span class="w"> </span><span class="nv">$E</span>/distribution-final.json
+<span class="nv">$R</span>/python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span class="w"> </span>--no-deps<span class="w"> </span><span class="nv">$E</span>/distributions-final/toolkit_seascape-0.1.0-py3-none-any.whl
+<span class="nv">$R</span>/python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>check
+<span class="nv">$R</span>/python<span class="w"> </span><span class="nv">$E</span>/consumer_guard.py<span class="w"> </span>--forbid-root<span class="w"> </span><span class="nv">$F</span><span class="w"> </span>--script<span class="w"> </span><span class="nv">$E</span>/check_installed_package.py<span class="w"> </span>--<span class="w"> </span>--snapshot<span class="w"> </span><span class="nv">$E</span>/installed-final.json
+<span class="nv">$R</span>/python<span class="w"> </span><span class="nv">$E</span>/consumer_guard.py<span class="w"> </span>--forbid-root<span class="w"> </span><span class="nv">$F</span><span class="w"> </span>--script<span class="w"> </span><span class="nv">$E</span>/cli_acceptance_final.py
+<span class="nv">$R</span>/python<span class="w"> </span><span class="nv">$E</span>/check_demo.py<span class="w"> </span>--workspace<span class="w"> </span><span class="nv">$E</span>/demo-workspace-final<span class="w"> </span>--forbid-root<span class="w"> </span><span class="nv">$F</span>
+<span class="nv">$D</span>/python<span class="w"> </span>scripts/environment_snapshot.py<span class="w"> </span>--output<span class="w"> </span><span class="nv">$E</span>/environment
+<span class="nv">$D</span>/pip-audit<span class="w"> </span>--disable-pip<span class="w"> </span>--no-deps<span class="w"> </span>--strict<span class="w"> </span>-r<span class="w"> </span><span class="nv">$E</span>/environment.txt
+git<span class="w"> </span>diff<span class="w"> </span>--check
+gitleaks<span class="w"> </span>dir<span class="w"> </span><span class="nv">$E</span>/tracked-scan<span class="w"> </span>--redact<span class="w"> </span>--no-banner
+gitleaks<span class="w"> </span>git<span class="w"> </span>.<span class="w"> </span>--redact<span class="w"> </span>--no-banner<span class="w"> </span>--log-opts<span class="o">=</span>--all
+</code></pre></div>
+<p>All final commands above exited <strong>0</strong>. Focused <strong>103 passed / 0 failed / 0 skipped</strong>; full
+<strong>322 passed / 0 failed / 3 skipped</strong>, 65 warnings. Skips: two feature-catalog and one
+network-consumer test require absent materialized regional artifacts. Added <strong>29 regressions</strong>.
+Lint, four-module mypy and seven-file format checks passed; no repository-wide formatting.
+Build used provisioned declared build tools, producing wheel from sdist. Distribution inspection
+passed (9 required files, 5 resources). Final wheel SHA-256
+<code>e7b947f0cf62ccc7b538c1e4e061ef097d22d8dd877e94f806977058e4d841e4</code>;
+sdist <code>e356f47837efff0e52869f56fc21eee692348c34e50dd9f4bc1b9aed13aeb307</code>.</p>
+<p>Runtime-only acceptance reused the isolated SS-04 consumer <strong>after force-reinstalling this wheel</strong>;
+no inherited site packages, pytest or Jupyter supplied dependencies. Guarded imports: <strong>163 modules</strong>.
+Copied CLI helper: <strong>13 cases</strong> with exit/JSON/diagnostic/restoration/output-preservation checks.
+Copied demo: <strong>14 production acceptance checks</strong>, synthetic provenance, demo-owned artifacts only.
+Python checkout/outbound/child guards passed; these are not an OS/native-extension firewall claim.
+Console wrapper commands using <code>$R/python $E/consumer_guard.py --forbid-root $F --script
+$R/seascape --</code> also ran: <code>--help</code> exit <strong>0</strong>; <code>--workspace $E/cli-workspace --debug inspect
+bathymetry --config missing.yaml</code> exit <strong>1</strong>; <code>--workspace $E/cli-workspace build --only
+seascape-bathymetry --dry-run --check-inputs --json</code> exit <strong>1</strong>. Failure exits were expected;
+JSON parsed and debug stderr contained the original traceback with empty stdout.</p>
+<p>Evidence: <code>/tmp/seascape-ss05-evidence/</code> (<code>commands.json</code>, final test/build/import/demo logs, CLI cases, distribution,
+installed/environment snapshots, audit/security logs; initial intermediate logs also retained).
+Python 3.14.6/macOS ARM64; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1. Audit exit <strong>0</strong>, no known
+vulnerabilities. Initial focused runs exited <strong>1</strong> (4 failed/83 passed, then 1 failed/99 passed):
+test API calls needed the selected workspace for relative includes and the original <code>CRSError</code>
+type for an invalid CRS. Corrected tests passed. Intermediate focused/full checks also passed
+(102/321 respectively); final review added a publication-path refusal regression and revalidated
+the final source/wheel. One read-only inspection shell typo (<code>/ tmp</code>) exited <strong>126</strong>, no mutation.</p>
+<p>Broad <code>gitleaks dir . --redact --no-banner --report-format json --report-path
+/tmp/seascape-ss05-evidence/gitleaks-tree.json</code> exited <strong>1</strong>: the same ignored, untouched
+<code>graphify-out/cache/stat-index.json:1</code> <code>generic-api-key</code> finding, a 64-hex documentation cache
+hash at <code>docs/API.md -&gt; hashes -&gt; docs/api.md</code>. Broad scan <strong>failed</strong>, not waived/passed.
+Tracked-source and local-history scans passed; no ignore/allowlist/gate weakened. Debug/provider
+tracebacks can contain sensitive detail. Unlisted validation failures remain diagnosable tracebacks.
+Hosted SS-03 Linux/macOS checks remain <strong>not_run</strong>, remote updates unauthorized. Live acquisition,
+regional rebuilds, downstream integration and human release acceptance are <strong>not_run</strong>. Notebook
+was assessed: it still calls unchanged <code>run_demo</code>; hash unchanged, no edit or redundant headless run.</p>
+<p>Changed: <code>AGENTS.md</code>, <code>docs/{API,WORKFLOWS}.md</code>, this record,
+<code>src/seascape/{cli,workflow,_cli_diagnostics}.py</code>, <code>tests/{test_cli_diagnostics,test_products}.py</code>.
+Scientific behavior changed: <strong>no</strong>; formulas, defaults, product/release schemas, Python exception
+contracts and scientific/release gates retained. No unrelated tracked changes existed. Existing
+configurations, canonical/retained products, notebook, ignored cache and siblings preserved.
+Next: <strong>SS-06</strong>, repository-wide formatting only. Stop before SS-06. Remote changes: <strong>none</strong>.</p>
+<h2 id="ss-06-formatting-baseline">SS-06 formatting baseline</h2>
+<p><strong>passed</strong> (local implementation/acceptance). Base <code>818df353a418ee3ec963466228c6589851599e72</code>;
+current commit is the SS-06 commit containing this record. Clean starting tree; preserved
+<code>feature/seascape-first-run-demo</code>. SS-00 prerequisite complete; source edits were serialized.
+Rechecked existing Ruff configuration, CI gates, source-byte code identity and prior acceptance
+limits. Used Ruff <strong>0.16.9</strong>, existing defaults/Python 3.11 target, without additional exclusions.</p>
+<p>Formatted <strong>124 Python files</strong> under <code>src/</code>, <code>tests/</code>, <code>scripts/</code>; no lint autofixes, import
+reordering, symbol/type changes, moves or algorithm edits. All <strong>209 Python ASTs</strong> match exactly
+after ignoring location metadata (including <code>TypeIgnore.lineno</code>), retaining type comments and
+string/docstring values. All <strong>56 protected file hashes</strong> match, including configuration, resources,
+schemas and notebook. All 209 files also parse with Python 3.14's <code>feature_version=(3,11)</code>;
+this is syntax evidence, not execution on Python 3.11. CI and contributor instructions now enforce
+<code>ruff format --check src tests scripts</code>. A structural YAML comparison confirms the CI format
+command is the only workflow change; other test/scientific/security/consumer gates are retained.</p>
+<p>Exact verification commands (owning checkout, except copied helpers run from <code>E</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="nv">D</span><span class="o">=</span>/tmp/seascape-roadmap-dev/bin
+<span class="nv">R</span><span class="o">=</span>/tmp/seascape-ss04-evidence/consumer/bin
+<span class="nv">E</span><span class="o">=</span>/tmp/seascape-ss06-evidence
+<span class="nv">F</span><span class="o">=</span>/Users/tylerstevenson/Documents/Code_Repos/MarineCast
+<span class="nv">$D</span>/ruff<span class="w"> </span>format<span class="w"> </span>src<span class="w"> </span>tests<span class="w"> </span>scripts
+<span class="nv">$D</span>/python<span class="w"> </span><span class="nv">$E</span>/verify_format.py
+<span class="nv">$D</span>/ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>src<span class="w"> </span>tests<span class="w"> </span>scripts
+<span class="nv">$D</span>/ruff<span class="w"> </span>check<span class="w"> </span>src<span class="w"> </span>tests<span class="w"> </span>scripts
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>mypy
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>build<span class="w"> </span>--no-isolation<span class="w"> </span>--outdir<span class="w"> </span><span class="nv">$E</span>/distributions
+<span class="nv">$D</span>/python<span class="w"> </span>scripts/check_distribution.py<span class="w"> </span>--sdist<span class="w"> </span><span class="nv">$E</span>/distributions/toolkit_seascape-0.1.0.tar.gz<span class="w"> </span>--wheel<span class="w"> </span><span class="nv">$E</span>/distributions/toolkit_seascape-0.1.0-py3-none-any.whl<span class="w"> </span>--output<span class="w"> </span><span class="nv">$E</span>/distribution.json
+<span class="nv">$R</span>/python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span class="w"> </span>--no-deps<span class="w"> </span><span class="nv">$E</span>/distributions/toolkit_seascape-0.1.0-py3-none-any.whl
+<span class="nv">$R</span>/python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>check
+<span class="nv">$R</span>/python<span class="w"> </span><span class="nv">$E</span>/consumer_guard.py<span class="w"> </span>--forbid-root<span class="w"> </span><span class="nv">$F</span><span class="w"> </span>--script<span class="w"> </span><span class="nv">$E</span>/check_installed_package.py<span class="w"> </span>--<span class="w"> </span>--snapshot<span class="w"> </span><span class="nv">$E</span>/installed.json
+<span class="nv">$R</span>/python<span class="w"> </span><span class="nv">$E</span>/check_demo.py<span class="w"> </span>--workspace<span class="w"> </span><span class="nv">$E</span>/demo-workspace<span class="w"> </span>--forbid-root<span class="w"> </span><span class="nv">$F</span>
+<span class="nv">$D</span>/python<span class="w"> </span>scripts/environment_snapshot.py<span class="w"> </span>--output<span class="w"> </span><span class="nv">$E</span>/environment
+<span class="nv">$D</span>/pip-audit<span class="w"> </span>--disable-pip<span class="w"> </span>--no-deps<span class="w"> </span>--strict<span class="w"> </span>-r<span class="w"> </span><span class="nv">$E</span>/environment.txt
+gitleaks<span class="w"> </span>dir<span class="w"> </span><span class="nv">$E</span>/tracked-scan<span class="w"> </span>--redact<span class="w"> </span>--no-banner
+gitleaks<span class="w"> </span>git<span class="w"> </span>.<span class="w"> </span>--redact<span class="w"> </span>--no-banner<span class="w"> </span>--log-opts<span class="o">=</span>--all
+git<span class="w"> </span>diff<span class="w"> </span>--check
+</code></pre></div>
+<p>Commands above exited <strong>0</strong>. Full suite: <strong>322 passed / 0 failed / 3 skipped</strong>, 65 warnings.
+Two feature-catalog and one network-consumer test skip because materialized regional artifacts
+are absent. No new tests or changed assertions; test ASTs are identical. Full format check:
+230 files already formatted (209 tracked Python files); existing four-module mypy and bug lint
+passed. Initial <code>ruff format --check src tests scripts</code> exited <strong>1</strong>, reporting 124 files needing
+formatting; corrected by the formatter. One inspection command ended with a stray <code>/ tmp</code>
+(exit <strong>126</strong>, read-only typo); expected absent old evidence-path probes were not acceptance.</p>
+<p>Wheel built from sdist and inspected (9 required files, 5 resources). SHA-256: wheel
+<code>cc60508ccc2c7db7115cba67b38b7cf90dc86bcd391cb89f1b50b2a1b259bb21</code>, sdist
+<code>5f55b80dbbf99be8a74084d2fe61976f34196eade487688e13d496b3165d42e4</code>.
+Reused isolated runtime-only SS-04 consumer after force-reinstalling this wheel; no inherited
+packages, pytest or Jupyter dependencies. Guarded <strong>163 module imports</strong> and <strong>14 demo checks</strong>
+passed; synthetic artifacts only in <code>E/demo-workspace/.seascape/demo</code>. Guards establish Python
+checkout/outbound/child-process denial, not an OS/native firewall. Dependency audit found no known
+vulnerabilities. Python 3.14.6/macOS ARM64; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1.</p>
+<p>Evidence: <code>/tmp/seascape-ss06-evidence/</code> (command ledger, before/after ASTs, <code>verification-final.json</code>,
+protected hashes, scope/CI verification, changed-file inventory and test/build/runtime/security logs).
+Broad <code>gitleaks dir . --redact --no-banner --report-format json --report-path
+/tmp/seascape-ss06-evidence/gitleaks-tree.json</code> exited <strong>1</strong> on the same untouched ignored
+<code>graphify-out/cache/stat-index.json:1</code> documentation-hash finding. Broad scan <strong>failed</strong>; tracked
+source/history passed. No cache deletion, allowlist or weakened gate. Hosted SS-03 Linux/macOS
+checks remain <strong>not_run</strong> (remote updates unauthorized). Notebook assessed: unchanged file and
+production API ASTs; no edit or repeated headless run. Live acquisition, regional rebuilds,
+downstream integration and human release acceptance remain <strong>not_run</strong>.</p>
+<p>Changed files: 124 Python files (complete inventory in evidence), <code>.github/workflows/ci.yml</code>,
+<code>AGENTS.md</code>, <code>docs/DEVELOPMENT.md</code>, <code>docs/environments/README.md</code>, this progress record.
+Behavior/API/scientific changes: <strong>none</strong>. Source bytes/code identity change, so existing resume
+state may invalidate; validation is preserved. Ruff remains range-declared; version reproducibility
+and broader lint/typing belong to SS-07. No unrelated tracked changes existed. Existing configs,
+canonical products, retained releases, notebook, ignored cache and siblings preserved.
+Next: <strong>SS-07</strong>, static checks and environment reproducibility. Stop before SS-07.
+Remote changes: <strong>none</strong>.</p>
+<h2 id="ss-07-static-checks-and-reproducibility">SS-07 static checks and reproducibility</h2>
+<p><strong>passed</strong> (local SS-07 implementation/static/reproducibility acceptance; broad tree secret scan
+still <strong>failed</strong>). Base <code>7f2832e086e5dda513ebf5bd207a56d38fa0dbd5</code>; current commit is the SS-07
+commit containing this record. Clean starting tree; retained <code>feature/seascape-first-run-demo</code>.
+Reverified SS-06, current package/CI gates, public interfaces and snapshot traversal against source.</p>
+<p>Added narrow Ruff <code>F401,F841,F811,F601,F602,B006,I001</code> rules, preserving prior rules and formatting.
+Corrected 52 import-order findings and two unused test imports; no exclusions/suppressions added.
+Mypy now checks 12 documented interface modules, retaining product/CRS/confinement/depth targets.
+Added demo fixture and preflight schema-1 types, generator/resource-copy annotations, and separate
+CLI result locals. Existing exception, serialized report, scientific/product/release contracts stay
+unchanged. Only external NumPy stubs are skipped explicitly: installed stubs contain Python 3.12+
+syntax incompatible with the retained 3.11 type target. Existing imported-code/missing-stub limits
+remain documented; scientific array internals are not claimed strictly typed.</p>
+<p>Extended the existing snapshot's explicit extras/marker traversal, including transitive extras,
+cycles and missing-active-distribution failure. It records versions/native/platform evidence,
+omitting package URLs, executable/install/compiler paths; invalid versions raise a sanitized error.
+Six new regressions cover closure, extras, cycles, markers, privacy and failure. Added separate
+runtime/test/quality constraints/JSON; retained historical evidence and runtime metadata ranges.
+CI quality now exercises Linux 3.11 unconstrained and macOS ARM64 3.14 constrained installs, compares
+baseline closure/native versions, and audits both quality closures. Other CI jobs/settings are
+structurally unchanged. The expanded audit found bootstrap pip 26.1.2 affected by
+<code>PYSEC-2026-3721</code> (two advisory rows, one package). Added <strong>quality-only</strong> <code>pip&gt;=26.2</code>, upgraded to
+26.2.1, rebuilt and exercised two new isolated installs; final audits have no known vulnerabilities.
+No vulnerability exclusions, vulnerable downgrades or new runtime dependencies.</p>
+<p>Exact final acceptance commands, in this checkout unless noted:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">D</span><span class="o">=</span>/tmp/seascape-roadmap-dev/bin
+<span class="nv">R</span><span class="o">=</span>/tmp/seascape-ss04-evidence/consumer/bin
+<span class="nv">E</span><span class="o">=</span>/tmp/seascape-ss07-evidence
+<span class="nv">F</span><span class="o">=</span>/Users/tylerstevenson/Documents/Code_Repos/MarineCast
+<span class="nv">$D</span>/python<span class="w"> </span>scripts/environment_snapshot.py<span class="w"> </span>--extra<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--extra<span class="w"> </span>quality<span class="w"> </span>--output<span class="w"> </span>docs/environments/quality-python314-macos-arm64
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>build<span class="w"> </span>--no-isolation<span class="w"> </span>--outdir<span class="w"> </span><span class="nv">$E</span>/final-distributions
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span><span class="nv">$E</span>/baseline
+<span class="nv">$D</span>/python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span><span class="nv">$E</span>/range
+<span class="nv">$E</span>/baseline/bin/python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--cache-dir<span class="w"> </span><span class="nv">$E</span>/pip-cache<span class="w"> </span>--retries<span class="w"> </span><span class="m">1</span><span class="w"> </span>-c<span class="w"> </span>docs/environments/quality-python314-macos-arm64.txt<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$E</span><span class="s2">/final-distributions/toolkit_seascape-0.1.0-py3-none-any.whl[test,quality]&quot;</span>
+<span class="nv">$E</span>/range/bin/python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--cache-dir<span class="w"> </span><span class="nv">$E</span>/pip-cache-unconstrained<span class="w"> </span>--retries<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$E</span><span class="s2">/final-distributions/toolkit_seascape-0.1.0-py3-none-any.whl[test,quality]&quot;</span>
+<span class="c1"># Each command below ran in both baseline and range; actual argv/exits are in *-commands.json.</span>
+<span class="k">for</span><span class="w"> </span>V<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$E</span><span class="s2">/baseline/bin&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$E</span><span class="s2">/range/bin&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">/python&quot;</span><span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>check
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">/ruff&quot;</span><span class="w"> </span>check<span class="w"> </span>src<span class="w"> </span>tests<span class="w"> </span>scripts
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">/ruff&quot;</span><span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>src<span class="w"> </span>tests<span class="w"> </span>scripts
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">/python&quot;</span><span class="w"> </span>-m<span class="w"> </span>mypy
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">/python&quot;</span><span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">/python&quot;</span><span class="w"> </span>scripts/environment_snapshot.py<span class="w"> </span>--extra<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--extra<span class="w"> </span>quality<span class="w"> </span>--output<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$E</span><span class="s2">/</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>dirname<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">-environment&quot;</span>
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">/pip-audit&quot;</span><span class="w"> </span>--disable-pip<span class="w"> </span>--no-deps<span class="w"> </span>--strict<span class="w"> </span>-r<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$E</span><span class="s2">/</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>dirname<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$V</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">-environment.txt&quot;</span>
+<span class="k">done</span>
+<span class="nv">$D</span>/python<span class="w"> </span>scripts/check_distribution.py<span class="w"> </span>--sdist<span class="w"> </span><span class="nv">$E</span>/final-distributions/toolkit_seascape-0.1.0.tar.gz<span class="w"> </span>--wheel<span class="w"> </span><span class="nv">$E</span>/final-distributions/toolkit_seascape-0.1.0-py3-none-any.whl<span class="w"> </span>--output<span class="w"> </span><span class="nv">$E</span>/final-distribution.json
+<span class="nv">$R</span>/python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-cache-dir<span class="w"> </span>--force-reinstall<span class="w"> </span>--no-deps<span class="w"> </span><span class="nv">$E</span>/final-distributions/toolkit_seascape-0.1.0-py3-none-any.whl
+<span class="nv">$R</span>/python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>check
+<span class="c1"># Copied helpers below ran from E, outside checkout; source/overrides cleared by the helpers.</span>
+<span class="nv">$R</span>/python<span class="w"> </span><span class="nv">$E</span>/consumer_guard.py<span class="w"> </span>--forbid-root<span class="w"> </span><span class="nv">$F</span><span class="w"> </span>--script<span class="w"> </span><span class="nv">$E</span>/check_installed_package.py<span class="w"> </span>--<span class="w"> </span>--snapshot<span class="w"> </span><span class="nv">$E</span>/final-installed.json
+<span class="nv">$R</span>/python<span class="w"> </span><span class="nv">$E</span>/check_demo.py<span class="w"> </span>--workspace<span class="w"> </span><span class="nv">$E</span>/final-demo-workspace<span class="w"> </span>--forbid-root<span class="w"> </span><span class="nv">$F</span>
+gitleaks<span class="w"> </span>dir<span class="w"> </span><span class="nv">$E</span>/tracked-scan<span class="w"> </span>--redact<span class="w"> </span>--no-banner
+gitleaks<span class="w"> </span>git<span class="w"> </span>.<span class="w"> </span>--redact<span class="w"> </span>--no-banner<span class="w"> </span>--log-opts<span class="o">=</span>--all
+git<span class="w"> </span>diff<span class="w"> </span>--check
+</code></pre></div>
+<p>Final commands above exited <strong>0</strong>. Each final installed-wheel suite: <strong>328 passed / 0 failed /
+3 skipped</strong>, 65 warnings (baseline 96.44s; range 101.27s). Two feature-catalog and one network test
+require absent regional artifacts. Initial development full suite also 328/0/3; focused suite
+<strong>103/0/0</strong>. Static checks: 231 formatted files; 12 typed modules. Both isolated environments use
+CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1, Ruff 0.16.9,
+mypy 2.3.1, pip-audit 2.10.1 and pip 26.2.1. Exact constrained snapshot matches the tracked baseline;
+range solve differs only in platformdirs <strong>4.12.0 vs 4.11.15</strong>. No inherited site packages.
+Quality environments intentionally include pytest; separate reused runtime-only consumer has
+no pytest/Jupyter packages. Guarded <strong>163 imports</strong> and <strong>14 demo checks</strong> pass on the final wheel;
+no network attempts, two denied font-discovery child attempts. Synthetic artifacts stay in
+<code>E/final-demo-workspace/.seascape/demo</code>. Guards are Python-level denial, not a native/OS firewall.</p>
+<p>Final sdist SHA-256 <code>79b0a3951d131ac3f071588ec7d8390d6c678ce583eb27b01eebd4e121fca67b</code>;
+wheel <code>ac3c4a2959b34acfa66e4b8d867e812dd5dd1f241558f61ae02760afcdbc6b21</code>.
+Distribution inspection passed (9 required files, 5 resources). Reviewed 45 import-only changed
+Python ASTs with imports removed; other source changes are annotations/types and CLI local names.
+14 protected config/resource/notebook files match HEAD; tracked Python parses with 3.11 syntax
+(which is not execution on 3.11). Notebook assessed: unchanged notebook/public runtime behavior;
+no edit or repeated Jupyter run. Source-byte/resume identities may change; validators retained.</p>
+<p>Failures retained in evidence: exploratory unused/import lint exit <strong>1</strong> (54 findings), initial
+expanded mypy exit <strong>2</strong> (NumPy stub syntax), then exit <strong>1</strong> (five CLI result-type errors), corrected;
+first constrained install exit <strong>1</strong> (sandbox PyPI DNS; network-enabled retry passed); initial
+closure-equality probe exit <strong>1</strong> (expected unconstrained platformdirs drift, corrected comparison).
+Initial pre-security constrained/range audits exited <strong>1</strong>, then final fresh fixed installs/audits
+passed. One helper-copy/import batch ran from the wrong cwd and exited <strong>2</strong> (missing copied helper);
+corrected owning-cwd copy and outside-cwd acceptance passed. A patch-tool invocation was rejected
+for duplicate operations on one file before any edit; corrected. These are not passed checks.</p>
+<p><code>gitleaks dir . --redact --no-banner --report-format json --report-path
+/tmp/seascape-ss07-evidence/gitleaks-tree.json</code> exited <strong>1</strong>: the same untouched ignored
+<code>graphify-out/cache/stat-index.json:1</code> generic-api-key documentation-hash finding. Broad scan
+<strong>failed</strong>; tracked-tree/history scans passed. No cache deletion/allowlist/gate weakening. Hosted
+Linux/macOS acceptance and new quality matrix remain <strong>not_run</strong>: remote changes unauthorized.
+Live data, regional builds, downstream integration and human usability/release trials <strong>not_run</strong>.</p>
+<p>Changed files: 59 files; complete inventory in <code>E/changed-files.txt</code>. Functional/type/tooling
+changes: <code>pyproject.toml</code>, CI, <code>scripts/environment_snapshot.py</code>, <code>src/seascape/{cli,demo,preflight}.py</code>,
+<code>core/config/data.py</code>, new <code>tests/test_environment_snapshot.py</code>, new quality constraints/JSON,
+<code>AGENTS.md</code>, <code>README.md</code>, environment guide and this progress record. Remaining Python changes are
+import cleanup only. Evidence: <code>/tmp/seascape-ss07-evidence/</code> (final per-environment command JSON/logs,
+solve/native snapshots/difference, full/audit/build/distribution/runtime/security/scope evidence).
+Behavior/API: stronger static contracts and reproducible development tooling; snapshot gains
+explicit extras and sanitized evidence; runtime Python APIs, CLI outputs and report schemas retained.
+Scientific behavior changed: <strong>no</strong>. No unrelated starting edits existed; configs, packaged
+resources, canonical/retained products, notebook, ignored cache and siblings preserved.
+Next: <strong>SS-08</strong>, pending hosted SS-03 prerequisite; stop before SS-08. Remote changes: <strong>none</strong>.</p>
+<h2 id="ss-03-acceptance-closure-recheck-blocked">SS-03 acceptance closure recheck — blocked</h2>
+<p>Selected the earliest incomplete task with satisfied prerequisites: <strong>SS-03</strong> (SS-01/SS-02 passed).
+Base <code>721a7199436ece870cceea17b3b2e312378e24ac</code>; current commit is this documentation handoff.
+Clean starting tree; retained <code>feature/seascape-first-run-demo</code>. Read current instructions,
+roadmap/progress, consumer CI, <code>check_consumer_install.py</code> and its regression tests. Runtime-first
+installation, copied outside-checkout helpers, negative probes, declared test/notebook layer,
+three Linux/macOS interpreter/architecture cases and scientific/security gates remain implemented.
+No independent unfinished local implementation was identified; verified work was not repeated.</p>
+<p>Read-only GitHub checks at <strong>2026-09-27 13:19 UTC</strong>:</p>
+<ul>
+<li><code>github_fetch_commit</code> for current <code>721a7199436ece870cceea17b3b2e312378e24ac</code> and SS-03
+  <code>368ee1b2400415a298dd742f4d6cad3fe4990af8</code>: HTTP <strong>422</strong>, "No commit found for SHA" for both.</li>
+<li><code>github_search_branches(owner=MarineCast, repo_name=toolkit-seascape,
+  query=feature/seascape-first-run-demo)</code>: successful read, no matching branches.</li>
+<li>Direct GET <code>https://api.github.com/repos/MarineCast/toolkit-seascape/actions/runs?head_sha=721a7199436ece870cceea17b3b2e312378e24ac&amp;per_page=100</code>
+  and the same endpoint with <code>head_sha=368ee1b2400415a298dd742f4d6cad3fe4990af8</code>:
+  both successful reads, <strong>total_count=0</strong>. These queries include all trigger types;
+  an empty pull-request-only wrapper was not used to infer absence of other runs.</li>
+<li>GET <code>https://api.github.com/repos/MarineCast/toolkit-seascape/branches/main</code>:
+  successful read, remote main remains <code>f2400c13d509ad753d9168ed4e7a07d1ffcfc5a4</code>.</li>
+</ul>
+<p>Precise blocker: the consumer workflow changes are local; the required hosted Linux 3.11/3.14
+x86_64 and macOS 3.14 ARM64 execution/results do not exist for these commits. Executing them
+requires an explicitly authorized remote update followed by inspection of real job results.
+Current scope forbids push/remote mutations; no dispatch, rerun, PR, settings change or remote
+update was performed. SS-08 depends on SS-03; SS-09 onward likewise remain ineligible. Local
+macOS success and configured jobs do not satisfy the missing hosted evidence.</p>
+<p>Commands: <code>git status --short</code>, <code>git branch --show-current</code>, <code>git rev-parse HEAD</code>, <code>git remote -v</code>,
+<code>git log -10 --oneline</code>, <code>git branch -vv</code>, reference/diff checks and <code>git diff --check</code>: exit <strong>0</strong>.
+<code>command -v docker</code>, <code>command -v podman</code>, <code>command -v python3.11</code>: exit <strong>1</strong> each (not on PATH).
+<code>/tmp/seascape-roadmap-dev/bin/python -c 'import platform; print(platform.python_version(), platform.system(), platform.machine())'</code>:
+exit <strong>0</strong>, Python <strong>3.14.6 / Darwin / arm64</strong>. Hosted acceptance <strong>not_run</strong>; pytest/build/demo/
+notebook/audits <strong>not_run this recheck</strong>, preserving previously verified evidence rather than
+claiming fresh passes. Tests this turn: <strong>not_run</strong>, no new pass/fail/skip counts.</p>
+<p>Changed: this progress record only. Behavior/API/scientific changes: <strong>none</strong>. No unrelated
+starting changes; production source, CI, tests, configs, resources, notebooks, products/releases,
+ignored caches and sibling repositories preserved. Evidence: <code>/tmp/seascape-ss03-recheck-evidence/</code>.
+Next: finish <strong>SS-03 hosted acceptance</strong>, then <strong>SS-08</strong>; stop before SS-08. Remote changes: <strong>none</strong>.</p>
+<h2 id="ss-03-hosted-acceptance-closure-passed">SS-03 hosted acceptance closure — passed</h2>
+<p>User explicitly authorized the feature-branch push to test SS-03 and publish the local code
+changes to Git. Preserved all earlier commits on <code>feature/seascape-repository-organization-updates</code>.
+Base/tested commit <strong><code>6ddd5ca7d4ce25b229bf0dd50bbd3e3708afc7f8</code></strong>; current commit is this documentation
+handoff. Clean starting tree. No new production, CI, configuration, test or scientific changes.
+This result supersedes the earlier blocked SS-03 entries without relabeling those historical runs.</p>
+<p><a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36322829881">Run 36322829881</a>, triggered by
+push on September 27, completed <strong>success</strong>: <strong>9/9 jobs</strong>. Inspected job conclusions and decoded
+logs; consumer environment JSON and expected-exit results are printed in those logs. All three
+consumer jobs built/inspected an sdist and its wheel, passed <strong>16/16 consumer steps</strong>, verified
+<strong>163 installed modules</strong>, and asserted the observed interpreter/system/architecture:</p>
+<table>
+<thead>
+<tr>
+<th>Actual consumer</th>
+<th>GDAL / PROJ / GEOS</th>
+<th>Job ID</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ubuntu 24.04.5, Linux x86_64, Python 3.11.16</td>
+<td>3.10.3 / 9.5.1 / 3.13.1</td>
+<td>108629839889</td>
+</tr>
+<tr>
+<td>Ubuntu 24.04.5, Linux x86_64, Python 3.14.7</td>
+<td>3.12.4 / 9.8.1 / 3.13.1</td>
+<td>108629839917</td>
+</tr>
+<tr>
+<td>macOS 14.8.9, Darwin arm64, Python 3.14.7</td>
+<td>3.12.4 / 9.8.1 / 3.13.1</td>
+<td>108629839834</td>
+</tr>
+</tbody>
+</table>
+<p>Each consumer installed the wheel with dependencies in a fresh, non-inherited runtime environment;
+pip/import/resource/help/init/dry-run/demo checks passed before test/notebook extras. Four expected
+negative probes per case exited <strong>1</strong> with required markers (missing Rasterio, source import,
+missing packaged resource, attempted outbound activity); these are successful rejection tests,
+not concealed failures. Runtime demo, copied external tests and copied notebook steps exited <strong>0</strong>.
+Python process guards do not claim OS/native isolation or regional scientific validity.</p>
+<p>Both Linux full-suite jobs: <strong>328 passed / 0 failed / 3 skipped</strong>, 65 warnings each. Skips remain
+two feature-catalog and one network-consumer test requiring absent materialized regional products.
+The separate notebook job passed. Both quality jobs passed lint, 231-file format checks,
+12-module mypy, dependency checks and advisory audits (no known vulnerabilities). The constrained
+macOS job compared dependency/native versions successfully; interpreter patch/OS differences
+from the local baseline are recorded above. Hosted Gitleaks history and broad fresh-checkout
+scans passed. Earlier local ignored-cache findings remain historical failed scans, not waived.</p>
+<p>Exact commands/actions: <code>git push --set-upstream origin feature/seascape-repository-organization-updates</code>
+(exit <strong>0</strong>); <code>git rev-parse HEAD origin/feature/seascape-repository-organization-updates</code>
+(exit <strong>0</strong>, matching SHA). Read-only GitHub run/jobs/logs/artifacts requests succeeded. Executed
+CI commands are retained verbatim in <code>.github/workflows/ci.yml</code> and the downloaded decoded job logs.
+Documentation reference checks, <code>git diff --check</code>, commit and documentation push exited <strong>0</strong>.
+No additional local pytest/build/notebook execution was needed for this documentation-only closure.</p>
+<p>Five non-expired Actions artifacts exist: three consumer bundles and two scientific-environment
+snapshots. Recorded IDs/digests/expiry in <code>/tmp/seascape-ss03-hosted-evidence/run-36322829881.json</code>;
+decoded logs are <code>job-&lt;id&gt;.log</code> there. Artifact ZIP contents were not downloaded: nested copied-test
+counts and figure visual QA are not newly claimed. Reports/logs/distributions remain available in
+Actions artifacts. Native versions and all 16 expected-exit results were verified from job logs.</p>
+<p>Changed: this record, <code>docs/environments/README.md</code>, <code>docs/DEVELOPMENT.md</code>. Behavior/API/scientific
+changes: <strong>none</strong>. No unrelated starting edits; source, CI, tests, configs, resources, notebooks,
+canonical/retained products, ignored caches and siblings preserved. Remote changes: authorized
+feature-branch pushes only; no PR, merge, tag, settings change, package publication or dataset
+acquisition. Live/regional/downstream/human release acceptance remain <strong>not_run</strong>.
+Next: <strong>SS-08</strong>, now eligible; stop before SS-08.</p>
+<h2 id="ss-08-scientific-publication-and-export-acceptance-passed">SS-08 scientific, publication and export acceptance — passed</h2>
+<p>Base <code>e3e831bfc63ef5578838308b2e82322d26d74dac</code>; current commit is the SS-08 commit containing
+this record. Branch <code>feature/seascape-repository-organization-updates</code>; initial tree clean.
+Rechecked roadmap, progress, root/owner AGENTS, contracts, source and named tests. Read-only
+GitHub lookup reconfirmed prerequisite run <code>36323147359</code> succeeded on the base commit.
+SS-03/SS-05 and the SS-07 static boundary are satisfied; no prior implementation repeated.</p>
+<p>Contract map: <strong>P</strong> = present at base, <strong>N</strong> = missing evidence added/extended here. All names
+below executed in the focused/full suite; test quantity is not a scientific certification.</p>
+<table>
+<thead>
+<tr>
+<th>Contract</th>
+<th>Named evidence</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production transformation, family/checksum validation, constant field, nodata/unavailable, observed zero, nonempty support, sign/CRS, explicit synthetic provenance</td>
+<td><code>test_normal_run_nonempty_expected_values_and_provenance</code>, <code>test_empty_or_all_null_output_cannot_pass</code>, <code>test_arbitrary_cwd_environment_restoration_and_confinement</code></td>
+<td>P; first test extended N for gradient</td>
+</tr>
+<tr>
+<td>Analytic gradient and finite-value rejection</td>
+<td><code>test_demo_rejects_corrupted_gradient_values</code>, <code>test_demo_finite_policy_rejects_infinity</code></td>
+<td>N</td>
+</tr>
+<tr>
+<td>Keyed row invariance, identical support/cardinality, unique/non-null exact-resolution keys</td>
+<td><code>test_composite_is_invariant_to_each_input_order</code>, <code>test_composite_rejects_incompatible_identity</code>; matrix <code>test_matrix_rejects_duplicate_h3_keys</code>, <code>test_matrix_rejects_invalid_identity_without_replacing_output</code>, <code>test_matrix_row_order_invariance_and_collision_free_field_names</code></td>
+<td>P composite/duplicate; N matrix boundaries</td>
+</tr>
+<tr>
+<td>Depth sign/missingness, metric projected axes, Q90; flat/coastal nodata and controlled plane slope</td>
+<td><code>test_depth_values_reject_contradiction_and_preserve_missingness</code>, <code>test_scientific_configuration_rejects_nonmetric_crs</code>, <code>test_terrain_rejects_unsupported_depth_sign_before_io</code>, <code>test_q90_schema_rejects_other_quantiles</code>, <code>test_native_slope_masks_land_nodata_and_preserves_flat_edges</code>, <code>test_native_slope_matches_north_south_plane_including_edges</code></td>
+<td>P</td>
+</tr>
+<tr>
+<td>Actual publication A/B, retained historical A, manifest-last ordering, interrupted recovery/rollback</td>
+<td><code>test_two_publications_retain_prior_product_and_manifest_bytes</code>, <code>test_generation_is_rolled_back_when_canonical_promotion_fails</code>, <code>test_release_publisher_promotes_manifest_last</code>, <code>test_snapshot_recovers_interrupted_release_before_read</code>, <code>test_release_rolls_back_failure_at_each_promotion</code></td>
+<td>P</td>
+</tr>
+<tr>
+<td>Exact resolution, tampering, unsafe paths, invalid release IDs</td>
+<td><code>test_missing_product_and_resolution_fail_without_fallback</code>, <code>test_checksum_mismatch_and_incomplete_release_fail</code>, <code>test_historical_release_id_is_validated</code>, <code>test_product_resolver_rejects_paths_outside_generation</code>, <code>test_matrix_rejects_unsafe_catalog_paths</code></td>
+<td>P parser checks; N unsafe product/catalog cases</td>
+</tr>
+<tr>
+<td>Resume invalidation after included config, package identity and file-backed source changes</td>
+<td><code>test_resume_invalidates_when_included_domain_config_changes</code>, <code>test_resume_invalidates_when_package_code_identity_changes</code>, <code>test_resume_invalidates_when_file_backed_source_changes</code></td>
+<td>P</td>
+</tr>
+<tr>
+<td>Export freezes A while actual publisher installs B; table, catalog and checksum metadata cannot mix</td>
+<td><code>test_matrix_pins_real_publication_during_release_switch</code></td>
+<td>N, existing pinning passed unchanged</td>
+</tr>
+<tr>
+<td>Null/zero, QC/evidence, units, original types, field names, explicit legacy limits</td>
+<td><code>test_matrix_aligns_by_h3_and_preserves_zero_null_and_qc</code>, <code>test_matrix_row_order_invariance_and_collision_free_field_names</code></td>
+<td>P values/metadata; N shuffled/collision boundaries</td>
+</tr>
+<tr>
+<td>Empty support, failed write/replace, existing destinations, aliases/overwrite and retained generations</td>
+<td><code>test_matrix_rejects_empty_support_without_resolution_column</code>, <code>test_matrix_failed_write_preserves_valid_destination</code>, <code>test_matrix_output_cannot_replace_input</code>, release-switch test; <code>test_existing_export_is_preserved</code></td>
+<td>N except existing CLI refusal P</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Reproduced failures and fix:</strong> initial matrix run: <strong>3 failed / 17 passed</strong>, exit 1. Empty tables
+without a resolution column were accepted; overwrite could replace the input catalog or canonical
+release manifest. Export now rejects empty support and those aliases, and cannot write into any
+retained generation. Python signatures, output schema, physical values and exception types remain
+unchanged; these invalid inputs now raise <code>ValueError</code>. Initial collection exit 2 was a test fixture
+import error, fixed by making copied tests a package and reusing the existing publisher fixture.
+Initial focused exit 1 (108 passed / 2 failed / 16 fixture errors) exposed an arithmetic mistake in
+the new analytic expectation; corrected the row sum from 452 to 453, without changing calculations.</p>
+<p>Demo adds <code>gradient</code> to report controls and one real check (15 total), using the original raster,
+production bathymetry API, packaged config and family validator. The 18 interior pixels have
+<code>sum(row)=453</code>, <code>sum(column)=426</code>; <code>d=5+(145*c+80*r)/47</code> gives mean <code>5680/47</code>, min <code>5280/47</code>,
+max <code>6085/47</code>, range <code>805/47</code> meters. Absolute 3e-5 m accounts for float32 fixture rounding;
+constant depth retains 1e-6 m and band partitions 1e-12, no relative tolerance. Existing slope
+plane assertions retain NumPy's tolerance for double-precision angular-to-meter arithmetic.
+Same-environment keyed tables repeat exactly; timestamps/run IDs/plotting bytes are not compared.
+The notebook remains a thin client; only its explanation changed. <strong>Scientific behavior changed: no.</strong>
+Publisher tests reuse a test-only pre-audited fixture; they exercise publication/resolution, not
+a full regional audit. The one-family demo is never promoted or labeled a complete release.</p>
+<p>Executed commands/results (all from this checkout; exact expanded argv, exit codes and logs in
+<code>/tmp/seascape-ss08-evidence/commands.json</code>; consumer subcommands in <code>acceptance/report.json</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/tmp/seascape-roadmap-dev/bin/python -m pytest -q</code></td>
+<td>exit 0, <strong>352 passed / 0 failed / 3 skipped</strong>, 69 warnings</td>
+</tr>
+<tr>
+<td>Focused <code>python -m pytest -q</code> over demo/matrix/products/review/workflow/consumer/publication/release/bathymetry contracts</td>
+<td>exit 0, <strong>126 passed</strong>, 29 warnings; exact file list in <code>focused-final.json</code></td>
+</tr>
+<tr>
+<td><code>ruff check src tests scripts</code>; <code>ruff format --check src tests scripts</code>; <code>python -m mypy</code></td>
+<td>exit 0 each; 232 formatted files, 12 checked interface modules</td>
+</tr>
+<tr>
+<td><code>python -m pip check</code></td>
+<td>exit 0; no broken requirements</td>
+</tr>
+<tr>
+<td><code>python -m build --no-isolation --outdir /tmp/seascape-ss08-evidence/distributions</code></td>
+<td>exit 0; wheel built from sdist, declared provisioned build tools</td>
+</tr>
+<tr>
+<td><code>python scripts/check_distribution.py --sdist … --wheel … --output …</code></td>
+<td>exit 0, 9 required files / 5 resources survive; full args in <code>distribution.json</code></td>
+</tr>
+<tr>
+<td><code>python scripts/check_consumer_install.py --wheel … --source … --forbid-root … --output …</code></td>
+<td>exit 0, <strong>16/16</strong> expected-exit steps; fresh isolated runtime first, then declared extras</td>
+</tr>
+<tr>
+<td>Copied guarded pytest; copied headless notebook</td>
+<td>exit 0 each; <strong>83 passed / 0 skipped</strong>, 29 warnings; notebook <strong>15 production / 16 total checks</strong>, 2 embedded figures, no outbound/acquisition attempts</td>
+</tr>
+<tr>
+<td><code>python scripts/environment_snapshot.py --extra test --extra quality --output /tmp/seascape-ss08-evidence/environment</code></td>
+<td>exit 0, Python/native/dependency closure recorded</td>
+</tr>
+<tr>
+<td><code>pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-ss08-evidence/environment.txt</code></td>
+<td>exit 0, no known vulnerabilities; no ignore/downgrade</td>
+</tr>
+<tr>
+<td><code>gitleaks dir /tmp/seascape-ss08-evidence/tracked-review --redact --no-banner</code>; <code>git diff --check</code></td>
+<td>exit 0 each; tracked/new source scan only, ignored cache preserved</td>
+</tr>
+</tbody>
+</table>
+<p>Environment: fresh consumer and development CPython <strong>3.14.6</strong>, macOS <strong>26.6.2 ARM64</strong>;
+GDAL <strong>3.12.4</strong>, PROJ <strong>9.8.1</strong>, GEOS <strong>3.13.1</strong>. Source/OrcaCast reads, outbound Python activity
+and child processes denied during consumer execution; installations permit declared dependency
+downloads and notebook loopback traffic. No OS firewall claim. Wheel SHA-256 and distribution
+checks are in <code>distribution-report.json</code>; portable execution/logs/notebook in <code>acceptance/</code>.</p>
+<p>The three skips remain the two feature-catalog checks and one network-consumer check requiring
+absent regional artifacts. No new skips. Prior broad ignored-cache Gitleaks finding is not waived
+or relabeled passed; that scan was not repeated. Real acquisition, regional equality/accuracy,
+downstream integration, visual figure QA and human onboarding trials <strong>not_run</strong>.
+Hosted <a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36324502530">run 36324502530</a>
+passed <strong>9/9 jobs</strong> on implementation commit <code>aace671d74c565b4f141805dbe66505fb055f239</code>:
+Linux Python 3.11 and 3.14 each <strong>352 passed / 3 skipped</strong>, 69 warnings; all three clean consumer
+cases (Linux 3.11/3.14, macOS ARM64 3.14) <strong>16/16 expected-exit steps</strong>; notebook, both quality
+jobs and history/tree secret scans passed. Decoded job logs and exact tested SHA are in
+<code>/tmp/seascape-ss08-evidence/hosted/</code>. Hosted copied-test counts/artifact interiors were not
+downloaded or inspected; their executed steps passed. This progress-only closure changes no code.
+Initial unrelated tracked changes: none; configs, canonical/retained products, caches and sibling
+repositories preserved. Files: demo/matrix APIs, consumer helper, three contract test files plus
+test-package marker, demo/matrix guides, notebook explanation and this record.
+Remote actions: normal authorized feature push of implementation and this progress closure;
+no merge, tag, package publication, settings or dataset changes. Next: <strong>SS-09</strong>; stop before it.</p>
+<h2 id="ss-09-three-user-journeys-acceptance-passed">SS-09 three user journeys — acceptance passed</h2>
+<p>September 27. Base <code>0d307de978c98358af6dbfce31a034dc80bed91c</code>; implementation
+<code>3022ace6b6a868c65e56f0efb6ddf8a9f84bb9d9</code> on <code>feature/seascape-repository-organization-updates</code>.
+Clean starting tree. Re-read owner/ancestor instructions, roadmap/progress and actual CLI/config,
+preflight, packaging and publication fixtures. SS-08 closure run <strong>36324758385</strong> was rechecked
+<code>completed/success</code>; no reset, source acquisition or prior task reimplementation.</p>
+<p>README now leads with purpose, a verified source-install route and the actual synthetic PNG.
+Demo, bounded candidate processing and audited-release consumption have separate prerequisites.
+Configuration edits name real keys; output schema/units/sign/counts/null-zero/QC and failure limits
+are explicit. The consumer example freezes one release ID and reads its retained R6 product.
+Dated migration/remediation evidence is labeled; the original generated product block is intact.
+A 26-stage input reference comes from existing preflight metadata in disposable templates.
+Offline CI checks local links/headings, command/stage/family names, catalog-reference drift and
+four packaged YAML pairs. Three-platform CI also runs the exact marked quickstart blocks.
+No new producer framework, formula, public API, product schema or dependency declaration.</p>
+<p>Evidence: <code>/tmp/seascape-ss09-evidence</code>; exact argv/cwd/exits in <code>*.command.json</code>, corresponding
+logs, distribution reports, <code>quickstart-accepted/report.json</code>, <code>consumer/report.json</code>, environment
+snapshot and <code>preservation.json</code>. Local CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4,
+PROJ 9.8.1, GEOS 3.13.1; no inherited site packages in new consumer/source-install environments.
+For commands below, <code>D=/tmp/seascape-roadmap-dev/bin</code>, <code>E=/tmp/seascape-ss09-evidence</code>,
+<code>R=/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape</code>,
+<code>G=/Users/tylerstevenson/Documents/Code_Repos/MarineCast</code> (absolute paths, no placeholders).</p>
+<table>
+<thead>
+<tr>
+<th>Exact check command</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$D/python scripts/check_docs.py</code></td>
+<td>0; 39 documents, 139 local links, 26 stages; external URL availability deliberately unrun</td>
+</tr>
+<tr>
+<td><code>$D/python -m pytest -q tests/test_documentation.py tests/test_consumer_acceptance.py</code></td>
+<td>0; <strong>27 passed</strong> (16 new documentation cases plus 11 existing consumer cases)</td>
+</tr>
+<tr>
+<td><code>$D/python -m pytest -q</code></td>
+<td>0; <strong>368 passed / 3 skipped / 69 warnings</strong></td>
+</tr>
+<tr>
+<td><code>$D/ruff check src tests scripts</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>$D/ruff format --check src tests scripts</code></td>
+<td>0; 235 files</td>
+</tr>
+<tr>
+<td><code>$D/python -m mypy</code></td>
+<td>0; 12 interface modules</td>
+</tr>
+<tr>
+<td><code>$D/python -m pip check</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>$D/python scripts/environment_snapshot.py --extra test --extra quality --output $E/environment</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>$D/pip-audit --disable-pip --no-deps --strict -r $E/environment.txt</code></td>
+<td>0; no known vulnerabilities</td>
+</tr>
+<tr>
+<td><code>$D/python -m build --no-isolation --outdir $E/accepted-distributions</code></td>
+<td>0; sdist then wheel from sdist</td>
+</tr>
+<tr>
+<td><code>$D/python scripts/check_distribution.py --sdist $E/accepted-distributions/toolkit_seascape-0.1.0.tar.gz --wheel $E/accepted-distributions/toolkit_seascape-0.1.0-py3-none-any.whl --output $E/distribution-accepted-report.json</code></td>
+<td>0; 9 required files / 5 packaged resources</td>
+</tr>
+<tr>
+<td><code>$D/python scripts/check_quickstart.py --sdist $E/accepted-distributions/toolkit_seascape-0.1.0.tar.gz --source $R --forbid-root $G --output $E/quickstart-accepted</code></td>
+<td>0; all 12 documented shell lines; 15 production demo checks; normal runtime-only installation, both source trees guarded</td>
+</tr>
+<tr>
+<td><code>$D/python scripts/check_consumer_install.py --wheel $E/distributions/toolkit_seascape-0.1.0-py3-none-any.whl --source $R --forbid-root $G --output $E/consumer</code></td>
+<td>0; 16/16 expected-exit steps; 163 imports, 83 copied tests passed, copied notebook 15 production/16 total checks and 2 embedded figures</td>
+</tr>
+<tr>
+<td><code>/opt/homebrew/bin/gitleaks dir /tmp/seascape-ss09-evidence/tracked-tree --redact --no-banner</code></td>
+<td>0; current tracked files only; ignored local cache excluded explicitly</td>
+</tr>
+<tr>
+<td><code>git diff --check</code> / <code>git diff --cached --check</code></td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>The accepted wheel differs from the clean-consumer-tested wheel only in README-derived METADATA
+and RECORD; every packaged code/resource byte matches (<code>preservation.json</code>). All <strong>196 tracked
+source/config/package/notebook files</strong> under protected paths equal the base commit. The README PNG
+is copied from SS-08's actual demo; visual inspection confirmed its synthetic title, units and grey
+unavailable cells. This is illustration QA, not regional scientific validation.</p>
+<p>Initial docs-check failures (prose mistaken for a CLI command, stale TODO link) and one import-order
+lint failure were corrected, with succeeding checks above. The first source quickstart passed;
+a stricter rerun failed its evidence-directory assertion although all shell commands exited zero.
+Using an explicit <code>mktemp</code> template corrected that portability issue; <code>quickstart-accepted</code> passed.
+Failed logs/reports are retained, never relabeled PASS. Distribution hashes are in the reports.
+Guarded installed CLI family help returned 0; the documented bathymetry input preflight returned
+the expected <strong>1</strong> (<code>missing_external</code>/<code>unverified</code>), not a ready/PASS release. Exact interpreter,
+runner, workspace and arguments are in <code>family-help.command.json</code> and <code>missing-input-preflight.command.json</code>.
+The broad local ignored-cache Gitleaks false positive remains the SS-07/SS-08 limitation; no cache
+cleanup or allowlist change. Current tracked-tree/history and hosted results are recorded below.</p>
+<p>Three regional artifact skips remain <code>test_feature_catalog.py:107,130</code> and
+<code>test_network_consumer_contracts.py:207</code>; inputs are intentionally absent. No live sources,
+regional rebuild/comparison/audit, full real-data release, downstream application integration,
+Windows-native publication or unfamiliar-human usability trial ran. Python guards are not an OS
+firewall; dependency installation permits index access. Longer processing/publishing/export
+examples require their explicitly documented existing inputs and authorization.</p>
+<p>Changed: <code>.github/workflows/ci.yml</code>, <code>AGENTS.md</code>, <code>README.md</code>, <code>docs/{API,CONFIGURATION,DEVELOPMENT,
+MIGRATION,README,WORKFLOWS,demo,hardening-review,metric-matrix,products,review-remediation}.md</code>,
+<code>docs/environments/README.md</code>, <code>docs/stage-inputs.md</code>, <code>docs/assets/demo-bathymetry.png</code>,
+<code>notebooks/README.md</code>, <code>scripts/{check_docs,check_quickstart}.py</code>, <code>tests/test_documentation.py</code>,
+this record. Unrelated work, configurations, canonical products, retained releases, source calculations
+and notebook bytes are preserved; no sibling edits. Next: <strong>SS-10</strong>, requiring explicit approved
+inputs, AOI, network and resource limits. Stop before it. Feature-branch commit/push use the user's
+existing authorization and message <code>Repository Organization Updates</code>; no merge/tag/package
+publication/settings/data changes. Hosted evidence is recorded below.</p>
+<p>SS-09 implementation <strong><code>3022ace6b6a868c65e56f0efb6ddf8a9f84bb9d9</code></strong> was committed and pushed
+with message <code>Repository Organization Updates</code> (both commands exit 0). GitHub run
+<a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36327449869">36327449869</a> completed
+<strong>success, 9/9 jobs</strong>. Linux Python 3.11.16 and 3.14.7 each ran <strong>368 passed / 3 skipped / 69 warnings</strong>,
+and doc checks each reported 39 documents / 139 local links / 26 stages. All three consumers
+completed <strong>16 expected-exit wheel steps plus all 12 source-quickstart lines with 15 demo checks</strong>:
+Linux x86_64 3.11.16 (GDAL 3.10.3 / PROJ 9.5.1 / GEOS 3.13.1), Linux x86_64 3.14.7 and
+macOS ARM64 3.14.7 (GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1). Both quality jobs, original notebook
+and history/working-tree secret scan jobs passed. Hosted copied-test/notebook steps passed;
+their artifact ZIPs were not downloaded, so their internal counts are not separately asserted here.
+Actual run/jobs JSON, five decoded job logs and <code>hosted-acceptance-summary.json</code> are under the
+evidence root. Local <code>gitleaks git . --redact --no-banner --log-opts=--all</code> also returned 0 (22 commits).
+The current handoff commit is this evidence record's containing documentation-only commit; its
+identity, final status and remote synchronization are saved in <code>final-git-state.json</code>.
+Documentation-only closure checks: <code>python scripts/check_docs.py</code> and <code>git diff --check</code> both
+returned 0; no Python/scientific implementation changed after the successful hosted run.
+No real-data or SS-10 work was performed. The existing feature-branch push authorization was reused.</p>
+<h2 id="ss-10-bounded-san-juan-pilot-blocked-execution-runbook-complete">SS-10 bounded San Juan pilot — blocked execution, runbook complete</h2>
+<p>September 27. Base <code>515e60de133fcb4346d976a683978f45c2d64101</code>; current implementation is this
+record's containing commit on <code>feature/seascape-repository-organization-updates</code>. Clean starting
+tree. SS-09 closure run <a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36327837094">36327837094</a>
+was re-read for that exact base: completed/success. Reverified owner instructions, actual explorer,
+helper, production bathymetry/downloader/publication code, preflight contracts and cached inputs.
+No earlier task reimplementation or reset.</p>
+<p>The <a href="../../pilots/san-juan/">bounded runbook</a> is SS-10's explicit blocked-runbook alternative.
+It contains the existing San Juan bounds/R6/R8 recipe, pinned source identities and rights,
+CRS/datum/alignment/sign/nodata, proposed limits, exact configuration-only/preflight commands,
+future numerical/visual acceptance and resource-measurement limitations. The real-data gate
+is <strong>unsatisfied</strong>; execution, output validation, measurements, repeatability and map QA are
+<strong>not_run</strong>. No scientific formula, API, config default, source/retained manifest or notebook changed.</p>
+<p>Local GEBCO 2026 and Natural Earth 5.1.1 inputs exist; safe local reads require no acquisition.
+All seven historical family-manifest artifact checks matched production <code>checksum_path</code>.
+The 46-file cache is 22,717,798 bytes. This is inventory/identity evidence, not scientific acceptance.
+Official GEBCO 2026/terms and Natural Earth terms pages were read; no provider metadata queue,
+source download, extraction, pixel processing or redistribution was performed.</p>
+<p>Execution blockers: (1) production source/attribution metadata and the historical manifest say
+CC BY 4.0, conflicting with the GeoTIFF and current GEBCO public-domain terms; the producer needs
+a focused correction/regression before new trusted manifests; retained history remains untouched;
+(2) six canonical water inputs are absent in the fresh workspace, while the Natural Earth proxy
+cannot be relabeled canonical or used to bypass reuse validation; (3) family publication cannot
+be disabled in this pipeline, and SS-10 step 5's explicit disposable-workspace publication/resource
+scope is not approved. The runbook makes a concrete bounded proposal; no unbounded default ran.</p>
+<p>Local evidence: <code>/tmp/seascape-ss10-evidence</code>. CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4,
+PROJ 9.8.1, GEOS 3.13.1; existing isolated development environment, no dependency changes.
+For commands below, <code>D=/tmp/seascape-roadmap-dev/bin</code>, <code>E=/tmp/seascape-ss10-evidence</code>,
+<code>W=$E/accepted-preflight-workspace</code>; cwd is this owning checkout. Preparation's exact Python
+code/argv is saved in <code>accepted-preparation.command.json</code>; preflight argv/exits are in
+<code>accepted-preflight.command.json</code>. Both initial and final preparation reports are retained;
+both returned 0, and both guarded preflights returned the expected 1, not a ready/PASS build.</p>
+<table>
+<thead>
+<tr>
+<th>Executed acceptance command</th>
+<th>Exit / result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$D/python -c &lt;exact runbook preparation code in accepted-preparation.command.json&gt;</code> with <code>SEASCAPE_PILOT_ROOT=$W</code></td>
+<td>0; bbox/R6/R8/workers/sign/output confinement and cached raster checksum assertions passed</td>
+</tr>
+<tr>
+<td><code>$D/python scripts/consumer_guard.py --forbid-root $W/forbidden --module seascape -- --workspace $W build --only seascape-bathymetry --dry-run --check-inputs --json --candidate-root $W/candidate</code> with common/candidate overrides unset</td>
+<td><strong>1, expected block</strong>; six <code>missing_external</code>, source raster ready, intermediates <code>generated_by_plan</code>, resume/publication <code>not_applicable</code></td>
+</tr>
+<tr>
+<td><code>$D/python scripts/check_docs.py</code></td>
+<td>0; 40 documents / 148 local links / 26 stages; external URL availability not checked by this offline tool</td>
+</tr>
+<tr>
+<td><code>$D/python -m pytest -q tests/test_documentation.py tests/test_preflight.py tests/test_workflow.py</code></td>
+<td>0; <strong>59 passed / 0 failed / 0 skipped</strong>, 34 warnings</td>
+</tr>
+<tr>
+<td><code>$D/python -m pytest -q -rs</code></td>
+<td>0; <strong>368 passed / 0 failed / 3 skipped</strong>, 69 warnings</td>
+</tr>
+<tr>
+<td><code>$D/python scripts/environment_snapshot.py --extra test --extra quality --output $E/environment</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>git diff --check</code></td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Final preparation's production resolved-config hash is
+<code>21245ccfbf85677c8da6e9054c9aee32419c87e4d118e6967f3b5c1e76ee934c</code>.
+Its archived resolved config includes machine paths; those reports stay untracked. This hash
+differs from history and another fresh workspace because paths participate in production hashing.
+<code>preflight-acceptance.json</code> confirms all configured outputs under the fresh candidate and no
+candidate/artifacts created. The guard deliberately allows checkout/cache reads and denies Python
+outbound/child calls; it is not an OS firewall or evidence of installed-wheel isolation.</p>
+<p><code>cached-input-inventory.json</code> and <code>preservation.json</code> record all 46 cached files byte-identical
+and all <strong>257 tracked files outside docs/</strong> byte-identical. No unrelated initial edits existed;
+existing configs, canonical products, retained releases, explorer outputs and sibling repositories
+are preserved. Three suite skips remain <code>test_feature_catalog.py:107,130</code> and
+<code>test_network_consumer_contracts.py:207</code>: clean-checkout regional artifacts intentionally absent.
+No new executable source/tests: existing docs/preflight/workflow regressions and executed recipe
+provide the relevant acceptance. Fresh wheel/consumer/notebook/static/security gates were not
+rerun for these documentation-only edits; the successful exact-base SS-09 closure is prior evidence.</p>
+<p>Changed files: <code>docs/pilots/san-juan.md</code>, <code>docs/README.md</code>, this record. Feature-branch commit/push
+use existing authorization and message <code>Repository Organization Updates</code>; final identities and
+remote synchronization are saved in <code>final-git-state.json</code> and the handoff. No merge, tag, package
+publication, settings, dataset or release changes. Next eligible task: <strong>SS-11</strong>, explicitly limited
+to an offline research candidate unless SS-10's execution gates are resolved first. Stop before SS-11.</p>
+<h2 id="ss-11-release-candidate-review-owner-gates-pending">SS-11 release-candidate review — owner gates pending</h2>
+<p>September 27. Base and tested candidate: <strong><code>ee41524b92ea6a6ef643488f903a1d69248e6d8b</code></strong>.
+Clean initial tree; retained <code>feature/seascape-repository-organization-updates</code>. Current handoff
+commit is this record's containing documentation-only commit, separate from the tested artifact
+identity. Re-read instructions/roadmap/progress and actual CI, metadata, distribution/consumer
+helpers and scientific/publication/export evidence. SS-11 prerequisites are satisfied for an
+offline research candidate with SS-10's blocked real-data path explicit; no prior task rewritten.</p>
+<p>Prepared <a href="../../release-candidate/">candidate notes and maintainer checklist</a>: capabilities,
+fixed export/installation defects, additive interfaces and stricter invalid-export validation,
+scientific invariants, known limits, artifact hashes, version decision and go/no-go gates.
+No code/config/schema/default/dependency/version change. No scientific calculation changed.
+Review implementation is complete; human/version/classic-protection/release-owner gates are
+<strong>blocked/pending</strong>, not PASS. The owner explicitly replied that no unfamiliar tester is available;
+that human trial is pending, not replaced by automated acceptance. SS-10 remains blocked, with
+no acquisition/real processing, measured operating envelope, regional maps or release audit.</p>
+<p>Candidate GitHub run <a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36329187229">36329187229</a>
+was freshly inspected: <strong>completed/success, nine jobs</strong>, exact candidate SHA. Both test jobs ran
+<strong>368 passed / 3 skipped / 69 warnings</strong>. Three clean consumers built/inspected sdist-derived wheels,
+ran all 16 expected-exit runtime/extras steps, copied notebook and documented source quickstart.
+Actual runtime records: Linux x86_64 Python 3.11.16 (GDAL 3.10.3 / PROJ 9.5.1 / GEOS 3.13.1),
+Linux x86_64 3.14.7 and macOS ARM64 3.14.7 (GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1).
+Both quality jobs, original notebook and history/tree secret jobs passed. This is verified exact-SHA
+hosted evidence, not a new workflow dispatch or a transfer of the local wheel to Linux. Artifact
+ZIPs were not downloaded; hosted copied-test/notebook internal counts are not independently
+asserted. Nine decoded logs are retained (consumer logs are explicitly bounded tails).</p>
+<p>Local evidence: <strong><code>/tmp/seascape-ss11-evidence</code></strong>, <code>*.command.json</code> with exact argv/cwd/exits and
+corresponding stdout/stderr; distribution/candidate reports, consumer logs/reports/notebook,
+source-quickstart reports, environment, API observations and preservation evidence. Existing
+development CPython 3.14.6, Darwin ARM64; fresh build/consumer/source-install environments have
+no inherited site packages. Local GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1. Installation can reach
+declared dependency indexes; runtime is Python-guarded, not native/OS-firewalled.</p>
+<p>Commands below ran from this owning checkout. <code>D=/tmp/seascape-roadmap-dev/bin</code>,
+<code>E=/tmp/seascape-ss11-evidence</code>, <code>B=$E/build-env/bin</code>, <code>R</code> is the absolute owning checkout and
+<code>G</code> the absolute MarineCast workspace. Exact expanded paths are in the command JSON files;
+machine paths/logs remain untracked.</p>
+<table>
+<thead>
+<tr>
+<th>Executed command</th>
+<th>Exit / result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$D/python -m venv $E/build-env</code>; <code>$B/python -m pip install '.[build]'</code></td>
+<td>0 each; clean declared-dependency build environment</td>
+</tr>
+<tr>
+<td><code>$B/python -m build --outdir $E/distributions</code></td>
+<td>0; isolated sdist, then isolated wheel from sdist; setuptools 84.0.0 / wheel 0.48.0</td>
+</tr>
+<tr>
+<td><code>$B/python scripts/check_distribution.py --sdist $E/distributions/toolkit_seascape-0.1.0.tar.gz --wheel $E/distributions/toolkit_seascape-0.1.0-py3-none-any.whl --output $E/distribution-report.json</code></td>
+<td>0; 9 required files / 5 resources; archive/metadata/source-byte checks passed</td>
+</tr>
+<tr>
+<td><code>$B/python scripts/check_consumer_install.py --wheel $E/distributions/toolkit_seascape-0.1.0-py3-none-any.whl --source $R --forbid-root $G --output $E/consumer</code></td>
+<td>0; <strong>16 expected-exit steps</strong>, <strong>83 copied tests passed</strong>, copied notebook <strong>15 production / 16 total checks</strong>, two embedded figures</td>
+</tr>
+<tr>
+<td><code>$B/python scripts/check_quickstart.py --sdist $E/distributions/toolkit_seascape-0.1.0.tar.gz --source $R --forbid-root $G --output $E/quickstart</code></td>
+<td>0; exact install/demo/plan blocks; 15 synthetic demo checks; automated simulation only</td>
+</tr>
+<tr>
+<td><code>$D/python -m pytest -q -rs</code></td>
+<td>0; <strong>368 passed / 0 failed / 3 skipped</strong>, 69 warnings; includes scientific/publication/release/matrix regressions</td>
+</tr>
+<tr>
+<td><code>$D/ruff check src tests scripts</code>; <code>$D/ruff format --check src tests scripts</code>; <code>$D/python -m mypy</code></td>
+<td>0 each; 235 formatted files / 12 interface modules</td>
+</tr>
+<tr>
+<td><code>$D/python scripts/environment_snapshot.py --extra test --extra quality --output $E/environment</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>$D/pip-audit --disable-pip --no-deps --strict -r $E/environment.txt</code></td>
+<td>0; no known vulnerabilities</td>
+</tr>
+<tr>
+<td><code>/opt/homebrew/bin/gitleaks git . --redact --no-banner --log-opts=--all</code></td>
+<td>0; 24 commits</td>
+</tr>
+<tr>
+<td><code>/opt/homebrew/bin/gitleaks dir $E/tracked-tree --redact --no-banner</code></td>
+<td>0; tracked candidate snapshot only; local ignored cache excluded explicitly</td>
+</tr>
+<tr>
+<td><code>$D/python scripts/check_docs.py</code>; <code>git diff --check</code></td>
+<td>0; final 41 documents / 152 local links / 26 stages; external URL availability not checked by this offline tool</td>
+</tr>
+<tr>
+<td><code>$D/python -m pytest -q tests/test_documentation.py</code></td>
+<td>0; <strong>16 passed / 0 failed / 0 skipped</strong> on the final handoff documentation</td>
+</tr>
+<tr>
+<td><code>/opt/homebrew/bin/gitleaks dir $E/handoff-tracked-tree --redact --no-banner</code></td>
+<td>0; intended final tracked documentation/source snapshot, including new handoff; ignored caches excluded explicitly</td>
+</tr>
+</tbody>
+</table>
+<p>Local wheel SHA-256 <strong><code>463aa070c2a4d5d22d8383eb55b66b3bc4b453b13c78dbce78cdc7248c062df3</code></strong>;
+sdist <strong><code>a7ba7fa13feb35a6f6c5c244bf05629b6c6e925f3ff6ebe134e3a2727abea8bd</code></strong>.
+Metadata: toolkit-seascape 0.1.0, Python &gt;=3.11, Apache-2.0. All packaged source/resource bytes
+match the exact candidate; no datasets/retained products/graph caches entered either archive.
+Both synthetic demo PNGs were opened and inspected for titles, orientation, sign/meters and grey
+unavailable support. This is synthetic illustration QA, not regional coastline/data validation.</p>
+<p>Three full-suite skips are still <code>test_feature_catalog.py:107,130</code> and
+<code>test_network_consumer_contracts.py:207</code>, requiring absent regional materialized products.
+The older broad ignored-cache Gitleaks failure remains historical/unresolved; no cleanup or
+allowlist change. Current tracked/history scans and clean hosted tree scans pass their stated scopes.</p>
+<p>Administration inspection: repository rulesets including parents returned <code>[]</code>; the connector
+rejected the effective-branch endpoint as unsupported, then a public read-only GET to that endpoint
+returned <strong>HTTP 200 / <code>[]</code></strong>. Classic <code>main</code> protection returned integration <strong>403</strong>, so that check
+is blocked and empty rulesets are not proof of absent classic protection. Repository metadata
+enables squash/merge/rebase, disables auto-merge; these are options, not a chosen merge policy.
+Nine actual observed check names are listed in the handoff; no settings change was proposed/applied.
+No version policy/tags were found. Existing tested <strong>0.1.0</strong> is retained as the proposed base;
+public version/prerelease policy needs owner approval, with rebuild/revalidation if metadata changes.</p>
+<p>Changed: <code>docs/release-candidate.md</code>, <code>docs/README.md</code>, this record. All other tracked files and
+all 46 cached explorer files remain byte-identical; configs, scientific code, canonical products,
+retained releases, notebook and siblings preserved. Detailed final preservation and Git state
+are saved under the evidence root. No unrelated starting edits. Normal feature commit/push use
+existing authorization and message <code>Repository Organization Updates</code>; no merge/tag/registry,
+release upload, settings, dataset or application changes. Next: <strong>owner resolution of the pending
+SS-11 gates</strong>; SS-10 execution requires its separate scope/correction/input gates. No SS-12 started.</p>
+<h2 id="focused-review-fixes-september-27">Focused review fixes (September 27)</h2>
+<p>Base <code>ec78b57878c4a93b28892132df7c1edf900d6da3</code>, clean existing feature branch; no reset.
+FIX-01 changes future source/attribution rights only: GEBCO public-domain terms/acknowledgement
+reference, synthetic fixture licensing unchanged, unknown-provider rights explicitly unverified.
+Official terms/release documentation rechecked; runtime metadata needs no network. Production
+fixture tests verify release/checksum, identical keyed values/nulls/resolution and retained
+publisher-created manifest/product bytes. Historical source caches/manifests remain untouched.
+<code>python -m pytest -q tests/test_demo.py tests/domains/environment/seascape/test_bathymetry_contracts.py</code>:
+exit 0, <strong>32 passed</strong>, 27 warnings. Initial suggested top-level bathymetry test path did not exist:
+exit 4, no tests run; corrected to the actual nested path. Logs/exact argv are in
+<code>/tmp/seascape-review-fixes-evidence/{fix01,fix01-focused}.command.json</code> and matching logs.
+FIX-02 pre-change reproduction: malformed YAML and fixed-Q90 violation each exit 1 in text,
+JSON and debug+JSON, but useful details and tracebacks are absent. Reports saved under the same
+evidence root; debug files stay local/private. FIX-02 now retains safe reason/type and document/setting context with additive optional schema-1
+fields. Existing classifier/sanitizer reused; malformed YAML excludes snippets, quoted user values
+are redacted while fixed scientific enum requirements remain. Explicit debug receives the original
+caught exception on stderr; unfiltered debug logs remain private. Unknown defects re-raise, and
+preflight remains read-only with environment restoration. No scientific validation rule changed.
+<code>python -m pytest -q tests/test_preflight.py tests/test_cli_diagnostics.py tests/test_workflow.py tests/test_products.py</code>:
+exit 0, <strong>113 passed</strong>, 62 warnings (<code>fix02-confirm</code> logs). Earlier regression development runs
+exit 1 (12 then 10 failures): omitted existing positive-down classifier and a test mutation of an
+unused field, both corrected without weakening validation. Text/JSON/debug tests cover both caught
+paths, YAML/include/reference/Q90, secrets, legacy fields and unexpected exceptions. Actual Q90
+JSON exit 1 supplies the workflow example. Notebook stays unchanged: its existing production-demo
+thin-client coverage remains appropriate; copied installed-wheel execution follows in VERIFY-01.</p>
+<p>VERIFY-01 tested <strong><code>50675db2bef48d3e48de56ec02a5c98a992808ca</code></strong>. Separate fixes:
+<code>f98a36b</code> (metadata), <code>9755f94</code> (diagnostics). README pins immutable <code>9755f94</code>, containing both
+fixes; all 189 package files at that revision and the tested child match the new wheel exactly.
+The child adds the pin and two existing test modules to external consumer acceptance. No notebook
+refactor or scientific change. A later repository-docs-only closure refers to this exact candidate.
+Evidence root: <code>/tmp/seascape-review-fixes-evidence</code>; <code>{name}.command.json</code> stores exact argv,
+cwd, cleared environment and exit code; matching stdout/stderr, consumer/quickstart reports and
+nine decoded hosted logs retain details. Debug reproduction logs stay private, excluded from Git.
+Development CPython 3.14.6 / macOS 26.6.2 ARM64; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1.</p>
+<table>
+<thead>
+<tr>
+<th>Executed check (from owner checkout unless helper specifies outside cwd)</th>
+<th>Exit / actual result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python -m pytest -q tests/test_demo.py tests/domains/environment/seascape/test_bathymetry_contracts.py tests/test_preflight.py tests/test_cli_diagnostics.py tests/test_documentation.py tests/test_consumer_acceptance.py tests/test_products.py tests/test_metric_matrix.py tests/test_review_regressions.py tests/test_workflow.py</code></td>
+<td>0; 216 passed / 0 failed / 0 skipped, 93 warnings (<code>verify-focused</code>)</td>
+</tr>
+<tr>
+<td><code>python -m pytest -q</code></td>
+<td>0; 398 passed / 0 failed / 3 skipped, 99 warnings (<code>verify-suite</code>)</td>
+</tr>
+<tr>
+<td><code>ruff check src tests scripts</code>; <code>ruff format --check src tests scripts</code>; <code>python -m mypy</code></td>
+<td>0 each; 235 formatted files, 12 typed modules</td>
+</tr>
+<tr>
+<td><code>python scripts/check_docs.py</code>; <code>python -m pip check</code>; <code>git diff --check</code></td>
+<td>0 each; 41 docs/152 local links/26 stages, external URLs offline/not checked</td>
+</tr>
+<tr>
+<td><code>python scripts/environment_snapshot.py --extra test --extra quality --output /tmp/seascape-review-fixes-evidence/environment</code></td>
+<td>0; exact test/quality/native closure captured</td>
+</tr>
+<tr>
+<td><code>pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-review-fixes-evidence/environment.txt</code></td>
+<td>0; no known vulnerabilities</td>
+</tr>
+<tr>
+<td>Existing isolated build interpreter <code>python -m pip check</code>, then <code>python -m build --outdir /tmp/seascape-review-fixes-evidence/distributions</code></td>
+<td>0 each; isolated sdist then wheel from sdist, setuptools 84.0.0/wheel 0.48.0 backends</td>
+</tr>
+<tr>
+<td>Guarded installed-wheel exact metadata comparison (one-off controlled-fixture check)</td>
+<td>0; both 2026/2025 branches exactly preserve all 153 keyed rows/values/nulls, source checksum and H3 R8. Initial attempts exit 1 on the existing <code>/tmp</code> symlink safeguard and an incorrect check-script key; corrected to resolved fresh workspace and actual <code>h3_resolutions</code>; no producer-code change</td>
+</tr>
+<tr>
+<td>Existing <code>scripts/check_distribution.py --sdist ... --wheel ... --output .../distribution-report.json</code></td>
+<td>0; 9 required files / 5 resources; 189 package source files byte-matched independently</td>
+</tr>
+<tr>
+<td>Existing <code>scripts/check_consumer_install.py --wheel ... --source &lt;owner&gt; --forbid-root &lt;MarineCast&gt; --output .../consumer</code></td>
+<td>0; runtime-only first, 163 imports/15 demo checks; 4 negative cases expected exit 1; extras later; 175 external tests / 0 failed / 0 skipped; copied notebook 15 production/16 notebook checks, 2 embedded figures, no acquisition/network attempts</td>
+</tr>
+<tr>
+<td>Existing <code>scripts/check_quickstart.py --sdist ... --source &lt;owner&gt; --forbid-root &lt;MarineCast&gt; --output .../quickstart</code></td>
+<td>0; marked source install/demo/init/stages/dry-run, 15 demo checks</td>
+</tr>
+<tr>
+<td>Gitleaks 8.30.1 <code>git . --redact --no-banner --log-opts=--all</code>; <code>dir &lt;fresh tracked-tree&gt; --redact --no-banner</code></td>
+<td>0 each; no leaks. Ignored local Graphify cache broad-scan finding remains historical; no cache deletion/allowlist change or claim that local ignored-tree scan passed</td>
+</tr>
+<tr>
+<td><code>git push origin feature/seascape-repository-organization-updates</code></td>
+<td>0; authorized ec78b57 → 50675db</td>
+</tr>
+<tr>
+<td><a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36345268484">Hosted run 36345268484</a></td>
+<td>success, 9/9 jobs; both Linux full suites 398 passed/3 regional skips. Linux consumers 3.11.16/3.14.7 x86_64; macOS consumer 3.14.7 ARM64; two quality/audit jobs, copied/source notebooks, source quickstarts and clean-checkout broad secret/history scans passed</td>
+</tr>
+</tbody>
+</table>
+<p>Three regional skips remain <code>test_feature_catalog.py:107/:130</code> and
+<code>test_network_consumer_contracts.py:207</code>: materialized regional artifacts are absent from a clean
+checkout. No added skip/validation relaxation. Dependency installs use network; guarded Python
+computation forbids checkout access/outbound/source acquisition/children, not an OS/native firewall.
+New runtime demo report and both figures actually inspected: explicit SYNTHETIC, elevation/depth
+in meters, H3 R8, unavailable gray; 153 cells. No real-data numerical/map acceptance implied.
+Artifact identities are in <code>candidate-artifacts.json</code> and the current release note. All 46 original
+cache files (22,717,798 bytes), configs, canonical/retained products and other tracked files outside
+the 14 intended changes remain byte-identical. Retained publisher-created fixture bytes are also
+regression-tested. No sibling changes, reset, acquisition, merge, tag, registry/settings/data upload.</p>
+<p>Stop after VERIFY-01. <strong>PILOT-01</strong> still needs valid canonical inputs or the existing explicitly
+validated exploratory support route; source/bounds/R6/R8 identities; approved fresh workspace,
+resource and local-family-publication scope; two executed realizations with numerical/provenance,
+wall/storage/memory and inspected-map evidence. Future rights correction removes only that blocker.
+<strong>ACCEPT-01</strong> still needs an unfamiliar user's install/demo/output/units-resolution/provenance/null
+trial (owner confirmed none available), observed friction, owner version/merge/release decisions and
+classic-protection review (prior integration 403, not proof of no protection). Neither gate passed.</p>
+<h2 id="pilot-01-continuation-execution-approval-pending-september-27">PILOT-01 continuation — execution approval pending (September 27)</h2>
+<p>Started clean at <code>8eaae5fc1ed8e2359726527c528f55f45913e3fb</code> on the existing authorized
+<code>feature/seascape-repository-organization-updates</code>; no reset/repeated roadmap implementation.
+Read owner/workspace instructions, current roadmap/progress/runbook and actual producers.
+PILOT-01 is the next incomplete task. Its existing explorer mask was explicitly exploratory,
+but downstream H3/network manifests hard-coded canonical territorial-water provenance.
+The helper now transactionally publishes a schema-3 exploratory mask manifest with actual
+Natural Earth release/ZIP checksum, optional-credit public-domain rights, partial completeness,
+cartographic scale and model-ineligible caveats. Prepared workspace support-version overrides
+are explicitly exploratory. The three existing production builders verify available selected-mask
+manifest identity and retain lineage/completeness; old San Juan masks with their explicit
+exploratory AREA declaration and no manifest fail before publication. Ordinary legacy absence
+behavior remains. Historical manifests are not rewritten. No formulas, CRS/datum/sign, nodata,
+quantiles, neighborhoods, H3 selection, parent bands, scientific settings or release gates changed.
+Offline fixtures compare all support/network products and bathymetry values exactly and reject
+bad lineage before writes, preserving existing destinations. No public signature/schema change;
+additive metadata only, plus stricter validation of declared provenance. Validation notebook's
+existing production-demo coverage stays appropriate; its committed bytes are unchanged.</p>
+<p>Evidence: <code>/private/tmp/seascape-pilot-01-readiness</code>; command JSON retains exact argv/cwd/exits
+and logs. <code>prepare.py</code> exits 0: cached GEBCO 2026 production checksum and Natural Earth 5.1.1
+ZIP identity reverified; 7,204,615 extracted ZIP bytes; raster header and valid/nodata/land/zero
+pixel counts recorded without writes. Fresh configuration fingerprint/hash in <code>pilot-plan.json</code>.
+No real producer or source acquisition ran. Guarded canonical preflight exits 1 with valid failed
+JSON and the same six missing external water inputs; no READY claim. Proposed new roots:
+<code>/private/tmp/seascape-pilot-01-20260927/replicate-{1,2}</code>. Exact existing-API phase recipe and
+outer process-group watchdog prepared outside Git; compile check exits 0 and unapproved runner
+refusal exits 1 before workspace creation. Caps proposed: zero source downloads, 32 MiB inputs
+including extraction, 256 MiB workspace, 10 minutes / 2 GiB sampled aggregate process-tree RSS
+per realization, four workers. Sampler interval 0.25 seconds; overshoot possible, not a hard OS
+memory reservation or native-network firewall. Actual regional monitoring/stress, two-run
+comparison and map generation/inspection remain not_run. SS-10 step 5's explicit disposable
+workspace/publication approval was requested with this concrete plan and remains pending;
+existing feature push/local software-check authorizations were preserved.</p>
+<p>Executed using <code>/tmp/seascape-roadmap-dev/bin</code> (CPython 3.14.6, macOS 26.6.2 ARM64;
+GDAL 3.12.4/PROJ 9.8.1/GEOS 3.13.1):</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Exit / actual result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python -m pytest -q tests/test_water_geometry_provenance.py</code></td>
+<td>initial 1: 9 passed/1 failed, test copy omitted logical-name checksum update; corrected, no validator relaxation; subsequent 0: 11 passed before final extra rejection regression</td>
+</tr>
+<tr>
+<td><code>python -m pytest -q tests/test_water_geometry_provenance.py tests/test_demo.py tests/domains/environment/seascape/test_bathymetry_contracts.py tests/domains/environment/seascape/spatial_support/test_water_network.py</code></td>
+<td>0; 55 passed/0 skipped at that development step</td>
+</tr>
+<tr>
+<td><code>python -m pytest -q</code></td>
+<td>final 0; 410 passed/3 existing regional skips/101 warnings, including all 12 new regressions; previous intermediate 409 passed/3 skipped</td>
+</tr>
+<tr>
+<td><code>ruff check src tests scripts</code>; <code>ruff format --check src tests scripts</code>; <code>python -m mypy</code></td>
+<td>0 each; 237 formatted files / 12 typed modules</td>
+</tr>
+<tr>
+<td><code>jupyter nbconvert --to notebook --execute notebooks/validation/01_TOOLKIT_VALIDATION.ipynb --ExecutePreprocessor.timeout=120 --output seascape-toolkit-validation.ipynb --output-dir /private/tmp/seascape-pilot-01-readiness</code></td>
+<td>sandbox 1 on loopback bind; authorized local-loopback retry 0; output copy only</td>
+</tr>
+<tr>
+<td><code>python scripts/check_docs.py</code>; <code>python -m pip check</code>; <code>git diff --check</code></td>
+<td>0 each; 41 documents/152 local links/26 stages, external URLs not checked by offline checker</td>
+</tr>
+<tr>
+<td>Existing isolated build interpreter <code>python -m build --outdir /private/tmp/seascape-pilot-01-readiness/distributions</code></td>
+<td>0; sdist then wheel from sdist, setuptools 84.0.0/wheel 0.48.0</td>
+</tr>
+<tr>
+<td><code>python scripts/check_distribution.py --sdist ... --wheel ... --output .../distribution-report.json</code></td>
+<td>0; 9 required files/5 resources; actual full paths in command JSON</td>
+</tr>
+</tbody>
+</table>
+<p>Three regional skips remain feature-catalog lines 107/130 and network-consumer line 207;
+no new skip. Read-only refresh of prior <a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36345837141">hosted run 36345837141</a>
+confirms success on starting <code>8eaae5f</code>; that is not hosted evidence for this new change.
+Installed-wheel acceptance and final preservation/commit evidence follow below when actually run.
+PILOT-01 remains blocked only on the exact requested local execution scope for the exploratory
+route (canonical inputs still unavailable). Its real numerical/resource/visual gates are not passed.
+Next after resolving PILOT-01: ACCEPT-01; the unfamiliar tester remains unavailable/pending and
+owner version/merge/release/classic-protection decisions remain open. No ACCEPT-01 work started.</p>
+<p>Final package acceptance: existing <code>scripts/check_consumer_install.py --wheel ... --source
+&lt;owner checkout&gt; --forbid-root &lt;MarineCast&gt; --output .../consumer</code> exits 0. Fresh runtime-only
+consumer first: 164 imports, unchanged 15-check synthetic demo, four negative cases expected
+exit 1; declared extras only afterward, 175 external tests passed/0 skipped, copied notebook
+passed with two embedded figures. The new 190-file package matches this tested working tree
+byte-for-byte. Wheel SHA-256 <code>79abf3642b3b2b2dab2189f036648b45743a22e7829295a0d02b0b79c0b5e3a7</code>;
+sdist <code>ecbfa454aadff6a72e35e450ab8641c38e7ff228c691027042cdd507a2c95780</code>.
+<code>python scripts/environment_snapshot.py --extra test --extra quality --output .../environment</code>,
+<code>pip-audit --disable-pip --no-deps --strict -r .../environment.txt</code>, Gitleaks 8.30.1 history and
+fresh tracked-tree scans all exit 0. Ignored-cache broad-scan finding remains historical, excluded
+explicitly; no cleanup/allowlist/gate change. Final docs checker exits 0 (41 documents/154 local
+links/26 stages), documentation tests 16 passed. No current-run source quickstart or regional
+producer/visual acceptance claim; previous VERIFY-01 evidence remains identified separately.</p>
+<p>Tested package/source commit <strong><code>232ac308f7f2229c2f4047ab9fe204d95b8a6bf9</code></strong>, message
+<code>Repository Organization Updates</code>. Exact 190 packaged files match that commit. All 274 other
+tracked files and the 46-file / 22,717,798-byte original cache remain byte-identical; both proposed
+real-pilot roots still absent. Exact commands and full handoff are in the evidence root's
+<code>commands.json</code>, <code>HANDOFF.md</code>, <code>preservation.json</code>, distribution and consumer reports.
+Authorized <code>git push origin feature/seascape-repository-organization-updates</code> could not complete:
+observed <code>git-credential-osxkeychain</code> waiting, native UI inventory confirms Mac locked and automatic
+unlock unavailable. Only that task's Git/helper descendants were terminated; child Git exit -15
+(SIGTERM), recorder shell exit 241. Remote branch was read-only verified still at <code>8eaae5f</code>.
+Manual Mac unlock is requested; no credential is requested in chat. No push success or new hosted
+CI claim. A docs-only closure records these facts; feature push can retry after unlock. No merge,
+tag, registry/settings changes or data upload. PILOT-01 real execution and ACCEPT-01 remain pending
+as stated above; do not infer either approval from successful software checks.</p>
+<h2 id="pilot-01-execution-passed-within-approved-exploratory-scope-september-27">PILOT-01 execution — passed within approved exploratory scope (September 27)</h2>
+<p>User approved the exact prepared plan with “Let's do it”; the original plan and its approval hash
+are retained in <code>/private/tmp/seascape-pilot-01-readiness/{pilot-plan,execution-approval}.json</code>.
+Started clean at execution HEAD <code>5d9faaf83aaccffe61a7eb97acd27c01ec6c62a7</code>; same feature branch.
+Production used the installed wheel for tested code <code>232ac308f7f2229c2f4047ab9fe204d95b8a6bf9</code>
+(SHA-256 <code>79abf3642b3b2b2dab2189f036648b45743a22e7829295a0d02b0b79c0b5e3a7</code>), with all 190
+installed/source package files reverified byte-identical. Research helper/configs were read from
+this checkout. No source downloads, sibling changes or science implementation edits.</p>
+<p>Two new owned roots <code>/private/tmp/seascape-pilot-01-20260927/replicate-{1,2}</code> now contain actual
+exploratory mask/H3/network/bathymetry family publications and offline figures. Same source pins,
+bounds, H3 R6/R8 and production scientific settings. Four schema-3 family manifests per run pass
+existing artifact/lineage validators; support, edges, neighborhoods, radius operator and reachable
+area pass their existing consumer validators. Canonical preflight remains failed on its six missing
+inputs; it was not made READY. No complete release audit/promotion, retained release change or
+real-data upload. All 46 original cache files / 22,717,798 bytes remain byte-identical.</p>
+<p>Each run has 4,660 R8 cells (4,384 mean-depth values / 276 nulls) and 134 R6 cells (127 values /
+7 nulls). R8 means span 1–354 m; R6 means 1.7647058824–243.4271844660 m, positive down. Source
+24,024 pixels: 18,478 negative elevations, 5,515 positive, 31 zero and zero nodata; 18,226 marine
+samples assigned to selected support in each run. Copies retain EPSG:4326, native affine/alignment,
+meters, source vertical EPSG:5831 and nodata -32767. Header identity is not vertical-datum accuracy
+or survey-coverage certification. Depth bands preserve observed zero versus unavailable null;
+fractions sum to 1 within absolute 1e-12 and existing parent-band recomputation is exact.
+One R6 boundary cell <code>8628d1047ffffff</code> has null direct mean but one child-derived composition
+sample: production point-assignment helpers verify that its R8 child <code>8828d10425fffff</code> maps to
+that hierarchical parent while the same pixel maps directly to R6 <code>8628d1057ffffff</code>. This is the
+existing direct-mean / child-composition support distinction; no fill, relabeling or formula change.</p>
+<p>All 23 Parquet tables match exactly by their declared H3 keys, including numeric/null values and
+geometry. The NPZ radius operator and scientific configuration also match exactly. Of 24 recorded
+product artifacts, 22 match byte checksums; <code>H3_GRIDS_6</code> and <code>H3_GRIDS_8</code> differ only in physical
+row order from the existing threaded producer. Key-sorted Arrow values including original geometry
+WKB and schema metadata match exactly. Both raw identities remain separately verified/recorded;
+no claim of universally bit-identical products. Path/time/run-ID/config-hash differences are retained,
+with only workspace paths normalized for config/source comparisons. No scientific values normalized.</p>
+<table>
+<thead>
+<tr>
+<th>Measured realization</th>
+<th>Producer phases including preparation</th>
+<th>Complete attempt / completion</th>
+<th>Sampled aggregate peak RSS</th>
+<th>Final owned workspace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>13.3264 s</td>
+<td>Initial 16.0276 s ended on report serialization; acceptance-only retry 2.6996 s; completion including intervention 115.5035 s</td>
+<td>446,021,632 bytes</td>
+<td>17,387,048 bytes</td>
+</tr>
+<tr>
+<td>2</td>
+<td>10.8242 s</td>
+<td>13.5285 s, all phases exit 0</td>
+<td>444,366,848 bytes</td>
+<td>17,387,323 bytes</td>
+</tr>
+</tbody>
+</table>
+<p>Original deadline retained for run-1 reporting retry; no cap termination. All stayed below the
+approved 600 s / 2 GiB sampled process-tree RSS / 256 MiB workspace / 32 MiB inputs including
+extraction / four workers. RSS/disk sampled every 0.25 s; each phase also retains macOS
+<code>/usr/bin/time -l</code> maximum RSS in bytes. Sampler can miss peaks/overshoot, not a hard OS memory
+reservation. Shared machine/OS/filesystem caches limit timing comparison and regional extrapolation.
+Python socket/child guard and <code>PROJ_NETWORK=OFF</code> used; no acquisition, but no OS/native network
+firewall or network-byte metering claim. Actually inspected all six source/R8/R6 PNGs with
+<code>view_image</code>: north-up extent, positive-up source versus positive-down means, meters/legend,
+coarse shoreline alignment and gray unavailable support. Cartographic coastline generalization is
+visible; no legal/navigation/model readiness or coastal accuracy claim. No live tile/CDN map opened.</p>
+<p>Exact commands/exits and phase argv are in <code>commands.json</code>, <code>replicate-*-resources*.json</code> and
+<code>HANDOFF_EXECUTION.md</code> under the evidence root; summary, hashes, QC and visual record in
+<code>execution-summary.json</code>, <code>repeatability.json</code>, <code>additional-acceptance.json</code>,
+<code>parent-availability-evidence.json</code> and <code>visual-inspection.json</code>. Execution command used the existing
+recorder and installed interpreter: <code>python run.py real-replicate-N python bounded.py &lt;approved-root&gt;</code>.
+First aggregate exit 1 was pandas-NA JSON serialization in the one-off evidence script after all
+producer phases exited 0; reporting-only correction/retry exits 0, failed logs retained. Initial
+comparison exit 1 used relative source paths as absolute; next extra byte-identity comparison exit 1
+exposed physical row order. Final comparison exits 0 after exact Arrow proof and explicit distinct
+byte identities. Additional availability check exit 1 assumed R6 mean/composition shared support;
+corrected check uses the actual documented distinction and production-helper evidence, exit 0.
+No production validator relaxed and no scientific values corrected to force PASS.</p>
+<p>Authorized feature push exits 0 (<code>8eaae5f</code> → <code>5d9faaf</code>), remote independently verified. First retry's
+automatic permission review timed out before its command ran; direct retry succeeded.
+<a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36352109541">Hosted run 36352109541</a>
+is completed/success, all nine jobs on exact execution HEAD: Linux 3.11/3.14 tests and consumers, macOS consumer, both quality jobs, source notebook and secrets. Prior full suite 410 passed/3 regional
+skips and installed-wheel 175 external tests remain identified at the tested package revision; no
+redundant source suite or packaging rebuild for this docs-only execution closure. No remote merge,
+tag, registry/settings or data publication. Stop after PILOT-01; next ACCEPT-01 remains pending on
+its actual unfamiliar-human evidence and owner decisions, not implied by this pilot or software CI.</p>
+<h2 id="python-314-only-support-september-29">Python 3.14-only support — September 29</h2>
+<p>At clean starting HEAD <code>49b5feb558f5749ddc2ed61e8b84cfdf4ba65267</code> on
+<code>feature/seascape-scientific-hardening</code>, the package advertised Python <code>&gt;=3.11</code>, which explains
+the 3.11 test, consumer and quality jobs. Per the owner's new support decision, metadata now
+requires <code>&gt;=3.14,&lt;3.15</code>; test, notebook, consumer and quality CI jobs all select 3.14. Current-use
+README, contributor, demo and platform docs and the executable quickstart reflect that policy.
+Historical 3.11 runs/candidate evidence are retained as dated records. Ruff/mypy target 3.14;
+the old NumPy-stub override is gone. Six source files received only Python-3.14 Ruff formatting
+(AST-identical to HEAD); demo fixture gained type annotations, with its calculations unchanged.
+Package APIs, source data, canonical products, retained releases and scientific gates are unchanged.</p>
+<p>Local interpreter: CPython 3.14.6, macOS ARM64. Evidence root:
+<code>/private/tmp/seascape-python314-only.rgzcw5</code> (not a release or uploaded artifact).</p>
+<table>
+<thead>
+<tr>
+<th>Command/check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python -m pytest -q tests/test_standalone_package.py tests/test_consumer_acceptance.py tests/test_documentation.py</code></td>
+<td>exit 0; 69 passed (after metadata-fixture correction)</td>
+</tr>
+<tr>
+<td><code>python -m pytest -q</code></td>
+<td>exit 0; 446 passed, 3 skipped for absent regional artifacts; 110 warnings</td>
+</tr>
+<tr>
+<td><code>python scripts/check_docs.py</code>; <code>python -m pytest -q tests/test_documentation.py</code></td>
+<td>exits 0; 46 documents/198 links/26 stages; 16 passed</td>
+</tr>
+<tr>
+<td><code>ruff check src tests scripts</code>; <code>ruff format --check src tests scripts</code>; <code>python -m mypy</code>; <code>python -m pip check</code>; <code>git diff --check</code></td>
+<td>exits 0; 242 Python files formatted; 12 typed modules; no broken requirements or whitespace errors</td>
+</tr>
+<tr>
+<td><code>python -m build --outdir &lt;evidence&gt;/distributions</code>; <code>python scripts/check_distribution.py --sdist &lt;sdist&gt; --wheel &lt;wheel&gt; --output &lt;report&gt;</code></td>
+<td>exits 0; isolated sdist-to-wheel build; both archives declare Python 3.14 only; 9 required files and 5 resources checked</td>
+</tr>
+<tr>
+<td><code>python scripts/check_consumer_install.py --wheel &lt;wheel&gt; --source &lt;checkout&gt; --forbid-root &lt;MarineCast&gt; --output &lt;evidence&gt;/consumer</code></td>
+<td>exit 0; 16 expected-exit steps, runtime-only demo and negative probes, 179 external tests, copied notebook with 2 figures</td>
+</tr>
+<tr>
+<td><code>python scripts/check_quickstart.py --sdist &lt;sdist&gt; --source &lt;checkout&gt; --forbid-root &lt;MarineCast&gt; --output &lt;evidence&gt;/quickstart</code></td>
+<td>exit 0; documented source install/plan/demo, 15 synthetic checks</td>
+</tr>
+<tr>
+<td><code>python -m pip install --dry-run --no-deps --ignore-installed --python-version 3.11 &lt;wheel&gt;</code></td>
+<td>expected exit 1: Requires-Python excludes 3.11</td>
+</tr>
+<tr>
+<td>Same pip dry run with <code>--python-version 3.14</code></td>
+<td>exit 0: would install 0.1.0</td>
+</tr>
+</tbody>
+</table>
+<p>The first isolated build attempt exited 1 because sandbox DNS blocked PyPI build dependencies;
+the authorized network retry above succeeded. The first distribution inspection found setuptools'
+reordered equivalent metadata clauses; the inspector now compares those clauses and its regression
+also rejects a wheel that falsely advertises 3.11. Focused checks were rerun after this correction.
+Hosted CI for this exact support-policy change remains unrun until a feature push/run completes;
+historical 3.11 CI success is not current-support evidence. No 3.11 execution was claimed here.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright MarineCast contributors · Apache-2.0 software license
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "content.code.copy", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

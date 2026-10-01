@@ -1,0 +1,14 @@
+{
+  "product_checksum": "a2b5cea25fea014e13113158b66452b552a69f36bec0585a63197814878560aa",
+  "geometry_checksum": "b98f94e417e44b57510f8056f123da99aac229a40282e5bcdda2ab479a24b6f2",
+  "land_checksum": "d850bd6c83a0da9e8a19932290c2dbcf0c0502928a5478d4b02add4bdbadc1d5",
+  "cells": 4660,
+  "available": 4384,
+  "unavailable": 276,
+  "depth_min_m": 1.0,
+  "depth_max_m": 354.0,
+  "projection": "EPSG:32610",
+  "synthetic": false,
+  "scope": "Exploratory San Juan pilot; not a complete regional release",
+  "rendered_image_checksum": "3d89d0e0d160679062a7388b5a15bca69ee9cf3a96e58d2c6a1bde6fe9e8f8bb"
+}

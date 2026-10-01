@@ -1,0 +1,1880 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Source-backed geospatial tools for physical and structural marine seascapes">
+      
+      
+      
+        <link rel="canonical" href="https://marinecast.github.io/toolkit-seascape/pilots/san-juan/">
+      
+      
+        <link rel="prev" href="../../demo/">
+      
+      
+        <link rel="next" href="../../api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>San Juan pilot - Seascape Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bounded-san-juan-exploratory-pilot-passed" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Seascape Toolkit" class="md-header__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Seascape Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              San Juan pilot
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concepts/" class="md-tabs__link">
+          
+  
+  
+  Understand
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../variables/" class="md-tabs__link">
+          
+  
+  
+  Variables
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../CONTRACTS/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Seascape Toolkit" class="md-nav__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    Seascape Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seascape concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processing and methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Variables
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalog guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../products/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and field index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../structural-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structural variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../capability-coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choose a workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Offline demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    San Juan pilot
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    San Juan pilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#approved-scope-and-stop-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approved scope and stop conditions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-and-historical-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source and historical evidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-configuration-only-preparation-and-preflight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce configuration-only preparation and preflight
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acceptance-and-measured-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance and measured envelope
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metric-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metric matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CONTRACTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scientific contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CONFIGURATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../WORKFLOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stage-inputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#approved-scope-and-stop-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approved scope and stop conditions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-and-historical-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source and historical evidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-configuration-only-preparation-and-preflight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce configuration-only preparation and preflight
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acceptance-and-measured-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance and measured envelope
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="bounded-san-juan-exploratory-pilot-passed">Bounded San Juan exploratory pilot — passed</h1>
+<p>PILOT-01 / SS-10, September 27, 2026. Two fresh local realizations of the approved cached-input
+bathymetry/support path passed numerical, provenance, resource and visual acceptance. This is
+an exploratory family pilot, not a complete audited regional release or model-readiness claim.
+It reuses the existing <a href="https://github.com/MarineCast/toolkit-seascape/blob/main/notebooks/_san_juan_workflow.py">explorer helper</a> and production APIs.
+Do not execute the whole explorer to reproduce this zero-download run: its acquisition switches
+still default to enabled. <a href="../../roadmap/PROGRESS/">Progress</a> retains failed/intermediate checks.</p>
+<h2 id="approved-scope-and-stop-conditions">Approved scope and stop conditions</h2>
+<p>Nominal W/S/E/N extent <strong>(-123.35, 48.38, -122.70, 49.02)</strong>; H3 R8/R6. Same production quantiles,
+positive-down depths, water-neighborhood anomaly and parent band aggregation. Natural Earth land
+is an <strong>exploratory 1:10 million cartographic mask</strong>, not territorial/navigation/legal authority.
+Its schema-3 mask manifest records actual source version/checksum, partial completeness and
+model-ineligible lineage, propagated through the H3/network/bathymetry family manifests.
+Future GEBCO metadata uses corrected public-domain terms/acknowledgement; old manifests are intact.</p>
+<p>The user approved the exact prepared plan with “Let's do it”: fresh disposable workspaces
+<code>/private/tmp/seascape-pilot-01-20260927/replicate-1</code> and <code>replicate-2</code>; only exploratory
+mask/H3/network/R6+R8 bathymetry family publication. <code>skip_download=True, skip_map=True</code> still
+publishes the family. No whole-release promotion, retained release replacement, source acquisition,
+export/upload, new source release, regional expansion or additional product family was authorized.
+Two runs were capped at 600 s each, 32 MiB inputs including extraction, 256 MiB owned workspace,
+2 GiB sampled aggregate process-tree RSS and four workers. Original plan/approval hashes,
+source pins, existing-API phase recipe and watchdog are retained in
+<code>/private/tmp/seascape-pilot-01-readiness</code>; approved paths now contain actual products and must not
+be reused as fresh destinations. Any future realization needs a separately agreed fresh path/scope.</p>
+<p>The outer watchdog samples wall/disk/process-tree RSS every 0.25 s and kills the process group on
+breach or sampler failure; polling can miss peaks/overshoot and is not an OS memory reservation.
+Python socket/child guard and <code>PROJ_NETWORK=OFF</code> prevent intended source acquisition paths; native
+extensions are not OS-firewalled and network bytes were not metered. No source downloads occurred.
+Do not fall back to global download if these cached identities are absent or fail verification.
+Canonical preflight still fails on six missing water inputs; the validated exploratory route does
+not make that canonical plan READY. See <a href="../../CONTRACTS/">scientific contracts</a>.</p>
+<h2 id="source-and-historical-evidence">Source and historical evidence</h2>
+<p>These identities describe the available local cache, not files distributed with the package.
+The paths below are relative to the explorer's ignored <code>notebooks/outputs</code> workspace.</p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Identity and support</th>
+<th>Size and identity check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/raw/bathymetry/GEBCO_2026_MODEL_AREA.tif</code></td>
+<td>GEBCO 2026, DOI <code>10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa</code>, created 2026-04-17; 15 arc seconds, 156 × 154, one int16 band</td>
+<td>55,932 bytes; production <code>checksum_path</code>: <code>1d99f5e6a7553679446cf88e8b2685dba32ccff3349165d72afa682c6605257c</code></td>
+</tr>
+<tr>
+<td><code>data/raw/natural_earth/ne_10m_land.zip</code></td>
+<td>Natural Earth land, extracted version 5.1.1; <strong>1:10 million cartographic scale</strong>, not 10-meter resolution</td>
+<td>3,269,070 bytes; plain file SHA-256: <code>e547d749445eaa0964aba76738090ec88f5e63c4585122170f98c67a7ea922dc</code></td>
+</tr>
+</tbody>
+</table>
+<p>The GeoTIFF header reports EPSG:4326, meters, positive-up elevation relative to sea level,
+vertical CRS EPSG:5831 and nodata -32767. Preserve its native alignment: actual W/S/E/N bounds
+are (-123.35, 48.37916666666665, -122.70, 49.020833333333336), slightly beyond the nominal crop.
+The <a href="https://www.gebco.net/data-products-gridded-bathymetry-data/gebco2026-grid">GEBCO 2026 reference</a>
+matches the embedded DOI; grid spacing is not measurement resolution or accuracy. The header
+does not establish uniform survey coverage or independently verify vertical datum accuracy.
+The <a href="https://www.naturalearthdata.com/about/terms-of-use/">Natural Earth terms</a> describe public-domain
+data. Preserve provider acknowledgement and never imply provider endorsement or navigation safety.</p>
+<p>Read-only inventory found 46 cached files / 22,717,798 bytes. All seven references in the historical
+bathymetry family manifest matched production <code>checksum_path</code> (source, four upstream artifacts,
+two products). It records 4,660 R8 and 134 R6 cells and resolved-config hash
+<code>d77976293e6f4f76bd4f7374c8d04e8f420f9f7b17b81a1339d52bfecc2fd8ac</code>.
+These are historical metadata/identity checks, not a fresh execution, full release audit or
+numerical/visual acceptance. In particular, the manifest retains the incorrect rights label.
+Production artifact checksums are not interchangeable with plain file SHA-256.</p>
+<h2 id="reproduce-configuration-only-preparation-and-preflight">Reproduce configuration-only preparation and preflight</h2>
+<p>Use this checkout and an existing isolated development interpreter with runtime dependencies.
+No pytest/Jupyter is needed for these commands. This research helper is checkout-based; the
+<a href="../../demo/">installed-wheel offline demo</a> remains the portable no-checkout first-result path.
+Run from the repository root. The fresh temporary directory owns <strong>only copied configurations
+and inspection reports</strong>. It must not be the old explorer workspace, canonical data or a retained
+release directory. The cached raster is read in place; nothing is downloaded or copied from it.</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">SEASCAPE_PILOT_ROOT</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>mktemp<span class="w"> </span>-d<span class="w"> </span>/tmp/seascape-san-juan-preflight.XXXXXX<span class="k">)</span><span class="s2">&quot;</span>
+python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json</span>
+<span class="s">import os</span>
+<span class="s">import sys</span>
+<span class="s">from dataclasses import asdict</span>
+<span class="s">from pathlib import Path</span>
+
+<span class="s">import yaml</span>
+
+<span class="s">root = Path.cwd().resolve()</span>
+<span class="s">workspace = Path(os.environ[&quot;SEASCAPE_PILOT_ROOT&quot;]).resolve()</span>
+<span class="s">assert workspace.is_dir() and not any(workspace.iterdir()), &quot;Use a fresh empty workspace&quot;</span>
+<span class="s">for key in (&quot;SEASCAPE_COMMON_CONFIG&quot;, &quot;SEASCAPE_CANDIDATE_ROOT&quot;):</span>
+<span class="s">    os.environ.pop(key, None)</span>
+<span class="s">sys.path.insert(0, str(root / &quot;notebooks&quot;))</span>
+<span class="s">from _san_juan_workflow import prepare_workspace</span>
+<span class="s">from seascape.core.artifacts.checksums import checksum_path</span>
+<span class="s">from seascape.seafloor_physiography.bathymetry import load_bathymetry_config</span>
+<span class="s">from seascape.utils.config import stable_config_hash</span>
+
+<span class="s">prepare_workspace(root, workspace, (-123.35, 48.38, -122.70, 49.02), (6, 8), force_downloads=False)</span>
+<span class="s">domain_path = workspace / &quot;config/data/environment_seascape.yaml&quot;</span>
+<span class="s">domain = yaml.safe_load(domain_path.read_text())</span>
+<span class="s">raw_dir = root / &quot;notebooks/outputs/data/raw/bathymetry&quot;</span>
+<span class="s">domain[&quot;bathymetry&quot;][&quot;source&quot;][&quot;raw_dir&quot;] = str(raw_dir)</span>
+<span class="s">domain_path.write_text(yaml.safe_dump(domain, sort_keys=False))</span>
+<span class="s">config = load_bathymetry_config(workspace / &quot;config/data/project.yaml&quot;)</span>
+<span class="s">assert config.bbox == {&quot;min_lon&quot;: -123.35, &quot;min_lat&quot;: 48.38, &quot;max_lon&quot;: -122.70, &quot;max_lat&quot;: 49.02}</span>
+<span class="s">assert all(domain[s][&quot;resolutions&quot;] == [6, 8] and domain[s][&quot;max_workers&quot;] == 4</span>
+<span class="s">           for s in (&quot;h3_geometry&quot;, &quot;water_network&quot;))</span>
+<span class="s">assert config.h3_resolution == 8 and [e.h3_resolution for e in config.additional_exports] == [6]</span>
+<span class="s">assert not config.overwrite and config.bathymetry_sign == &quot;positive_down&quot;</span>
+<span class="s">assert config.processed_path.is_relative_to(workspace)</span>
+<span class="s">assert all(e.processed_path.is_relative_to(workspace) for e in config.additional_exports)</span>
+<span class="s">assert config.raw_path == raw_dir / &quot;GEBCO_2026_MODEL_AREA.tif&quot;</span>
+<span class="s">assert checksum_path(config.raw_path) == &quot;1d99f5e6a7553679446cf88e8b2685dba32ccff3349165d72afa682c6605257c&quot;</span>
+<span class="s">record = {&quot;status&quot;: &quot;CONFIGURATION_ONLY&quot;, &quot;resolved_config&quot;: asdict(config),</span>
+<span class="s">          &quot;resolved_config_hash&quot;: stable_config_hash(asdict(config))}</span>
+<span class="s">(workspace / &quot;configuration-inspection.json&quot;).write_text(json.dumps(record, default=str, indent=2))</span>
+<span class="s">print(record[&quot;resolved_config_hash&quot;])</span>
+<span class="s">PY</span>
+env<span class="w"> </span>-u<span class="w"> </span>SEASCAPE_COMMON_CONFIG<span class="w"> </span>-u<span class="w"> </span>SEASCAPE_CANDIDATE_ROOT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>python<span class="w"> </span>scripts/consumer_guard.py<span class="w"> </span>--forbid-root<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_PILOT_ROOT</span><span class="s2">/forbidden&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--module<span class="w"> </span>seascape<span class="w"> </span>--<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_PILOT_ROOT</span><span class="s2">&quot;</span><span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--only<span class="w"> </span>seascape-bathymetry<span class="w"> </span>--dry-run<span class="w"> </span>--check-inputs<span class="w"> </span>--json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--candidate-root<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_PILOT_ROOT</span><span class="s2">/candidate&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>&gt;<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_PILOT_ROOT</span><span class="s2">/preflight.json&quot;</span><span class="w"> </span><span class="m">2</span>&gt;<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_PILOT_ROOT</span><span class="s2">/preflight.stderr&quot;</span>
+</code></pre></div>
+<p>The final command is expected to return <strong>1</strong> with valid JSON <code>status: failed</code>: six canonical
+water inputs are <code>missing_external</code> (Canadian regions, WSDOT shorelines, Washington marine
+shoreline type, US coastline, territorial zones and US waters). Intermediates are
+<code>generated_by_plan</code>; resume/publication checks are <code>not_applicable</code>, not validated. The cached
+raster's path/header check is ready. It is not a failed scientific calculation or a ready build. Stop here;
+this configuration-only recipe authorizes no producer command by itself; the executed pilot used
+the separately approved scope below. The existing Python guard denies outbound
+calls/children; its forbidden path is a probe, not checkout isolation, because preparation and
+inspection deliberately read this checkout/cache. Native extensions are not OS-firewalled.
+Store the interpreter, code commit, exact argv/exits and stderr with the reports. The resolved
+hash includes absolute paths and therefore changes across fresh workspaces; archive the resolved
+configuration and per-file fingerprints rather than expecting the historical hash to match.</p>
+<h2 id="acceptance-and-measured-envelope">Acceptance and measured envelope</h2>
+<p>Execution HEAD <code>5d9faaf83aaccffe61a7eb97acd27c01ec6c62a7</code>; production installed wheel matches
+all 190 package files at tested <code>232ac308f7f2229c2f4047ab9fe204d95b8a6bf9</code> exactly. CPython 3.14.6,
+macOS 26.6.2 ARM64, GDAL 3.12.4 / PROJ 9.8.1 / GEOS 3.13.1. The research helper reads this
+checkout's config; this is not a no-checkout pilot claim. The installed-wheel demo remains portable.</p>
+<p>Each run: 4,660 R8 cells, 4,384 mean values / 276 nulls, means 1–354 m; 134 R6 cells, 127 values /
+7 nulls, means 1.7647058824–243.4271844660 m. Source: 24,024 valid pixels, 18,478 negative,
+5,515 positive, 31 zero, zero nodata. Selected support receives 18,226 marine samples; this is not
+an independent survey-coverage measurement. Source bytes/header, native affine, EPSG:4326,
+source EPSG:5831, meters/sign and nodata -32767 are preserved. This crop exercises no nodata
+pixels; software nodata-only fixtures remain separate evidence. Existing consumers validate
+support, edges, neighborhoods, radius operator and reachable area; all four family manifests
+verify sources/upstream/product bytes. QC retained, including low water support, hierarchy-only
+parents and a land-crossing connector. Null QC labels remain JSON null, never zero.</p>
+<p>All 23 Parquet tables and the radius operator match exactly by H3 keys, including geometry,
+values and nulls; scientific configs match after workspace-path normalization. Of 24 product
+records, 22 raw checksums match. Existing threaded <code>H3_GRIDS_6/8</code> output row order varies; sorted
+Arrow values including original geometry WKB and schema metadata match exactly. Their distinct
+raw hashes/sizes stay separately recorded/verified. Run/time/absolute-path/config-hash identities
+also differ and are retained. No scientific value is normalized to hide a discrepancy.</p>
+<p>R6 means/quantiles are direct raster samples; parent composition counts/fractions are recomputed
+from R8 child counts. At cell <code>8628d1047ffffff</code>, direct mean is null but parent composition has
+one sample. Production assignment helpers show that the R8 child <code>8828d10425fffff</code> belongs to
+that hierarchical parent while the same pixel is assigned directly to R6 <code>8628d1057ffffff</code>.
+Retain this support distinction; never infer mean availability from the parent count. Parent
+recomputation is exact; available depth-band fractions sum to 1 within absolute 1e-12.</p>
+<table>
+<thead>
+<tr>
+<th>Realization</th>
+<th>Producer phases incl. preparation</th>
+<th>Completion elapsed</th>
+<th>Sampled peak aggregate RSS</th>
+<th>Final workspace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>13.3264 s</td>
+<td>115.5035 s incl. evidence-script correction; initial attempt 16.0276 s, acceptance-only retry 2.6996 s</td>
+<td>446,021,632 bytes</td>
+<td>17,387,048 bytes</td>
+</tr>
+<tr>
+<td>2</td>
+<td>10.8242 s</td>
+<td>13.5285 s</td>
+<td>444,366,848 bytes</td>
+<td>17,387,323 bytes</td>
+</tr>
+</tbody>
+</table>
+<p>Each phase retains <code>/usr/bin/time -l</code> wall/maximum RSS (macOS bytes) in stderr; sampled process-tree
+RSS includes concurrent descendants. No cap termination. Shared machine/filesystem caches and
+sampling limits preclude independent-machine stability or regional scaling promises. First producer
+phases all exited 0; initial acceptance exited 1 only on pandas-NA JSON serialization. Corrected
+reporting-only retry exited 0 under the original deadline; initial logs/products preserved.
+Comparison/reporting development failures and the R6 availability assumption are recorded in progress.</p>
+<p>Actually opened and inspected all six offline source/R8/R6 PNGs: north-up extent, source positive-up
+versus positive-down output, units/legend, coarse coastal alignment and gray unavailable support.
+Channels/islands are consistent between runs; coastline generalization against the raster is visible.
+No source vertical accuracy, survey completeness, navigation/legal/model validity or tile-backed
+browser-render claim. Figures remain in each workspace's <code>acceptance/</code>; no datasets/images uploaded.</p>
+<p>Exact phase argv/exits and source/config/artifact hashes are under the evidence root in
+<code>execution-summary.json</code>, <code>commands.json</code>, <code>replicate-*-resources*.json</code>, <code>repeatability.json</code>,
+<code>additional-acceptance.json</code>, <code>parent-availability-evidence.json</code>, <code>visual-inspection.json</code> and
+<code>HANDOFF_EXECUTION.md</code>. The original 46 cached files / 22,717,798 bytes are byte-identical.
+<a href="https://github.com/MarineCast/toolkit-seascape/actions/runs/36352109541">Hosted run 36352109541</a>
+passed all nine jobs for execution HEAD. Stop after this task: ACCEPT-01 still requires the
+unavailable unfamiliar-human trial and owner decisions; no release action is implied.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../demo/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Offline demo">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Offline demo
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../api/" class="md-footer__link md-footer__link--next" aria-label="Next: API overview">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                API overview
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright MarineCast contributors · Apache-2.0 software license
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "content.code.copy", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

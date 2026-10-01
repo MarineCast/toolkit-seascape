@@ -1,0 +1,2090 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Source-backed geospatial tools for physical and structural marine seascapes">
+      
+      
+      
+        <link rel="canonical" href="https://marinecast.github.io/toolkit-seascape/WORKFLOWS/">
+      
+      
+        <link rel="prev" href="../CONFIGURATION/">
+      
+      
+        <link rel="next" href="../stage-inputs/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Workflows - Seascape Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#three-workflows-and-operation-effects" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Seascape Toolkit" class="md-header__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Seascape Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Workflows
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../concepts/" class="md-tabs__link">
+          
+  
+  
+  Understand
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../variables/" class="md-tabs__link">
+          
+  
+  
+  Variables
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../CONTRACTS/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Seascape Toolkit" class="md-nav__button md-logo" aria-label="Seascape Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33m0-6h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2V6h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0C17.22 5.53 18.61 6 20 6m0 12h2v2h-2c-1.38 0-2.74-.35-4-1-2.5 1.3-5.5 1.3-8 0-1.26.65-2.63 1-4 1H2v-2h2c1.39 0 2.78-.47 4-1.33 2.44 1.71 5.56 1.71 8 0 1.22.86 2.61 1.33 4 1.33"/></svg>
+
+    </a>
+    Seascape Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MarineCast/toolkit-seascape" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MarineCast/toolkit-seascape
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seascape concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processing and methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Variables
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalog guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../products/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product and field index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structural-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structural variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../capability-coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choose a workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Offline demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pilots/san-juan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    San Juan pilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metric-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metric matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONTRACTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scientific contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONFIGURATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#offline-synthetic-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Offline synthetic demo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bounded-real-data-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bounded real-data processing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bounded real-data processing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plan-and-build-a-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan and build a candidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inspect-existing-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspect existing products
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publish-after-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publish after review
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consume-an-audited-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consume an audited release
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operation-effects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operation effects
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-problems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common problems
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stage-inputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#offline-synthetic-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Offline synthetic demo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bounded-real-data-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bounded real-data processing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bounded real-data processing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plan-and-build-a-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan and build a candidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inspect-existing-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspect existing products
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publish-after-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publish after review
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consume-an-audited-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consume an audited release
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operation-effects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operation effects
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-problems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common problems
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="three-workflows-and-operation-effects">Three workflows and operation effects</h1>
+<p><a href="../">Documentation index</a></p>
+<h2 id="offline-synthetic-demo">Offline synthetic demo</h2>
+<p>Follow the <a href="https://github.com/MarineCast/toolkit-seascape/blob/main/README.md#install-and-get-a-first-result">source installation and first-result commands</a>.
+Keep its active environment and <code>SEASCAPE_WORKSPACE</code>. No editable install, test extra, notebook,
+source credentials or data acquisition is needed. Interpretation and safe reruns are in the
+<a href="../demo/">demo guide</a>. A synthetic PASS does not establish a regional release.</p>
+<h2 id="bounded-real-data-processing">Bounded real-data processing</h2>
+<p>Use a new owned workspace for real inputs. The block below uses the workspace from the quickstart
+and only initializes templates and prints a plan; it does not acquire data or build products.
+For a separate real-data project, first set <code>export SEASCAPE_WORKSPACE="/absolute/path/to/owned-workspace"</code>
+(the path is an explicit placeholder). Do not point it at an existing application/data checkout.</p>
+<!-- BEGIN QUICKSTART plan -->
+<div class="highlight"><pre><span></span><code>seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>init
+seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>stages
+seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>build<span class="w"> </span>--dry-run
+</code></pre></div>
+<!-- END QUICKSTART plan -->
+
+<p>Before a real build, make the <a href="../CONFIGURATION/#before-a-bounded-build">specific configuration edits</a>.
+Inspect the <a href="../stage-inputs/">generated stage input reference</a> and each family's <code>DATA_SOURCES.md</code>
+through the <a href="../products/#family-guides">product index</a>. Review source identity, redistribution rights,
+spatial bounds and acquisition size. The defaults include a very large <code>regional_source_area</code>;
+a small analysis area does not guarantee a small provider download. No real-data acquisition or
+measured operating envelope is established by the offline guide; that is the separate SS-10 gate.</p>
+<p>Family help is safe to inspect, for example:</p>
+<div class="highlight"><pre><span></span><code>seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>download<span class="w"> </span>bathymetry<span class="w"> </span>--help
+</code></pre></div>
+<p>Actual <code>download FAMILY --config config/data/project.yaml</code> commands can contact providers and
+write caches. They require separately reviewed source/bounds/resource authorization. Some
+families validate local inventories instead. Builds expect configured local sources and never
+serve as a universal downloader. Inspect preflight before selecting a fresh candidate.</p>
+<h3 id="plan-and-build-a-candidate">Plan and build a candidate</h3>
+<p>The workflow expects configured source inputs to be available. A subset plan expands dependencies:</p>
+<div class="highlight"><pre><span></span><code>seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>build<span class="w"> </span>--only<span class="w"> </span>seascape-geomorphometry<span class="w"> </span>--dry-run
+seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>build<span class="w"> </span>--only<span class="w"> </span>seascape-geomorphometry<span class="w"> </span>--dry-run<span class="w"> </span>--check-inputs<span class="w"> </span>--json
+</code></pre></div>
+<p>A full build creates products, metadata and a release audit while retaining the candidate by default:</p>
+<div class="highlight"><pre><span></span><code>seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>build<span class="w"> </span>--candidate-root<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">/.seascape/candidate&quot;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--config PATH</code></td>
+<td>Select an entry-point YAML; default <code>config/data/project.yaml</code></td>
+</tr>
+<tr>
+<td><code>--only STAGE</code></td>
+<td>Select a stage and its dependencies; repeat for several targets</td>
+</tr>
+<tr>
+<td><code>--skip STAGE</code></td>
+<td>Require validated reusable output rather than silently omitting a dependency</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td>Print the plan without running builders</td>
+</tr>
+<tr>
+<td><code>--check-inputs</code></td>
+<td>With <code>--dry-run</code>, inspect selected local prerequisites; return 1 on required missing, invalid or unverified inputs</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>With <code>--dry-run</code>, emit one JSON planning/preflight report; without <code>--check-inputs</code>, inspection status is <code>not_run</code></td>
+</tr>
+<tr>
+<td><code>--candidate-root PATH</code></td>
+<td>Reuse an explicit candidate location instead of a timestamped default</td>
+</tr>
+<tr>
+<td><code>--resume</code></td>
+<td>Reuse stages whose recorded checks pass</td>
+</tr>
+<tr>
+<td><code>--overwrite</code></td>
+<td>Rebuild rather than reuse valid resume state</td>
+</tr>
+<tr>
+<td><code>--publish</code></td>
+<td>Promote the candidate after the release gate passes</td>
+</tr>
+</tbody>
+</table>
+<p>The default candidate path is <code>&lt;workspace&gt;/.seascape/candidates/seascape/&lt;UTC timestamp&gt;</code>.
+Use a distinct directory for each independent run. See the <a href="../CONFIGURATION/">configuration guide</a>
+for which paths are isolated and which changes resume checks detect.</p>
+<p>Input preflight uses the same dependency expansion and candidate configuration rendering as
+execution. It calls existing family configuration loaders in memory, checks local file readability
+and GeoTIFF headers, and identifies exact configured intermediates as <code>generated_by_plan</code>. It
+never creates a candidate, downloads, hashes source datasets, runs producers, cleans outputs or
+publishes. The report includes workspace/config selection, expanded stages, default declarations
+and actual configured destinations, publication intent, performed checks, corrective actions and
+required/optional flags. Workspace precedence remains <code>--workspace</code>, <code>SEASCAPE_WORKSPACE</code>, cwd.
+Pass the same explicit <code>--candidate-root</code> to preflight and execution when reusing the exact printed
+destination; the timestamped default is resolved separately for each invocation.</p>
+<p><code>ready</code> means only the reported preflight checks passed. <code>missing_external</code> identifies an absent
+local prerequisite; <code>invalid</code> identifies failed configuration/access/header checks;
+<code>unverified</code> identifies a check this inspection cannot establish; <code>not_applicable</code> identifies an
+unused operation. Generated files still require producer validation. Vector/Parquet schemas,
+feature/pixel values, H3 row identity, coverage, datum, checksums and scientific/release acceptance
+are not established. Existing plain <code>--dry-run</code> behavior is unchanged.</p>
+<p><code>--skip</code> requires existing checksum/config/upstream reuse validation, so lightweight preflight
+reports required <code>unverified</code> and fails instead of hashing datasets. <code>--resume</code> identity and a
+requested publication audit are deferred and explicitly visible. Kelp annual-layer usability and
+reef partial-inventory usability require their producer inspections; preflight reports these as
+required <code>unverified</code>, even when individual optional source files exist. Directory/archive content
+checks are likewise limited: file readability is not proof of usable extracted data. Correct these
+through the family workflow and its source guide; preflight cannot approve a release.</p>
+<h3 id="inspect-existing-products">Inspect existing products</h3>
+<p>Inspectors render diagnostics; they do not replace a scientific release audit. For canonical outputs:</p>
+<div class="highlight"><pre><span></span><code>seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>inspect<span class="w"> </span>bathymetry<span class="w"> </span>--help
+seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>inspect<span class="w"> </span>bathymetry<span class="w"> </span>--config<span class="w"> </span>config/data/project.yaml
+</code></pre></div>
+<p>For an unpublished candidate built from the default project entry point:</p>
+<div class="highlight"><pre><span></span><code>seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>inspect<span class="w"> </span>bathymetry<span class="w"> </span>--config<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">/.seascape/candidate/.seascape/config/project.yaml&quot;</span><span class="w"> </span>--output<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">/.seascape/candidate/bathymetry.html&quot;</span>
+</code></pre></div>
+<p>Use explicit inspection output paths when keeping diagnostics inside the candidate; presentation
+settings may otherwise route maps into the workspace's standard output directory.</p>
+<h3 id="publish-after-review">Publish after review</h3>
+<p>Use the same configuration and candidate directory:</p>
+<div class="highlight"><pre><span></span><code>seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>build<span class="w"> </span>--candidate-root<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">/.seascape/candidate&quot;</span><span class="w"> </span>--resume<span class="w"> </span>--publish
+</code></pre></div>
+<p>Publication retains a copied generation under <code>.seascape/releases/&lt;release_id&gt;</code> and promotes
+canonical compatibility paths and the schema-3 release manifest in one journaled transaction.
+It is local artifact publication, not a Git push or a public dataset upload. Direct family APIs
+can also publish their own outputs; the candidate workflow's release gate is a separate operation.</p>
+<h2 id="consume-an-audited-release">Consume an audited release</h2>
+<p>Use an existing completed schema-3 workspace and the <a href="../API/#freeze-and-read-a-release">freeze-and-read Python example</a>.
+The resolver never builds missing products or substitutes a resolution. Preserve retained releases;
+checksum failures require restoring verified bytes or auditing a new candidate, not editing metadata.</p>
+<p>For a single keyed Parquet export, use the <a href="../metric-matrix/">matrix guide</a>. It freezes one generation,
+retains null/zero and evidence distinctions, and records source units/types/checksums. Explicit legacy
+mode establishes structural evidence only; it is not a remedy for release checksum failures.</p>
+<h2 id="operation-effects">Operation effects</h2>
+<p>All local artifact publication below is distinct from remote publication. Source acquisition is
+explicit through download commands or family pipeline options. File paths, network access and
+source rights remain governed by the selected configuration and owning family's source guide.</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Prerequisites</th>
+<th>Network behavior</th>
+<th>Writes / replacement and resume</th>
+<th>Release effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>init</code></td>
+<td>Writable workspace</td>
+<td>None</td>
+<td>Packaged config/governance/docs templates; existing files preserved</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>stages</code>, top-level or family <code>--help</code></td>
+<td>Installed package</td>
+<td>None</td>
+<td>No artifacts</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>demo</code> / <code>run_demo</code></td>
+<td>Fresh owned demo workspace, or intact ownership marker with explicit <code>--overwrite</code></td>
+<td>Offline; acquisition disabled</td>
+<td>Synthetic fixtures/products/report/figures only in <code>.seascape/demo</code>; replacement confined to known owned artifacts</td>
+<td>Synthetic software acceptance only</td>
+</tr>
+<tr>
+<td><code>build --dry-run</code></td>
+<td>Stage selection; reusable artifacts for <code>--skip</code> / <code>--resume</code></td>
+<td>No acquisition</td>
+<td>Prints plan; reuse checks can read/hash existing artifacts; no candidate writes through this CLI</td>
+<td>No build or release approval</td>
+</tr>
+<tr>
+<td><code>build --dry-run [--check-inputs] --json</code> and human input preflight</td>
+<td>Selected config; local inputs for input checks</td>
+<td>No acquisition; local inspection only</td>
+<td>JSON report on stdout or human report; no writes/hashes/producers; failure guidance on stderr</td>
+<td>No build or release approval</td>
+</tr>
+<tr>
+<td><code>download FAMILY</code></td>
+<td>Reviewed config, source rights/access, provider credentials where required</td>
+<td>Family-specific HTTP acquisition or local input validation/reuse; see family help/source guide</td>
+<td>Configured raw caches, archives and inventories; overwrite/reuse rules vary by family</td>
+<td>No whole-release promotion</td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td>Configured local inputs and selected dependencies</td>
+<td>No downloader is invoked by the candidate runners; source locations must be local</td>
+<td>Candidate config/products/manifests/catalog/audit/docs. Fresh directory recommended; producer replacement rules vary, and some producers replace configured outputs even without <code>--overwrite</code>. <code>--resume</code> / <code>--skip</code> require existing identity/checksum validation</td>
+<td>Retains candidate by default; selected family products may be published within that candidate</td>
+</tr>
+<tr>
+<td><code>build --resume --publish</code></td>
+<td>Same candidate/config, valid reuse state, complete passing release audit</td>
+<td>No acquisition</td>
+<td>Retained generation, canonical compatibility products and release manifest; local journaled promotion. Existing retained releases remain</td>
+<td>Whole-release promotion only after existing gates pass</td>
+</tr>
+<tr>
+<td><code>inspect FAMILY</code></td>
+<td>Existing configured products and presentation config</td>
+<td>Local rendering; opening HTML can fetch external basemap tiles</td>
+<td>Maps/diagnostics at configured or explicit output paths, which can replace existing visualizations; no resume contract</td>
+<td>No scientific release approval</td>
+</tr>
+<tr>
+<td><code>export-metric-matrix</code> / <code>build_metric_matrix</code></td>
+<td>Validated release and archived catalog (or explicit existing legacy mode)</td>
+<td>None</td>
+<td>Parquet with embedded export metadata at explicit destination; existing output requires <code>--overwrite</code>; no resume</td>
+<td>Export only; does not publish a release</td>
+</tr>
+<tr>
+<td>Product discovery/resolution Python facade</td>
+<td>Completed release; requested product/resolution/retained identity</td>
+<td>None</td>
+<td>Reader lock bookkeeping may be created; no data writes</td>
+<td>Checksum-verifies existing release/products</td>
+</tr>
+<tr>
+<td>Direct family Python APIs / <code>python -m seascape.&lt;family&gt;.&lt;module&gt;</code></td>
+<td>Family config and required inputs</td>
+<td>Varies: pipelines may acquire sources unless their own skip options disable it</td>
+<td>Writes configured outputs, family manifests and optional maps. Flags and replacement behavior differ; these are <strong>not isolated candidates</strong></td>
+<td>Family publication where implemented; does not certify/promote a whole release</td>
+</tr>
+</tbody>
+</table>
+<p>Residual hazards: configured direct-family or inspection paths may point at canonical outputs or
+standard maps. Choose an owned destination before running them. Candidate producers differ in
+replacement behavior; review the configuration and use a fresh candidate to protect prior work.
+Resume evidence does not certify new source coverage, units or scientific suitability. Permission,
+storage, interruption and unrecognized provider errors can still require detailed debugging;
+transaction recovery and release/scientific validation remain mandatory.</p>
+<h2 id="common-problems">Common problems</h2>
+<p>Identified failures return exit 1 with the operation, reason, workspace/config or source path,
+corrective action and a guide pointer on stderr. Missing configuration, missing local sources,
+invalid declared scientific settings, existing export output, incomplete dependencies, checksum
+mismatches and publication/recovery failures receive this guidance. Existing JSON preflight fields
+and statuses remain authoritative; optional safe <code>detail</code> and <code>error_type</code> fields identify caught
+configuration failures. Human guidance/debug traces stay off JSON stdout. Normal build
+progress remains human stdout. Family help/parser behavior and Python API exceptions are retained.</p>
+<p>Unrecognized errors retain tracebacks. To inspect the original chained exception for an identified
+failure, put <code>--debug</code> before the command, alongside <code>--workspace</code>:</p>
+<div class="highlight"><pre><span></span><code>seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>--debug<span class="w"> </span>build<span class="w"> </span>--only<span class="w"> </span>seascape-bathymetry
+seascape<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SEASCAPE_WORKSPACE</span><span class="s2">&quot;</span><span class="w"> </span>--debug<span class="w"> </span>inspect<span class="w"> </span>bathymetry<span class="w"> </span>--config<span class="w"> </span>config/data/project.yaml
+</code></pre></div>
+<p><code>build --debug</code> is not valid. Debug keeps the same failure code and gates. Preflight remains
+read-only and reports its inspection limitations; debug does not run producers to reconstruct
+a traceback. Caught planning and family-loader exceptions retain their original traceback for
+explicit debug requests; JSON stdout remains one report. Normal CLI diagnostics redact remote
+locations, secret assignments and arbitrary quoted/conversion values;
+debug tracebacks and provider logs can contain credentials, so review them before sharing.</p>
+<p>For example, a controlled fixture with <code>slope_upper_quantile: 0.8</code> produced exit 1 and this
+excerpt from the actual preflight JSON (September 27 review-fix regression):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;stage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;seascape-geomorphometry&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invalid&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Invalid configuration: slope_upper_quantile must be 0.90 for the stable Q90 column contract.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;error_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ValueError&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Correct that setting to the loader's required <code>0.90</code>; the report also retains the configuration
+path and corrective action. Preflight does not calculate a different quantile or approve a release.</p>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Next check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Configuration cannot be found</td>
+<td>Confirm workspace selection and run <code>init</code> for a new workspace</td>
+</tr>
+<tr>
+<td>Source input is missing</td>
+<td>Inspect the configured path and the family's source guide; a build is not a universal downloader</td>
+</tr>
+<tr>
+<td>A skipped stage is blocked</td>
+<td>Provide valid reusable outputs or remove <code>--skip</code> and rebuild</td>
+</tr>
+<tr>
+<td>Resume reuses output after a geographic/source/code change</td>
+<td>Use a fresh candidate or <code>--overwrite</code>; see the documented checksum limits</td>
+</tr>
+<tr>
+<td>Release audit fails</td>
+<td>Inspect the reported schema, missingness, manifest or metadata mismatch; correct it before promotion</td>
+</tr>
+<tr>
+<td>Release/export checksum mismatch</td>
+<td>Preserve retained releases; restore verified source bytes or correct and audit a fresh candidate. Do not edit checksums or select legacy mode to clear validation</td>
+</tr>
+<tr>
+<td>Publication is busy or recovery fails</td>
+<td>Wait for the active writer or inspect preserved recovery evidence; keep lock files, journals and trusted releases intact</td>
+</tr>
+<tr>
+<td>Imports fail in OrcaCast</td>
+<td>Application integration remains deferred; use the standalone toolkit interfaces</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../CONFIGURATION/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Configuration">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Configuration
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../stage-inputs/" class="md-footer__link md-footer__link--next" aria-label="Next: Stage inputs">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Stage inputs
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright MarineCast contributors · Apache-2.0 software license
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
