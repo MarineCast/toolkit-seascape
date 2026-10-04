@@ -1,0 +1,50 @@
+{
+  "snapshot_built_at_utc": "2026-09-19T11:09:13.538282+00:00",
+  "synthetic": false,
+  "scope": "Retained September 19 exploratory notebook products; rendering only",
+  "bbox_wgs84": [
+    -123.31,
+    48.395,
+    -122.72,
+    48.795
+  ],
+  "projection": "EPSG:32610",
+  "scale_m": [
+    0,
+    400
+  ],
+  "products": {
+    "8": {
+      "product_checksum": "27caefaba8979f57a6b89798883bc5f1c4273e6a5b716aa9edaef6a9109de3f8",
+      "geometry_checksum": "1f774932eabe1d2f8900f75455e19d6cafab8a433d6d2b89e5166b578df8dec2",
+      "full_support_cells": 4660,
+      "displayed_cells": 2562,
+      "displayed_available": 2420,
+      "displayed_unavailable": 142,
+      "displayed_min_m": 1.0,
+      "displayed_max_m": 354.0
+    },
+    "6": {
+      "product_checksum": "76aac92873007d2a0b6c16b4c6600524725df491d810fa7aa07a6391b65f88b4",
+      "geometry_checksum": "48dc80fd89ed49c4569d68f9d546d694b2f05187b6c87945f629e9fcb88355c5",
+      "full_support_cells": 134,
+      "displayed_cells": 80,
+      "displayed_available": 79,
+      "displayed_unavailable": 1,
+      "displayed_min_m": 10.702702702702704,
+      "displayed_max_m": 243.4271844660194
+    }
+  },
+  "family_manifest_checksum": "1bec1eefb623aa77625603e46a2226ca69f800f94629b31b03b5f21ab8417859",
+  "land_files": {
+    "ne_10m_land.README.html": "db08f47621819d7948d060681959063e8a66cc22a452e7a790917642cb7f1d04",
+    "ne_10m_land.VERSION.txt": "9d07bfa7590d7dfcb0c7449866a0ea750b7feb5bc72d0ee3b58616bf7153fb26",
+    "ne_10m_land.cpg": "dccd0ff29f17df1d056d7b3cecd062e85ce5c829f3dcb4ac649eba99ad330746",
+    "ne_10m_land.dbf": "37960f37d60e9845e0cb0ccd985219f90a34b47cf109bc288fe6cbfbbca89628",
+    "ne_10m_land.prj": "eeefefed7e86b1340e3b78ee91d13012475cd5764a37c27698a9725478548bae",
+    "ne_10m_land.shp": "d850bd6c83a0da9e8a19932290c2dbcf0c0502928a5478d4b02add4bdbadc1d5",
+    "ne_10m_land.shx": "e914396058ea23fbd1b7a437c168ae3dc381d7b78b567cf0a8182c7850d94f8a"
+  },
+  "image_checksum": "98c44c1d1b9e1ad78548f1bb357fb34f7798b3ea53d401c16afb7796324793c8",
+  "pdf_checksum": "cb2de161354f2f5ee2fadaf39efd42ae62d966b3efbc1a43a57019a4dc764e0f"
+}

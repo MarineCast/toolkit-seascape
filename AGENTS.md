@@ -151,6 +151,18 @@ Global skill defaults do not override repository scope or code-only extraction. 
 
 ## Review-hardening checks
 
+For audit/promotion and passage-section changes, first run
+`python -m pytest -q tests/test_completion_regressions.py tests/test_products.py
+tests/domains/environment/seascape/test_release.py
+tests/domains/environment/seascape/test_passage_sections.py`, then the full suite
+and checks below. Audit schema 3 binds candidate bytes; fixture audit refreshes
+are synthetic publisher tests, never regional certification. The validation
+notebook remains a bathymetry client and does not exercise these release/passage gates.
+
+The static San Juan snapshot renderer is `scripts/render_san_juan_snapshot.py`;
+see `docs/examples/san-juan-bathymetry.md` for its explicit cached inputs and output.
+It verifies retained identities and never downloads or recomputes scientific values.
+
 Install `.[test,quality]`, then run `ruff check src tests scripts`, `python -m mypy`, and
 `ruff format --check src tests scripts`. Use `ruff format src tests scripts` for formatting;
 keep lint autofixes, import reordering and semantic edits in separate changes. The format gate

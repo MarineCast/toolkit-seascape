@@ -30,7 +30,7 @@ and the [10,30) m band fraction is **0**. The [0,10) fraction is **1**. Nodata-o
 cells retain null depth and count, not zero. Production's existing marine mask excludes exact sea
 level (0 m); this demo does not reinterpret that input as measured marine depth.
 
-Representative output schema (153 rows in the verified fixture; 29 columns total):
+Representative output schema (153 rows in the verified v0.1.1 fixture; 33 columns total):
 
 | Column | Type / interpretation |
 | --- | --- |
@@ -40,8 +40,11 @@ Representative output schema (153 rows in the verified fixture; 29 columns total
 | `BATHYMETRY_PIXEL_COUNT` | Float64 count; null for unavailable cells |
 | `BATHYMETRY_FRAC_0_10_M` | Float64 fraction; `[0, 10)` m marine pixels |
 
-This bathymetry output has no separate per-row QC column. Interpret pixel counts, nulls, band
-fractions and the report's executed controls together. Other products' QC, coverage and evidence
+Distance-to-isobath outputs have companion `DISTANCE_TO_ISOBATH_*_STATUS` columns.
+There is no single whole-row QC column. Interpret those statuses, pixel counts, nulls, band
+fractions and the report's executed controls together. The
+[worked table example](examples/read-bathymetry.md) demonstrates these distinctions.
+Other products' QC, coverage and evidence
 columns remain separate quantities in the [reference index](products.md); none implies species absence.
 
 Acceptance requires nonempty support and valid depths, exact unique keys/resolution, 2016 eligible

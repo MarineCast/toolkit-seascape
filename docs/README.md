@@ -37,6 +37,7 @@ The live explorer is a separate research path with explicit acquisition and expl
 | [Reference product index](products.md) | Family guides and the checked-in historical catalog, not a certified current release |
 | [Architecture](ARCHITECTURE.md) | Producer ownership and repository map |
 | [Development](DEVELOPMENT.md) | Tests, packaging, documentation checks and release-owner boundaries |
+| [Completion review (2026-10-04)](development/completion-review.md) | Resolved defects, dead code candidates, completion criteria and current local checks |
 | [Tested environments](environments/README.md) | Observed platform coverage, dependency baseline and static-check scope |
 | [Roadmap progress](roadmap/PROGRESS.md) | Per-task executed evidence and remaining limits |
 | [Candidate and maintainer handoff](release-candidate.md) | Proposed release notes, tested artifact identity and pending owner gates |

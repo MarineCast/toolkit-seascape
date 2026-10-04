@@ -168,6 +168,29 @@ def test_resolver_works_outside_repository_and_imports_no_orcacast(
     assert "orcacast" not in products_module.__dict__
 
 
+def _refresh_candidate_audit(root: Path) -> None:
+    """Bind synthetic publisher fixtures; this is not a regional scientific audit."""
+    from seascape.release import DEFAULT_CATALOG_PATH, _audit_input_checksums
+
+    audit = (
+        root
+        / "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"
+    )
+    audit.parent.mkdir(parents=True, exist_ok=True)
+    audit.write_text(
+        json.dumps(
+            {
+                "schema_version": 3,
+                "artifact_release_passed": True,
+                "feature_eligibility_complete": True,
+                "audited_inputs": _audit_input_checksums(
+                    root, root / DEFAULT_CATALOG_PATH
+                ),
+            }
+        )
+    )
+
+
 def _candidate_fixture(root: Path, value: bytes) -> Path:
     """Minimal audited candidate to exercise the real publisher/resolver boundary."""
     from seascape.release import PROCESSED_ROOT
@@ -197,16 +220,7 @@ def _candidate_fixture(root: Path, value: bytes) -> Path:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("fixture")
-    audit = (
-        root
-        / "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"
-    )
-    audit.parent.mkdir(parents=True, exist_ok=True)
-    audit.write_text(
-        json.dumps(
-            {"artifact_release_passed": True, "feature_eligibility_complete": True}
-        )
-    )
+    _refresh_candidate_audit(root)
     return artifact
 
 
@@ -234,6 +248,7 @@ def test_published_source_support_survives_release_resolution(tmp_path):
         "statistic_sampling_support": "direct pixels at the declared H3 resolution",
     }
     family.write_text(json.dumps(payload))
+    _refresh_candidate_audit(candidate)
     publish_candidate_release(
         canonical_project_root=workspace, candidate_project_root=candidate
     )
@@ -257,6 +272,7 @@ def test_two_publications_retain_prior_product_and_manifest_bytes(tmp_path):
     first = resolve_product(workspace=workspace, product="bathymetry", resolution=6)
     manifest_bytes = first.manifest_path.read_bytes()
     source.write_bytes(b"release B")
+    _refresh_candidate_audit(candidate)
     publish_candidate_release(
         canonical_project_root=workspace, candidate_project_root=candidate
     )
@@ -303,6 +319,7 @@ def test_generation_is_rolled_back_when_canonical_promotion_fails(
     )
     first = resolve_product(workspace=workspace, product="bathymetry", resolution=6)
     source.write_bytes(b"release B")
+    _refresh_candidate_audit(candidate)
     original_replace = os.replace
     canonical_artifact = workspace / source.relative_to(candidate)
 

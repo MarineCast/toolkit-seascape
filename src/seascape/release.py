@@ -431,17 +431,44 @@ def _shoreline_audit(root: Path) -> list[dict[str, Any]]:
     return results
 
 
+def _audit_input_checksums(root: Path, catalog_path: Path) -> dict[str, str]:
+    """Bind the audit to released data and the governed scientific metadata."""
+    paths = {
+        path
+        for path in (root / PROCESSED_ROOT).rglob("*")
+        if _release_file(path) and path.name != SEASCAPE_RELEASE_MANIFEST
+    }
+    paths.add(catalog_path)
+    for relative in (
+        "config/feature_eligibility.yaml",
+        "docs/products.md",
+        "config/data/environment_seascape.yaml",
+        ".seascape/config/identity.json",
+        ".seascape/config/environment_seascape.yaml",
+        ".seascape/config/common.yaml",
+    ):
+        path = root / relative
+        if path.is_file():
+            paths.add(path)
+    for path in paths:
+        if not path.resolve().is_relative_to(root.resolve()):
+            raise ValueError(f"Audited input escapes candidate: {path}")
+    return {str(path.relative_to(root)): checksum_path(path) for path in sorted(paths)}
+
+
 def build_release_audit(root: Path, catalog_path: Path) -> dict[str, Any]:
     """Build a fail-closed audit of current product, manifest, and denominator contracts."""
 
+    inputs = _audit_input_checksums(root, catalog_path)
     catalog = yaml.safe_load(catalog_path.read_text(encoding="utf-8"))
     products = _seascape_products(catalog)
     if not products:
         raise ValueError("Environment feature catalog contains no seascape products.")
     tables = _catalog_table_audit(root, catalog)
     governance = _governance_audit(root, catalog)
-    return {
-        "schema_version": 2,
+    result = {
+        "schema_version": 3,
+        "audited_inputs": inputs,
         "built_at_utc": datetime.now(UTC).isoformat(),
         "catalog_path": str(catalog_path.relative_to(root)),
         "catalog_product_count": len(products),
@@ -460,6 +487,9 @@ def build_release_audit(root: Path, catalog_path: Path) -> dict[str, Any]:
         "feature_eligibility_complete": governance["feature_eligibility_complete"],
         "release_gate_passed": True,
     }
+    if _audit_input_checksums(root, catalog_path) != inputs:
+        raise ValueError("Candidate changed during release audit; audit again.")
+    return result
 
 
 def _product_release_records(
@@ -591,8 +621,17 @@ def publish_candidate_release(
         / "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"
     )
     audit = json.loads(audit_path.read_text(encoding="utf-8"))
-    if not audit.get("artifact_release_passed"):
+    if audit.get("artifact_release_passed") is not True:
         raise ValueError("Candidate seascape release audit has not passed.")
+    audited_inputs = audit.get("audited_inputs")
+    if (
+        audit.get("schema_version") != 3
+        or not isinstance(audited_inputs, dict)
+        or not audited_inputs
+        or _audit_input_checksums(candidate, candidate / DEFAULT_CATALOG_PATH)
+        != audited_inputs
+    ):
+        raise ValueError("Candidate differs from its bound release audit; audit again.")
     processed = candidate / PROCESSED_ROOT
     family_manifests = {
         str(path.relative_to(candidate)): checksum_path(path)
@@ -631,6 +670,17 @@ def publish_candidate_release(
         for path in sorted(processed.rglob("*"))
         if _release_file(path) and path.name != SEASCAPE_RELEASE_MANIFEST
     }
+    captured_checksums = {
+        **artifact_checksums,
+        **{
+            record["path"]: record["checksum"] for record in governed_checksums.values()
+        },
+    }
+    if any(
+        captured_checksums.get(path) != expected
+        for path, expected in audited_inputs.items()
+    ):
+        raise ValueError("Candidate changed after release audit; audit again.")
     code_identity = package_code_identity(canonical)
     products = _product_release_records(
         candidate,
@@ -693,6 +743,20 @@ def publish_candidate_release(
     if not generation.resolve().is_relative_to(canonical.resolve()):
         raise ValueError("Release generation escapes canonical workspace.")
     with SeascapeReleasePublisher(canonical, candidate) as publisher:
+        if (
+            json.loads(audit_path.read_text(encoding="utf-8")) != audit
+            or _audit_input_checksums(candidate, candidate / DEFAULT_CATALOG_PATH)
+            != audited_inputs
+        ):
+            raise ValueError("Candidate changed before publication; audit again.")
+        expected_checksums = {
+            **artifact_checksums,
+            **{
+                record["path"]: record["checksum"]
+                for record in governed_checksums.values()
+            },
+            str(release_relative): checksum_path(release_path),
+        }
         generation_files = relative_files | {
             Path(record["path"]) for record in governed_checksums.values()
         }
@@ -717,6 +781,7 @@ def publish_candidate_release(
                     )
             # An idempotent publication retains its original creation metadata.
             atomic_write_json(release_path, existing, overwrite=True)
+            expected_checksums[str(release_relative)] = checksum_path(release_path)
         else:
             staged_generation = publisher.publisher.stage_path(generation)
             staged_generation.mkdir(parents=True)
@@ -727,6 +792,8 @@ def publish_candidate_release(
                 destination = staged_generation / relative
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, destination)
+                if checksum_path(destination) != expected_checksums[str(relative)]:
+                    raise ValueError(f"Candidate changed during staging: {relative}")
                 with destination.open("rb") as handle:
                     os.fsync(handle.fileno())
             for directory in sorted(
@@ -743,7 +810,19 @@ def publish_candidate_release(
                 finally:
                     os.close(descriptor)
         for relative in sorted(relative_files, key=str):
-            publisher.stage_candidate(relative, manifest=relative == release_relative)
+            staged = publisher.stage_candidate(
+                relative, manifest=relative == release_relative
+            )
+            if (
+                checksum_path(staged, logical_name=relative.name)
+                != expected_checksums[str(relative)]
+            ):
+                raise ValueError(f"Candidate changed during staging: {relative}")
+        if (
+            _audit_input_checksums(candidate, candidate / DEFAULT_CATALOG_PATH)
+            != audited_inputs
+        ):
+            raise ValueError("Candidate changed during publication; audit again.")
         publisher.publish()
     return canonical / release_relative
 

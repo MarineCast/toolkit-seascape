@@ -60,6 +60,21 @@ that expensive acquisition/rebuild was not run during this migration.
 
 ## Hardened calculation and release contracts
 
+Release audits now use audit schema 3 with an `audited_inputs` checksum inventory
+covering processed artifacts, family manifests and governed scientific metadata.
+Promotion requires a literal boolean PASS and the same inventory, rechecks after
+taking the writer lock, and verifies the staged generation and compatibility copies
+before committing. A changed or legacy unbound candidate must be audited again.
+This does not change release-manifest schema 3 or invalidate already retained releases.
+
+Passage method `passage_cross_section_shoal_candidate_v2` separates threshold runs
+across below-threshold gaps. Complete bank status requires every clipped wet-interval
+endpoint to lie on the supplied water boundary, away from section endpoints
+(1e-7 m numerical tolerance). Passage-polygon extent alone cannot establish a bank.
+Source water boundaries still need reviewed coverage. Complete area becomes null
+when banks are censored; valid partial integral remains separate. Rebuild affected
+passage products before a new scientific release; historical products are unchanged.
+
 Composite feature and confidence tables must have identical unique, nonnull
 `(H3_INDEX, H3_RESOLUTION)` support at the requested resolution. Confidence is aligned by keys
 before masks or array calculations; missing support fails instead of reducing the output universe.
