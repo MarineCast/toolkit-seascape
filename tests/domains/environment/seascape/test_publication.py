@@ -99,6 +99,9 @@ def test_repeated_release_does_not_self_catalog_prior_release_manifest(
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(relative)
 
+    from tests.test_products import _refresh_candidate_audit
+
+    _refresh_candidate_audit(candidate)
     release_path = publish_candidate_release(
         canonical_project_root=canonical,
         candidate_project_root=candidate,

@@ -94,8 +94,12 @@ def measure_passage_section(
     bank_status = (
         "complete"
         if wet
-        and not passage_polygon.covers(section.boundary.geoms[0])
-        and not passage_polygon.covers(section.boundary.geoms[1])
+        and all(
+            water.boundary.distance(endpoint) <= 1e-7
+            and section.boundary.distance(endpoint) > 1e-7
+            for part in wet
+            for endpoint in part.boundary.geoms
+        )
         else "bank_censored"
     )
     wet_width = sum(part.length for part in wet)
@@ -125,8 +129,12 @@ def measure_passage_section(
             width = _threshold_width(a, b, step, depth_threshold_m)
             total_width += width
             if width > 0:
+                if a < depth_threshold_m:
+                    run = 0.0
                 run += width
                 contiguous_max = max(contiguous_max, run)
+                if b < depth_threshold_m:
+                    run = 0.0
             else:
                 run = 0.0
     complete = bool(wet) and bank_status == "complete" and not missing

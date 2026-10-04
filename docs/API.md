@@ -133,6 +133,16 @@ failure status. It does not execute a failed preflight or bypass any gate.
 Tracebacks can contain sensitive provider/configuration detail; review them before sharing.
 See [diagnostic examples and operation effects](WORKFLOWS.md#common-problems).
 
+## Candidate audit compatibility
+
+New candidate audits use schema 3 and include `audited_inputs`, a map from
+candidate-relative product and governed-metadata paths to content checksums.
+Promotion requires a literal boolean `artifact_release_passed: true` and an
+unchanged inventory, including during staging under the writer lock. Re-audit
+older unbound candidates before promotion. Retained release schema 3 and existing
+release-reader signatures are unchanged. See [scientific contracts](CONTRACTS.md)
+for the separately versioned passage measurement correction.
+
 ## Synthetic demo
 
 `seascape.demo.run_demo(workspace, *, overwrite=False)` returns `DemoResult` with demo-root,

@@ -17,7 +17,7 @@ from seascape.core.data.registry import DATASETS
 from seascape.metric_matrix import build_metric_matrix
 from seascape.products import resolve_product
 from seascape.release import publish_candidate_release
-from tests.test_products import _candidate_fixture
+from tests.test_products import _candidate_fixture, _refresh_candidate_audit
 
 
 def _fixture(
@@ -423,6 +423,7 @@ def test_matrix_pins_real_publication_during_release_switch(tmp_path, monkeypatc
             feature["collection_paths"][6] = relative
     archived_catalog = candidate / "config/feature_catalog.yaml"
     archived_catalog.write_text(yaml.safe_dump(config))
+    _refresh_candidate_audit(candidate)
     # Reuse the existing pre-audited publisher fixture. This is a publisher/reader
     # contract, not a claim that a two-table fixture passed a full regional audit.
     publish_candidate_release(
@@ -449,6 +450,7 @@ def test_matrix_pins_real_publication_during_release_switch(tmp_path, monkeypatc
             pq.write_table(
                 table.set_column(2, "BATHYMETRY", pa.array([99.0, 88.0])), bathy
             )
+            _refresh_candidate_audit(candidate)
             publish_candidate_release(
                 canonical_project_root=workspace, candidate_project_root=candidate
             )

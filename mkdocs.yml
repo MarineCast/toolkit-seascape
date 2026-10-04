@@ -73,7 +73,9 @@ nav:
       - Structural variables: structural-variables.md
       - Capability coverage: capability-coverage.md
   - Examples:
+      - San Juan bathymetry atlas: examples/san-juan-bathymetry.md
       - Choose a workflow: examples/index.md
+      - Read a bathymetry result: examples/read-bathymetry.md
       - Offline demo: demo.md
       - San Juan pilot: pilots/san-juan.md
   - API:
@@ -90,6 +92,7 @@ nav:
   - Development:
       - Release process: development/releases.md
       - Release checklist: development/release-checklist.md
+      - Completion review: development/completion-review.md
 
 validation:
   nav:

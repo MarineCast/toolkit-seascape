@@ -1,6 +1,11 @@
 # Release checklist
 
-## v0.1.0
+This is the historical v0.1.0 preparation checklist. Its unchecked items are not a
+statement about current release state; the project now declares 0.1.1. See the
+[completion review](completion-review.md) for current local fixes and validation
+boundaries. Use fresh evidence for the exact revision before any new release.
+
+## v0.1.0 preparation record (historical)
 
 - [ ] Consolidated reviewed work is merged into `main`.
 - [ ] CI passes on the supported platform/Python matrix.

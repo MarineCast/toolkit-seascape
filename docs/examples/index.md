@@ -1,5 +1,12 @@
 # Examples and workflows
 
+Explore the [San Juan bathymetry atlas](san-juan-bathymetry.md): a high-resolution
+static snapshot of real depth values, detailed R8 cells and an R6 comparison inset.
+
+Use [Read and verify a bathymetry result](read-bathymetry.md) for a complete
+offline walkthrough: generate a result, verify its checksum and H3 identities,
+then interpret known depth and missingness controls.
+
 Choose a path that matches the evidence you have. The first path is fully offline; the other two require reviewed source inputs or an existing release.
 
 | Path | Start here | Result and limit |

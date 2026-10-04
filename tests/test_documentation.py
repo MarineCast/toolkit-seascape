@@ -160,6 +160,7 @@ def test_consumer_example_reads_exact_retained_product_and_preserves_null_zero(
         path,
     )
     before = checksum_path(path)
+    fixture._refresh_candidate_audit(candidate)
     publish_candidate_release(
         canonical_project_root=workspace, candidate_project_root=candidate
     )

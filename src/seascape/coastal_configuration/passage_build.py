@@ -411,7 +411,7 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
         attribution=[],
         source_completeness="partial",
         metadata={
-            "scientific_method_version": "passage_cross_section_shoal_candidate_v1",
+            "scientific_method_version": "passage_cross_section_shoal_candidate_v2",
             "sample_support": "source passage polygon and ordered centerline; virtual projected native raster; bounded R8 child-union R6 associations",
         },
     )
