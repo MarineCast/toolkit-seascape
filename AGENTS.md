@@ -198,3 +198,7 @@ For the synthetic study core CLI also check `python -m mypy src/seascape/study_c
 `tests/test_study_support.py` for mandatory/optional capability closure, retained schema3 software
 release verification and tamper rejection. The owned fixture namespace and false regional release
 eligibility are required; do not reuse the fixture audit as a regional audit PASS.
+For native receipt/probe/pilot changes run `tests/test_study_native.py` and `tests/test_study_support.py`,
+then the full suite and quality/docs gates. Include `src/seascape/study_native.py` in explicit mypy
+checks. The bounded source probe is non-reporting; real pilot evidence must stay source-relative,
+with false regional/artifact publication eligibility and no automatic acquisition.

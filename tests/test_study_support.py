@@ -949,3 +949,65 @@ def test_reviewed_terrain_r6_rejects_before_input_reads_or_writes(
             neighborhoods=p.graphs[6],
             maximum_graph_hops=1,
         )
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("slope_upper_quantile", 0.5),
+        ("ruggedness_algorithm", "riley"),
+        ("neighborhood_rings", [1, 1]),
+        ("neighborhood_rings", [2, 4]),
+        ("openness_bearing_sectors", 3),
+        ("curvature_index_scale_per_m", float("nan")),
+        ("minimum_neighbors", 0),
+        ("native_resolution_arc_seconds", 30),
+        ("projected_crs", "EPSG:4326"),
+    ],
+)
+def test_terrain_settings_shared_cli_and_direct_boundary(
+    producer_inputs, tmp_path, monkeypatch, field, value
+):
+    from seascape import cli
+    from seascape.seafloor_physiography.geomorphometry.build import (
+        load_geomorphometry_config,
+    )
+    from seascape.study_routes import route_geomorphometry
+
+    p = producer_inputs
+    plan_path = core_plan(p, terrain=True)
+    plan = json.loads(plan_path.read_text())
+    plan["scientific_settings"]["geomorphometry"][field] = value
+    plan_path.write_text(json.dumps(plan))
+    workspace = tmp_path / "never-created"
+    try:
+        exit_code = cli.main(
+            [
+                "--workspace",
+                str(workspace),
+                "--study-config",
+                str(p.inputs.path),
+                "study-core-fixture",
+                "--input-manifest",
+                str(plan_path),
+            ]
+        )
+    except StudyConfigError, ValueError:
+        exit_code = 1
+    assert exit_code == 1
+    assert not workspace.exists()
+    config = replace(load_geomorphometry_config(), **{field: value})
+    monkeypatch.setattr(
+        "seascape.study_routes._capture",
+        lambda *_: pytest.fail("Invalid settings must reject before reads"),
+    )
+    with pytest.raises(StudyConfigError):
+        route_geomorphometry(
+            config,
+            p.study,
+            p.support,
+            bathymetry=p.raster,
+            raster=p.raster,
+            neighborhoods=p.graphs[8],
+            maximum_graph_hops=4,
+        )

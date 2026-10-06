@@ -23,6 +23,7 @@ from seascape.seafloor_physiography.geomorphometry.build import (
     _derive_metrics,
     _native_raster_slope_summary,
     output_columns,
+    validate_geomorphometry_settings,
 )
 from seascape.spatial_support.water_network.validation import validate_neighborhoods
 from seascape.study import StudyConfig, StudyConfigError
@@ -338,6 +339,10 @@ def route_geomorphometry(
         raise StudyConfigError(
             "Geomorphometry scientific route supports native R8 only; no implicit R6 resampling."
         )
+    try:
+        validate_geomorphometry_settings(config)
+    except (ValueError, TypeError) as exc:
+        raise StudyConfigError(str(exc)) from exc
     cells = _context(
         study,
         support,

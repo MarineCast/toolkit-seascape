@@ -23,6 +23,9 @@ import pyarrow.parquet as pq
 from seascape._study_contract import canonical_bytes, unique_object
 from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.code_identity import package_code_identity
+from seascape.seafloor_physiography.geomorphometry.build import (
+    validate_geomorphometry_settings,
+)
 from seascape.study import StudyConfig, StudyConfigError, load_study_config
 from seascape.study_routes import PinnedInput, route_bathymetry, route_geomorphometry
 from seascape.study_support import MembershipArtifact, _read_pinned, load_study_support
@@ -201,6 +204,12 @@ def _plan(raw: bytes, study: StudyConfig) -> dict[str, Any]:
             )
         ):
             raise StudyConfigError("Fixture terrain rings are invalid.")
+        try:
+            validate_geomorphometry_settings(
+                SimpleNamespace(h3_resolution=8, **terrain)
+            )
+        except (ValueError, TypeError) as exc:
+            raise StudyConfigError(str(exc)) from exc
     for source in (
         plan["raster"],
         *(record["input"] for record in plan["graphs"].values()),

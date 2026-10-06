@@ -137,3 +137,8 @@ The concrete adjacent native-support contract proposal remains at the task's
 `native-support-contract-proposal.json` for parent/config-owner review. Actual mask encoding/hash,
 qualification evidence and native halo/source formats remain pending agreement. Their absence
 blocks real pipeline/publication adoption rather than being filled with invented qualification.
+
+The technical adjacent interface is now implemented for bounded native evidence and a separately
+scoped bathymetry-only source pilot; see [native source contract](native-source-pilot.md). Root
+study-v1 remains unchanged. Real mask/source evidence and resource coordination remain prerequisites
+for real execution; synthetic contract tests do not certify the pending regional domain.
