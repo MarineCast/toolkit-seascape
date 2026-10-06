@@ -6,6 +6,7 @@ import logging
 import math
 import time
 from collections import deque
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -117,12 +118,15 @@ def _candidate_pairs(eligible_cells: set[str]):
                 yield source, target
 
 
-def _build_edges(
+def _iter_edge_batches(
     support: pd.DataFrame,
     water_geometry: Any,
     resolution: int,
     config: WaterNetworkConfig,
-) -> pd.DataFrame:
+    *,
+    path_metrics: Callable[[float, float, float, float], tuple[float, float, bool]]
+    | None = None,
+) -> Iterator[pd.DataFrame]:
     eligible = support.loc[support["GRAPH_NODE_ELIGIBLE"], "H3_INDEX"].astype(str)
     coordinates = {
         str(row.H3_INDEX): (
@@ -137,7 +141,6 @@ def _build_edges(
             ]
         ].itertuples(index=False)
     }
-    frames: list[pd.DataFrame] = []
     buffer: dict[str, list[Any]] = {
         "SOURCE_H3_INDEX": [],
         "TARGET_H3_INDEX": [],
@@ -151,20 +154,26 @@ def _build_edges(
         "WATER_MASK_VERSION": [],
         "SPATIAL_SUPPORT_VERSION": [],
     }
-    prepared_water = prep(from_wkb(water_geometry.wkb))
+    prepared_water = (
+        prep(from_wkb(water_geometry.wkb)) if path_metrics is None else None
+    )
     processed = 0
     for source, target in _candidate_pairs(set(eligible)):
         source_lon, source_lat = coordinates[source]
         target_lon, target_lat = coordinates[target]
-        distance, fraction, passable = water_path_metrics(
-            source_lon,
-            source_lat,
-            target_lon,
-            target_lat,
-            water_geometry,
-            maximum_segment_m=config.geodesic_segment_max_m,
-            outside_tolerance_m=config.passability_tolerance_m,
-            prepared_water=prepared_water,
+        distance, fraction, passable = (
+            path_metrics(source_lon, source_lat, target_lon, target_lat)
+            if path_metrics is not None
+            else water_path_metrics(
+                source_lon,
+                source_lat,
+                target_lon,
+                target_lat,
+                water_geometry,
+                maximum_segment_m=config.geodesic_segment_max_m,
+                outside_tolerance_m=config.passability_tolerance_m,
+                prepared_water=prepared_water,
+            )
         )
         values = (
             source,
@@ -183,17 +192,28 @@ def _build_edges(
             buffer[column].append(value)
         processed += 1
         if processed % config.edge_chunk_size == 0:
-            frames.append(pd.DataFrame(buffer))
+            yield pd.DataFrame(buffer)
             buffer = {column: [] for column in buffer}
             LOGGER.info("Evaluated H3 r%d water edges: %d", resolution, processed)
     if buffer["SOURCE_H3_INDEX"]:
-        frames.append(pd.DataFrame(buffer))
-    if not frames:
+        yield pd.DataFrame(buffer)
+    if not processed:
         raise ValueError(
             f"Canonical H3 r{resolution} graph has no neighbor candidates."
         )
     LOGGER.info("Evaluated H3 r%d water edges: %d", resolution, processed)
-    return pd.concat(frames, ignore_index=True)
+
+
+def _build_edges(
+    support: pd.DataFrame,
+    water_geometry: Any,
+    resolution: int,
+    config: WaterNetworkConfig,
+) -> pd.DataFrame:
+    return pd.concat(
+        _iter_edge_batches(support, water_geometry, resolution, config),
+        ignore_index=True,
+    )
 
 
 def _assign_components(support: pd.DataFrame, edges: pd.DataFrame) -> None:
@@ -257,6 +277,9 @@ def _build_connectors(
     water_geometry: Any,
     resolution: int,
     config: WaterNetworkConfig,
+    *,
+    path_metrics: Callable[[float, float, float, float], tuple[float, float, bool]]
+    | None = None,
 ) -> pd.DataFrame:
     graph_nodes = support["GRAPH_DEGREE"].to_numpy(dtype="int64") > 0
     hierarchy_only = support["IS_HIERARCHY_ONLY_PARENT"].astype(bool).to_numpy()
@@ -296,7 +319,9 @@ def _build_connectors(
     components = support["WATER_COMPONENT_ID"].astype("string")
     maximum_distance = config.connector_max_distance_m[resolution]
     rows: list[dict[str, Any]] = []
-    prepared_water = prep(from_wkb(water_geometry.wkb))
+    prepared_water = (
+        prep(from_wkb(water_geometry.wkb)) if path_metrics is None else None
+    )
     for query_offset, source_position in enumerate(terminal_positions):
         source_position = int(source_position)
         source_cell = cells[source_position]
@@ -318,15 +343,24 @@ def _build_connectors(
         evaluated: list[tuple[float, str, int, float, bool]] = []
         accepted: tuple[float, str, int, float, bool] | None = None
         for distance, target_cell, target_position in within:
-            _distance, fraction, passable = water_path_metrics(
-                longitudes[source_position],
-                latitudes[source_position],
-                longitudes[target_position],
-                latitudes[target_position],
-                water_geometry,
-                maximum_segment_m=config.geodesic_segment_max_m,
-                outside_tolerance_m=config.passability_tolerance_m,
-                prepared_water=prepared_water,
+            _distance, fraction, passable = (
+                path_metrics(
+                    longitudes[source_position],
+                    latitudes[source_position],
+                    longitudes[target_position],
+                    latitudes[target_position],
+                )
+                if path_metrics is not None
+                else water_path_metrics(
+                    longitudes[source_position],
+                    latitudes[source_position],
+                    longitudes[target_position],
+                    latitudes[target_position],
+                    water_geometry,
+                    maximum_segment_m=config.geodesic_segment_max_m,
+                    outside_tolerance_m=config.passability_tolerance_m,
+                    prepared_water=prepared_water,
+                )
             )
             evaluated_candidate = (
                 distance,
@@ -443,17 +477,27 @@ def _crosswalk(
     return frame.sort_values("CHILD_H3_INDEX").reset_index(drop=True)
 
 
-def _build_neighborhoods(
+def _iter_neighborhood_batches(
     support: pd.DataFrame,
     edges: pd.DataFrame,
     connectors: pd.DataFrame,
     resolution: int,
     config: WaterNetworkConfig,
-) -> pd.DataFrame:
+    *,
+    source_cells: list[str] | None = None,
+    batch_sources: int = 128,
+) -> Iterator[pd.DataFrame]:
     """Materialize deterministic bounded neighborhoods from water-passable links."""
 
     cells = support["H3_INDEX"].astype(str).tolist()
     positions = {cell: index for index, cell in enumerate(cells)}
+    if batch_sources < 1:
+        raise ValueError("Neighborhood batch_sources must be positive.")
+    selected_sources = cells if source_cells is None else sorted(source_cells)
+    if len(set(selected_sources)) != len(selected_sources) or any(
+        cell not in positions for cell in selected_sources
+    ):
+        raise ValueError("Neighborhood sources must be unique cells in the full graph.")
     adjacency: list[list[tuple[int, float]]] = [[] for _ in cells]
     passable_edges = edges.loc[edges["EDGE_IS_WATER_PASSABLE"].astype(bool)]
     for source, target, distance in passable_edges[
@@ -486,7 +530,8 @@ def _build_neighborhoods(
     support_by_cell = support.set_index("H3_INDEX")
     rows: list[dict[str, Any]] = []
     maximum_hops = config.maximum_neighborhood_hops
-    for source_position, source_cell in enumerate(cells):
+    for source_number, source_cell in enumerate(selected_sources, start=1):
+        source_position = positions[source_cell]
         best_hops = {source_position: 0}
         best_distance = {source_position: 0.0}
         queue: deque[int] = deque([source_position])
@@ -534,8 +579,35 @@ def _build_neighborhoods(
                     "SPATIAL_SUPPORT_VERSION": config.spatial_support_version,
                 }
             )
+        if source_number % batch_sources == 0:
+            yield (
+                pd.DataFrame(rows)
+                .sort_values(
+                    ["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"]
+                )
+                .reset_index(drop=True)
+            )
+            rows = []
+    if rows:
+        yield (
+            pd.DataFrame(rows)
+            .sort_values(["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"])
+            .reset_index(drop=True)
+        )
+
+
+def _build_neighborhoods(
+    support: pd.DataFrame,
+    edges: pd.DataFrame,
+    connectors: pd.DataFrame,
+    resolution: int,
+    config: WaterNetworkConfig,
+) -> pd.DataFrame:
     return (
-        pd.DataFrame(rows)
+        pd.concat(
+            _iter_neighborhood_batches(support, edges, connectors, resolution, config),
+            ignore_index=True,
+        )
         .sort_values(["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"])
         .reset_index(drop=True)
     )

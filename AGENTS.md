@@ -212,3 +212,9 @@ For explicit source land/water adoption run `tests/test_source_partition.py`, th
 and quality/docs checks. Check `python -m mypy src/seascape/spatial_support/water_geometry/partition.py`.
 See [partition adoption](docs/source-land-water-partition.md). Retain tile/union semantics and
 source exceptions; the engineering reporting selector never becomes the definition of water.
+
+For bounded graph execution run `tests/test_bounded_graph_execution.py` and
+`tests/domains/environment/seascape/spatial_support/test_water_network.py`, then the full suite,
+quality and documentation checks. Verify retained regional pilot parity before a regional run.
+See [bounded graph execution](docs/bounded-watergraph-execution.md). Output-source batching must
+retain the full traversal graph, connector semantics and scientific source/halo qualifications.
