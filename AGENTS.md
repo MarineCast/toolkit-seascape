@@ -175,3 +175,13 @@ Capture the runtime/test/quality closure with `scripts/environment_snapshot.py -
 and audit it with `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-env.txt`.
 CI also runs Gitleaks over history and the working tree. Scope and platform limits are documented in
 `docs/environments/README.md`; API/storage changes are documented in `docs/API.md`.
+
+## Shared study planning adapter
+
+`seascape.study` validates explicit study-v1 JSON with its packaged schema. No implicit
+workspace/sibling config discovery is permitted. The adapter is planning only; production stays
+blocked until marine reporting membership and distinct compute halos are integrated. Preserve
+standalone behavior and do not relax this hold based only on domain.status=approved.
+For adapter/config/CLI changes run `python -m pytest -q tests/test_study.py tests/test_preflight.py
+tests/test_workflow.py tests/test_cli_diagnostics.py`, then the full suite and quality/docs gates
+above. Fixtures are provenance/software checks, not shared-domain certification.

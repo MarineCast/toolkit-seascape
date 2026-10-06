@@ -149,3 +149,41 @@ or product indexes; those are release-derived artifacts.
 It does not migrate an older workspace's configuration or replace locally edited templates.
 Maintainers must synchronize changed configuration templates with
 [src/seascape/resources](../src/seascape/resources); see [development](DEVELOPMENT.md).
+
+## Explicit shared study planning
+
+The optional global `--study-config PATH` selects MarineCast study-v1 JSON. An explicit path
+wins over `MARINECAST_STUDY_CONFIG`; there is no default filename search or sibling import.
+Without either selection, the standalone configuration and workspace rules above are unchanged.
+The validator uses a packaged copy of the pinned v1 schema, so planning also works outside the
+MarineCast checkout. `storage.data_root` must be relative to the JSON file; when `--workspace`
+is omitted the selected workspace is its resolved data root plus `seascape`.
+
+```sh
+seascape --workspace "$SEASCAPE_WORKSPACE" --study-config /absolute/path/to/study.v1.json \
+  build --dry-run --json --only seascape-bathymetry
+```
+
+This adapter is **planning only**. A proposed domain is allowed only for explicit dry runs.
+Production through the adapter is blocked even if a study changes to approved: the current
+territorial-water selection must first be replaced with validated marine reporting membership,
+and producer compute halos must be integrated independently of the reporting rectangle.
+No stage readiness result certifies shared-domain coverage; JSON includes
+`study_production_ready=false` and an explicit support warning. Existing source paths remain
+producer inputs, not proof that they cover the requested rectangle.
+
+Planning resolves `model_area` to the study rectangle and applies the recorded geometry,
+coastal-network, freshwater, jurisdictional-river and catchment buffer settings. Other named
+source/compute areas are not silently resized. The output includes the complete parsed contract,
+canonical config and geometry hashes, raw-file hash, domain revision/status, requested dates,
+resolved Data root, product resolution and native-companion policy. The effective configuration
+fingerprint includes those identities. A changed date, buffer or geometry invalidates reuse.
+The public API is `seascape.study.load_study_config(path, planning=True)` and the scoped
+`study_context(study, planning=True)`; use it only around read-only planners. Orchestration
+rejects a producer run inside that context before creating a candidate.
+
+The requested 2009–2026 window does not make static bathymetry an annual observation series.
+Retain source vintage, observation/availability distinctions and actual source cutoffs. Do not
+repeat static tables by year, backdate modern evidence or manufacture future measurements.
+The portable validation notebook remains a standalone bathymetry/demo client; this optional,
+blocked production integration does not change its required offline workflow.

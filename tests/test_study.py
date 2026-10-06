@@ -1,0 +1,243 @@
+"""Pinned portable contract, fail-closed planning, and unchanged standalone routing."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from seascape import cli
+from seascape.core.config.common_areas import bbox_for_area
+from seascape.core.config.data import load_data_config
+from seascape.study import (
+    StudyConfigError,
+    current_study,
+    load_study_config,
+    study_context,
+)
+from seascape.workflow import _configuration_identity, run_domain_layer_build
+
+
+@pytest.fixture
+def study_file(tmp_path, monkeypatch):
+    monkeypatch.delenv("MARINECAST_STUDY_CONFIG", raising=False)
+    path = tmp_path / "portable" / "config" / "study.v1.json"
+    path.parent.mkdir(parents=True)
+    path.write_bytes((Path(__file__).parent / "fixtures/study.v1.json").read_bytes())
+    return path
+
+
+def test_exact_pin_and_relative_root(study_file):
+    study = load_study_config(study_file, planning=True)
+    assert (
+        study.config_sha256
+        == "b1f811ff8b3c47bc571805a5845fc55a410ccd6bd08dfc254899b387903ed7f5"
+    )
+    assert (
+        study.provenance()["geometry_sha256"]
+        == "6d79e4dfd29a4ada66625e20fdcd01e7bfe6076bf6ebb4c449581eb3a0cdfb68"
+    )
+    assert study.data_root == study_file.parent.parent / "Data"
+    assert study.provenance()["requested_time"]["end_exclusive"] == "2027-01-01"
+    assert study.provenance()["contract"] == json.loads(study_file.read_text())
+    mutable = study.payload
+    mutable["time"]["start"] = "2026-01-01"
+    assert study.payload["time"]["start"] == "2009-01-01"
+
+
+def test_selection_precedence_and_no_guess(study_file, monkeypatch):
+    assert load_study_config() is None
+    monkeypatch.setenv(
+        "MARINECAST_STUDY_CONFIG", str(study_file.parent / "missing.json")
+    )
+    assert load_study_config(study_file, planning=True).source == study_file
+    with pytest.raises(StudyConfigError):
+        load_study_config(planning=True)
+    monkeypatch.setenv("MARINECAST_STUDY_CONFIG", str(study_file))
+    assert load_study_config(planning=True).source == study_file
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "geometry",
+        "dates",
+        "unknown",
+        "absolute_root",
+        "boolean_resolution",
+        "validated_registry",
+    ],
+)
+def test_invalid_contract_before_outputs(study_file, change):
+    value = json.loads(study_file.read_text())
+    if change == "geometry":
+        value["domain"]["bbox_wgs84"][0] -= 1
+    elif change == "dates":
+        value["time"]["start"] = value["time"]["end_exclusive"]
+    elif change == "unknown":
+        value["unrecognized"] = True
+    elif change == "absolute_root":
+        value["storage"]["data_root"] = "/tmp/unapproved-data"
+    elif change == "boolean_resolution":
+        value["products"]["seascape"]["h3_resolution"] = True
+    else:
+        value["grid_registry"]["status"] = "validated"
+    study_file.write_text(json.dumps(value))
+    with pytest.raises(StudyConfigError):
+        load_study_config(study_file, planning=True)
+    assert not (study_file.parent.parent / "Data").exists()
+
+
+@pytest.mark.parametrize(
+    "text", ['{"schema_version":1,"schema_version":1}', '{"value":NaN}']
+)
+def test_noncanonical_json_rejected(study_file, text):
+    study_file.write_text(text)
+    with pytest.raises(StudyConfigError):
+        load_study_config(study_file, planning=True)
+
+
+def test_proposed_and_approved_production_both_fail_closed(
+    study_file, tmp_path, capsys
+):
+    workspace = tmp_path / "unwritten"
+    assert (
+        cli.main(
+            ["--workspace", str(workspace), "--study-config", str(study_file), "build"]
+        )
+        == 1
+    )
+    assert "proposed" in capsys.readouterr().err
+    assert not workspace.exists()
+    value = json.loads(study_file.read_text())
+    value["domain"]["status"] = "approved"
+    study_file.write_text(json.dumps(value))
+    assert (
+        cli.main(
+            [
+                "--workspace",
+                str(workspace),
+                "--study-config",
+                str(study_file),
+                "download",
+                "bathymetry",
+            ]
+        )
+        == 1
+    )
+    assert "production integration is not enabled" in capsys.readouterr().err
+    assert not workspace.exists()
+
+
+def test_planning_effective_config_and_identity(study_file, tmp_path, monkeypatch):
+    workspace = tmp_path / "inputs"
+    cli.initialize_workspace(workspace)
+    monkeypatch.setenv("SEASCAPE_WORKSPACE", str(workspace))
+    source = workspace / "config/data/project.yaml"
+    baseline = _configuration_identity(source)
+    study = load_study_config(study_file, planning=True)
+    with study_context(study, planning=True):
+        assert bbox_for_area("model_area") == {
+            "min_lon": -129.7,
+            "min_lat": 45.9,
+            "max_lon": -121.5,
+            "max_lat": 51.5,
+        }
+        config = load_data_config(source)
+        assert config["marinecast_study"]["config_sha256"] == study.config_sha256
+        assert config["marinecast_study_contract"] == study.payload
+        assert (
+            config["shoreline_proximity"]["processing"]["network_context_buffer_km"]
+            == 60
+        )
+        assert config["water_network"]["resolutions"] == [6, 8]
+        assert _configuration_identity(source) != baseline
+        with pytest.raises(StudyConfigError, match="production integration"):
+            run_domain_layer_build(config_path=source)
+        assert not (workspace / ".seascape").exists()
+    assert current_study() is None
+    assert _configuration_identity(source) == baseline
+
+
+def test_readonly_cli_plan_has_full_identity_and_never_claims_ready(
+    study_file, tmp_path, monkeypatch, capsys
+):
+    workspace = tmp_path / "inputs"
+    cli.initialize_workspace(workspace)
+    monkeypatch.setenv("SEASCAPE_WORKSPACE", "original-selection")
+    assert (
+        cli.main(
+            [
+                "--workspace",
+                str(workspace),
+                "--study-config",
+                str(study_file),
+                "build",
+                "--dry-run",
+                "--json",
+                "--only",
+                "seascape-bathymetry",
+            ]
+        )
+        == 0
+    )
+    report = json.loads(capsys.readouterr().out)
+    assert report["study_production_ready"] is False
+    assert report["marinecast_study"]["contract"] == json.loads(study_file.read_text())
+    assert not (workspace / ".seascape").exists()
+    assert current_study() is None
+    import os
+
+    assert os.environ["SEASCAPE_WORKSPACE"] == "original-selection"
+
+
+def test_buffer_and_date_changes_invalidate_effective_identity(
+    study_file, tmp_path, monkeypatch
+):
+    workspace = tmp_path / "inputs"
+    cli.initialize_workspace(workspace)
+    monkeypatch.setenv("SEASCAPE_WORKSPACE", str(workspace))
+    source = workspace / "config/data/project.yaml"
+    with study_context(load_study_config(study_file, planning=True), planning=True):
+        baseline = _configuration_identity(source)
+    config = json.loads(study_file.read_text())
+    config["producer_buffers"]["seascape"]["coastal_network_m"] += 1000
+    config["time"]["start"] = "2010-01-01"
+    study_file.write_text(json.dumps(config))
+    with study_context(load_study_config(study_file, planning=True), planning=True):
+        assert _configuration_identity(source) != baseline
+
+
+def test_manifest_fixture_retains_full_identity(study_file, tmp_path):
+    from seascape.utils.artifacts import build_manifest
+
+    artifact = tmp_path / "fixture.txt"
+    artifact.write_text("synthetic provenance fixture")
+    study = load_study_config(study_file, planning=True)
+    with study_context(study, planning=True):
+        manifest = build_manifest(
+            dataset_family="environment.seascape.fixture",
+            run_id="study-metadata-fixture",
+            resolved_config={"fixture": True},
+            artifacts=[artifact],
+            project_root=tmp_path,
+            sources=[],
+            upstream_artifacts=[],
+            attribution=[{"text": "Synthetic fixture only"}],
+            source_completeness="unavailable",
+        )
+        assert manifest["metadata"]["marinecast_study"] == study.provenance()
+        with pytest.raises(ValueError, match="conflicts"):
+            build_manifest(
+                dataset_family="environment.seascape.fixture",
+                run_id="study-metadata-fixture",
+                resolved_config={},
+                artifacts=[artifact],
+                project_root=tmp_path,
+                sources=[],
+                upstream_artifacts=[],
+                attribution=[{"text": "Fixture"}],
+                source_completeness="unavailable",
+                metadata={"marinecast_study": {}},
+            )

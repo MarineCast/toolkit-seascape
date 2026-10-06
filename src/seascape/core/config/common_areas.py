@@ -43,6 +43,12 @@ def bbox_for_area(
     *,
     common_config_path: str | Path | None = None,
 ) -> dict[str, float]:
+    from seascape.study import current_study
+
+    study = current_study()
+    if study is not None and area_name_value == "model_area":
+        west, south, east, north = study.payload["domain"]["bbox_wgs84"]
+        return {"min_lon": west, "min_lat": south, "max_lon": east, "max_lat": north}
     areas = _common_areas(common_config_path)
     area = areas.get(area_name_value)
     if not isinstance(area, Mapping):
