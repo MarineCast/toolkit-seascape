@@ -273,7 +273,7 @@ def test_current_shared_contract_compatibility(study_file):
     )
     assert (
         hashlib.sha256(schema).hexdigest()
-        == "8f138f0de9bf5be0df52739528e083db759537a68a1fe84cf35beac9bc1f9cda"
+        == "c7b1092db348719b903efbcbba806098fecd314455cf960ad0ab84674c00d1d1"
     )
 
 
@@ -327,3 +327,162 @@ def test_one_source_snapshot_controls_all_provenance(study_file, monkeypatch):
         == hashlib.sha256(canonical_bytes(json.loads(original))).hexdigest()
     )
     assert study.provenance()["contract"] == json.loads(original)
+
+
+def coastal_config():
+    return json.loads(
+        (Path(__file__).parent / "fixtures/study.coastal.v1.json").read_text()
+    )
+
+
+def claimed_validated_coastal_config():
+    """Synthetic claims only; never materialize or authorize any support."""
+    config = coastal_config()
+    config["domain"]["status"] = "approved"
+    config["domain"]["approval"] = {
+        "approved_at": "2026-10-06T02:00:00Z",
+        "source_message_id": "synthetic-fixture",
+        "scope": "rectangular_selection_only",
+        "statement": "Synthetic envelope metadata",
+    }
+    config["domain"]["geometry_status"] = "source_relative_validated"
+    config["domain"]["selection_policy"]["mask_status"] = "source_relative_validated"
+    config["grid_registry"].update(
+        {
+            "status": "validated",
+            "mask_revision": "fixture-only",
+            "mask_sha256": "0" * 64,
+            "memberships": [
+                {
+                    "resolution": 6,
+                    "role": "water_reporting",
+                    "relative_path": "never-materialized-fixture.txt",
+                    "count": 0,
+                    "sha256": "0" * 64,
+                }
+            ],
+        }
+    )
+    return config
+
+
+def test_current_coastal_policy_identity_and_bbox_role(
+    study_file, tmp_path, monkeypatch
+):
+    study_file.write_text(json.dumps(coastal_config()))
+    study = load_study_config(study_file, planning=True)
+    assert (
+        study.config_sha256
+        == "bacf22ea2b0beb32d1ef5607f52b2f6104419dd329edf25657bca196acc8018c"
+    )
+    provenance = study.provenance()
+    assert provenance["reporting_bbox_wgs84"] is None
+    assert provenance["acquisition_planning_bbox_wgs84"] == [-129.7, 45.9, -121.5, 51.5]
+    assert provenance["geometry_sha256_role"] == "acquisition_envelope_identity"
+    assert provenance["reporting_selection_policy"]["offshore_distance_m"] == 22224
+    assert provenance["reporting_selection_policy"]["status"] == "approved"
+    assert (
+        provenance["reporting_selection_policy"]["mask_status"]
+        == "pending_source_qualified_build"
+    )
+    with study_context(study, planning=True):
+        with pytest.raises(StudyConfigError, match="acquisition envelope"):
+            bbox_for_area("model_area")
+    workspace = tmp_path / "planning-inputs"
+    cli.initialize_workspace(workspace)
+    monkeypatch.setenv("SEASCAPE_WORKSPACE", str(workspace))
+    with study_context(study, planning=True):
+        effective = load_data_config(workspace / "config/data/project.yaml")
+        assert effective["marinecast_study"]["reporting_bbox_wgs84"] is None
+        assert effective["marinecast_study_contract"] == coastal_config()
+
+
+@pytest.mark.parametrize("pending", ["geometry", "mask", "registry"])
+def test_approved_policy_cannot_bypass_any_pending_support(study_file, pending):
+    config = claimed_validated_coastal_config()
+    if pending == "geometry":
+        config["domain"]["geometry_status"] = "pending_qualified_coastline_validation"
+    elif pending == "mask":
+        config["domain"]["selection_policy"]["mask_status"] = (
+            "pending_source_qualified_build"
+        )
+    else:
+        config["grid_registry"]["status"] = "pending_validated_marine_mask"
+    study_file.write_text(json.dumps(config))
+    assert (
+        load_study_config(study_file, planning=True).payload["domain"][
+            "selection_policy"
+        ]["status"]
+        == "approved"
+    )
+    with pytest.raises(
+        StudyConfigError, match="validated coastal mask, geometry and registry"
+    ):
+        load_study_config(study_file, planning=False)
+
+
+def test_all_certification_claims_still_do_not_enable_adapter_production(
+    study_file, tmp_path, capsys
+):
+    study_file.write_text(json.dumps(claimed_validated_coastal_config()))
+    study = load_study_config(study_file, planning=False)
+    with pytest.raises(StudyConfigError, match="production integration is not enabled"):
+        with study_context(study):
+            pytest.fail("production context must never open")
+    destination = tmp_path / "unwritten"
+    assert (
+        cli.main(
+            [
+                "--workspace",
+                str(destination),
+                "--study-config",
+                str(study_file),
+                "download",
+                "bathymetry",
+            ]
+        )
+        == 1
+    )
+    assert "production integration is not enabled" in capsys.readouterr().err
+    assert not destination.exists()
+
+
+@pytest.mark.parametrize("missing", ["bbox_role", "geometry_status", "policy_approval"])
+def test_coastal_policy_requires_role_status_and_approval(study_file, missing):
+    config = coastal_config()
+    if missing == "policy_approval":
+        config["domain"]["selection_policy"]["approval"] = None
+    else:
+        config["domain"].pop(missing)
+    study_file.write_text(json.dumps(config))
+    with pytest.raises(StudyConfigError):
+        load_study_config(study_file, planning=True)
+
+
+def test_coastal_readonly_cli_plan_never_calls_bbox_reporting(
+    study_file, tmp_path, capsys
+):
+    study_file.write_text(json.dumps(coastal_config()))
+    workspace = tmp_path / "inputs"
+    cli.initialize_workspace(workspace)
+    assert (
+        cli.main(
+            [
+                "--workspace",
+                str(workspace),
+                "--study-config",
+                str(study_file),
+                "build",
+                "--dry-run",
+                "--json",
+                "--only",
+                "seascape-bathymetry",
+            ]
+        )
+        == 0
+    )
+    report = json.loads(capsys.readouterr().out)
+    assert report["study_production_ready"] is False
+    assert report["marinecast_study"]["reporting_bbox_wgs84"] is None
+    assert "acquisition envelope" in report["study_support_warning"]
+    assert not (workspace / ".seascape").exists()

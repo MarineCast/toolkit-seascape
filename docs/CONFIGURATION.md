@@ -168,16 +168,24 @@ This adapter is **planning only**. A proposed domain is allowed only for explici
 Production through the adapter is blocked even if a study changes to approved: the current
 territorial-water selection must first be replaced with validated marine reporting membership,
 and producer compute halos must be integrated independently of the reporting rectangle.
+The current approved selection policy covers ocean-side coastal water within 22,224 m of the
+qualified intended reach plus requested inland waters. Policy approval does not certify geometry,
+materialize the water mask or validate the registry. Each of those pending states rejects a
+production load. Even claims that all states are validated cannot enable the unfinished adapter.
 No stage readiness result certifies shared-domain coverage; JSON includes
 `study_production_ready=false` and an explicit support warning. Existing source paths remain
 producer inputs, not proof that they cover the requested rectangle.
 
-Planning resolves `model_area` to the study rectangle and applies the recorded geometry,
-coastal-network, freshwater, jurisdictional-river and catchment buffer settings. Other named
-source/compute areas are not silently resized. The output includes the complete parsed contract,
+For legacy rectangular v1 configs, planning resolves `model_area` to the study rectangle. For a
+coastal selection policy, the rectangle is exclusively an acquisition/planning envelope, not the
+reporting universe; requesting it as `model_area` fails rather than including far-offshore water.
+The planner applies recorded geometry, coastal-network, freshwater, jurisdictional-river and
+catchment buffer settings. Other named source/compute areas are not silently resized. The output
+includes the complete parsed contract, policy approval and pending certification status,
 canonical config and geometry hashes, raw-file hash, domain revision/status, requested dates,
 resolved Data root, product resolution and native-companion policy. The effective configuration
 fingerprint includes those identities. A changed date, buffer or geometry invalidates reuse.
+Provenance distinguishes the envelope identity from reporting-mask identity; the latter is pending.
 The synchronized schema accepts domain approval provenance and revision notes. Approved status
 requires an explicit approval record with a timezone-bearing timestamp. Validation, parsed content,
 canonical identity and raw-file identity use one captured byte snapshot; a later file revision does

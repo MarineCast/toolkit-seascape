@@ -1,6 +1,6 @@
-# Vendored MarineCast study-v1 validation vocabulary, 2026-10-06.
-# Shared schema SHA256: 8f138f0de9bf5be0df52739528e083db759537a68a1fe84cf35beac9bc1f9cda.
-# Shared validator SHA256: ddbd77f2ff7fa38370fba231814068de602bbdc4824329cf157c3da35bab9620.
+# Vendored MarineCast study-v1 coastal-policy validation vocabulary, 2026-10-06.
+# Shared schema SHA256: c7b1092db348719b903efbcbba806098fecd314455cf960ad0ab84674c00d1d1.
+# Shared validator SHA256: bc95846e1080ae5131297e0a6204ff92e8700a60a31ef61560c626099bda63ad.
 # Local adaptation: packaged schema and validation of one captured byte snapshot.
 # No runtime import of the workspace validator or sibling repositories.
 """Validate MarineCast study v1 JSON; no runtime or sibling-repo dependencies."""
@@ -160,6 +160,25 @@ def validate_snapshot(raw, path, require_approved=True):
         raise ValueError(
             "domain remains proposed; production run requires approved geometry"
         )
+    policy = config["domain"].get("selection_policy")
+    if policy is not None:
+        if not config["domain"].get("bbox_role") or not config["domain"].get(
+            "geometry_status"
+        ):
+            raise ValueError(
+                "selection policy requires explicit envelope role and geometry status"
+            )
+        if policy["status"] == "approved" and not policy["approval"]:
+            raise ValueError("approved selection policy requires approval provenance")
+        if require_approved and (
+            policy["status"] != "approved"
+            or policy["mask_status"] != "source_relative_validated"
+            or config["domain"]["geometry_status"] != "source_relative_validated"
+            or config["grid_registry"]["status"] != "validated"
+        ):
+            raise ValueError(
+                "production requires validated coastal mask, geometry and registry"
+            )
     registry = config["grid_registry"]
     if registry["status"] == "validated":
         if (

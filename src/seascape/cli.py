@@ -258,7 +258,8 @@ def main(argv: list[str] | None = None) -> int:
                 report["marinecast_study"] = study.provenance()
                 report["study_production_ready"] = False
                 report["study_support_warning"] = (
-                    "Source/canonical memberships are not qualified for the study rectangle. "
+                    "Reporting membership requires validated coastal plus inland water support. "
+                    "The bbox is only an acquisition envelope when selection_policy is present. "
                     "Compute halos and territorial-mask replacement remain pending."
                 )
             if args.json:
