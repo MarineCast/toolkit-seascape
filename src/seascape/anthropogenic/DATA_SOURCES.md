@@ -17,8 +17,11 @@ records from being counted twice.
   denominator and mapped man-made form codes.
 - NOAA Coastal Maintained Channels: authoritative Washington maintained-channel
   polygons derived from NOAA ENC and USACE sources.
-- Washington Ecology Coastal Atlas: ocean-disposal sites and commercial
-  shellfish polygons.
+- Washington Ecology Coastal Atlas: ocean-disposal sites. Layer 314 shellfish
+  harvest/water-quality classifications are retained as regulatory source
+  evidence; Approved/Conditional/Restricted/Prohibited/Unclassified polygons
+  are excluded from physical aquaculture area, presence, and deduplication
+  authority. They are not cultivation installations or farm footprints.
 - Environment and Climate Change Canada: active disposal-at-sea sites.
 - Fisheries and Oceans Canada: current BC shellfish and marine-finfish licence
   coordinates.

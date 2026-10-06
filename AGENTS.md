@@ -225,3 +225,9 @@ then the full suite, quality and documentation checks. Verify source-record repe
 partial overlaps, classification-availability disagreements and nearby distinct lines.
 Physical numerators and denominators count geometric unions, while source evidence retains
 all records. See the producer's `DATA_SOURCES.md`; survey coverage remains separate.
+
+For anthropogenic source classification changes run
+`python -m pytest -q tests/domains/environment/seascape/test_anthropogenic_contracts.py`,
+then the full suite, quality and documentation checks. Verify that Approved and Prohibited
+shellfish harvest classifications cannot establish aquaculture footprint/presence or suppress
+OSM aquaculture records; legitimate physical inventory matches still govern deduplication.

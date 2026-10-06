@@ -13,6 +13,7 @@ from seascape.anthropogenic.aggregation import (
     aggregate_r8_to_r6,
 )
 from seascape.anthropogenic.build import (
+    _area_metrics,
     _armoring_metrics,
     _mapped_presence,
     distance_from_seed_sources,
@@ -22,6 +23,7 @@ from seascape.anthropogenic.sources import (
     DISTANCE_FEATURES,
     _normalize_aquaculture_csv,
     _normalize_bc_shorezone,
+    _normalize_spatial_class,
     _normalize_wa_shorezone,
     _record,
     classify_osm_tags,
@@ -73,6 +75,76 @@ def test_osm_tag_crosswalk_keeps_distinct_model_families():
             "seamark:shoreline_construction:category": "wharf;breakwater",
         }
     ) == ["breakwater", "pier"]
+
+
+@pytest.mark.parametrize("harvest_class", ["Approved", "Prohibited"])
+def test_harvest_classification_cannot_define_a_farm_or_suppress_osm(
+    tmp_path, harvest_class
+):
+    import geopandas as gpd
+
+    path = tmp_path / "harvest.geojson"
+    gpd.GeoDataFrame(
+        {"OBJECTID": [92], "CLASS": [harvest_class]},
+        geometry=[box(-123.01, 47.99, -122.99, 48.01)],
+        crs="EPSG:4326",
+    ).to_file(path, driver="GeoJSON")
+    # Exercise the defensive crosswalk even for the former aquaculture caller.
+    regulatory = _normalize_spatial_class(
+        path,
+        "wa_ecology_commercial_shellfish",
+        {"evidence_class": "regulatory_classification_inventory"},
+        "aquaculture",
+    )
+    assert regulatory.FEATURE_CLASS.tolist() == ["shellfish_harvest_classification"]
+    assert not regulatory.SUPPORTS_AREA.any()
+    assert (
+        json.loads(regulatory.SOURCE_PROPERTIES_JSON.iloc[0])["CLASS"] == harvest_class
+    )
+    projected = regulatory.to_crs("EPSG:6933")
+    cells = gpd.GeoDataFrame(
+        {"H3_INDEX": ["a"]}, geometry=[projected.geometry.iloc[0]], crs=projected.crs
+    )
+    area, fraction = _area_metrics(
+        cells, projected, "aquaculture", np.asarray([1.0]), null_non_detection=True
+    )
+    assert area.tolist() == [0.0]
+    assert np.isnan(fraction[0])
+    assert np.isnan(
+        _mapped_presence(regulatory, "aquaculture", ["a"], {0: ["a"]}, {})[0]
+    )
+
+    rows = []
+    for record_id, longitude, priority in [
+        ("licensed", -123.0, 50),
+        ("osm:near_licence", -123.0, 10),
+        ("osm:harvest_zone_only", -122.9935, 10),
+    ]:
+        rows.append(
+            _record(
+                record_id=record_id,
+                source_dataset="qualified_licence" if priority == 50 else "osm",
+                source_feature_id=record_id,
+                jurisdiction="WA",
+                feature_class="aquaculture",
+                feature_subtype=None,
+                evidence_class="inventory",
+                source_priority=priority,
+                confidence_class=2,
+                geometry_precision_class="point",
+                geometry=Point(longitude, 48),
+            )
+        )
+    combined = gpd.GeoDataFrame(
+        pd.concat([regulatory, gpd.GeoDataFrame(rows, geometry="geometry", crs=4326)]),
+        geometry="geometry",
+        crs=4326,
+    )
+    repaired = deduplicate_inventory(combined, 100).set_index("RECORD_ID")
+    assert repaired.loc["osm:harvest_zone_only", "IS_CANONICAL"]
+    assert pd.isna(repaired.loc["osm:harvest_zone_only", "DUPLICATE_OF_RECORD_ID"])
+    assert not repaired.loc["osm:near_licence", "IS_CANONICAL"]
+    assert repaired.loc["osm:near_licence", "DUPLICATE_OF_RECORD_ID"] == "licensed"
 
 
 def test_overpass_query_is_bounded_and_endpoint_fallback_is_manifested(tmp_path):
