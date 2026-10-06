@@ -206,7 +206,10 @@
         "nautical_mile_m",
         "water_membership",
         "land_sources",
-        "geometry_sha256"
+        "geometry_sha256",
+        "bbox_role",
+        "geometry_status",
+        "selection_policy"
       ],
       "additionalProperties": false
     },

@@ -176,9 +176,12 @@ No stage readiness result certifies shared-domain coverage; JSON includes
 `study_production_ready=false` and an explicit support warning. Existing source paths remain
 producer inputs, not proof that they cover the requested rectangle.
 
-For legacy rectangular v1 configs, planning resolves `model_area` to the study rectangle. For a
-coastal selection policy, the rectangle is exclusively an acquisition/planning envelope, not the
-reporting universe; requesting it as `model_area` fails rather than including far-offshore water.
+Current v1 requires the complete coastal field group: `bbox_role`, `geometry_status` and
+`selection_policy`. Missing, null or malformed policies fail validation in planning and production;
+superseded rectangle-only study documents must be updated before selection. Standalone use without
+a selected study retains its existing area rules. The rectangle is exclusively an
+acquisition/planning envelope, not the reporting universe; requesting it as `model_area`
+fails rather than including far-offshore water.
 The planner applies recorded geometry, coastal-network, freshwater, jurisdictional-river and
 catchment buffer settings. Other named source/compute areas are not silently resized. The output
 includes the complete parsed contract, policy approval and pending certification status,

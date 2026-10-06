@@ -37,7 +37,7 @@ class StudyConfig:
     def provenance(self) -> dict[str, Any]:
         config = self.payload
         domain = config["domain"]
-        policy = domain.get("selection_policy")
+        policy = domain["selection_policy"]
         return {
             "schema_version": 1,
             "study_id": config["study_id"],
@@ -47,13 +47,9 @@ class StudyConfig:
             "geometry_sha256": config["domain"]["geometry_sha256"],
             "domain_revision": config["domain"]["revision"],
             "domain_status": config["domain"]["status"],
-            "reporting_bbox_wgs84": domain["bbox_wgs84"] if policy is None else None,
-            "acquisition_planning_bbox_wgs84": domain["bbox_wgs84"]
-            if policy is not None
-            else None,
-            "geometry_sha256_role": "reporting_rectangle_identity"
-            if policy is None
-            else "acquisition_envelope_identity",
+            "reporting_bbox_wgs84": None,
+            "acquisition_planning_bbox_wgs84": domain["bbox_wgs84"],
+            "geometry_sha256_role": "acquisition_envelope_identity",
             "reporting_selection_policy": policy,
             "geometry_certification_status": domain.get("geometry_status"),
             "requested_time": config["time"],

@@ -24,7 +24,9 @@ def study_file(tmp_path, monkeypatch):
     monkeypatch.delenv("MARINECAST_STUDY_CONFIG", raising=False)
     path = tmp_path / "portable" / "config" / "study.v1.json"
     path.parent.mkdir(parents=True)
-    path.write_bytes((Path(__file__).parent / "fixtures/study.v1.json").read_bytes())
+    path.write_bytes(
+        (Path(__file__).parent / "fixtures/study.coastal.v1.json").read_bytes()
+    )
     return path
 
 
@@ -32,7 +34,7 @@ def test_exact_pin_and_relative_root(study_file):
     study = load_study_config(study_file, planning=True)
     assert (
         study.config_sha256
-        == "b1f811ff8b3c47bc571805a5845fc55a410ccd6bd08dfc254899b387903ed7f5"
+        == "bacf22ea2b0beb32d1ef5607f52b2f6104419dd329edf25657bca196acc8018c"
     )
     assert (
         study.provenance()["geometry_sha256"]
@@ -110,14 +112,7 @@ def test_proposed_and_approved_production_both_fail_closed(
     )
     assert "proposed" in capsys.readouterr().err
     assert not workspace.exists()
-    value = json.loads(study_file.read_text())
-    value["domain"]["status"] = "approved"
-    value["domain"]["approval"] = {
-        "approved_at": "2026-10-06T01:00:00Z",
-        "source_message_id": "synthetic-approval-fixture",
-        "scope": "rectangular_selection_only",
-        "statement": "Synthetic approval fixture; no real domain approval.",
-    }
+    value = claimed_validated_coastal_config()
     study_file.write_text(json.dumps(value))
     assert (
         cli.main(
@@ -144,12 +139,8 @@ def test_planning_effective_config_and_identity(study_file, tmp_path, monkeypatc
     baseline = _configuration_identity(source)
     study = load_study_config(study_file, planning=True)
     with study_context(study, planning=True):
-        assert bbox_for_area("model_area") == {
-            "min_lon": -129.7,
-            "min_lat": 45.9,
-            "max_lon": -121.5,
-            "max_lat": 51.5,
-        }
+        with pytest.raises(StudyConfigError, match="acquisition envelope"):
+            bbox_for_area("model_area")
         config = load_data_config(source)
         assert config["marinecast_study"]["config_sha256"] == study.config_sha256
         assert config["marinecast_study_contract"] == study.payload
@@ -253,28 +244,27 @@ def test_current_shared_contract_compatibility(study_file):
     import hashlib
     from importlib.resources import files
 
-    study_file.write_bytes(
-        (Path(__file__).parent / "fixtures/study.current.v1.json").read_bytes()
-    )
     study = load_study_config(study_file, planning=True)
     assert (
         study.config_sha256
-        == "16ff9f7e75cc4b2a79d193b9364921d4453ef569a93d148557588e642e429060"
+        == "bacf22ea2b0beb32d1ef5607f52b2f6104419dd329edf25657bca196acc8018c"
     )
     assert study.payload["domain"]["approval"] is None
-    assert "pending-revision" in study.payload["domain"]["revision"]
-    assert (
-        study.payload["domain"]["revision_note"]
-        == study.provenance()["contract"]["domain"]["revision_note"]
-    )
     assert study.provenance()["production_ready"] is False
     schema = (
         files("seascape").joinpath("resources/contracts/study.schema.json").read_bytes()
     )
     assert (
         hashlib.sha256(schema).hexdigest()
-        == "c7b1092db348719b903efbcbba806098fecd314455cf960ad0ab84674c00d1d1"
+        == "77110ba989c47e621fcf1a4cb598f059dcc79a250b36e9a77b5154480cb89c5c"
     )
+
+
+@pytest.mark.parametrize("fixture", ["study.v1.json", "study.current.v1.json"])
+def test_superseded_selected_rectangular_contract_rejected(study_file, fixture):
+    study_file.write_bytes((Path(__file__).parent / "fixtures" / fixture).read_bytes())
+    with pytest.raises(StudyConfigError, match="selection_policy"):
+        load_study_config(study_file, planning=True)
 
 
 @pytest.mark.parametrize(
@@ -486,3 +476,50 @@ def test_coastal_readonly_cli_plan_never_calls_bbox_reporting(
     assert report["marinecast_study"]["reporting_bbox_wgs84"] is None
     assert "acquisition envelope" in report["study_support_warning"]
     assert not (workspace / ".seascape").exists()
+
+
+@pytest.mark.parametrize("planning", [True, False])
+@pytest.mark.parametrize(
+    "policy", ["omit", None, {}, [], "approved", {"status": "approved"}]
+)
+def test_policy_cannot_be_omitted_null_or_malformed(tmp_path, planning, policy):
+    config = claimed_validated_coastal_config()
+    if policy == "omit":
+        config["domain"].pop("selection_policy")
+    else:
+        config["domain"]["selection_policy"] = policy
+    path = tmp_path / "study.json"
+    path.write_text(json.dumps(config))
+    with pytest.raises(StudyConfigError):
+        load_study_config(path, planning=planning)
+
+
+@pytest.mark.parametrize("planning", [True, False])
+@pytest.mark.parametrize("field", ["bbox_role", "geometry_status", "selection_policy"])
+def test_complete_coastal_field_group_required(tmp_path, planning, field):
+    config = claimed_validated_coastal_config()
+    config["domain"].pop(field)
+    path = tmp_path / "study.json"
+    path.write_text(json.dumps(config))
+    with pytest.raises(StudyConfigError):
+        load_study_config(path, planning=planning)
+
+
+@pytest.mark.parametrize("command", [["build"], ["download", "bathymetry"]])
+def test_omitted_policy_entrypoints_fail_before_writes(tmp_path, command, capsys):
+    config = claimed_validated_coastal_config()
+    config["domain"].pop("selection_policy")
+    path = tmp_path / "study.json"
+    path.write_text(json.dumps(config))
+    destination = tmp_path / "unwritten"
+    assert (
+        cli.main(
+            ["--workspace", str(destination), "--study-config", str(path), *command]
+        )
+        == 1
+    )
+    error = capsys.readouterr().err
+    assert "Invalid study config" in error
+    assert "missing=" in error
+    assert "production integration is not enabled" not in error
+    assert not destination.exists()
