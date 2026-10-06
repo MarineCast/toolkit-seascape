@@ -208,3 +208,7 @@ src/seascape/seafloor_physiography/bathymetry/subset_acquisition.py`.
 See [acquisition contract](docs/gebco-subset-acquisition.md). Offline fixtures never submit real
 queue requests or qualify reporting support. Live source acquisition is a separate reviewed,
 resource-coordinated action; preserve ZIP, receipts and old cache bytes.
+For explicit source land/water adoption run `tests/test_source_partition.py`, then full suite
+and quality/docs checks. Check `python -m mypy src/seascape/spatial_support/water_geometry/partition.py`.
+See [partition adoption](docs/source-land-water-partition.md). Retain tile/union semantics and
+source exceptions; the engineering reporting selector never becomes the definition of water.
