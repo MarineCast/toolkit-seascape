@@ -14,6 +14,7 @@ from seascape.spatial_support.water_network.graph import (
     _iter_edge_batches,
     _iter_neighborhood_batches,
 )
+from seascape.spatial_support.water_network.validation import validate_neighborhoods
 
 
 def test_source_batches_keep_full_graph_context_and_hop_distance():
@@ -52,6 +53,15 @@ def test_source_batches_keep_full_graph_context_and_hop_distance():
     assert row.MINIMUM_HOP_COUNT == 2
     assert row.NETWORK_DISTANCE_M == 30.0
     assert set(batches[0].SOURCE_H3_INDEX) == {cells[0]}
+    validate_neighborhoods(
+        batches[0], support, 8, maximum_hops=2, source_cells=[cells[0]]
+    )
+    outside = batches[0].copy()
+    outside.loc[outside.TARGET_H3_INDEX == cells[2], "TARGET_H3_INDEX"] = "outside"
+    with pytest.raises(ValueError, match="target lies outside"):
+        validate_neighborhoods(
+            outside, support, 8, maximum_hops=2, source_cells=[cells[0]]
+        )
 
 
 def test_neighbor_source_validation_rejects_duplicates_and_missing_context():

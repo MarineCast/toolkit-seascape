@@ -12,6 +12,8 @@ accepted terminal connectors available to each traversal. They preserve minimum 
 the minimum distance among paths with that hop count. Filtering graph context before traversal
 would change the scientific method and is prohibited. Source lists must be unique members of the
 input graph; batch sizes must be positive.
+Partial-source validation checks every selected source and its self row while validating targets
+against full canonical support. The default validator still requires all support sources.
 
 Inputs and outputs retain the existing native R6/R8 support, edge, connector and neighborhood
 grains, units and source rights. No acquisition, new source classification or metric definition is
