@@ -13,7 +13,7 @@ from typing import Any
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from shapely import points
+from shapely import points, union_all
 from shapely.strtree import STRtree
 
 from seascape.core.artifacts.checksums import checksum_path
@@ -317,12 +317,59 @@ def normalize_inventory(
     return inventory.sort_values("SEGMENT_ID").reset_index(drop=True)
 
 
+def _physical_line_union_lengths(
+    records: list[tuple[Any, bool, tuple[str, ...]]],
+) -> tuple[float, float, dict[str, float], float, float]:
+    """Measure unique locations while retaining all contributing class evidence.
+
+    Any accepted classification establishes classified presence. Each class is
+    unioned separately; memberships may overlap. Unknown/known availability and
+    differing accepted membership sets are measured explicitly, without selecting
+    a first record or snapping nearby lines.
+    """
+    total = union_all([geometry for geometry, _known, _tokens in records])
+    accepted = union_all([geometry for geometry, known, _tokens in records if known])
+    unknown = union_all([geometry for geometry, known, _tokens in records if not known])
+    class_lengths = {
+        token: float(
+            union_all(
+                [
+                    geometry
+                    for geometry, known, tokens in records
+                    if known and token in tokens
+                ]
+            ).length
+        )
+        for token in CLASS_TOKENS
+    }
+    grouped: dict[tuple[str, ...], list[Any]] = {}
+    for geometry, known, tokens in records:
+        if known:
+            grouped.setdefault(tokens, []).append(geometry)
+    memberships = [union_all(parts) for parts in grouped.values()]
+    disagreements = union_all(
+        [
+            left.intersection(right)
+            for index, left in enumerate(memberships)
+            for right in memberships[index + 1 :]
+        ]
+    )
+    return (
+        float(total.length),
+        float(accepted.length),
+        class_lengths,
+        float(accepted.intersection(unknown).length),
+        float(disagreements.length),
+    )
+
+
 def _aggregate_lengths(
     inventory: gpd.GeoDataFrame,
     cell_geometry: gpd.GeoDataFrame,
     support: pd.DataFrame,
     *,
     projected_crs: str,
+    include_evidence_diagnostics: bool = False,
 ) -> pd.DataFrame:
     cells = cell_geometry[["H3_INDEX", "geometry"]].to_crs(projected_crs)
     shore = inventory.to_crs(projected_crs)
@@ -334,6 +381,7 @@ def _aggregate_lengths(
     class_lengths = {
         token: np.zeros(len(cells), dtype="float64") for token in CLASS_TOKENS
     }
+    parts: dict[int, list[tuple[Any, bool, tuple[str, ...]]]] = {}
     for item in shore.itertuples(index=False):
         for candidate in tree.query(item.geometry, predicate="intersects"):
             candidate = int(candidate)
@@ -341,12 +389,24 @@ def _aggregate_lengths(
             shared_length = float(shared.length)
             if shared_length <= 0:
                 continue
-            total[candidate] += shared_length
-            if item.IS_PHYSICALLY_CLASSIFIED:
-                classified[candidate] += shared_length
-                for token in CLASS_TOKENS:
-                    if getattr(item, f"IS_{token}_SHORE"):
-                        class_lengths[token][candidate] += shared_length
+            tokens = tuple(
+                token for token in CLASS_TOKENS if getattr(item, f"IS_{token}_SHORE")
+            )
+            parts.setdefault(candidate, []).append(
+                (shared, bool(item.IS_PHYSICALLY_CLASSIFIED), tokens)
+            )
+    availability_disagreement = np.zeros(len(cells), dtype="float64")
+    membership_disagreement = np.zeros(len(cells), dtype="float64")
+    for index, records in parts.items():
+        mapped, accepted, lengths, availability, membership = (
+            _physical_line_union_lengths(records)
+        )
+        total[index] = mapped
+        classified[index] = accepted
+        availability_disagreement[index] = availability
+        membership_disagreement[index] = membership
+        for token in CLASS_TOKENS:
+            class_lengths[token][index] = lengths[token]
     values = pd.DataFrame(
         {
             "H3_INDEX": cells["H3_INDEX"].astype(str),
@@ -368,6 +428,11 @@ def _aggregate_lengths(
             out=np.full(len(cells), np.nan),
             where=classified > 0,
         )
+    if include_evidence_diagnostics:
+        values["CLASSIFICATION_AVAILABILITY_DISAGREEMENT_LENGTH_M"] = (
+            availability_disagreement
+        )
+        values["CLASS_MEMBERSHIP_DISAGREEMENT_LENGTH_M"] = membership_disagreement
     if set(positions) != set(values["H3_INDEX"]):
         raise ValueError("Shoreline geometry and support identifiers are misaligned.")
     return align_to_model_support(

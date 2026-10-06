@@ -218,3 +218,10 @@ For bounded graph execution run `tests/test_bounded_graph_execution.py` and
 quality and documentation checks. Verify retained regional pilot parity before a regional run.
 See [bounded graph execution](docs/bounded-watergraph-execution.md). Output-source batching must
 retain the full traversal graph, connector semantics and scientific source/halo qualifications.
+
+For physical shoreline length changes run
+`python -m pytest -q tests/domains/environment/seascape/test_shoreline_characterization.py`,
+then the full suite, quality and documentation checks. Verify source-record repetition,
+partial overlaps, classification-availability disagreements and nearby distinct lines.
+Physical numerators and denominators count geometric unions, while source evidence retains
+all records. See the producer's `DATA_SOURCES.md`; survey coverage remains separate.
