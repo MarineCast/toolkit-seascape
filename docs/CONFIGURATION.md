@@ -230,9 +230,11 @@ union and contain all R6 reporting cells; R8 compute support must contain all in
 native reporting cells. Direct positive-area R6 reporting and the R8 compute parent union have
 distinct semantics and are not silently substituted for each other. R5 water networks are refused.
 
-The reader defaults to 16 MiB per artifact and 100,000 cells, with a conservative envelope-based
-enumeration check before H3 filling. Bounds may refuse a large complex mask; this read-only API is
-not a production footprint estimator. H3's overlap API is required; center-fill fallback is refused.
+The reader defaults to 16 MiB per artifact and 100,000 cells. Membership counts and read bytes are
+checked against those limits. Overlap filling uses only a heuristic envelope preflight plus a soft
+post-enumeration candidate-count check: candidates may be allocated before that check rejects.
+This is not a strict allocation bound or regional footprint estimate. H3's overlap API is required;
+center-fill fallback is refused.
 The returned immutable memberships record the pinned config, mask, membership artifacts, H3 library
 version, cell polygon/intersection/ellipsoidal area engines and scientific buffers in a portable
 consumer identity. Read bytes are also the bytes hashed and parsed, so validation is not based on a second read of a changing file.
@@ -252,3 +254,5 @@ halo distance completeness. Its provenance explicitly reports those limitations 
 `production_ready=false`. All current study CLI/context/orchestration production gates remain.
 Before removing them, integrate qualified source/mask manifests and each producer's actual reporting,
 network, native raster and halo routes, then independently validate their scientific outputs.
+The [producer routing inventory](shared-study-routing.md) documents implemented scientific routes,
+per-family remaining work and optional or source-blocked capabilities.

@@ -188,3 +188,8 @@ above. Fixtures are provenance/software checks, not shared-domain certification.
 For shared-support artifact/consumer changes first run `python -m pytest -q tests/test_study_support.py
 tests/test_study.py`, then the full suite and quality/docs gates. The support reader and explicit
 bathymetry cell API do not enable CLI production or certify source/halo qualification.
+For bounded scientific study routes run `python -m pytest -q tests/test_study_support.py
+tests/domains/environment/seascape/test_bathymetry_contracts.py
+tests/domains/environment/seascape/test_geomorphometry_contracts.py`, then full suite and quality/docs
+gates. Check `python -m mypy src/seascape/study_support.py src/seascape/study_routes.py` in addition
+to configured interface checks. Synthetic route provenance never qualifies a regional release.

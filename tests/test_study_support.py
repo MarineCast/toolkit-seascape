@@ -421,3 +421,355 @@ def test_compute_support_identity_is_producer_specific(inputs):
     )
     with pytest.raises(ValueError, match="own producer support"):
         load_h3_cells(config, study_support=other)
+
+
+def test_overlap_candidate_budget_is_explicit_soft_postcheck(monkeypatch):
+    allocated = []
+
+    def oversized(*_):
+        candidates = set(range(89))
+        allocated.append(len(candidates))
+        return candidates
+
+    monkeypatch.setattr("seascape.study_support.polygon_to_cells_overlap", oversized)
+    with pytest.raises(StudyConfigError, match="Soft.*after enumeration"):
+        _overlap(box(-123.50001, 48.50001, -123.5, 48.50002), 6, 20)
+    assert allocated == [89]
+
+
+@pytest.fixture
+def producer_inputs(inputs):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+
+    from seascape.study_routes import PinnedInput
+
+    support = load(inputs)
+    focal = support.reporting_r6[0]
+    halo = next(
+        cell
+        for cell in support.compute_r6
+        if cell not in support.reporting_r6 and h3.grid_distance(focal, cell) == 1
+    )
+    bounds = unary_union([cell_to_polygon(cell) for cell in support.compute_r6]).bounds
+    step = 1 / 240
+    west, south, east, north = bounds
+    width = int(np.ceil((east - west) / step)) + 2
+    height = int(np.ceil((north - south) / step)) + 2
+    transform = from_origin(west - step, north + step, step, step)
+    data = np.full((height, width), -32767, dtype="float32")
+    counts = {}
+    for row in range(height):
+        for column in range(width):
+            lon, lat = transform * (column + 0.5, row + 0.5)
+            cell = h3.latlng_to_cell(lat, lon, 6)
+            if cell in (focal, halo):
+                data[row, column] = -10 if cell == focal else -100
+                counts[cell] = counts.get(cell, 0) + 1
+    raster_path = inputs.root / "synthetic-depth.tif"
+    with rasterio.open(
+        raster_path,
+        "w",
+        driver="GTiff",
+        height=height,
+        width=width,
+        count=1,
+        dtype="float32",
+        crs="EPSG:4326",
+        transform=transform,
+        nodata=-32767,
+    ) as dst:
+        dst.write(data, 1)
+    metadata = json.dumps(
+        {
+            "version": "synthetic-test-v1",
+            "observation_period": "none: synthetic fixture",
+            "license": "Apache-2.0 synthetic fixture",
+            "evidence_type": "synthetic software acceptance",
+        }
+    )
+
+    def pin(filename):
+        raw = (inputs.root / filename).read_bytes()
+        return PinnedInput(
+            "../Data/" + filename, hashlib.sha256(raw).hexdigest(), metadata
+        )
+
+    graphs = {}
+    for resolution in (6, 8):
+        cells = support.cells(resolution, role="compute")
+        rows = []
+        for cell in cells:
+            targets = {cell}
+            if resolution == 6 and cell == focal:
+                targets.add(halo)
+            elif resolution == 6 and cell == halo:
+                targets.add(focal)
+            elif resolution == 8:
+                targets.update(set(h3.grid_disk(cell, 1)).intersection(cells))
+            for target in sorted(targets):
+                rows.append(
+                    {
+                        "SOURCE_H3_INDEX": cell,
+                        "TARGET_H3_INDEX": target,
+                        "H3_RESOLUTION": resolution,
+                        "MINIMUM_HOP_COUNT": 0 if cell == target else 1,
+                        "NETWORK_DISTANCE_M": 0.0 if cell == target else 100.0,
+                        "CONNECTIVITY_STATUS": "synthetic",
+                        "QC_REASON": "synthetic_not_qualified",
+                        "WATER_MASK_VERSION": "synthetic-only",
+                        "SPATIAL_SUPPORT_VERSION": "synthetic-only",
+                    }
+                )
+        filename = f"synthetic-graph-r{resolution}.parquet"
+        pd.DataFrame(rows).to_parquet(inputs.root / filename, index=False)
+        base_pin = pin(filename)
+        source_metadata = json.loads(base_pin.metadata_json)
+        membership = next(
+            m
+            for m in support.provenance()["compute_memberships"]
+            if m["resolution"] == resolution
+        )
+        source_metadata.update(
+            {
+                "study_config_sha256": inputs.config
+                and load_study_config(inputs.path).config_sha256,
+                "mask_sha256": support.mask_sha256,
+                "compute_membership_sha256": membership["sha256"],
+                "maximum_graph_hops": 1,
+            }
+        )
+        graphs[resolution] = replace(
+            base_pin, metadata_json=json.dumps(source_metadata)
+        )
+    config = SimpleNamespace(
+        h3_resolution=6,
+        bathymetry_sign="positive_down",
+        depth_quantiles=(0.25, 0.75),
+        local_depth_anomaly_neighborhood_rings=1,
+        isobath_levels_m=(50.0,),
+        isobath_distance_projected_crs="EPSG:32610",
+    )
+    return SimpleNamespace(
+        inputs=inputs,
+        study=load_study_config(inputs.path),
+        support=support,
+        focal=focal,
+        halo=halo,
+        counts=counts,
+        raster=pin("synthetic-depth.tif"),
+        graphs=graphs,
+        config=config,
+        pin=pin,
+    )
+
+
+def run_bathymetry(p, **kwargs):
+    from seascape.study_routes import route_bathymetry
+
+    return route_bathymetry(
+        p.config,
+        p.study,
+        p.support,
+        raster=p.raster,
+        neighborhoods=p.graphs[p.config.h3_resolution],
+        maximum_graph_hops=1,
+        **kwargs,
+    )
+
+
+def test_actual_bathymetry_routing_computes_halo_before_reporting_trim(producer_inputs):
+    p = producer_inputs
+    result = run_bathymetry(p)
+    frame = result.reporting.set_index("H3_INDEX")
+    assert set(frame.index) == set(p.support.reporting_r6)
+    assert p.halo not in frame.index
+    assert frame.loc[p.focal, "BATHYMETRY"] == 10
+    assert frame.loc[p.focal, "BATHYMETRY_PIXEL_COUNT"] == p.counts[p.focal]
+    assert frame.loc[p.focal, "BATHYMETRY_LOCAL_ANOMALY"] == pytest.approx(-90)
+    missing = frame.loc[frame.index != p.focal]
+    assert missing.BATHYMETRY.isna().all()
+    assert missing.BATHYMETRY_PIXEL_COUNT.isna().all()
+    assert (missing.NATIVE_SAMPLE_STATUS == "no_valid_native_marine_pixels").all()
+    assert result.compute.set_index("H3_INDEX").loc[p.halo, "BATHYMETRY"] == 100
+    path = p.inputs.root / "reporting-depth.parquet"
+    result.write_reporting(path)
+    import pyarrow.parquet as pq
+
+    embedded = json.loads(
+        pq.ParquetFile(path).metadata.metadata[b"marinecast_study_route"]
+    )
+    assert embedded["artifact_role"] == "reporting"
+    assert embedded["release_eligible"] is False
+    assert embedded["sources"][0]["raw_sha256"] == p.raster.sha256
+    assert embedded["missing_native_sample_count"] == len(missing)
+    assert (
+        embedded["sources"][0]["source_metadata"]["observation_period"]
+        == "none: synthetic fixture"
+    )
+    with pytest.raises(FileExistsError):
+        result.write_reporting(path)
+
+
+def test_actual_native_r8_bathymetry_and_geomorphometry_route(producer_inputs):
+    from seascape.seafloor_physiography.geomorphometry.build import (
+        load_geomorphometry_config,
+    )
+    from seascape.study_routes import route_geomorphometry
+
+    p = producer_inputs
+    p.config.h3_resolution = 8
+    bathymetry = run_bathymetry(p)
+    assert bathymetry.reporting.H3_INDEX.tolist() == list(p.support.native_reporting_r8)
+    bathymetry.write_compute(p.inputs.root / "compute-depth-r8.parquet")
+    support = load_study_support(
+        p.study,
+        producer="geomorphometry",
+        mask_relative_path="../Data/mask.geojson",
+        compute_memberships=p.inputs.halo,
+    )
+    config = replace(
+        load_geomorphometry_config(),
+        neighbor_ring=1,
+        neighborhood_rings=(1,),
+        openness_radius_rings=1,
+    )
+    result = route_geomorphometry(
+        config,
+        p.study,
+        support,
+        bathymetry=p.pin("compute-depth-r8.parquet"),
+        raster=p.raster,
+        neighborhoods=p.graphs[8],
+        maximum_graph_hops=1,
+    )
+    assert result.reporting.H3_INDEX.tolist() == list(support.native_reporting_r8)
+    valid = result.compute.SLOPE_MEAN_NATIVE_RASTER.dropna()
+    assert len(valid) > 0
+    assert (valid == 0).any()  # Flat observed native stencils remain measured zero.
+    assert (
+        result.provenance()["sources"][0]["upstream_route_identity_sha256"]
+        == bathymetry.provenance()["route_identity_sha256"]
+    )
+    assert result.provenance()["production_ready"] is False
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "source_hash",
+        "graph_keys",
+        "graph_rows",
+        "source_bytes",
+        "source_pixels",
+        "identity",
+    ],
+)
+def test_routed_inputs_fail_before_output(producer_inputs, bad):
+    p = producer_inputs
+    kwargs = {}
+    if bad == "source_hash":
+        p.raster = replace(p.raster, sha256="0" * 64)
+    elif bad == "graph_keys":
+        filename = "invalid-graph.parquet"
+        frame = pd.read_parquet(p.inputs.root / "synthetic-graph-r6.parquet")
+        frame.loc[0, "TARGET_H3_INDEX"] = h3.latlng_to_cell(0, 0, 6)
+        frame.to_parquet(p.inputs.root / filename, index=False)
+        p.graphs[6] = replace(p.pin(filename), metadata_json=p.graphs[6].metadata_json)
+    elif bad == "graph_rows":
+        frame = pd.read_parquet(p.inputs.root / "synthetic-graph-r6.parquet").iloc[1:]
+        frame.to_parquet(p.inputs.root / "invalid-graph.parquet", index=False)
+        p.graphs[6] = replace(
+            p.pin("invalid-graph.parquet"), metadata_json=p.graphs[6].metadata_json
+        )
+    elif bad == "source_bytes":
+        kwargs["max_input_bytes"] = 1
+    elif bad == "source_pixels":
+        kwargs["max_pixels_and_rows"] = 1
+    else:
+        p.support = replace(p.support, config_sha256="0" * 64)
+    with pytest.raises((StudyConfigError, ValueError)):
+        run_bathymetry(p, **kwargs)
+
+
+def test_reviewer_thin_strip_fails_at_soft_candidate_postcheck():
+    with pytest.raises(StudyConfigError, match="Soft.*after enumeration"):
+        _overlap(box(-125, 48.5, -124.9999999, 49), 8, 20)
+
+
+def test_partial_native_footprint_retains_null_rows_and_coverage(producer_inputs):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+
+    p = producer_inputs
+    lat, lon = h3.cell_to_latlng(p.focal)
+    step = 1 / 240
+    with rasterio.open(
+        p.inputs.root / "partial.tif",
+        "w",
+        driver="GTiff",
+        width=3,
+        height=3,
+        count=1,
+        dtype="float32",
+        crs="EPSG:4326",
+        transform=from_origin(lon - 1.5 * step, lat + 1.5 * step, step, step),
+        nodata=-32767,
+    ) as dst:
+        dst.write(np.full((3, 3), -20, dtype="float32"), 1)
+    p.raster = p.pin("partial.tif")
+    result = run_bathymetry(p)
+    frame = result.reporting.set_index("H3_INDEX")
+    assert frame.loc[p.focal, "BATHYMETRY"] == 20
+    assert frame.loc[p.focal, "BATHYMETRY_PIXEL_COUNT"] == 9
+    assert (
+        frame.loc[p.focal, "NATIVE_EXTENT_STATUS"]
+        == "cell_extends_outside_native_extent"
+    )
+    assert result.provenance()["native_extent_partial_count"] == len(frame)
+    assert frame.loc[frame.index != p.focal, "BATHYMETRY"].isna().all()
+
+
+def test_graph_pins_bind_current_mask_and_context(producer_inputs):
+    p = producer_inputs
+    metadata = json.loads(p.graphs[6].metadata_json)
+    metadata["mask_sha256"] = "0" * 64
+    p.graphs[6] = replace(p.graphs[6], metadata_json=json.dumps(metadata))
+    with pytest.raises(StudyConfigError, match="graph metadata"):
+        run_bathymetry(p)
+
+
+def test_geomorphometry_refuses_reporting_only_upstream(producer_inputs):
+    from seascape.seafloor_physiography.geomorphometry.build import (
+        load_geomorphometry_config,
+    )
+    from seascape.study_routes import route_geomorphometry
+
+    p = producer_inputs
+    p.config.h3_resolution = 8
+    bathymetry = run_bathymetry(p)
+    bathymetry.write_reporting(p.inputs.root / "reporting-only-r8.parquet")
+    support = load_study_support(
+        p.study,
+        producer="geomorphometry",
+        mask_relative_path="../Data/mask.geojson",
+        compute_memberships=p.inputs.halo,
+    )
+    config = replace(
+        load_geomorphometry_config(),
+        neighbor_ring=1,
+        neighborhood_rings=(1,),
+        openness_radius_rings=1,
+    )
+    with pytest.raises(StudyConfigError, match="routed compute bathymetry provenance"):
+        route_geomorphometry(
+            config,
+            p.study,
+            support,
+            bathymetry=p.pin("reporting-only-r8.parquet"),
+            raster=p.raster,
+            neighborhoods=p.graphs[8],
+            maximum_graph_hops=1,
+        )

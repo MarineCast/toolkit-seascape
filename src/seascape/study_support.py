@@ -162,8 +162,8 @@ def _overlap(
         raise StudyConfigError(
             "Positive-area support requires H3 overlap API; no center fallback."
         )
-    # Bound allocation before H3 enumerates candidates. This conservative envelope
-    # check can refuse detailed coast masks; it never claims a production estimate.
+    # Soft heuristic preflight only: H3 may allocate more than max_cells before
+    # the post-enumeration check. This is not a strict memory allocation bound.
     envelope = box(*geometry.bounds)
     area, _ = Geod(ellps="WGS84").geometry_area_perimeter(envelope)
     estimate = abs(area) / h3.average_hexagon_area(resolution, unit="m^2") * 16
@@ -171,7 +171,9 @@ def _overlap(
         raise StudyConfigError("Overlap envelope exceeds bounded enumeration budget.")
     candidates = polygon_to_cells_overlap(geometry, resolution)
     if len(candidates) > max_cells:
-        raise StudyConfigError("Overlap candidate count exceeds budget.")
+        raise StudyConfigError(
+            "Soft overlap candidate limit exceeded after enumeration."
+        )
     geod = Geod(ellps="WGS84")
     selected = []
     for cell in candidates:
@@ -304,6 +306,7 @@ def load_study_support(
         "intersection_engine": f"shapely {shapely.__version__}",
         "positive_area_engine": f"pyproj {pyproj.__version__} Geod WGS84 ellipsoid",
         "registry_artifact_interface_version": 1,
+        "overlap_enumeration_limit": "heuristic_preflight_soft_postcheck_not_allocation_bound",
         "registry_artifact_interface_sha256": "38e3f84d8e7b0f59c188abb1da1ca354bb6271c328ac2a7e29504b0ca2f84d01",
         "membership_hash_policy": "sorted_unique_lowercase_ids_terminal_newline_raw_sha256",
         "reporting_membership": reporting[0],

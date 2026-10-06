@@ -12,6 +12,7 @@ import argparse
 import logging
 import math
 from collections.abc import Mapping
+from contextlib import ExitStack
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -335,7 +336,7 @@ def validate_native_raster_header(raster) -> None:
 
 
 def _native_raster_slope_summary(
-    raster_path: Path,
+    raster_path: Path | bytes,
     target_cells: set[str],
     resolution: int,
     quantile: float,
@@ -345,9 +346,14 @@ def _native_raster_slope_summary(
     import h3
     import rasterio
 
-    if not raster_path.exists():
+    if not isinstance(raster_path, bytes) and not raster_path.exists():
         raise FileNotFoundError(f"Native GEBCO raster not found: {raster_path}")
-    with rasterio.open(raster_path) as raster:
+    with ExitStack() as stack:
+        if isinstance(raster_path, bytes):
+            memory = stack.enter_context(rasterio.io.MemoryFile(raster_path))
+            raster = stack.enter_context(memory.open())
+        else:
+            raster = stack.enter_context(rasterio.open(raster_path))
         validate_native_raster_header(raster)
         elevation = raster.read(1, masked=True).astype("float64").filled(np.nan)
         transform = raster.transform

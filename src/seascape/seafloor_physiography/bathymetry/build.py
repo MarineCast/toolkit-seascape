@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import ExitStack
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -422,7 +423,7 @@ def _isobath_segments(
 
 
 def _aggregate_raster(
-    raster_path: Path,
+    raster_path: Path | bytes,
     cells: list[str],
     resolution: int,
     bathymetry_sign: str,
@@ -434,7 +435,12 @@ def _aggregate_raster(
 ) -> pd.DataFrame:
     import rasterio
 
-    with rasterio.open(raster_path) as raster:
+    with ExitStack() as stack:
+        if isinstance(raster_path, bytes):
+            memory = stack.enter_context(rasterio.io.MemoryFile(raster_path))
+            raster = stack.enter_context(memory.open())
+        else:
+            raster = stack.enter_context(rasterio.open(raster_path))
         if raster.count != 1:
             raise ValueError(f"Expected a single-band GEBCO raster: {raster_path}")
         if raster.crs is None or raster.crs.to_epsg() != 4326:
