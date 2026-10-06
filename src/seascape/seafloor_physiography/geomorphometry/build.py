@@ -24,6 +24,7 @@ from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.core.geo.crs import require_metric_crs
 from seascape.core.geo.h3 import cell_to_polygon
+from seascape.seafloor_physiography.depth import validate_native_metre_band_units
 from seascape.spatial_support.water_network import (
     load_water_neighborhoods,
 )
@@ -373,6 +374,7 @@ def validate_native_raster_header(raster) -> None:
         raise ValueError(
             "Native GEBCO slope input must be a one-band EPSG:4326 raster."
         )
+    validate_native_metre_band_units(raster.units[0])
     transform = raster.transform
     if transform.b != 0 or transform.d != 0 or transform.a <= 0 or transform.e >= 0:
         raise ValueError("Native slope requires an unrotated north-up raster.")

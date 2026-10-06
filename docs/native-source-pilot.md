@@ -58,7 +58,11 @@ is `rasterio_mask_and_finite`. No conversion, implicit resampling or vertical-da
 `documented_source_relative` or `unknown`; unknown datum is rejected by the real pilot. A documented
 GEBCO mixed-source mean-sea-level assumption remains a source-relative limitation, not uniform datum
 certification. Band-unit metadata may be absent; metre interpretation then needs the pinned source
-documentation. The source must not be relabeled as a uniformly observed bathymetric survey.
+documentation. Explicit band units must be `m`, `metre`, `metres`, `meter` or `meters`
+(case-insensitive with surrounding whitespace ignored). Feet and explicit unknown/conflicting
+labels reject before pixel decoding or generation creation; no unit conversion is implemented.
+The same unit validator checks receipt preflight and the actual captured raster header.
+Unit agreement does not establish the vertical datum. The source must not be relabeled as a uniformly observed bathymetric survey.
 
 `probe_cells` contains unique explicit R6/R8 cell strings. The real pilot requires the exact compute
 membership union. Full-H3 native pixel-center sampling remains the scientific grain; the water mask

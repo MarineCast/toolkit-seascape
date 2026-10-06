@@ -19,6 +19,7 @@ from shapely.geometry import Polygon, mapping, shape
 from seascape._study_contract import canonical_bytes
 from seascape.core.geo.h3 import cell_to_polygon
 from seascape.seafloor_physiography.bathymetry.build import _aggregate_raster
+from seascape.seafloor_physiography.depth import validate_native_metre_band_units
 from seascape.seafloor_physiography.geomorphometry.build import (
     _derive_metrics,
     _native_raster_slope_summary,
@@ -125,6 +126,10 @@ def _raster(raw: bytes, max_pixels: int) -> dict[str, Any]:
     with rasterio.io.MemoryFile(raw) as memory, memory.open() as raster:
         if raster.count != 1 or raster.crs is None or raster.crs.to_epsg() != 4326:
             raise StudyConfigError("Native source must be single-band WGS84.")
+        try:
+            validate_native_metre_band_units(raster.units[0])
+        except ValueError as exc:
+            raise StudyConfigError(str(exc)) from exc
         if raster.width * raster.height > max_pixels:
             raise StudyConfigError("Native raster exceeds decoded pixel budget.")
         return {

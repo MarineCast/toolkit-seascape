@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import pandas as pd
 
+from seascape.seafloor_physiography.depth import validate_native_metre_band_units
+
 if TYPE_CHECKING:
     from seascape.study_support import VerifiedStudySupport
 
@@ -445,6 +447,7 @@ def _aggregate_raster(
             raise ValueError(f"Expected a single-band GEBCO raster: {raster_path}")
         if raster.crs is None or raster.crs.to_epsg() != 4326:
             raise ValueError("GEBCO GeoTIFF must use EPSG:4326 for H3 aggregation.")
+        validate_native_metre_band_units(raster.units[0])
         elevation = raster.read(1, masked=True).astype("float64").filled(np.nan)
         transform = raster.transform
 

@@ -32,6 +32,7 @@ from shapely.geometry import Polygon, mapping, shape
 from seascape._study_contract import canonical_bytes, unique_object
 from seascape.core.code_identity import package_code_identity
 from seascape.core.geo.h3 import cell_to_polygon
+from seascape.seafloor_physiography.depth import validate_native_metre_band_units
 from seascape.study import StudyConfig, StudyConfigError
 from seascape.study_routes import PinnedInput, route_bathymetry
 from seascape.study_support import VerifiedStudySupport, _read_pinned
@@ -98,6 +99,30 @@ class NativeArtifact:
         if len(raw) != self.byte_size:
             raise StudyConfigError("Captured artifact byte_size mismatch.")
         return raw
+
+
+def validate_native_unit_contract(
+    band_units: Any,
+    interpretation: dict[str, Any],
+    interpretation_evidence_sha256: str,
+    evidence: tuple[NativeArtifact, ...],
+) -> None:
+    """Require metre-compatible declared units; an absent label needs pinned evidence.
+
+    Unit agreement does not establish a vertical datum. No conversion is supported.
+    """
+    if interpretation["units"] != "m" or interpretation["transformation"] != "none":
+        raise StudyConfigError(
+            "Native unit interpretation must be metres with no conversion."
+        )
+    try:
+        validate_native_metre_band_units(band_units)
+    except ValueError as exc:
+        raise StudyConfigError(str(exc)) from exc
+    if not any(a.raw_sha256 == interpretation_evidence_sha256 for a in evidence):
+        raise StudyConfigError(
+            "Native metre interpretation requires pinned source evidence, including when band units are absent."
+        )
 
 
 @dataclass(frozen=True)
@@ -328,6 +353,12 @@ class NativeReceipt:
             raise StudyConfigError(
                 "First pilot requires metre negative-elevation inputs without conversion."
             )
+        validate_native_unit_contract(
+            header["band_units"],
+            interpretation,
+            identity["interpretation_evidence_sha256"],
+            evidence,
+        )
         _text(interpretation["vertical_reference"], "vertical_reference")
         if interpretation["vertical_reference_status"] not in {
             "documented_source_relative",
@@ -459,6 +490,12 @@ def inspect_native_source(
             or measured_native_header(raster) != receipt.measured_header
         ):
             raise StudyConfigError("Captured native header differs from receipt.")
+        validate_native_unit_contract(
+            raster.units[0],
+            receipt.interpretation,
+            receipt.source_identity["interpretation_evidence_sha256"],
+            receipt.evidence,
+        )
         t = raster.transform
         if (
             raster.crs is None

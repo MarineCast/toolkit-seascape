@@ -439,3 +439,149 @@ def test_declared_artifact_size_caps_actual_read(tmp_path, monkeypatch):
     pin = NativeArtifact("evidence", "small.json", "0" * 64, 3, "JSON")
     assert pin.capture(tmp_path, tmp_path, 16 * 1024**2) == b"abc"
     assert limits == [3]
+
+
+@pytest.mark.parametrize("scope", ["probe", "pilot"])
+@pytest.mark.parametrize(
+    "band_units,interpretation_units",
+    [("ft", "m"), ("unknown", "m"), ("m", "ft"), ("m", "unknown")],
+)
+def test_correctly_rehashed_native_units_reject_before_compute_and_writes(
+    producer_inputs, tmp_path, monkeypatch, scope, band_units, interpretation_units
+):
+    p = producer_inputs
+    if scope == "pilot":
+        path, record, configs, q = make_pilot(p)
+    else:
+        path, record = receipt_for(p)
+    source = p.inputs.root / "synthetic-depth.tif"
+    with rasterio.open(source, "r+") as raster:
+        raster.set_band_unit(1, band_units)
+    with rasterio.open(source) as raster:
+        record["measured_header"] = measured_native_header(raster)
+        assert raster.units[0] == band_units
+    record["source"] = artifact(source, p.inputs.root, "native_elevation", "GeoTIFF")
+    record["interpretation"]["units"] = interpretation_units
+    path.write_bytes(canonical_bytes(record))
+    monkeypatch.setattr(
+        "seascape.study_native.inspect_native_source",
+        lambda *_: pytest.fail("Invalid declared units must reject in preflight"),
+    )
+    workspace = tmp_path / "unwritten-unit-conflict"
+    with pytest.raises(StudyConfigError, match="unit|metre"):
+        if scope == "pilot":
+            run_real_source_pilot(p.study, p.support, path, workspace, configs)
+        else:
+            run_native_source_probe(path, p.inputs.root, workspace)
+    assert not workspace.exists()
+
+
+@pytest.mark.parametrize("band_units", [None, "m", "metre", "meters", " M "])
+def test_supported_unit_labels_and_absent_pinned_interpretation(
+    producer_inputs, band_units
+):
+    from seascape.study_native import validate_native_unit_contract
+
+    path, record = receipt_for(producer_inputs)
+    receipt = NativeReceipt.parse(canonical_bytes(record))
+    validate_native_unit_contract(
+        band_units,
+        receipt.interpretation,
+        receipt.source_identity["interpretation_evidence_sha256"],
+        receipt.evidence,
+    )
+    with pytest.raises(StudyConfigError, match="pinned"):
+        validate_native_unit_contract(
+            band_units, receipt.interpretation, "0" * 64, receipt.evidence
+        )
+
+
+def test_actual_header_units_checked_even_with_direct_receipt_object(producer_inputs):
+    from dataclasses import replace
+
+    p = producer_inputs
+    path, record = receipt_for(p)
+    source = p.inputs.root / "synthetic-depth.tif"
+    with rasterio.open(source, "r+") as raster:
+        raster.set_band_unit(1, "ft")
+    with rasterio.open(source) as raster:
+        header = measured_native_header(raster)
+    # Direct dataclass construction cannot bypass the actual-header unit check.
+    receipt = replace(
+        NativeReceipt.parse(canonical_bytes(record)), measured_header=header
+    )
+    with pytest.raises(StudyConfigError, match="band units"):
+        inspect_native_source(
+            source.read_bytes(), receipt, NativeMonitor(receipt.budget)
+        )
+
+
+def test_metre_units_do_not_qualify_unknown_vertical_reference(
+    producer_inputs, tmp_path
+):
+    p = producer_inputs
+    path, record, configs, q = make_pilot(p)
+    record["measured_header"]["band_units"] = "m"
+    record["interpretation"]["vertical_reference"] = "unknown exact member datum"
+    record["interpretation"]["vertical_reference_status"] = "unknown"
+    probe = record | {"scope": "native_source_probe", "qualification": None}
+    assert (
+        NativeReceipt.parse(canonical_bytes(probe)).interpretation[
+            "vertical_reference_status"
+        ]
+        == "unknown"
+    )
+    path.write_bytes(canonical_bytes(record))
+    with pytest.raises(StudyConfigError, match="datum"):
+        run_real_source_pilot(
+            p.study, p.support, path, tmp_path / "unwritten-datum", configs
+        )
+    assert not (tmp_path / "unwritten-datum").exists()
+
+
+@pytest.mark.parametrize("band_units", ["ft", "unknown"])
+def test_scientific_readers_reject_nonmetre_header_before_computation(
+    producer_inputs, monkeypatch, band_units
+):
+    from seascape.seafloor_physiography.bathymetry.build import _aggregate_raster
+    from seascape.seafloor_physiography.geomorphometry.build import (
+        _native_raster_slope_summary,
+    )
+    from seascape.study_routes import route_bathymetry
+
+    p = producer_inputs
+    source = p.inputs.root / "synthetic-depth.tif"
+    with rasterio.open(source, "r+") as raster:
+        raster.set_band_unit(1, band_units)
+    pin = p.pin(source.name)
+    monkeypatch.setattr(
+        "seascape.study_routes._aggregate_raster",
+        lambda *_args, **_kwargs: pytest.fail(
+            "Bad native units reached scientific compute"
+        ),
+    )
+    with pytest.raises(StudyConfigError, match="band units"):
+        route_bathymetry(
+            p.config,
+            p.study,
+            p.support,
+            raster=pin,
+            neighborhoods=p.graphs[6],
+            maximum_graph_hops=1,
+        )
+    with pytest.raises(ValueError, match="band units"):
+        _aggregate_raster(
+            source.read_bytes(),
+            list(p.support.compute_r6),
+            6,
+            bathymetry_sign="positive_down",
+            depth_quantiles=(0.25, 0.75),
+            local_depth_anomaly_neighborhood_rings=1,
+            isobath_levels_m=(50,),
+            isobath_distance_projected_crs="EPSG:32610",
+            neighborhoods=pd.DataFrame(),
+        )
+    with pytest.raises(ValueError, match="band units"):
+        _native_raster_slope_summary(
+            source.read_bytes(), set(p.support.compute_r8), 8, 0.9
+        )
