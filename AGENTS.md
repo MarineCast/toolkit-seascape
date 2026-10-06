@@ -202,3 +202,9 @@ For native receipt/probe/pilot changes run `tests/test_study_native.py` and `tes
 then the full suite and quality/docs gates. Include `src/seascape/study_native.py` in explicit mypy
 checks. The bounded source probe is non-reporting; real pilot evidence must stay source-relative,
 with false regional/artifact publication eligibility and no automatic acquisition.
+For bounded GEBCO acquisition changes run `tests/test_gebco_subset_acquisition.py`, then the full
+suite and quality/docs gates. Explicitly check `python -m mypy
+src/seascape/seafloor_physiography/bathymetry/subset_acquisition.py`.
+See [acquisition contract](docs/gebco-subset-acquisition.md). Offline fixtures never submit real
+queue requests or qualify reporting support. Live source acquisition is a separate reviewed,
+resource-coordinated action; preserve ZIP, receipts and old cache bytes.
