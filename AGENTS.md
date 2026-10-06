@@ -179,7 +179,8 @@ CI also runs Gitleaks over history and the working tree. Scope and platform limi
 ## Shared study planning adapter
 
 `seascape.study` validates explicit study-v1 JSON with its packaged schema. No implicit
-workspace/sibling config discovery is permitted. The adapter is planning only; production stays
+workspace/sibling config discovery is permitted. The adapter supports planning and synthetic core
+software acceptance only; production stays
 blocked until marine reporting membership and distinct compute halos are integrated. Preserve
 standalone behavior and do not relax this hold based only on domain.status=approved.
 For adapter/config/CLI changes run `python -m pytest -q tests/test_study.py tests/test_preflight.py
@@ -193,3 +194,7 @@ tests/domains/environment/seascape/test_bathymetry_contracts.py
 tests/domains/environment/seascape/test_geomorphometry_contracts.py`, then full suite and quality/docs
 gates. Check `python -m mypy src/seascape/study_support.py src/seascape/study_routes.py` in addition
 to configured interface checks. Synthetic route provenance never qualifies a regional release.
+For the synthetic study core CLI also check `python -m mypy src/seascape/study_core.py` and run
+`tests/test_study_support.py` for mandatory/optional capability closure, retained schema3 software
+release verification and tamper rejection. The owned fixture namespace and false regional release
+eligibility are required; do not reuse the fixture audit as a regional audit PASS.

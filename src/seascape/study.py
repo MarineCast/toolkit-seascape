@@ -1,4 +1,4 @@
-"""Portable, explicit study-v1 planning; production membership integration pending."""
+"""Explicit study-v1 planning and synthetic acceptance; regional qualification pending."""
 
 from __future__ import annotations
 
@@ -58,7 +58,7 @@ class StudyConfig:
             "resolved_data_root": str(self.data_root),
             "grid_registry": config["grid_registry"],
             "contract": config,
-            "integration_status": "planning_only",
+            "integration_status": "planning_and_synthetic_core_only",
             "production_ready": False,
             "static_time_policy": "source vintages retained; no annual duplication or backdating",
         }

@@ -334,6 +334,10 @@ def route_geomorphometry(
 ) -> RoutedProduct:
     """Execute existing native-slope and graph-scale terrain methods over context."""
     resolution = config.h3_resolution
+    if type(resolution) is not int or resolution != 8:
+        raise StudyConfigError(
+            "Geomorphometry scientific route supports native R8 only; no implicit R6 resampling."
+        )
     cells = _context(
         study,
         support,

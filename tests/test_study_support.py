@@ -773,3 +773,179 @@ def test_geomorphometry_refuses_reporting_only_upstream(producer_inputs):
             neighborhoods=p.graphs[8],
             maximum_graph_hops=1,
         )
+
+
+def core_plan(p, terrain=False):
+    def record(pin):
+        return {
+            "relative_path": pin.relative_path,
+            "sha256": pin.sha256,
+            "metadata": json.loads(pin.metadata_json),
+        }
+
+    settings = {
+        name: value for name, value in vars(p.config).items() if name != "h3_resolution"
+    }
+    plan = {
+        "interface_version": 1,
+        "validation_scope": "synthetic_software_acceptance",
+        "study_config_sha256": p.study.config_sha256,
+        "selected_capabilities": ["bathymetry_r6", "bathymetry_native_r8"],
+        "mask_relative_path": "../Data/mask.geojson",
+        "compute_memberships": [vars(spec) for spec in p.inputs.halo],
+        "raster": record(p.raster),
+        "graphs": {
+            str(res): {"input": record(pin), "maximum_hops": 1}
+            for res, pin in p.graphs.items()
+        },
+        "scientific_settings": {"bathymetry": settings},
+    }
+    if terrain:
+        from seascape.seafloor_physiography.geomorphometry.build import (
+            load_geomorphometry_config,
+        )
+
+        config = replace(
+            load_geomorphometry_config(),
+            neighbor_ring=1,
+            neighborhood_rings=(1,),
+            openness_radius_rings=1,
+        )
+        names = (
+            "native_resolution_arc_seconds",
+            "projected_crs",
+            "neighbor_ring",
+            "neighborhood_rings",
+            "minimum_neighbors",
+            "ruggedness_algorithm",
+            "slope_upper_quantile",
+            "openness_radius_rings",
+            "openness_bearing_sectors",
+            "curvature_index_scale_per_m",
+        )
+        plan["scientific_settings"]["geomorphometry"] = {
+            name: getattr(config, name) for name in names
+        }
+        plan["selected_capabilities"].append("geomorphometry_native_r8")
+    path = p.inputs.path.parent / "core-inputs.json"
+    path.write_text(json.dumps(plan))
+    return path
+
+
+@pytest.mark.parametrize("terrain", [False, True])
+def test_core_cli_end_to_end_retained_software_release(
+    producer_inputs, tmp_path, capsys, terrain
+):
+    from seascape import cli
+    from seascape.study_core import verify_core_fixture_release
+    from seascape.utils.artifacts import validate_manifest
+
+    p = producer_inputs
+    plan = core_plan(p, terrain)
+    workspace = tmp_path / "core-workspace"
+    assert (
+        cli.main(
+            [
+                "--workspace",
+                str(workspace),
+                "--study-config",
+                str(p.inputs.path),
+                "study-core-fixture",
+                "--input-manifest",
+                str(plan),
+            ]
+        )
+        == 0
+    )
+    result = json.loads(capsys.readouterr().out)
+    assert result["status"] == "software_release_validated"
+    assert result["production_ready"] is False
+    generation = Path(result["generation"])
+    release = verify_core_fixture_release(generation)
+    assert release["artifact_release_passed"] is False
+    assert release["regional_release_eligible"] is False
+    assert not (workspace / ".seascape/releases").exists()
+    audit = json.loads((generation / "audit.json").read_text())
+    assert audit["schema_version"] == 3
+    assert audit["software_release_passed"] is True
+    assert audit["audited_inputs"]
+    capabilities = json.loads((generation / "capabilities.json").read_text())
+    assert "bottom_hardness" in capabilities["excluded"]
+    for entry in capabilities["materialized"].values():
+        validate_manifest(
+            json.loads((generation / entry["manifest"]).read_text()),
+            project_root=generation,
+            verify_artifacts=True,
+        )
+    r6 = pd.read_parquet(generation / "products/bathymetry_r6.parquet").set_index(
+        "H3_INDEX"
+    )
+    assert set(r6.index) == set(p.support.reporting_r6)
+    assert r6.loc[p.focal, "BATHYMETRY_LOCAL_ANOMALY"] == -90
+    # Original mutable fixture input changes cannot invalidate retained snapshots.
+    (p.inputs.root / "synthetic-depth.tif").write_bytes(b"original source revised")
+    assert verify_core_fixture_release(generation) == release
+    # Output tampering invalidates the bound software audit.
+    (generation / "products/bathymetry_r6.parquet").write_bytes(b"invalid")
+    with pytest.raises(Exception):
+        verify_core_fixture_release(generation)
+
+
+@pytest.mark.parametrize(
+    "change", ["real_scope", "real_evidence", "optional", "missing_core", "config_hash"]
+)
+def test_core_fixture_contract_rejects_unqualified_scope_before_workspace_writes(
+    producer_inputs, tmp_path, change
+):
+    from seascape.study_core import run_core_fixture
+
+    p = producer_inputs
+    path = core_plan(p)
+    plan = json.loads(path.read_text())
+    if change == "real_scope":
+        plan["validation_scope"] = "owner-qualified-source-relative-production"
+    elif change == "real_evidence":
+        plan["raster"]["metadata"]["evidence_type"] = "compiled real observations"
+    elif change == "optional":
+        plan["selected_capabilities"].append("bottom_hardness")
+    elif change == "missing_core":
+        plan["selected_capabilities"].remove("bathymetry_r6")
+    else:
+        plan["study_config_sha256"] = "0" * 64
+    path.write_text(json.dumps(plan))
+    workspace = tmp_path / "unwritten-core-workspace"
+    with pytest.raises(StudyConfigError):
+        run_core_fixture(p.study, path, workspace)
+    assert not workspace.exists()
+
+
+def test_reviewed_terrain_r6_rejects_before_input_reads_or_writes(
+    producer_inputs, monkeypatch
+):
+    from seascape.seafloor_physiography.geomorphometry.build import (
+        load_geomorphometry_config,
+    )
+    from seascape.study_routes import route_geomorphometry
+
+    p = producer_inputs
+    config = replace(load_geomorphometry_config(), h3_resolution=6)
+    support = load_study_support(
+        p.study,
+        producer="geomorphometry",
+        mask_relative_path="../Data/mask.geojson",
+        compute_memberships=p.inputs.halo,
+    )
+    monkeypatch.setattr(
+        "seascape.study_routes._capture",
+        lambda *_: pytest.fail("R6 must reject before artifact reads"),
+    )
+    with pytest.raises(StudyConfigError, match="native R8 only"):
+        route_geomorphometry(
+            config,
+            p.study,
+            support,
+            bathymetry=p.raster,
+            raster=p.raster,
+            neighborhoods=p.graphs[6],
+            maximum_graph_hops=1,
+        )

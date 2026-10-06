@@ -3,7 +3,8 @@
 The selected-study production gate remains. Two explicit, bounded scientific routes are now
 implemented in `seascape.study_routes`: bathymetry and native R8 geomorphometry. They run existing
 scientific methods over verified compute memberships before selecting reporting rows. They do
-not invoke downloads, pipeline orchestration, common publication or regional release promotion.
+not invoke downloads or regional release promotion. The synthetic CLI orchestration below now
+runs them through common family manifests and a retained, byte-bound software generation.
 Standalone producers retain their existing interfaces and methods.
 
 ## Mandatory delivery core
@@ -91,3 +92,48 @@ after enumeration. A thin strip can allocate 89 cells with a 20-cell limit befor
 a strict allocation bound and cannot justify regional scaling or lifting the memory hold. Native
 byte/pixel/row checks above do not change that limitation; a defensible regional enumeration budget
 or incremental implementation is still required before a broad run.
+
+## Executable core software pipeline
+
+The exact CLI path is:
+
+```sh
+seascape --workspace /explicit/fixture-workspace --study-config /fixture/config/study.v1.json \
+  study-core-fixture --input-manifest /fixture/config/core-inputs.json
+```
+
+`seascape.study_core.run_core_fixture` is the orchestration entrypoint. It consumes a provisional
+adjacent input manifest, explicitly labeled `synthetic_software_acceptance`, with pinned config
+identity, mask path, compute memberships, native raster/graphs and explicit scientific settings.
+The required capability closure is `bathymetry_r6` plus `bathymetry_native_r8`. The sole currently
+supported optional capability is `geomorphometry_native_r8`; every other family, including
+unsupported numeric hardness and TID, is explicitly excluded in `capabilities.json`. The fixture
+layout is config plus `../Data`; this local proof format is not the owner-approved real-source
+qualification contract and does not modify root study-v1.
+
+The pipeline performs config validation, exact reporting and compute membership verification,
+retained source/mask/graph/config snapshots, native scientific computation, reporting selection,
+common family manifest schema 3.0.0 validation, and an audit schema 3 exact-byte inventory. Package
+revision/dirty/source-tree identity is retained and checked for changes during computation. The
+audit checks reporting keys/resolution/finite values, native missingness and depth-band identities,
+embedded route identities, source/upstream checksums and all selected capability manifests.
+
+Successful candidates move to
+`.seascape/study-core-fixtures/releases/<release_id>/` beneath the explicit workspace. Source
+snapshots are copied, so later edits to original fixture inputs do not change retained products.
+Generations are never overwritten. `verify_core_fixture_release` revalidates retained input and
+output bytes, scientific table and common manifest contracts, and the bound software audit after
+relocation. Unknown optional families are not fabricated to satisfy a whole-catalog release.
+
+The audit and release metadata contain `software_release_passed=true`, but
+`artifact_release_passed=false`, `regional_release_eligible=false` and `production_ready=false`.
+This deliberately cannot satisfy `publish_candidate_release`, which requires a literal regional
+artifact PASS. The software generation is outside the regional resolver's `.seascape/releases`
+namespace. No new regional execution/publish flag exists, and the original full regional audit and
+publication paths are unchanged. It is an executable end-to-end software proof, not real support
+qualification or final processed regional data.
+
+The concrete adjacent native-support contract proposal remains at the task's
+`native-support-contract-proposal.json` for parent/config-owner review. Actual mask encoding/hash,
+qualification evidence and native halo/source formats remain pending agreement. Their absence
+blocks real pipeline/publication adoption rather than being filled with invented qualification.

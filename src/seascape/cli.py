@@ -97,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--study-config",
         type=Path,
-        help="Explicit MarineCast study-v1 JSON (optional MARINECAST_STUDY_CONFIG fallback); planning only",
+        help="Explicit MarineCast study-v1 JSON (optional MARINECAST_STUDY_CONFIG fallback); planning or synthetic core only",
     )
     parser.add_argument(
         "--debug",
@@ -118,6 +118,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Replace only known artifacts in an owned demo directory",
     )
+    core_fixture = commands.add_parser(
+        "study-core-fixture",
+        help="Run pinned synthetic study core through a byte-bound software release",
+    )
+    core_fixture.add_argument("--input-manifest", type=Path, required=True)
     build = commands.add_parser(
         "build", help="Build an isolated candidate from local source data"
     )
@@ -174,11 +179,23 @@ def main(argv: list[str] | None = None) -> int:
     try:
         from seascape.core.config.paths import project_root
 
-        study_planning = args.command == "build" and args.dry_run
+        study_planning = (
+            args.command == "build" and args.dry_run
+        ) or args.command == "study-core-fixture"
         study = load_study_config(args.study_config, planning=study_planning)
         study_stack.enter_context(study_context(study, planning=study_planning))
         if study is not None and args.workspace is None:
             os.environ["SEASCAPE_WORKSPACE"] = str(study.data_root / "seascape")
+        if args.command == "study-core-fixture":
+            from seascape.study_core import run_core_fixture
+
+            if study is None or args.workspace is None:
+                raise StudyConfigError(
+                    "study-core-fixture requires an explicit workspace and selected study config."
+                )
+            result = run_core_fixture(study, args.input_manifest, args.workspace)
+            print(json.dumps(result, indent=2))
+            return 0
         if args.command == "init":
             initialize_workspace(project_root())
             print(f"Initialized seascape workspace: {project_root()}")

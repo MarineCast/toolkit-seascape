@@ -164,7 +164,9 @@ seascape --workspace "$SEASCAPE_WORKSPACE" --study-config /absolute/path/to/stud
   build --dry-run --json --only seascape-bathymetry
 ```
 
-This adapter is **planning only**. A proposed domain is allowed only for explicit dry runs.
+This adapter supports read-only planning and the explicitly scoped synthetic core CLI described in
+`docs/shared-study-routing.md`. A proposed real domain is allowed only for explicit dry runs.
+The core fixture command requires synthetic evidence and cannot certify regional data.
 Production through the adapter is blocked even if a study changes to approved: the current
 territorial-water selection must first be replaced with validated marine reporting membership,
 and producer compute halos must be integrated independently of the reporting rectangle.
