@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
+    from seascape.study_support import VerifiedStudySupport
+
     from .pipeline import BathymetryConfig
 
 LOGGER = logging.getLogger(__name__)
@@ -99,9 +101,20 @@ def _cells_from_existing_grid(config: BathymetryConfig) -> list[str]:
     return sorted(grid["H3_INDEX"].dropna().astype(str).unique().tolist())
 
 
-def load_h3_cells(config: BathymetryConfig) -> list[str]:
+def load_h3_cells(
+    config: BathymetryConfig,
+    *,
+    study_support: VerifiedStudySupport | None = None,
+    support_role: str = "reporting",
+) -> list[str]:
     """Load the required canonical model-area support for this resolution."""
 
+    if study_support is not None:
+        if study_support.producer != "bathymetry":
+            raise ValueError("Bathymetry requires its own producer support identity.")
+        return list(study_support.cells(config.h3_resolution, role=support_role))
+    if support_role != "reporting":
+        raise ValueError("Explicit compute role requires verified study support.")
     if not config.h3_grid_path.exists():
         raise FileNotFoundError(
             "Canonical model-area support is required before bathymetry: "

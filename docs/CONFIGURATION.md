@@ -202,3 +202,53 @@ Retain source vintage, observation/availability distinctions and actual source c
 repeat static tables by year, backdate modern evidence or manufacture future measurements.
 The portable validation notebook remains a standalone bathymetry/demo client; this optional,
 blocked production integration does not change its required offline workflow.
+
+### Bounded shared-support consumer
+
+`seascape.study_support.load_study_support` consumes explicitly located, pinned artifacts without
+downloads or writes. The root contract is unchanged. The packaged registry interface pins config-relative artifact paths:
+paths resolve against the
+selected study JSON directory and must remain beneath its configured resolved `data_root`, including
+through symlinks. Legitimate `../Data/...` paths are accepted; CWD and toolkit location play no role.
+The shared R6
+`water_reporting` artifact follows the documented raw SHA256 policy: sorted unique lowercase
+H3 IDs, one per line, ending in a newline; an empty membership is a zero-byte file.
+Count, resolution, checksum and complete positive-area
+ellipsoidal overlap with the pinned mask are checked. IDs selected by centers or the acquisition envelope
+cannot substitute for mask membership. Mask geometry is not silently repaired or simplified.
+
+The provisional mask interface accepts an explicit pinned EPSG:4326 GeoJSON Polygon/MultiPolygon
+geometry. Its raw SHA256 must match `grid_registry.mask_sha256`; the mask revision comes from that
+registry. This mask encoding remains provisional until its qualification-manifest format is frozen;
+it does not change the shared JSON schema. The confirmed membership interface is pinned at raw SHA256
+`38e3f84d8e7b0f59c188abb1da1ca354bb6271c328ac2a7e29504b0ca2f84d01`.
+Separately pinned `MembershipArtifact` records with
+role `water_source` supply R6 and R8 compute context. The caller must identify the `producer`;
+its identity distinguishes support caches, and bathymetry refuses another producer's support.
+No single common halo is inferred from these files. R6 compute support must equal the R8 parent
+union and contain all R6 reporting cells; R8 compute support must contain all independently derived
+native reporting cells. Direct positive-area R6 reporting and the R8 compute parent union have
+distinct semantics and are not silently substituted for each other. R5 water networks are refused.
+
+The reader defaults to 16 MiB per artifact and 100,000 cells, with a conservative envelope-based
+enumeration check before H3 filling. Bounds may refuse a large complex mask; this read-only API is
+not a production footprint estimator. H3's overlap API is required; center-fill fallback is refused.
+The returned immutable memberships record the pinned config, mask, membership artifacts, H3 library
+version, cell polygon/intersection/ellipsoidal area engines and scientific buffers in a portable
+consumer identity. Read bytes are also the bytes hashed and parsed, so validation is not based on a second read of a changing file.
+
+Bathymetry's `load_h3_cells(config, study_support=support, support_role="reporting")` uses these
+memberships through an explicit API argument. `support_role="compute"` selects full compute context.
+The existing standalone grid path remains unchanged when no support is supplied. This does not
+wire the study CLI into the bathymetry pipeline or authorize a producer run. For already computed
+tables, `support.consume_table(frame, resolution, role="reporting")` requires all reporting rows,
+trims compute-only rows and preserves nulls, zeros and status columns. `role="compute"` requires
+every compute row; reporting-only support cannot replace halo support. Duplicate, null, wrong
+resolution and out-of-support keys fail rather than being silently dropped.
+
+**Verification is not qualification.** The consumer does not establish source rights, source
+coverage, coastal reach/waterbody classification, the 22,224 m coastal selection method or producer
+halo distance completeness. Its provenance explicitly reports those limitations and
+`production_ready=false`. All current study CLI/context/orchestration production gates remain.
+Before removing them, integrate qualified source/mask manifests and each producer's actual reporting,
+network, native raster and halo routes, then independently validate their scientific outputs.

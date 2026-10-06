@@ -185,3 +185,6 @@ standalone behavior and do not relax this hold based only on domain.status=appro
 For adapter/config/CLI changes run `python -m pytest -q tests/test_study.py tests/test_preflight.py
 tests/test_workflow.py tests/test_cli_diagnostics.py`, then the full suite and quality/docs gates
 above. Fixtures are provenance/software checks, not shared-domain certification.
+For shared-support artifact/consumer changes first run `python -m pytest -q tests/test_study_support.py
+tests/test_study.py`, then the full suite and quality/docs gates. The support reader and explicit
+bathymetry cell API do not enable CLI production or certify source/halo qualification.

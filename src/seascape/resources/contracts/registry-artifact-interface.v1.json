@@ -1,0 +1,56 @@
+{
+  "interface_version": 1,
+  "shared_schema_change": false,
+  "membership_file": {
+    "media_type": "text/plain; charset=us-ascii",
+    "columns": [
+      "h3_id"
+    ],
+    "header": false,
+    "row_format": "one lowercase canonical H3 string per line; valid H3 cell at entry resolution",
+    "sort": "ascending ASCII lexicographic",
+    "duplicates": "forbidden",
+    "line_ending": "LF",
+    "terminal_newline": "required for nonempty file; empty set is zero bytes",
+    "sha256": "SHA256 of exact file bytes; matches grid_registry.memberships[].sha256",
+    "count": "number of IDs; matches entry count; no blank lines"
+  },
+  "membership_entry_fields": [
+    "resolution",
+    "role",
+    "relative_path",
+    "count",
+    "sha256"
+  ],
+  "path_base": "directory containing selected study config; relative_path resolves against that directory, not CWD or toolkit; must remain beneath configured resolved data_root",
+  "example_relative_path": "../Data/shared/vancouver-island-columbia/registry/<mask_revision>/water_reporting.r7.txt",
+  "roles": {
+    "water_reporting": "cells whose polygons intersect qualified coastal-plus-inland mask in strictly positive ellipsoidal area; include mixed boundary cells; exclude zero-area touches; never center-only",
+    "land_source": "cells with positive-area land overlap inside explicit producer source extent; mixed cells retained",
+    "water_source": "cells with positive-area water overlap inside explicit producer source extent; may extend beyond reporting mask",
+    "rectangle": "planning support only; never substitute for qualified water_reporting"
+  },
+  "resolution_owner": {
+    "5": "meteorology",
+    "6": "seascape",
+    "7": "viewshed"
+  },
+  "source_support": "Each owner defines scientifically required support using existing producer_buffers. Membership role separates source support from reporting. Native raster/grid/catchment extent manifests stay distinct; an H3 source file does not replace complete native terrain paths or meteorological stencils. No unapproved single common halo.",
+  "identity": {
+    "config_canonical_sha256": "bacf22ea2b0beb32d1ef5607f52b2f6104419dd329edf25657bca196acc8018c",
+    "mask": "grid_registry.mask_revision + mask_sha256 pin qualified mask; mask hash policy recorded in mask manifest",
+    "geometry": "domain.geometry_sha256 identifies planning rectangle only, NOT water mask",
+    "library": "record H3 library version and cell polygon/area engine and CRS transform in adjacent producer manifest",
+    "sources": "record raw source/member SHA256, native CRS, source dates/accuracy, geometry operation and source halo identity in adjacent mask/support manifest; config schema unchanged"
+  },
+  "consumer_validation": [
+    "require registry.status=validated for production",
+    "match mask revision/hash and entry resolution/role",
+    "resolve safe artifact path; require existing readable file",
+    "verify exact SHA256 and count",
+    "reject duplicate/unsorted/noncanonical IDs; validate H3 cell and resolution",
+    "use actual listed IDs; no bbox/center fallback",
+    "support role and reporting role remain distinct cache keys; bind source extent/producer buffer identities to manifests"
+  ],
+  "current_real_registry_status": "pending_validated_marine_mask; no qualified membership files produced"
+}
