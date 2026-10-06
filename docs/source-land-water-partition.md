@@ -17,8 +17,10 @@ unknown. Observation dates are not invented from source publication dates.
 The reader checks geometry bytes, layer CRS, nonempty valid polygon types and
 handoff topology evidence. It does not independently certify the source producer's
 whole partition or source accuracy. Native R8 companions use the existing
-hole-preserving overlap-aware H3 method on separate reporting pieces, retaining
-positive polygon overlap and union membership across tiles. R6 reporting membership
+hole-preserving overlap-aware H3 census on simple source-piece bounding boxes,
+then actual polygon positive-area intersections on separate reporting pieces.
+This preserves thin slivers, excludes touch-only cells and retains union membership
+across tiles; no area threshold or simplification is applied. R6 reporting membership
 comes from the pinned handoff. No R5 water network is introduced.
 
 An optional module CLI adopts the handoff or writes exclusive native membership:

@@ -14,8 +14,11 @@ from pathlib import Path
 from typing import Any, Callable
 
 import geopandas as gpd
+import numpy as np
+import shapely
+from shapely.geometry import box
 
-from seascape.core.geo.h3 import polygon_to_cells_overlap
+from seascape.core.geo.h3 import cell_to_polygon, polygon_to_cells_overlap
 
 
 def raw_sha256(path: Path) -> str:
@@ -70,23 +73,45 @@ class SourcePartition:
 
         if resolution != 8 or not hasattr(h3, "polygon_to_cells_experimental"):
             raise ValueError("Native companions require overlap-aware H3 resolution 8.")
-        cells: set[str] = set()
+        candidates: set[str] = set()
         pieces = self.pieces("reporting_water")
+        # Water-boundary experimental fill can omit thin positive-area slivers.
+        # Census the simple outer boxes, then use actual source polygon interiors.
+        for geometry in pieces.geometry:
+            if check is not None:
+                check()
+            candidates.update(
+                polygon_to_cells_overlap(box(*geometry.bounds), resolution)
+            )
+        cells = sorted(candidates)
+        hexes = np.array([cell_to_polygon(cell) for cell in cells], dtype=object)
+        tree = shapely.STRtree(hexes)
+        positive: set[int] = set()
         for index, geometry in enumerate(pieces.geometry):
             if check is not None:
                 check()
-            cells.update(polygon_to_cells_overlap(geometry, resolution))
+            shapely.prepare(geometry)
+            hits = tree.query(geometry, predicate="intersects")
+            covered = {int(i) for i in tree.query(geometry, predicate="covers")}
+            positive.update(covered)
+            boundary = [int(i) for i in hits if int(i) not in covered]
+            for first in range(0, len(boundary), 256):
+                if check is not None:
+                    check()
+                indices = np.array(boundary[first : first + 256], dtype=int)
+                areas = shapely.area(shapely.intersection(geometry, hexes[indices]))
+                positive.update(int(i) for i in indices[areas > 0])
             if progress is not None:
                 progress(
                     {
                         "pieces_completed": index + 1,
                         "pieces_total": len(pieces),
-                        "native_cells": len(cells),
+                        "native_cells": len(positive),
                     }
                 )
         if check is not None:
             check()
-        return sorted(cells)
+        return sorted(cells[index] for index in positive)
 
 
 def load_source_partition(handoff_path: str | Path) -> SourcePartition:

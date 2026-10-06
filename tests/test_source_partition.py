@@ -67,3 +67,28 @@ def test_no_unknown_coverage_or_unbound_geometry(tmp_path, change):
     path.write_text(json.dumps(record))
     with pytest.raises(ValueError):
         load_source_partition(path)
+
+
+def test_boundary_fill_omissions_and_touch_candidates_do_not_define_support(
+    tmp_path, monkeypatch
+):
+    import h3
+
+    from seascape.core.geo.h3 import polygon_to_cells_overlap
+    from seascape.spatial_support.water_geometry import partition as module
+
+    path, _ = partition(tmp_path)
+    ghost = h3.latlng_to_cell(47.0, -124.0, 8)
+
+    def census_only(geometry, resolution):
+        # Simulate a water-fill omission and a broad census false candidate.
+        if geometry.interiors:
+            return set()
+        return polygon_to_cells_overlap(geometry, resolution) | {ghost}
+
+    monkeypatch.setattr(module, "polygon_to_cells_overlap", census_only)
+    source = load_source_partition(path)
+    cells = source.native_reporting_cells()
+    assert cells and ghost not in cells
+    water = source.pieces().geometry.iloc[0]
+    assert all(water.intersection(module.cell_to_polygon(c)).area > 0 for c in cells)
