@@ -178,6 +178,10 @@ source/compute areas are not silently resized. The output includes the complete 
 canonical config and geometry hashes, raw-file hash, domain revision/status, requested dates,
 resolved Data root, product resolution and native-companion policy. The effective configuration
 fingerprint includes those identities. A changed date, buffer or geometry invalidates reuse.
+The synchronized schema accepts domain approval provenance and revision notes. Approved status
+requires an explicit approval record with a timezone-bearing timestamp. Validation, parsed content,
+canonical identity and raw-file identity use one captured byte snapshot; a later file revision does
+not change the already loaded record. The raw-file hash describes that captured snapshot.
 The public API is `seascape.study.load_study_config(path, planning=True)` and the scoped
 `study_context(study, planning=True)`; use it only around read-only planners. Orchestration
 rejects a producer run inside that context before creating a candidate.

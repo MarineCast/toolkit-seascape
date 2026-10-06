@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from seascape._study_contract import canonical_bytes, validate
+from seascape._study_contract import canonical_bytes, validate_snapshot
 
 
 class StudyConfigError(ValueError):
@@ -73,9 +73,7 @@ def load_study_config(
     source = Path(selected).expanduser().resolve()
     try:
         raw = source.read_bytes()
-        config, identity = validate(source, require_approved=not planning)
-        if source.read_bytes() != raw:
-            raise StudyConfigError("Study config changed while being validated.")
+        config, identity = validate_snapshot(raw, source, require_approved=not planning)
         content = canonical_bytes(config)
         return StudyConfig(
             source,

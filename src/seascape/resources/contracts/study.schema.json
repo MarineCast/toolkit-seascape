@@ -53,6 +53,40 @@
         "geometry_sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "approval": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "approved_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "source_message_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scope": {
+              "const": "rectangular_selection_only"
+            },
+            "statement": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "approved_at",
+            "source_message_id",
+            "scope",
+            "statement"
+          ],
+          "additionalProperties": false
+        },
+        "revision_note": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [

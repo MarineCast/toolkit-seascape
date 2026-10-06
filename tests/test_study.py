@@ -112,6 +112,12 @@ def test_proposed_and_approved_production_both_fail_closed(
     assert not workspace.exists()
     value = json.loads(study_file.read_text())
     value["domain"]["status"] = "approved"
+    value["domain"]["approval"] = {
+        "approved_at": "2026-10-06T01:00:00Z",
+        "source_message_id": "synthetic-approval-fixture",
+        "scope": "rectangular_selection_only",
+        "statement": "Synthetic approval fixture; no real domain approval.",
+    }
     study_file.write_text(json.dumps(value))
     assert (
         cli.main(
@@ -241,3 +247,83 @@ def test_manifest_fixture_retains_full_identity(study_file, tmp_path):
                 source_completeness="unavailable",
                 metadata={"marinecast_study": {}},
             )
+
+
+def test_current_shared_contract_compatibility(study_file):
+    import hashlib
+    from importlib.resources import files
+
+    study_file.write_bytes(
+        (Path(__file__).parent / "fixtures/study.current.v1.json").read_bytes()
+    )
+    study = load_study_config(study_file, planning=True)
+    assert (
+        study.config_sha256
+        == "16ff9f7e75cc4b2a79d193b9364921d4453ef569a93d148557588e642e429060"
+    )
+    assert study.payload["domain"]["approval"] is None
+    assert "pending-revision" in study.payload["domain"]["revision"]
+    assert (
+        study.payload["domain"]["revision_note"]
+        == study.provenance()["contract"]["domain"]["revision_note"]
+    )
+    assert study.provenance()["production_ready"] is False
+    schema = (
+        files("seascape").joinpath("resources/contracts/study.schema.json").read_bytes()
+    )
+    assert (
+        hashlib.sha256(schema).hexdigest()
+        == "8f138f0de9bf5be0df52739528e083db759537a68a1fe84cf35beac9bc1f9cda"
+    )
+
+
+@pytest.mark.parametrize(
+    "approval",
+    [
+        None,
+        {
+            "approved_at": "2026-10-06T01:00:00",
+            "source_message_id": "fixture",
+            "scope": "rectangular_selection_only",
+            "statement": "Synthetic fixture",
+        },
+    ],
+)
+def test_approval_provenance_required_and_timestamp_zoned(study_file, approval):
+    config = json.loads(study_file.read_text())
+    config["domain"]["status"] = "approved"
+    config["domain"]["approval"] = approval
+    study_file.write_text(json.dumps(config))
+    with pytest.raises(StudyConfigError, match="approval"):
+        load_study_config(study_file, planning=True)
+
+
+def test_one_source_snapshot_controls_all_provenance(study_file, monkeypatch):
+    import hashlib
+
+    from seascape._study_contract import canonical_bytes
+
+    original = study_file.read_bytes()
+    replacement = json.loads(original)
+    replacement["time"]["start"] = "2011-01-01"
+    real_read = Path.read_bytes
+    reads = []
+
+    def changing_read(path):
+        captured = real_read(path)
+        if path == study_file:
+            reads.append(captured)
+            path.write_text(json.dumps(replacement))
+        return captured
+
+    monkeypatch.setattr(Path, "read_bytes", changing_read)
+    study = load_study_config(study_file, planning=True)
+    assert reads == [original]
+    assert study.payload["time"]["start"] == "2009-01-01"
+    assert json.loads(study_file.read_text())["time"]["start"] == "2011-01-01"
+    assert study.raw_file_sha256 == hashlib.sha256(original).hexdigest()
+    assert (
+        study.config_sha256
+        == hashlib.sha256(canonical_bytes(json.loads(original))).hexdigest()
+    )
+    assert study.provenance()["contract"] == json.loads(original)

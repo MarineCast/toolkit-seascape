@@ -1,5 +1,7 @@
-# Vendored MarineCast study-v1 validation vocabulary, 2026-10-05.
-# Pinned shared contract b1f811ff8b3c47bc571805a5845fc55a410ccd6bd08dfc254899b387903ed7f5.
+# Vendored MarineCast study-v1 validation vocabulary, 2026-10-06.
+# Shared schema SHA256: 8f138f0de9bf5be0df52739528e083db759537a68a1fe84cf35beac9bc1f9cda.
+# Shared validator SHA256: ddbd77f2ff7fa38370fba231814068de602bbdc4824329cf157c3da35bab9620.
+# Local adaptation: packaged schema and validation of one captured byte snapshot.
 # No runtime import of the workspace validator or sibling repositories.
 """Validate MarineCast study v1 JSON; no runtime or sibling-repo dependencies."""
 
@@ -9,7 +11,7 @@ import json
 import math
 import os
 import re
-from datetime import date
+from datetime import date, datetime
 from importlib.resources import files
 from pathlib import Path
 
@@ -87,6 +89,10 @@ def check(value, schema, path="$"):
             if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
                 raise ValueError(f"{path}: expected YYYY-MM-DD")
             date.fromisoformat(value)
+        if schema.get("format") == "date-time":
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                raise ValueError(f"{path}: approval timestamp requires timezone")
     if type(value) in (int, float) and value < schema.get("minimum", -math.inf):
         raise ValueError(f"{path}: below minimum")
 
@@ -121,9 +127,14 @@ def resolve_config_path(explicit_path=None):
     return Path(selected).expanduser().resolve()
 
 
-def validate(path=None, require_approved=True):
-    path = resolve_config_path(path)
-    config = read_json(path)
+def validate_snapshot(raw, path, require_approved=True):
+    """Validate the same captured bytes used for raw and canonical provenance."""
+    path = Path(path).resolve()
+    config = json.loads(
+        raw.decode("utf-8"),
+        object_pairs_hook=unique_object,
+        parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+    )
     check(
         config,
         json.loads(
@@ -141,6 +152,10 @@ def validate(path=None, require_approved=True):
         raise ValueError(
             "geometry_sha256 mismatch: update revision and identity deliberately"
         )
+    if config["domain"]["status"] == "approved" and not config["domain"].get(
+        "approval"
+    ):
+        raise ValueError("approved domain requires explicit approval provenance")
     if require_approved and config["domain"]["status"] != "approved":
         raise ValueError(
             "domain remains proposed; production run requires approved geometry"
@@ -167,6 +182,11 @@ def validate(path=None, require_approved=True):
         "config_sha256": hashlib.sha256(canonical_bytes(config)).hexdigest(),
         "resolved_data_root": str((path.parent / root).resolve()),
     }
+
+
+def validate(path=None, require_approved=True):
+    path = resolve_config_path(path)
+    return validate_snapshot(path.read_bytes(), path, require_approved)
 
 
 def main():
