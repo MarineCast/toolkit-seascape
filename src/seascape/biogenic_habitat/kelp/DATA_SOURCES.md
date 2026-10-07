@@ -21,9 +21,11 @@
   observed absence.
 
 Floating canopy is not all kelp habitat. This product never relabels modeled
-potential kelp habitat as observed kelp. The DNR processing resolution changed
-from approximately 20 m to approximately 4 m in 2010, so annual raw polygon area
-is not assumed perfectly comparable across that break. The current source
+potential kelp habitat as observed kelp. DNR processing was vector/CAD in
+1989–1992; 1993 was not surveyed. Raster processing used approximately 20 m cells
+in 1994–2009 and approximately 4 m cells in 2010–2024. These processing labels
+are not physical accuracy claims. Annual raw polygon area is not assumed
+perfectly comparable across these methodological breaks. The current source
 normalizers do not register separate complete survey-footprint geometries or
 availability dates; survey completeness therefore remains unknown and a
 historical as-of export is retrospective rather than an operational replay.

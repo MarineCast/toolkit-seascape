@@ -231,3 +231,9 @@ For anthropogenic source classification changes run
 then the full suite, quality and documentation checks. Verify that Approved and Prohibited
 shellfish harvest classifications cannot establish aquaculture footprint/presence or suppress
 OSM aquaculture records; legitimate physical inventory matches still govern deduplication.
+
+For DNR annual kelp processing-era changes run
+`python -m pytest -q tests/domains/environment/seascape/test_kelp_processing_eras.py`,
+then the full suite, quality and documentation checks. Preserve vector/CAD 1989–1992,
+unsurveyed 1993, approximately 20 m raster 1994–2009 and approximately 4 m raster 2010–2024.
+Processing labels must not change source geometry, observation years or scientific values.
