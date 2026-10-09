@@ -78,5 +78,6 @@ Later upgrades and dependencies
     source gate; missing ingestion never establishes habitat absence.
 [ ] Bounded NOAA rocky HAPC subset and targeted OSM checks after source/ID review;
     no whole-package bulk acquisition or unqualified licensed/absence claims.
-[ ] Production-route integration of reviewed regional audit-only callers is a
-    separate code change; current package defaults were not silently replaced.
+[ ] Complete independent installed-wheel and immutable-v5 parity acceptance of
+    explicit regional commands before promoting the integrated processing route.
+    Legacy family defaults remain separate; no implicit source acquisition.

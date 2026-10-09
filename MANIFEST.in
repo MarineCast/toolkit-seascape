@@ -1,0 +1,2 @@
+include docs/regional-processing.md
+recursive-include tests/regional *.py

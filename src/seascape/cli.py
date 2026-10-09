@@ -118,6 +118,13 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Replace only known artifacts in an owned demo directory",
     )
+    regional = commands.add_parser(
+        "regional", help="Execute a pinned cached-source regional operator"
+    )
+    regional.add_argument("--spec", type=Path, required=True)
+    regional.add_argument(
+        "--preflight", action="store_true", help="Verify byte pins without execution"
+    )
     core_fixture = commands.add_parser(
         "study-core-fixture",
         help="Run pinned synthetic study core through a byte-bound software release",
@@ -177,6 +184,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.workspace is not None:
         os.environ["SEASCAPE_WORKSPACE"] = str(args.workspace.expanduser().resolve())
     try:
+        if args.command == "regional":
+            from seascape.regional.contract import RegionalError
+            from seascape.regional.runner import run_spec
+
+            try:
+                print(
+                    json.dumps(run_spec(args.spec, preflight=args.preflight), indent=2)
+                )
+                return 0
+            except (RegionalError, ValueError, OSError) as exc:
+                if args.debug:
+                    traceback.print_exception(exc, file=sys.stderr)
+                print(f"regional: {safe_detail(exc)}", file=sys.stderr)
+                return 1
         from seascape.core.config.paths import project_root
 
         study_planning = (

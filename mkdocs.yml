@@ -81,6 +81,7 @@ nav:
   - API:
       - API overview: api/index.md
       - Python reference: API.md
+      - Pinned regional operators: regional-processing.md
       - Metric matrix: metric-matrix.md
   - Reference:
       - Scientific contracts: CONTRACTS.md

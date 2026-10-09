@@ -167,3 +167,10 @@ reef and substrate producers; its formulas are unchanged by this hardening. Chan
 producer contract tests. Underscore-prefixed functions and implementation modules remain internal.
 `SeascapeSnapshot` and `SeascapeReleasePublisher` are exported low-level toolkit infrastructure;
 application consumers should use the product facade rather than assembling or mutating releases.
+
+## Pinned regional operators
+
+`seascape.regional.runner.run_spec` and `seascape regional --spec` execute explicit cached-source
+operator candidates. They preserve native supports and source qualifications without automatic
+acquisition or publication. See the [regional contract](regional-processing.md) for inputs,
+resource limits, supported methods and acceptance boundaries.
