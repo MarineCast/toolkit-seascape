@@ -61,6 +61,13 @@ class SubsetBudget:
                 raise SubsetAcquisitionError(f"{name} exceeds the accepted bound.")
 
 
+def _process_peak_rss_bytes() -> int:
+    """Process-lifetime high-water RSS, in bytes on Linux and macOS."""
+    return int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * (
+        1 if sys.platform == "darwin" else 1024
+    )
+
+
 class _Monitor:
     def __init__(self, budget: SubsetBudget):
         self.budget = budget
@@ -70,16 +77,14 @@ class _Monitor:
         self.peak = 0
 
     def check(self) -> None:
-        rss = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * (
-            1 if sys.platform == "darwin" else 1024
-        )
+        rss = _process_peak_rss_bytes()
         self.peak = max(self.peak, rss)
-        if (
-            rss > self.budget.memory_bytes
-            or time.monotonic() - self.start >= self.budget.elapsed_seconds
-        ):
+        elapsed = time.monotonic() - self.start
+        if rss > self.budget.memory_bytes or elapsed >= self.budget.elapsed_seconds:
             raise SubsetAcquisitionError(
-                "Cooperative acquisition RSS/time stop reached."
+                "Cooperative acquisition RSS/time stop reached: "
+                f"peak_rss_bytes={rss}, memory_limit_bytes={self.budget.memory_bytes}, "
+                f"elapsed_seconds={elapsed}, time_limit_seconds={self.budget.elapsed_seconds}."
             )
 
     def receipt(self) -> dict[str, Any]:

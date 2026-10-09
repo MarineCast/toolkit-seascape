@@ -17,6 +17,12 @@ from rasterio.transform import from_origin
 from seascape.seafloor_physiography.bathymetry import subset_acquisition as acquisition
 
 
+@pytest.fixture(autouse=True)
+def deterministic_offline_rss(monkeypatch):
+    """Offline protocol tests must not inherit earlier pytest allocations."""
+    monkeypatch.setattr(acquisition, "_process_peak_rss_bytes", lambda: 64 * 1024**2)
+
+
 class Raw:
     def __init__(self, body):
         self.stream = io.BytesIO(body)
@@ -438,29 +444,53 @@ def test_queue_failure_no_resubmit(template, tmp_path):
 
 def test_time_and_memory_limits_checked_before_network(template, tmp_path, monkeypatch):
     monkeypatch.setattr(
-        acquisition.resource,
-        "getrusage",
-        lambda _: type("Usage", (), {"ru_maxrss": 1024 * 1024 * 1024})(),
+        acquisition, "_process_peak_rss_bytes", lambda: 512 * 1024**2 + 1
     )
     session = Session([])
-    with pytest.raises(acquisition.SubsetAcquisitionError, match="RSS/time"):
+    with pytest.raises(acquisition.SubsetAcquisitionError, match="RSS/time") as stopped:
         run(template, tmp_path, session)
+    assert "peak_rss_bytes=536870913" in str(stopped.value)
+    assert "memory_limit_bytes=536870912" in str(stopped.value)
     assert not session.calls
     # An expired cooperative clock is refused before network too.
-    monkeypatch.setattr(
-        acquisition.resource,
-        "getrusage",
-        lambda _: type("Usage", (), {"ru_maxrss": 0})(),
-    )
+    monkeypatch.setattr(acquisition, "_process_peak_rss_bytes", lambda: 0)
     values = iter([0, 2])
     monkeypatch.setattr(acquisition.time, "monotonic", lambda: next(values))
-    with pytest.raises(acquisition.SubsetAcquisitionError, match="RSS/time"):
+    with pytest.raises(acquisition.SubsetAcquisitionError, match="RSS/time") as stopped:
         run(
             template,
             tmp_path,
             session,
             budget=acquisition.SubsetBudget(elapsed_seconds=1),
         )
+    assert "elapsed_seconds=2" in str(stopped.value)
+    assert "time_limit_seconds=1" in str(stopped.value)
+    assert not session.calls
+
+
+@pytest.mark.parametrize("platform,factor", [("linux", 1024), ("darwin", 1)])
+def test_real_peak_sampler_unit_conversion(platform, factor, monkeypatch):
+    # Recover the production sampler, bypassing the offline fixture only here.
+    monkeypatch.undo()
+    monkeypatch.setattr(acquisition.sys, "platform", platform)
+    monkeypatch.setattr(
+        acquisition.resource,
+        "getrusage",
+        lambda _: type("Usage", (), {"ru_maxrss": 12345})(),
+    )
+    assert acquisition._process_peak_rss_bytes() == 12345 * factor
+
+
+def test_memory_guard_checks_subsequent_samples(monkeypatch):
+    readings = iter([512 * 1024**2, 512 * 1024**2 + 1])
+    monkeypatch.setattr(acquisition, "_process_peak_rss_bytes", lambda: next(readings))
+    monitor = acquisition._Monitor(acquisition.SubsetBudget())
+    monitor.check()  # Exact memory ceiling is permitted by the existing contract.
+    with pytest.raises(
+        acquisition.SubsetAcquisitionError, match="peak_rss_bytes=536870913"
+    ):
+        monitor.check()
+    assert monitor.receipt()["peak_rss_bytes"] == 512 * 1024**2 + 1
 
 
 @pytest.mark.parametrize(
