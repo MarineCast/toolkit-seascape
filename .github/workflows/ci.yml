@@ -40,13 +40,15 @@ jobs:
       - run: seascape build --dry-run
       - run: git diff --check
   consumer-install:
+    # Keep required check contexts stable; matrix.os identifies the actual runner.
+    name: consumer-install (${{ matrix.os == 'macos-15' && 'macos-14' || matrix.os }}, ${{ matrix.python }}, ${{ matrix.setup_arch }}, ${{ matrix.system }}, ${{ matrix.machine }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - {os: ubuntu-latest, python: '3.14', setup_arch: x64, system: Linux, machine: x86_64}
-          - {os: macos-14, python: '3.14', setup_arch: arm64, system: Darwin, machine: arm64}
+          - {os: macos-15, python: '3.14', setup_arch: arm64, system: Darwin, machine: arm64}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -127,13 +129,15 @@ jobs:
       - run: git diff --exit-code
 
   quality:
+    # Keep required check contexts stable, including the optional constraints suffix.
+    name: quality (${{ matrix.os == 'macos-15' && 'macos-14' || matrix.os }}, ${{ matrix.python }}, ${{ matrix.arch }}${{ matrix.constraints && format(', {0}', matrix.constraints) || '' }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - {os: ubuntu-latest, python: '3.14', arch: x64, constraints: ''}
-          - {os: macos-14, python: '3.14', arch: arm64, constraints: docs/environments/quality-python314-macos-arm64.txt}
+          - {os: macos-15, python: '3.14', arch: arm64, constraints: docs/environments/quality-python314-macos-arm64.txt}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
