@@ -12,15 +12,19 @@ import argparse
 import logging
 import math
 from collections.abc import Mapping
+from contextlib import ExitStack
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
+from seascape.core.geo.crs import require_metric_crs
 from seascape.core.geo.h3 import cell_to_polygon
+from seascape.seafloor_physiography.depth import validate_native_metre_band_units
 from seascape.spatial_support.water_network import (
     load_water_neighborhoods,
 )
@@ -129,6 +133,48 @@ class GeomorphometryConfig:
     curvature_index_scale_per_m: float
 
 
+def validate_geomorphometry_settings(config: Any) -> None:
+    """Enforce the stable scientific column and native-grid contract at every boundary."""
+    if type(config.h3_resolution) is not int or config.h3_resolution != 8:
+        raise ValueError("Geomorphometry supports native R8 only.")
+    if config.ruggedness_algorithm != "wilson":
+        raise ValueError("ruggedness_algorithm must be 'wilson'.")
+    rings = config.neighborhood_rings
+    if (
+        not isinstance(rings, (tuple, list))
+        or not rings
+        or any(type(v) is not int or v < 1 for v in rings)
+        or len(set(rings)) != len(rings)
+        or config.neighbor_ring not in rings
+    ):
+        raise ValueError(
+            "Terrain rings must be unique positive integers including neighbor_ring."
+        )
+    for name in ("neighbor_ring", "minimum_neighbors", "openness_radius_rings"):
+        value = getattr(config, name)
+        if type(value) is not int or value < 1:
+            raise ValueError(f"{name} must be a positive integer.")
+    if (
+        type(config.openness_bearing_sectors) is not int
+        or config.openness_bearing_sectors < 4
+    ):
+        raise ValueError("Openness requires at least four sectors.")
+    if config.slope_upper_quantile != 0.90:
+        raise ValueError(
+            "slope_upper_quantile must be 0.90 for the stable Q90 column contract."
+        )
+    if (
+        not math.isfinite(config.curvature_index_scale_per_m)
+        or config.curvature_index_scale_per_m <= 0
+    ):
+        raise ValueError("curvature_index_scale_per_m must be finite and positive.")
+    if config.native_resolution_arc_seconds != 15.0:
+        raise ValueError(
+            "The native slope method requires 15-arc-second inputs; no implicit resampling."
+        )
+    require_metric_crs(config.projected_crs)
+
+
 def load_geomorphometry_config(
     config_path: str | Path = "config/data/environment_seascape.yaml",
 ) -> GeomorphometryConfig:
@@ -163,9 +209,7 @@ def load_geomorphometry_config(
             "for the bathymetric product."
         )
     rings = tuple(
-        sorted(
-            {int(value) for value in processing.get("neighborhood_rings", [1, 2, 4])}
-        )
+        sorted(int(value) for value in processing.get("neighborhood_rings", [1, 2, 4]))
     )
     neighbor_ring = int(processing.get("neighbor_ring", 1))
     if not rings or min(rings) < 1 or neighbor_ring not in rings:
@@ -191,7 +235,7 @@ def load_geomorphometry_config(
     raw_dir = Path(str(bathymetry_source["raw_dir"]))
     raw_filename = str(bathymetry_source["raw_filename"])
     default_raster = raw_dir / raw_filename
-    return GeomorphometryConfig(
+    config = GeomorphometryConfig(
         h3_resolution=resolution,
         bathymetry_path=_resolve(
             processing.get("bathymetry_path", bathymetry_processing["processed_path"]),
@@ -217,6 +261,9 @@ def load_geomorphometry_config(
         openness_bearing_sectors=openness_sectors,
         curvature_index_scale_per_m=curvature_scale,
     )
+
+    validate_geomorphometry_settings(config)
+    return config
 
 
 def _projected_centers(cells: pd.Series, crs: str) -> dict[str, tuple[float, float]]:
@@ -327,6 +374,7 @@ def validate_native_raster_header(raster) -> None:
         raise ValueError(
             "Native GEBCO slope input must be a one-band EPSG:4326 raster."
         )
+    validate_native_metre_band_units(raster.units[0])
     transform = raster.transform
     if transform.b != 0 or transform.d != 0 or transform.a <= 0 or transform.e >= 0:
         raise ValueError("Native slope requires an unrotated north-up raster.")
@@ -335,7 +383,7 @@ def validate_native_raster_header(raster) -> None:
 
 
 def _native_raster_slope_summary(
-    raster_path: Path,
+    raster_path: Path | bytes,
     target_cells: set[str],
     resolution: int,
     quantile: float,
@@ -345,9 +393,14 @@ def _native_raster_slope_summary(
     import h3
     import rasterio
 
-    if not raster_path.exists():
+    if not isinstance(raster_path, bytes) and not raster_path.exists():
         raise FileNotFoundError(f"Native GEBCO raster not found: {raster_path}")
-    with rasterio.open(raster_path) as raster:
+    with ExitStack() as stack:
+        if isinstance(raster_path, bytes):
+            memory = stack.enter_context(rasterio.io.MemoryFile(raster_path))
+            raster = stack.enter_context(memory.open())
+        else:
+            raster = stack.enter_context(rasterio.open(raster_path))
         validate_native_raster_header(raster)
         elevation = raster.read(1, masked=True).astype("float64").filled(np.nan)
         transform = raster.transform

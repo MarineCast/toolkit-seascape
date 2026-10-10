@@ -14,10 +14,66 @@ from seascape.coastal_configuration.shoreline_characterization.build import (
     CLASS_TOKENS,
     SHORELINE_LENGTH_COLUMNS,
     _aggregate_lengths,
+    _physical_line_union_lengths,
     recompute_parent_shoreline_lengths,
 )
 from seascape.core.config.presentation import PresentationSettings
 from seascape.core.geo.h3 import cell_to_children, latlng_to_cell
+
+
+def test_physical_lengths_are_invariant_to_duplicate_source_records() -> None:
+    line = LineString([(0, 0), (10, 0)])
+    other = LineString([(20, 0), (30, 0)])
+    records = [(line, True, ("ROCKY",)), (other, True, ("SANDY",))]
+    baseline = _physical_line_union_lengths(records)
+    repeated = _physical_line_union_lengths([*records, records[0], records[0]])
+    assert repeated == baseline
+    assert baseline[0:2] == (20.0, 20.0)
+    assert baseline[2]["ROCKY"] / baseline[1] == pytest.approx(0.5)
+
+
+def test_partial_overlaps_and_unknown_classification_keep_all_evidence() -> None:
+    records = [
+        (LineString([(0, 0), (10, 0)]), True, ("ROCKY",)),
+        (LineString([(5, 0), (15, 0)]), True, ("SANDY",)),
+        (LineString([(8, 0), (12, 0)]), False, ()),
+    ]
+    mapped, classified, classes, availability, membership = (
+        _physical_line_union_lengths(records)
+    )
+    assert mapped == classified == 15.0
+    assert classes["ROCKY"] == classes["SANDY"] == 10.0
+    assert availability == 4.0
+    assert membership == 5.0
+    assert _physical_line_union_lengths(list(reversed(records))) == (
+        mapped,
+        classified,
+        classes,
+        availability,
+        membership,
+    )
+
+
+def test_classified_presence_does_not_depend_on_first_duplicate() -> None:
+    line = LineString([(0, 0), (10, 0)])
+    result = _physical_line_union_lengths(
+        [(line, False, ()), (line, True, ("ROCKY", "GRAVEL"))]
+    )
+    assert result[0] == result[1] == result[3] == 10.0
+    assert result[2]["ROCKY"] == result[2]["GRAVEL"] == 10.0
+
+
+def test_nearby_distinct_lines_are_not_snapped_or_merged() -> None:
+    mapped, classified, _classes, availability, membership = (
+        _physical_line_union_lengths(
+            [
+                (LineString([(0, 0), (10, 0)]), True, ("ROCKY",)),
+                (LineString([(0, 0.001), (10, 0.001)]), True, ("SANDY",)),
+            ]
+        )
+    )
+    assert mapped == classified == 20.0
+    assert availability == membership == 0.0
 
 
 def test_shoreline_fractions_use_classified_length_and_allow_overlap() -> None:

@@ -2,6 +2,10 @@
 
 The workflow begins with reviewed source data and a selected marine area. It builds canonical water support, processes independent feature families, validates candidate products, then optionally promotes an audited release. [Workflow operations](../WORKFLOWS.md) describe command effects; [scientific contracts](../CONTRACTS.md) define the output obligations.
 
+[Regional processing lessons](processing-lessons.md) record source semantics, precision and performance findings, regression evidence, and limits learned from bounded cached-source runs.
+
+[Coarse-first v1 plan](coarse-v1-plan.md) defines the approved regional scope, source qualification, ownership boundaries and release acceptance ledger.
+
 ## Spatial support and units
 
 - H3 R8 model-area cells have nonzero water overlap. R6 is the exact parent union of those R8 cells, including possible hierarchy-only parents. Full H3 geometry, water-clipped geometry, and model-area support have different meanings.

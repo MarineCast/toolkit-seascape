@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "study_id": "vancouver-island-columbia",
+  "domain": {
+    "revision": "vancouver-island-columbia-coastal-policy-v1",
+    "status": "proposed",
+    "crs": "EPSG:4326",
+    "bbox_wgs84": [
+      -129.7,
+      45.9,
+      -121.5,
+      51.5
+    ],
+    "boundary_semantics": "longitude_latitude_rectangle",
+    "offshore_minimum_nm": 12,
+    "nautical_mile_m": 1852,
+    "water_membership": "positive_area_intersection_with_validated_coastal_plus_inland_water_mask",
+    "land_sources": "retain_land_and_mixed_cells_within_explicit_viewshed_source_extent",
+    "geometry_sha256": "6d79e4dfd29a4ada66625e20fdcd01e7bfe6076bf6ebb4c449581eb3a0cdfb68",
+    "approval": null,
+    "revision_note": "Coastal collection policy approved; enclosing rectangle is planning/acquisition support only. Ocean-side mask, certified offshore reach and final grid memberships are not materialized.",
+    "bbox_role": "acquisition_planning_envelope_only",
+    "geometry_status": "pending_qualified_coastline_validation",
+    "selection_policy": {
+      "revision": "coastal-water-plus-inland-v1",
+      "status": "approved",
+      "offshore_distance_m": 22224,
+      "distance_method": "WGS84_ellipsoidal_geodesic",
+      "offshore_side": "ocean_side_of_qualified_intended_coastal_reach",
+      "coastal_reach": "northern_Vancouver_Island_through_outer_island_and_relevant_offshore_island_shores_to_outer_Washington_and_Columbia_ocean_outlet",
+      "inland_waters": "include_requested_inland_waters_straits_bays_inlets_and_estuaries_with_explicit_waterbody_types",
+      "reporting_support": "positive_area_intersection_with_materialized_coastal_plus_inland_water_mask",
+      "far_offshore_reporting": "exclude_outside_coastal_distance_support",
+      "land_source_policy": "retain_land_mixed_cells_and_native_terrain_canopy_needed_for_viewshed",
+      "mask_status": "pending_source_qualified_build",
+      "approval": {
+        "approved_at": "2026-10-06T02:01:13Z",
+        "source_message_id": "Sentinel_ac8b961518248191b5ae566900299c07",
+        "scope": "coastal_collection_policy",
+        "statement": "yes",
+        "confirmed_question_id": "Sentinel_6d441dbf1b708191a38ade9b72c9a903"
+      }
+    }
+  },
+  "time": {
+    "start": "2009-01-01",
+    "end_exclusive": "2027-01-01",
+    "timezone": "UTC",
+    "daily_interval": "[start,end)",
+    "availability_policy": "retain_requested_window_report_actual_source_coverage_and_as_of"
+  },
+  "storage": {
+    "data_root": "../Data"
+  },
+  "products": {
+    "seascape": {
+      "h3_resolution": 6,
+      "retain_native": true
+    },
+    "viewshed": {
+      "h3_resolution": 7,
+      "retain_native": true
+    },
+    "meteorology": {
+      "h3_resolution": 5,
+      "retain_native": true
+    }
+  },
+  "producer_buffers": {
+    "seascape": {
+      "water_geometry_m": 2000,
+      "coastal_network_m": 60000,
+      "freshwater_context_m": 250000,
+      "river_source_context_m": {
+        "bc": 50000,
+        "us": 25000
+      },
+      "catchment_context_m": 75000
+    },
+    "viewshed": {
+      "line_of_sight_m": 30000,
+      "aoi_margin_m": 1000,
+      "source_policy": "land_and_water_sources_within_reporting_rectangle_plus_los_distance",
+      "native_raster_policy": "cover_source_target_paths_plus_aoi_margin"
+    },
+    "meteorology": {
+      "native_grid_policy": "include_complete_sampling_and_interpolation_stencils",
+      "legacy_bbox_padding_degrees": 0.2
+    }
+  },
+  "grid_registry": {
+    "status": "pending_validated_marine_mask",
+    "h3_resolutions": [
+      5,
+      6,
+      7
+    ],
+    "membership_policy": "positive_area_intersection",
+    "cell_id_type": "lowercase_h3_string",
+    "mask_revision": null,
+    "mask_sha256": null,
+    "memberships": []
+  }
+}

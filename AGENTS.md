@@ -175,3 +175,65 @@ Capture the runtime/test/quality closure with `scripts/environment_snapshot.py -
 and audit it with `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-env.txt`.
 CI also runs Gitleaks over history and the working tree. Scope and platform limits are documented in
 `docs/environments/README.md`; API/storage changes are documented in `docs/API.md`.
+
+## Shared study planning adapter
+
+`seascape.study` validates explicit study-v1 JSON with its packaged schema. No implicit
+workspace/sibling config discovery is permitted. The adapter supports planning and synthetic core
+software acceptance only; production stays
+blocked until marine reporting membership and distinct compute halos are integrated. Preserve
+standalone behavior and do not relax this hold based only on domain.status=approved.
+For adapter/config/CLI changes run `python -m pytest -q tests/test_study.py tests/test_preflight.py
+tests/test_workflow.py tests/test_cli_diagnostics.py`, then the full suite and quality/docs gates
+above. Fixtures are provenance/software checks, not shared-domain certification.
+For shared-support artifact/consumer changes first run `python -m pytest -q tests/test_study_support.py
+tests/test_study.py`, then the full suite and quality/docs gates. The support reader and explicit
+bathymetry cell API do not enable CLI production or certify source/halo qualification.
+For bounded scientific study routes run `python -m pytest -q tests/test_study_support.py
+tests/domains/environment/seascape/test_bathymetry_contracts.py
+tests/domains/environment/seascape/test_geomorphometry_contracts.py`, then full suite and quality/docs
+gates. Check `python -m mypy src/seascape/study_support.py src/seascape/study_routes.py` in addition
+to configured interface checks. Synthetic route provenance never qualifies a regional release.
+For the synthetic study core CLI also check `python -m mypy src/seascape/study_core.py` and run
+`tests/test_study_support.py` for mandatory/optional capability closure, retained schema3 software
+release verification and tamper rejection. The owned fixture namespace and false regional release
+eligibility are required; do not reuse the fixture audit as a regional audit PASS.
+For native receipt/probe/pilot changes run `tests/test_study_native.py` and `tests/test_study_support.py`,
+then the full suite and quality/docs gates. Include `src/seascape/study_native.py` in explicit mypy
+checks. The bounded source probe is non-reporting; real pilot evidence must stay source-relative,
+with false regional/artifact publication eligibility and no automatic acquisition.
+For bounded GEBCO acquisition changes run `tests/test_gebco_subset_acquisition.py`, then the full
+suite and quality/docs gates. Explicitly check `python -m mypy
+src/seascape/seafloor_physiography/bathymetry/subset_acquisition.py`.
+See [acquisition contract](docs/gebco-subset-acquisition.md). Offline fixtures never submit real
+queue requests or qualify reporting support. Live source acquisition is a separate reviewed,
+resource-coordinated action; preserve ZIP, receipts and old cache bytes.
+For explicit source land/water adoption run `tests/test_source_partition.py`, then full suite
+and quality/docs checks. Check `python -m mypy src/seascape/spatial_support/water_geometry/partition.py`.
+See [partition adoption](docs/source-land-water-partition.md). Retain tile/union semantics and
+source exceptions; the engineering reporting selector never becomes the definition of water.
+
+For bounded graph execution run `tests/test_bounded_graph_execution.py` and
+`tests/domains/environment/seascape/spatial_support/test_water_network.py`, then the full suite,
+quality and documentation checks. Verify retained regional pilot parity before a regional run.
+See [bounded graph execution](docs/bounded-watergraph-execution.md). Output-source batching must
+retain the full traversal graph, connector semantics and scientific source/halo qualifications.
+
+For physical shoreline length changes run
+`python -m pytest -q tests/domains/environment/seascape/test_shoreline_characterization.py`,
+then the full suite, quality and documentation checks. Verify source-record repetition,
+partial overlaps, classification-availability disagreements and nearby distinct lines.
+Physical numerators and denominators count geometric unions, while source evidence retains
+all records. See the producer's `DATA_SOURCES.md`; survey coverage remains separate.
+
+For anthropogenic source classification changes run
+`python -m pytest -q tests/domains/environment/seascape/test_anthropogenic_contracts.py`,
+then the full suite, quality and documentation checks. Verify that Approved and Prohibited
+shellfish harvest classifications cannot establish aquaculture footprint/presence or suppress
+OSM aquaculture records; legitimate physical inventory matches still govern deduplication.
+
+For DNR annual kelp processing-era changes run
+`python -m pytest -q tests/domains/environment/seascape/test_kelp_processing_eras.py`,
+then the full suite, quality and documentation checks. Preserve vector/CAD 1989–1992,
+unsurveyed 1993, approximately 20 m raster 1994–2009 and approximately 4 m raster 2010–2024.
+Processing labels must not change source geometry, observation years or scientific values.

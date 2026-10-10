@@ -43,6 +43,14 @@ def bbox_for_area(
     *,
     common_config_path: str | Path | None = None,
 ) -> dict[str, float]:
+    from seascape.study import StudyConfigError, current_study
+
+    study = current_study()
+    if study is not None and area_name_value == "model_area":
+        raise StudyConfigError(
+            "Coastal reporting support requires a materialized validated mask; "
+            "the acquisition envelope cannot be used as model_area reporting support."
+        )
     areas = _common_areas(common_config_path)
     area = areas.get(area_name_value)
     if not isinstance(area, Mapping):

@@ -84,6 +84,10 @@ class PreflightStage(TypedDict):
 class PreflightReport(TypedDict):
     """Schema-1 read-only readiness; not scientific or release approval."""
 
+    marinecast_study: NotRequired[dict[str, Any]]
+    study_production_ready: NotRequired[bool]
+    study_support_warning: NotRequired[str]
+
     schema_version: int
     status: Literal["not_run", "ready", "failed"]
     inspection_level: str

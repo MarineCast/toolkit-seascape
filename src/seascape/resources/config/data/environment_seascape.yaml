@@ -925,8 +925,9 @@ anthropogenic_seascape:
         layer_url: https://gis.ecology.wa.gov/serverext/rest/services/GIS/CoastalAtlas/MapServer/314
         fields: '*'
         raw_filename: WA_ECOLOGY_COMMERCIAL_SHELLFISH.geojson
-        normalizer: aquaculture
-        evidence_class: authoritative_inventory
+        # Harvest/water-quality regulation, not physical aquaculture footprints.
+        normalizer: shellfish_harvest_classification
+        evidence_class: regulatory_classification_inventory
         license: Washington State agency open data terms
         attribution: Washington State Department of Ecology Coastal Atlas
       bc_dfo_shellfish_licences:

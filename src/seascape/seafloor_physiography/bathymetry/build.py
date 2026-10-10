@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import logging
+from contextlib import ExitStack
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
 
+from seascape.seafloor_physiography.depth import validate_native_metre_band_units
+
 if TYPE_CHECKING:
+    from seascape.study_support import VerifiedStudySupport
+
     from .pipeline import BathymetryConfig
 
 LOGGER = logging.getLogger(__name__)
@@ -99,9 +104,20 @@ def _cells_from_existing_grid(config: BathymetryConfig) -> list[str]:
     return sorted(grid["H3_INDEX"].dropna().astype(str).unique().tolist())
 
 
-def load_h3_cells(config: BathymetryConfig) -> list[str]:
+def load_h3_cells(
+    config: BathymetryConfig,
+    *,
+    study_support: VerifiedStudySupport | None = None,
+    support_role: str = "reporting",
+) -> list[str]:
     """Load the required canonical model-area support for this resolution."""
 
+    if study_support is not None:
+        if study_support.producer != "bathymetry":
+            raise ValueError("Bathymetry requires its own producer support identity.")
+        return list(study_support.cells(config.h3_resolution, role=support_role))
+    if support_role != "reporting":
+        raise ValueError("Explicit compute role requires verified study support.")
     if not config.h3_grid_path.exists():
         raise FileNotFoundError(
             "Canonical model-area support is required before bathymetry: "
@@ -409,7 +425,7 @@ def _isobath_segments(
 
 
 def _aggregate_raster(
-    raster_path: Path,
+    raster_path: Path | bytes,
     cells: list[str],
     resolution: int,
     bathymetry_sign: str,
@@ -421,11 +437,17 @@ def _aggregate_raster(
 ) -> pd.DataFrame:
     import rasterio
 
-    with rasterio.open(raster_path) as raster:
+    with ExitStack() as stack:
+        if isinstance(raster_path, bytes):
+            memory = stack.enter_context(rasterio.io.MemoryFile(raster_path))
+            raster = stack.enter_context(memory.open())
+        else:
+            raster = stack.enter_context(rasterio.open(raster_path))
         if raster.count != 1:
             raise ValueError(f"Expected a single-band GEBCO raster: {raster_path}")
         if raster.crs is None or raster.crs.to_epsg() != 4326:
             raise ValueError("GEBCO GeoTIFF must use EPSG:4326 for H3 aggregation.")
+        validate_native_metre_band_units(raster.units[0])
         elevation = raster.read(1, masked=True).astype("float64").filled(np.nan)
         transform = raster.transform
 

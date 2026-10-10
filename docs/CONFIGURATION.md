@@ -149,3 +149,112 @@ or product indexes; those are release-derived artifacts.
 It does not migrate an older workspace's configuration or replace locally edited templates.
 Maintainers must synchronize changed configuration templates with
 [src/seascape/resources](../src/seascape/resources); see [development](DEVELOPMENT.md).
+
+## Explicit shared study planning
+
+The optional global `--study-config PATH` selects MarineCast study-v1 JSON. An explicit path
+wins over `MARINECAST_STUDY_CONFIG`; there is no default filename search or sibling import.
+Without either selection, the standalone configuration and workspace rules above are unchanged.
+The validator uses a packaged copy of the pinned v1 schema, so planning also works outside the
+MarineCast checkout. `storage.data_root` must be relative to the JSON file; when `--workspace`
+is omitted the selected workspace is its resolved data root plus `seascape`.
+
+```sh
+seascape --workspace "$SEASCAPE_WORKSPACE" --study-config /absolute/path/to/study.v1.json \
+  build --dry-run --json --only seascape-bathymetry
+```
+
+This adapter supports read-only planning and the explicitly scoped synthetic core CLI described in
+`docs/shared-study-routing.md`. A proposed real domain is allowed only for explicit dry runs.
+The core fixture command requires synthetic evidence and cannot certify regional data.
+Production through the adapter is blocked even if a study changes to approved: the current
+territorial-water selection must first be replaced with validated marine reporting membership,
+and producer compute halos must be integrated independently of the reporting rectangle.
+The current approved selection policy covers ocean-side coastal water within 22,224 m of the
+qualified intended reach plus requested inland waters. Policy approval does not certify geometry,
+materialize the water mask or validate the registry. Each of those pending states rejects a
+production load. Even claims that all states are validated cannot enable the unfinished adapter.
+No stage readiness result certifies shared-domain coverage; JSON includes
+`study_production_ready=false` and an explicit support warning. Existing source paths remain
+producer inputs, not proof that they cover the requested rectangle.
+
+Current v1 requires the complete coastal field group: `bbox_role`, `geometry_status` and
+`selection_policy`. Missing, null or malformed policies fail validation in planning and production;
+superseded rectangle-only study documents must be updated before selection. Standalone use without
+a selected study retains its existing area rules. The rectangle is exclusively an
+acquisition/planning envelope, not the reporting universe; requesting it as `model_area`
+fails rather than including far-offshore water.
+The planner applies recorded geometry, coastal-network, freshwater, jurisdictional-river and
+catchment buffer settings. Other named source/compute areas are not silently resized. The output
+includes the complete parsed contract, policy approval and pending certification status,
+canonical config and geometry hashes, raw-file hash, domain revision/status, requested dates,
+resolved Data root, product resolution and native-companion policy. The effective configuration
+fingerprint includes those identities. A changed date, buffer or geometry invalidates reuse.
+Provenance distinguishes the envelope identity from reporting-mask identity; the latter is pending.
+The synchronized schema accepts domain approval provenance and revision notes. Approved status
+requires an explicit approval record with a timezone-bearing timestamp. Validation, parsed content,
+canonical identity and raw-file identity use one captured byte snapshot; a later file revision does
+not change the already loaded record. The raw-file hash describes that captured snapshot.
+The public API is `seascape.study.load_study_config(path, planning=True)` and the scoped
+`study_context(study, planning=True)`; use it only around read-only planners. Orchestration
+rejects a producer run inside that context before creating a candidate.
+
+The requested 2009–2026 window does not make static bathymetry an annual observation series.
+Retain source vintage, observation/availability distinctions and actual source cutoffs. Do not
+repeat static tables by year, backdate modern evidence or manufacture future measurements.
+The portable validation notebook remains a standalone bathymetry/demo client; this optional,
+blocked production integration does not change its required offline workflow.
+
+### Bounded shared-support consumer
+
+`seascape.study_support.load_study_support` consumes explicitly located, pinned artifacts without
+downloads or writes. The root contract is unchanged. The packaged registry interface pins config-relative artifact paths:
+paths resolve against the
+selected study JSON directory and must remain beneath its configured resolved `data_root`, including
+through symlinks. Legitimate `../Data/...` paths are accepted; CWD and toolkit location play no role.
+The shared R6
+`water_reporting` artifact follows the documented raw SHA256 policy: sorted unique lowercase
+H3 IDs, one per line, ending in a newline; an empty membership is a zero-byte file.
+Count, resolution, checksum and complete positive-area
+ellipsoidal overlap with the pinned mask are checked. IDs selected by centers or the acquisition envelope
+cannot substitute for mask membership. Mask geometry is not silently repaired or simplified.
+
+The provisional mask interface accepts an explicit pinned EPSG:4326 GeoJSON Polygon/MultiPolygon
+geometry. Its raw SHA256 must match `grid_registry.mask_sha256`; the mask revision comes from that
+registry. This mask encoding remains provisional until its qualification-manifest format is frozen;
+it does not change the shared JSON schema. The confirmed membership interface is pinned at raw SHA256
+`38e3f84d8e7b0f59c188abb1da1ca354bb6271c328ac2a7e29504b0ca2f84d01`.
+Separately pinned `MembershipArtifact` records with
+role `water_source` supply R6 and R8 compute context. The caller must identify the `producer`;
+its identity distinguishes support caches, and bathymetry refuses another producer's support.
+No single common halo is inferred from these files. R6 compute support must equal the R8 parent
+union and contain all R6 reporting cells; R8 compute support must contain all independently derived
+native reporting cells. Direct positive-area R6 reporting and the R8 compute parent union have
+distinct semantics and are not silently substituted for each other. R5 water networks are refused.
+
+The reader defaults to 16 MiB per artifact and 100,000 cells. Membership counts and read bytes are
+checked against those limits. Overlap filling uses only a heuristic envelope preflight plus a soft
+post-enumeration candidate-count check: candidates may be allocated before that check rejects.
+This is not a strict allocation bound or regional footprint estimate. H3's overlap API is required;
+center-fill fallback is refused.
+The returned immutable memberships record the pinned config, mask, membership artifacts, H3 library
+version, cell polygon/intersection/ellipsoidal area engines and scientific buffers in a portable
+consumer identity. Read bytes are also the bytes hashed and parsed, so validation is not based on a second read of a changing file.
+
+Bathymetry's `load_h3_cells(config, study_support=support, support_role="reporting")` uses these
+memberships through an explicit API argument. `support_role="compute"` selects full compute context.
+The existing standalone grid path remains unchanged when no support is supplied. This does not
+wire the study CLI into the bathymetry pipeline or authorize a producer run. For already computed
+tables, `support.consume_table(frame, resolution, role="reporting")` requires all reporting rows,
+trims compute-only rows and preserves nulls, zeros and status columns. `role="compute"` requires
+every compute row; reporting-only support cannot replace halo support. Duplicate, null, wrong
+resolution and out-of-support keys fail rather than being silently dropped.
+
+**Verification is not qualification.** The consumer does not establish source rights, source
+coverage, coastal reach/waterbody classification, the 22,224 m coastal selection method or producer
+halo distance completeness. Its provenance explicitly reports those limitations and
+`production_ready=false`. All current study CLI/context/orchestration production gates remain.
+Before removing them, integrate qualified source/mask manifests and each producer's actual reporting,
+network, native raster and halo routes, then independently validate their scientific outputs.
+The [producer routing inventory](shared-study-routing.md) documents implemented scientific routes,
+per-family remaining work and optional or source-blocked capabilities.

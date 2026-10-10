@@ -101,3 +101,25 @@ def test_shoreline_collector_installs_validated_acquired_files(tmp_path, monkeyp
     with pytest.raises(ValueError, match="differs"):
         shore.collect_shoreline_sources("unused")
     assert target.read_text() == "different"
+
+
+def test_cache_sha256_uses_filename_prefix_not_raw_content(tmp_path):
+    import hashlib
+
+    from seascape.core.artifacts.checksums import checksum_path
+
+    path = tmp_path / "source.zip"
+    content = b"bounded checksum convention regression"
+    path.write_bytes(content)
+    identity = "fixture-source-identity"
+    raw_digest = hashlib.sha256(content).hexdigest()
+    canonical_digest = hashlib.sha256(path.name.encode("utf-8") + content).hexdigest()
+    assert checksum_path(path) == canonical_digest
+    assert canonical_digest != raw_digest
+    module.validate_cached_source(
+        path, identity, {"acquisition_identity": identity, "sha256": canonical_digest}
+    )
+    with pytest.raises(ValueError, match="checksum"):
+        module.validate_cached_source(
+            path, identity, {"acquisition_identity": identity, "sha256": raw_digest}
+        )

@@ -614,6 +614,15 @@ def _normalize_spatial_class(
 ):
     import geopandas as gpd
 
+    # Coastal Atlas 314 describes harvest/water-quality regulation, including
+    # Approved and Prohibited zones. Its polygons are not cultivation footprints.
+    # Keep this guard for callers using an older configuration crosswalk too.
+    harvest_classification = (
+        source_name == "wa_ecology_commercial_shellfish"
+        or feature_class == "shellfish_harvest_classification"
+    )
+    if harvest_classification:
+        feature_class = "shellfish_harvest_classification"
     frame = gpd.read_file(path).to_crs("EPSG:4326")
     id_column = _column(frame, "OBJECTID", "FID", "ID", "SITE_ID", "OBJNAM")
     rows: list[dict[str, Any]] = []
@@ -645,7 +654,8 @@ def _normalize_spatial_class(
                 confidence_class=3,
                 geometry_precision_class="authoritative_mapped_geometry",
                 geometry=make_valid(geometry),
-                supports_area=geometry.geom_type in {"Polygon", "MultiPolygon"},
+                supports_area=not harvest_classification
+                and geometry.geom_type in {"Polygon", "MultiPolygon"},
                 properties=properties,
             )
         )
@@ -827,6 +837,11 @@ def load_anthropogenic_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
         ),
         "aquaculture": lambda path, name, source: _normalize_spatial_class(
             path, name, source, "aquaculture"
+        ),
+        "shellfish_harvest_classification": lambda path, name, source: (
+            _normalize_spatial_class(
+                path, name, source, "shellfish_harvest_classification"
+            )
         ),
         "aquaculture_csv": _normalize_aquaculture_csv,
     }

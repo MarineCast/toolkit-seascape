@@ -30,6 +30,18 @@ PREFIX = "KELP"
 YEAR_PATTERN = re.compile(r"(?:19|20)\d{2}")
 
 
+def annual_spatial_processing(year: int) -> str:
+    """Label the retained DNR survey's processing era, not physical accuracy."""
+
+    if 1989 <= year <= 1992:
+        return "vector_CAD_processing_1989_1992"
+    if 1994 <= year <= 2009:
+        return "approximately20m_raster_processing_1994_2009"
+    if 2010 <= year <= 2024:
+        return "approximately4m_raster_processing_2010_2024"
+    raise ValueError(f"No qualified DNR annual processing era for survey year {year}.")
+
+
 def _records(
     frame: Any,
     *,
@@ -178,11 +190,7 @@ def _annual_kelp_inventory(config: Any) -> list[Any]:
                 supports_area=True,
                 confidence=3,
                 survey_method="annual aerial floating-canopy inventory",
-                spatial_precision=(
-                    "approximately_4m_processing"
-                    if year >= 2010
-                    else "approximately_20m_processing"
-                ),
+                spatial_precision=annual_spatial_processing(year),
                 temporal_precision="survey_year",
             )
         )

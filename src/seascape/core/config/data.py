@@ -70,6 +70,7 @@ def load_data_config(
         merged.update(domain_cfg)
 
     from seascape.core.geo.crs import validate_metric_crs_settings
+    from seascape.study import apply_study_config
 
     validate_metric_crs_settings(merged)
-    return merged
+    return apply_study_config(merged)
