@@ -251,6 +251,8 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
 
         c = load_water_network_config(path)
         inputs = [Input("water polygon", c.water_polygon_path)]
+        if c.reporting_mask_path is not None:
+            inputs.append(Input("reporting mask", c.reporting_mask_path))
         outputs = [
             getattr(c, method)(res)
             for res in c.resolutions
@@ -630,6 +632,23 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
         inputs = _network_inputs(path) + [
             Input("parent child crosswalk", c.parent_child_path)
         ]
+        if name in {"seascape-kelp-habitat", "seascape-seagrass-habitat"}:
+            outputs = [
+                c.inventory_path,
+                c.manifest_path,
+                *(c.feature_path(res) for res in (6, 8)),
+            ]
+            if name == "seascape-kelp-habitat":
+                outputs += [
+                    c.processed_dir / f"KELP_ANNUAL_RES_{res}.parquet" for res in (6, 8)
+                ]
+            network = load_water_network_config(path)
+            inputs = [
+                Input(
+                    f"native full H3 geometry r{res}", network.full_geometry_path(res)
+                )
+                for res in (6, 8)
+            ]
         if name == "seascape-bottom-hardness":
             substrate = load_habitat_surface_config(
                 build.SUBSTRATE_SECTION, build.SUBSTRATE_PREFIX, path
@@ -645,7 +664,8 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
                 for key, family in build._family_configs(path).items()
                 for res in (6, 8)
                 for method in ("feature_path", "confidence_path")
-                if key != "substrate" or method == "confidence_path"
+                if (key != "substrate" or method == "confidence_path")
+                and not (key in {"kelp", "seagrass"} and method == "confidence_path")
             ]
         else:
             d = load_habitat_download_config(build.SECTION_NAME, path)
@@ -722,8 +742,7 @@ def _contract(stage: DomainBuildStage, path: Path, raw: dict[str, Any]) -> Contr
         "environment-feature-catalog",
         "seascape-feature-eligibility",
         "seascape-documentation",
-        "seascape-release-audit",
-        "seascape-release",
+        "seascape-parquets",
     }:
         checks = [
             "existing stage dependency declarations; generated governance/release artifacts inspected during execution"
@@ -867,9 +886,7 @@ def preflight_build(
                     "action": (
                         "reuse_requested"
                         if stage.name in skip
-                        else ("publish" if publish else "retain-candidate")
-                        if stage.name == "seascape-release"
-                        else "release-gate"
+                        else "write-parquets"
                         if stage.terminal_action
                         else "build"
                     ),
@@ -993,10 +1010,10 @@ def preflight_build(
     report["checks"].append(
         _check(
             "plan",
-            "publication/release audit",
+            "output validation",
             "unverified" if publish else "not_applicable",
             required=False,
-            action="Publication requires a successful executed release audit; this command cannot approve it."
+            action="Writing requires successful producer and H3 support validation during execution."
             if publish
             else "",
         )

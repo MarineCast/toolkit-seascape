@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Replace the normal data-release workflow with flat `Data/Seascape/<area>-r<resolution>-static.parquet`,
+  optional `<area>-r<resolution>-dynamic.parquet` (with `date`), and one small `catalog.json`.
+- Embed field definitions/source context in Parquet metadata, retain native H3 keys/nulls,
+  and remove successful default-build scratch products. Current reader API is `read_area`.
+- Move historical release readers to `seascape.legacy_products` for explicit migration.
+
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and software

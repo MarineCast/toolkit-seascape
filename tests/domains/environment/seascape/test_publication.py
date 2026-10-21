@@ -199,7 +199,9 @@ def test_shared_snapshot_blocks_release_writer(tmp_path: Path) -> None:
 
     with SeascapeSnapshot(canonical):
         process.start()
-        assert messages.get(timeout=5) == "attempting"
+        # Spawn imports can be slow during regional processing. The separate
+        # blocking assertion below still tests the lock over the same interval.
+        assert messages.get(timeout=30) == "attempting"
         with pytest.raises(queue.Empty):
             messages.get(timeout=0.2)
     assert messages.get(timeout=5) == "acquired"

@@ -58,6 +58,8 @@ select = ["E9", "F63", "F7", "F82", "F401", "F841", "F811", "F601", "F602", "B00
 python_version = "3.14"
 files = [
   "src/seascape/products.py",
+  "src/seascape/domain_parquets.py",
+  "src/seascape/legacy_products.py",
   "src/seascape/core/geo/crs.py",
   "src/seascape/core/artifacts/confinement.py",
   "src/seascape/seafloor_physiography/depth.py",
@@ -69,6 +71,13 @@ files = [
   "src/seascape/core/config/data.py",
   "src/seascape/core/config/paths.py",
   "src/seascape/metric_matrix.py",
+  "src/seascape/historical.py",
+  "src/seascape/biogenic_habitat/seagrass/native.py",
+  "src/seascape/utils/geometry_quality.py",
+  "src/seascape/spatial_support/coastal_policy.py",
+  "src/seascape/spatial_support/coastal_policy_build.py",
+  "src/seascape/biogenic_habitat/kelp/native.py",
+  "src/seascape/benthic_substrate/areal.py",
 ]
 follow_imports = "skip"
 ignore_missing_imports = true

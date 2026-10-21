@@ -13,7 +13,7 @@
 
 Seascape Toolkit turns reviewed geospatial sources into reproducible physical and structural marine features. It supports bathymetry and terrain, modeled substrate, shoreline and waterbody geometry, freshwater connections, mapped vegetation and reef evidence, built coastal features, and the H3 water support that relates them. It is an independently installable Python package; no OrcaCast checkout is required.
 
-The toolkit is for researchers, GIS users, and downstream applications that need analysis-ready features with source lineage, spatial support, and explicit missingness. Physical conditions and mapped evidence do **not** establish species occurrence or habitat suitability. Regional source data and an audited regional release are not bundled.
+The toolkit is for researchers, GIS users, and downstream applications that need analysis-ready features with source lineage, spatial support, and explicit missingness. Physical conditions and mapped evidence do **not** establish species occurrence or habitat suitability. Regional source data are not bundled. Completed outputs are flat per-area Parquets in `Data/Seascape` plus one `catalog.json` tracking when each area was last updated.
 
 ## v0.1.1 status and compatibility
 
@@ -25,13 +25,18 @@ or scientific methods; patch releases preserve intended public and scientific co
 The toolkit records source lineage, configuration, checksums, spatial support, missingness, and
 versioned scientific interpretations so results can be reproduced and compared. Those records do
 not remove source-specific limitations: regional coverage, rights, horizontal CRS, vertical datum,
-resolution, and accuracy must be reviewed for each data release. The synthetic demo does not
+resolution, and accuracy must be reviewed for each source. The synthetic demo does not
 validate regional accuracy, species habitat, navigation safety, or predictive fitness.
 
-Software, scientific interpretation, and materialized data have deliberately separate identities.
-See the [release process](docs/development/releases.md) and [changelog](CHANGELOG.md) for the identity
-model, Semantic Versioning policy, method changes, and immutable-release rules. Rebuilding data does
-not by itself create a Python package version, Git tag, or GitHub Release.
+Data use stable filenames: `<area>-r<resolution>-static.parquet` has one row per native H3 cell;
+`<area>-r<resolution>-dynamic.parquet`, when available, adds a `date` column. There are at most two
+Parquets per area and resolution, no dated filenames, no data releases and no retained generations.
+Definitions, units, source context and coverage limits live inside Parquet metadata.
+`catalog.json` is the only companion file for these H3 tables. Optional separately keyed research
+objects live in `research/` and are preserved by rebuilds. Study registries reference these
+canonical products without maintaining duplicate study copies. See [data layout](docs/metric-matrix.md).
+Software and scientific methods still have their own version policies; see the
+[software release process](docs/development/releases.md).
 
 ## Install and get a first result
 
@@ -47,7 +52,7 @@ python -m pip install toolkit-seascape
 For a reproducible installation, pin a published version, for example
 `python -m pip install toolkit-seascape==0.1.1` once that version is available on PyPI.
 Installation retrieves declared Python dependencies; the package does not include regional
-scientific datasets or an audited data release.
+scientific datasets.
 
 Contributors and maintainers validating the source-install quick start can clone
 [the repository](https://github.com/MarineCast/toolkit-seascape) and run the following from its
@@ -87,7 +92,27 @@ The CLI prints `Synthetic software acceptance: PASS (not a regional release)` af
 | Find exact fields and coverage limits | [Variable catalog](https://marinecast.github.io/toolkit-seascape/variables/) · [Product index](docs/products.md) · [Capability coverage](docs/capability-coverage.md) |
 | Review sources and calculations | [Data sources](https://marinecast.github.io/toolkit-seascape/data-sources/) · [Methodology](https://marinecast.github.io/toolkit-seascape/methodology/) · [Scientific contracts](docs/CONTRACTS.md) |
 | Process real inputs | [Bounded workflow](docs/WORKFLOWS.md#bounded-real-data-processing) · [Stage prerequisites](docs/stage-inputs.md) |
-| Read a completed release | [Python API](docs/API.md) · [Metric matrix](docs/metric-matrix.md) |
+| Read current area tables | [Python API](docs/API.md) · [Metric matrix](docs/metric-matrix.md) |
 | Contribute or release | [Development guide](docs/DEVELOPMENT.md) · [Release process](docs/development/releases.md) · [Documentation site source](docs/index.md) |
 
 Source rights and attribution are provider-specific; the software license is [Apache-2.0](LICENSE). The [documentation site](https://marinecast.github.io/toolkit-seascape/) is built with MkDocs Material and deployed from `main` by GitHub Actions. Contributors can run it locally with `python -m pip install -e ".[docs]"`, `mkdocs serve`, and `mkdocs build --strict`.
+
+The explicit coastal shared-study profile, named outlet/passage/gateway research products and
+remaining source qualifications are documented in [source closure](docs/source-closure.md).
+
+## Kelp extent
+
+The [Kelp contract](docs/kelp.md) defines one dataset with **Annual Kelp Extent**
+and **Kelp Extent (All Time)**. Both measure mapped positive bed-extent polygon
+unions in full native H3 cells, m². All available historical survey years are
+retained; undated Canadian legacy mapping is explicitly qualified in All Time.
+Missing evidence is unknown, not an absence mask. The current producer replaces
+separate annual-footprint and mapped-kelp-mosaic output families.
+
+## Seagrass extent
+
+The [Seagrass contract](docs/seagrass.md) exposes only **Seagrass Extent (All Time)** in **Biogenic Habitats**. It unions mapped WA eelgrass polygons, legacy BC CRIMS polygons and positive 2019–2020 / 2023–2024 Sentinel-2 composite footprints, retaining all original dates, methods and species resolution as provenance. The annual generated feature was retired without removing its mapped evidence from All Time. Overlaps count once; missing positive evidence remains unknown.
+
+## Bivalve extent
+
+The [Bivalve contract](docs/bivalve.md) defines the static **Bivalve Extent (All-Time)** mapped-bed union, source admission, temporal caveats and bounded replay. Scientific source identity and provenance remain distinct from the Biogenic Habitats presentation family.

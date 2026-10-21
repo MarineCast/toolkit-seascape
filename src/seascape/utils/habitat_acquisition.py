@@ -162,37 +162,54 @@ def _download_http_file(
     *,
     timeout: float,
 ) -> int:
+    limit = int(source.get("maximum_bytes", source.get("expected_bytes", 0)))
+    if limit < 0 or ("maximum_bytes" in source and limit == 0):
+        raise ValueError("HTTP maximum_bytes must be positive when configured")
+    if limit and int(source.get("expected_bytes", 0)) > limit:
+        raise ValueError("Expected source bytes exceed maximum_bytes")
     method = str(source.get("http_method", "GET")).strip().upper()
     if method not in {"GET", "POST"}:
         raise ValueError(f"Unsupported HTTP download method: {method}")
     response = session.request(method, str(source["url"]), timeout=timeout, stream=True)
-    try:
-        response.raise_for_status()
-    except requests.RequestException as exc:
-        raise RuntimeError(f"HTTP download failed for {source['url']}: {exc}") from exc
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(destination.suffix + ".part")
     try:
+        try:
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            raise RuntimeError(
+                f"HTTP download failed for {source['url']}: {exc}"
+            ) from exc
+        advertised = getattr(response, "headers", {}).get("Content-Length")
+        if limit and advertised is not None and int(advertised) > limit:
+            raise RuntimeError("HTTP source Content-Length exceeds maximum_bytes")
+        received = 0
         with partial.open("wb") as output:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 if chunk:
+                    received += len(chunk)
+                    if limit and received > limit:
+                        raise RuntimeError("HTTP source exceeds maximum_bytes")
                     output.write(chunk)
+        _validate_expected_file(partial, source)
+        if destination.suffix.lower() == ".zip":
+            try:
+                with zipfile.ZipFile(partial) as archive:
+                    bad_member = archive.testzip()
+                    if bad_member:
+                        raise RuntimeError(
+                            f"Downloaded ZIP has a corrupt member: {bad_member}"
+                        )
+            except zipfile.BadZipFile as exc:
+                raise RuntimeError(
+                    f"Downloaded archive is not a valid ZIP: {destination}"
+                ) from exc
         partial.replace(destination)
     finally:
         partial.unlink(missing_ok=True)
-    if destination.suffix.lower() == ".zip":
-        try:
-            with zipfile.ZipFile(destination) as archive:
-                bad_member = archive.testzip()
-                if bad_member:
-                    raise RuntimeError(
-                        f"Downloaded ZIP has a corrupt member: {bad_member}"
-                    )
-        except zipfile.BadZipFile as exc:
-            raise RuntimeError(
-                f"Downloaded archive is not a valid ZIP: {destination}"
-            ) from exc
-    _validate_expected_file(destination, source)
+        close = getattr(response, "close", None)
+        if close is not None:
+            close()
     return int(destination.stat().st_size)
 
 

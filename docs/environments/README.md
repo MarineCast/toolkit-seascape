@@ -85,11 +85,15 @@ Ruff checks all Python under `src/`, `tests/` and `scripts/`: syntax/control-flo
 `F811,F601,F602`, mutable defaults `B006`, and import order `I001`. Formatting uses the existing
 defaults/Python 3.14 target. No new per-file exclusions or rule suppressions were added.
 
-Mypy checks these **12 modules**, with annotated functions, checked bodies and unused-ignore warnings:
+Mypy checks these **21 modules**, with annotated functions, checked bodies and unused-ignore warnings:
 
-- `products.py`, `core/geo/crs.py`, `core/artifacts/confinement.py`, `seafloor_physiography/depth.py`
+- `products.py`, `domain_parquets.py`, `legacy_products.py`, `core/geo/crs.py`, `core/artifacts/confinement.py`, `seafloor_physiography/depth.py`
 - `demo.py`, `cli.py`, `_cli_diagnostics.py`, `preflight.py`
 - `core/config/document.py`, `core/config/data.py`, `core/config/paths.py`, `metric_matrix.py`
+- `historical.py`, `biogenic_habitat/seagrass/native.py`, `utils/geometry_quality.py`
+- `spatial_support/coastal_policy.py`, `spatial_support/coastal_policy_build.py`
+- `biogenic_habitat/kelp/native.py`
+- `benthic_substrate/areal.py`
 
 The project syntax/type target is Python 3.14. Existing skipped imports/missing external
 stubs remain explicit limits; this is not strict typing of the whole scientific implementation.

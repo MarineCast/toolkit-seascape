@@ -37,6 +37,7 @@ def water_geometry_provenance(water_path: Path, root: Path) -> dict[str, Any] | 
     if payload["dataset_family"] not in {
         "environment.seascape.territorial_water_geometry",
         "environment.seascape.exploratory_water_geometry",
+        "environment.seascape.coastal_policy_water_geometry",
     }:
         raise ValueError("Unexpected upstream water-geometry dataset family.")
     if not payload["sources"]:
@@ -54,6 +55,20 @@ def water_geometry_provenance(water_path: Path, root: Path) -> dict[str, Any] | 
         ):
             raise ValueError(
                 "Exploratory water-geometry provenance must declare exploratory, model-ineligible support."
+            )
+    if (
+        payload["dataset_family"]
+        == "environment.seascape.coastal_policy_water_geometry"
+    ):
+        if (
+            metadata.get("support_kind") != "coastal_policy_context"
+            or metadata.get("reporting_membership") != "positive_area_intersection"
+            or not isinstance(metadata.get("coastal_policy"), Mapping)
+            or metadata["coastal_policy"].get("physical_full_catalog_qualified")
+            is not False
+        ):
+            raise ValueError(
+                "Coastal-policy provenance must declare its source-scale context and separate reporting membership"
             )
     sources = [dict(item) for item in payload["sources"]]
     for item in sources:

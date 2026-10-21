@@ -164,6 +164,23 @@ def identify_failure(exc: BaseException) -> Diagnostic | None:
     config = function in _CONFIG_SITES.get(module, set())
     publication = any(m in _PUBLICATION_MODULES for m, _ in sites)
     if (
+        isinstance(exc, ValueError)
+        and module == "seascape.historical"
+        and function
+        in {
+            "_date",
+            "_unique_object",
+            "from_study",
+            "_select_dynamic",
+            "export_history",
+        }
+    ):
+        return Diagnostic(
+            f"Invalid historical source/request contract: {safe_detail(exc)}",
+            "Review the explicit study time request, native temporal metadata, source availability and separate output destination; preserve source gaps and qualifications.",
+            "docs/historical-data.md",
+        )
+    if (
         isinstance(exc, CRSError)
         and ("seascape.core.geo.crs", "require_metric_crs") in sites
     ):
@@ -232,8 +249,14 @@ def identify_failure(exc: BaseException) -> Diagnostic | None:
             safe_detail(exc),
             "Review the selected stages (seascape stages), config and candidate confinement; use a fresh candidate inside the selected workspace.",
         )
+    if isinstance(exc, ValueError) and module == "seascape.domain_parquets":
+        return Diagnostic(
+            f"Seascape table validation failed: {safe_detail(exc)}",
+            "Correct native cell/date keys, source support or metric values before updating the current files.",
+            "docs/metric-matrix.md",
+        )
     if isinstance(exc, ValueError) and (
-        module == "seascape.products"
+        module in {"seascape.products", "seascape.legacy_products"}
         and function in {"_verified_manifest", "_release_path", "resolve_product"}
         or module == "seascape.metric_matrix"
         and function

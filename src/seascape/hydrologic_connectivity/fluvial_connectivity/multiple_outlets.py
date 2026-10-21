@@ -13,9 +13,12 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from pyproj import Geod
 
-from seascape.products import resolve_product
+from seascape.legacy_products import resolve_product
 from seascape.spatial_support.water_network.graph import WaterGraph
+
+GEOD = Geod(ellps="WGS84")
 
 OUTLET_COLUMNS = (
     "OUTLET_ID",
@@ -70,6 +73,18 @@ def validate_inputs(
             or outlets[column].astype(str).str.len().eq(0).any()
         ):
             raise ValueError(f"Outlet {column} must be nonempty")
+    geo_cells = {"REPRESENTATIVE_LONGITUDE", "REPRESENTATIVE_LATITUDE"}
+    geo_outlets = {"OUTLET_LONGITUDE", "OUTLET_LATITUDE"}
+    if geo_cells & set(cells) or geo_outlets & set(outlets):
+        if geo_cells - set(cells) or geo_outlets - set(outlets):
+            raise ValueError("Geodesic detours require complete WGS84 coordinates")
+        for frame, prefix in ((cells, "REPRESENTATIVE"), (outlets, "OUTLET")):
+            for suffix, limit in (("LONGITUDE", 180), ("LATITUDE", 90)):
+                values = pd.to_numeric(
+                    frame[prefix + "_" + suffix], errors="raise"
+                ).to_numpy(dtype=float)
+                if not np.isfinite(values).all() or (np.abs(values) > limit).any():
+                    raise ValueError("Invalid WGS84 coordinate for geodesic detour")
     if not cells["H3_RESOLUTION"].eq(graph.resolution).all():
         raise ValueError("Cell resolution differs from canonical graph resolution")
     for frame, columns in (
@@ -175,13 +190,29 @@ def outlet_relationship_chunks(
                 else "disconnected_within_available_graph",
             ),
         )
-        direct = np.hypot(
+        projected_direct = np.hypot(
             ordered_cells["REPRESENTATIVE_X_M"].to_numpy(dtype=float)
             - float(outlet.OUTLET_X_M),
             ordered_cells["REPRESENTATIVE_Y_M"].to_numpy(dtype=float)
             - float(outlet.OUTLET_Y_M),
         )
+        geodesic_direct = np.full(len(ordered_cells), np.nan)
+        direct = projected_direct.copy()
+        reference_method = "projected_euclidean"
+        if "REPRESENTATIVE_LONGITUDE" in ordered_cells:
+            geodesic_direct = np.abs(
+                GEOD.inv(
+                    np.full(len(ordered_cells), float(outlet.OUTLET_LONGITUDE)),
+                    np.full(len(ordered_cells), float(outlet.OUTLET_LATITUDE)),
+                    ordered_cells.REPRESENTATIVE_LONGITUDE.to_numpy(dtype=float),
+                    ordered_cells.REPRESENTATIVE_LATITUDE.to_numpy(dtype=float),
+                )[2]
+            )
+            direct = geodesic_direct.copy()
+            reference_method = "WGS84_geodesic_straight_line"
         direct[~reached] = np.nan
+        projected_direct[~reached] = np.nan
+        geodesic_direct[~reached] = np.nan
         network = np.where(reached, route, np.nan)
         detour = network - direct
         ratio = np.full(len(ordered_cells), np.nan, dtype=float)
@@ -198,7 +229,9 @@ def outlet_relationship_chunks(
                 "OUTLET_ID": str(outlet.OUTLET_ID),
                 "RIVER_BASIN_ID": outlet.RIVER_BASIN_ID,
                 "WATER_NETWORK_DISTANCE_M": network,
-                "EUCLIDEAN_DISTANCE_M": direct,
+                "EUCLIDEAN_DISTANCE_M": projected_direct,
+                "GEODESIC_STRAIGHT_LINE_DISTANCE_M": geodesic_direct,
+                "DETOUR_REFERENCE_METHOD": reference_method,
                 "DETOUR_DISTANCE_M": detour,
                 "DETOUR_RATIO": ratio,
                 "REACHABILITY_STATUS": status,

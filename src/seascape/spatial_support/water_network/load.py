@@ -181,6 +181,39 @@ def load_model_area_support(
     return support.sort_values("H3_INDEX").reset_index(drop=True)
 
 
+def load_model_area_geometry(
+    resolution: int,
+    config_path: str | Path = DEFAULT_CONFIG_PATH,
+    *,
+    water_clipped: bool = True,
+    verify_checksum: bool = True,
+):
+    """Load reporting geometries while retaining graph context in separate products."""
+    import geopandas as gpd
+
+    config = load_water_network_config(config_path)
+    support = load_model_area_support(
+        resolution, config_path, verify_checksum=verify_checksum
+    )
+    path = (
+        config.clipped_geometry_path(resolution)
+        if water_clipped
+        else config.full_geometry_path(resolution)
+    )
+    if verify_checksum:
+        _verify_artifact(path, _manifest(config))
+    frame = gpd.read_parquet(path)
+    if frame.crs is None or frame.H3_INDEX.duplicated().any():
+        raise ValueError(
+            "Canonical reporting geometry requires CRS and unique H3 identity"
+        )
+    indexed = frame.set_index("H3_INDEX")
+    keys = support.H3_INDEX.astype(str).tolist()
+    if set(keys) - set(indexed.index.astype(str)):
+        raise ValueError("Canonical reporting geometry is missing model-support keys")
+    return indexed.loc[keys].reset_index()
+
+
 def load_water_neighborhoods(
     resolution: int,
     maximum_hops: int,

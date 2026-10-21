@@ -1,0 +1,1465 @@
+{
+  "schema_version": 1,
+  "status": "proposed_source_linked_modeled_outlet_crosswalk",
+  "scope": "One modeled main connected basin outlet per named river; delta branches and physical mouth location remain source-scale limits",
+  "study_id": "vancouver-island-columbia",
+  "hydrorivers_version": "1.0",
+  "water_mask_version": "gshhg_2_3_7_iho4313_context_v1",
+  "spatial_support_version": "coastal_policy_positive_overlap_v1",
+  "physical_full_catalog_qualified": false,
+  "source_evidence": [
+    {
+      "evidence_file": "BC_NAMED_BASIN_REVIEW.json",
+      "sha256": "b1188b398d2568b142018439db50ee50ea627bd1722d74e3df4fcc5533ad1548"
+    },
+    {
+      "evidence_file": "US_NAMED_ROUTE_REVIEW.json",
+      "sha256": "8ba421401934a265b890705ce3cfcf04773be6fac2e3f3a6c485ea966576352c"
+    },
+    {
+      "evidence_file": "GNIS_SOURCE_TO_OUTLET_TRACES.json",
+      "sha256": "b106f97fdfc5aba4a9005b3a89fac3b91c8c7ed13e409eba4185c92b499e093d"
+    },
+    {
+      "evidence_file": "gnis-download-receipts.json",
+      "sha256": "d9e504bbd496514b0a3497663d161fcecdb9ed4a4a2a76402bb28534aff4be72"
+    }
+  ],
+  "primary_sources": [
+    "https://www.hydrosheds.org/products/hydrorivers",
+    "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+    "https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-stream-network"
+  ],
+  "locations": [
+    {
+      "name": "Nimpkish River",
+      "proposal_id": "nimpkish-river",
+      "source_ids": {
+        "CGNDB_KEY": "JAZQU",
+        "TOPONYMIC_FEATURE_ID": "0c97cb85849c20c3898af8cea688e589"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70235236",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70235236",
+          "matched_source_length_m": 111344.57078633634,
+          "fraction_of_matched_length": 0.9713762612413399,
+          "matched_points": 353
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70265030",
+          "matched_source_length_m": 3281.0127584447755,
+          "fraction_of_matched_length": 0.02862373875866004,
+          "matched_points": 9
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -126.97291666666682,
+        50.568749999999305
+      ],
+      "modeled_drainage_area_km2": 1829.3,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Campbell River",
+      "proposal_id": "campbell-river",
+      "source_ids": {
+        "CGNDB_KEY": "JDEPP",
+        "TOPONYMIC_FEATURE_ID": "0d012b12849c20c385322f7a21cfcc58"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70252932",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70252932",
+          "matched_source_length_m": 80759.58532579723,
+          "fraction_of_matched_length": 0.8020939624849844,
+          "matched_points": 277
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70288472",
+          "matched_source_length_m": 11370.146485947796,
+          "fraction_of_matched_length": 0.11292685335316338,
+          "matched_points": 31
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70286689",
+          "matched_source_length_m": 7173.697352118255,
+          "fraction_of_matched_length": 0.07124825259585087,
+          "matched_points": 30
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70288341",
+          "matched_source_length_m": 1322.695156398404,
+          "fraction_of_matched_length": 0.013136840597624983,
+          "matched_points": 6
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70252673",
+          "matched_source_length_m": 59.8166081480385,
+          "fraction_of_matched_length": 0.0005940909683763061,
+          "matched_points": 1
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -125.26458333333355,
+        50.03541666666597
+      ],
+      "modeled_drainage_area_km2": 1767.9,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Gold River",
+      "proposal_id": "gold-river",
+      "source_ids": {
+        "CGNDB_KEY": "JASGE",
+        "TOPONYMIC_FEATURE_ID": "0c94036f849c20c3dd9cd7909ede03b4"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70265030",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "candidate_absent_from_current_coastal_outlet_inventory",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70265030",
+          "matched_source_length_m": 48803.2341837257,
+          "fraction_of_matched_length": 0.9818044329205088,
+          "matched_points": 164
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70241660",
+          "matched_source_length_m": 904.4596780283609,
+          "fraction_of_matched_length": 0.01819556707949124,
+          "matched_points": 9
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": null,
+      "modeled_drainage_area_km2": null,
+      "graph_connection_qc": "canonical_outlet_not_in_coastal_inventory",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false,
+      "inventory_exclusion_diagnostics": {
+        "name": "Gold River",
+        "canonical_candidate": "HYDRORIVERS_V10_70265030",
+        "next_down": 0,
+        "endorheic": 0,
+        "minimum_endpoint_coast_distance_m": 8834.486961884499,
+        "source_scale_limitation": "Candidate not retained by the current terminal/coast-tolerance inventory; no arbitrary creek substitution or cross-land snap"
+      }
+    },
+    {
+      "name": "Somass River",
+      "proposal_id": "somass-river",
+      "source_ids": {
+        "CGNDB_KEY": "JBJCB",
+        "TOPONYMIC_FEATURE_ID": "0c9cba40849c20c3ccffd86ccb9e12a7"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70280239",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70280239",
+          "matched_source_length_m": 9148.719016025807,
+          "fraction_of_matched_length": 0.9684271447011799,
+          "matched_points": 25
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70280801",
+          "matched_source_length_m": 298.26836561017325,
+          "fraction_of_matched_length": 0.031572855298820215,
+          "matched_points": 1
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -124.81875000000022,
+        49.25208333333262
+      ],
+      "modeled_drainage_area_km2": 1422.5,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Nitinat River",
+      "proposal_id": "nitinat-river",
+      "source_ids": {
+        "CGNDB_KEY": "JBEEM",
+        "TOPONYMIC_FEATURE_ID": "0c9a2a07849c20c3fffb7696f31c8480"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70294783",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "candidate_absent_from_current_coastal_outlet_inventory",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70294783",
+          "matched_source_length_m": 51853.83742052844,
+          "fraction_of_matched_length": 0.7786921673296503,
+          "matched_points": 202
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70296360",
+          "matched_source_length_m": 2703.7838669876996,
+          "fraction_of_matched_length": 0.040602883491551986,
+          "matched_points": 8
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70296786",
+          "matched_source_length_m": 2684.4668912836237,
+          "fraction_of_matched_length": 0.040312799316001534,
+          "matched_points": 7
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70299655",
+          "matched_source_length_m": 2683.2974464092013,
+          "fraction_of_matched_length": 0.040295237692616726,
+          "matched_points": 10
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70297928",
+          "matched_source_length_m": 2261.9330859017973,
+          "fraction_of_matched_length": 0.03396758397514883,
+          "matched_points": 8
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": null,
+      "modeled_drainage_area_km2": null,
+      "graph_connection_qc": "canonical_outlet_not_in_coastal_inventory",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false,
+      "inventory_exclusion_diagnostics": {
+        "name": "Nitinat River",
+        "canonical_candidate": "HYDRORIVERS_V10_70294783",
+        "next_down": 0,
+        "endorheic": 0,
+        "minimum_endpoint_coast_distance_m": 20720.32106906452,
+        "source_scale_limitation": "Candidate not retained by the current terminal/coast-tolerance inventory; no arbitrary creek substitution or cross-land snap"
+      }
+    },
+    {
+      "name": "San Juan River",
+      "proposal_id": "san-juan-river",
+      "source_ids": {
+        "CGNDB_KEY": "JAZUF",
+        "TOPONYMIC_FEATURE_ID": "0c97d9eb849c20c3864b21ad85ea9a14"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70303132",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70303132",
+          "matched_source_length_m": 49314.057043017725,
+          "fraction_of_matched_length": 0.9551301481745469,
+          "matched_points": 167
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70303607",
+          "matched_source_length_m": 2316.662746601719,
+          "fraction_of_matched_length": 0.04486985182545321,
+          "matched_points": 9
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -124.41458333333352,
+        48.57708333333266
+      ],
+      "modeled_drainage_area_km2": 966.7,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Cowichan River",
+      "proposal_id": "cowichan-river",
+      "source_ids": {
+        "CGNDB_KEY": "JAHLE",
+        "TOPONYMIC_FEATURE_ID": "0c8df011849c20c36b14465952e252a1"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70297057",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70297057",
+          "matched_source_length_m": 49867.944334680345,
+          "fraction_of_matched_length": 1.0,
+          "matched_points": 154
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -123.63541666666688,
+        48.75624999999931
+      ],
+      "modeled_drainage_area_km2": 1246.6,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Nanaimo River",
+      "proposal_id": "nanaimo-river",
+      "source_ids": {
+        "CGNDB_KEY": "JAQAP",
+        "TOPONYMIC_FEATURE_ID": "0c92d6a6849c20c38a146a2321e35068"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70285918",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70285918",
+          "matched_source_length_m": 66406.99638883621,
+          "fraction_of_matched_length": 1.0,
+          "matched_points": 230
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -123.89791666666689,
+        49.13958333333265
+      ],
+      "modeled_drainage_area_km2": 835.2,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Fraser River",
+      "proposal_id": "fraser-river",
+      "source_ids": {
+        "CGNDB_KEY": "JCLQU",
+        "TOPONYMIC_FEATURE_ID": "3e8bcfbbba3611d892e2080020a0f4c9"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70283328",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "candidate_absent_from_current_coastal_outlet_inventory",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70283328",
+          "matched_source_length_m": 365485.7480844445,
+          "fraction_of_matched_length": 0.9646209241862498,
+          "matched_points": 1876
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70284766",
+          "matched_source_length_m": 4132.030014285573,
+          "fraction_of_matched_length": 0.010905603384087508,
+          "matched_points": 9
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70284629",
+          "matched_source_length_m": 2508.073384909324,
+          "fraction_of_matched_length": 0.006619519582249719,
+          "matched_points": 6
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70284187",
+          "matched_source_length_m": 2408.897320614531,
+          "fraction_of_matched_length": 0.006357765718252005,
+          "matched_points": 6
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70283592",
+          "matched_source_length_m": 1184.7568139275513,
+          "fraction_of_matched_length": 0.0031269104712742476,
+          "matched_points": 4
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": null,
+      "modeled_drainage_area_km2": null,
+      "graph_connection_qc": "canonical_outlet_not_in_coastal_inventory",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false,
+      "inventory_exclusion_diagnostics": {
+        "name": "Fraser River",
+        "canonical_candidate": "HYDRORIVERS_V10_70283328",
+        "next_down": 0,
+        "endorheic": 0,
+        "minimum_endpoint_coast_distance_m": 8248.016945118416,
+        "source_scale_limitation": "Candidate not retained by the current terminal/coast-tolerance inventory; no arbitrary creek substitution or cross-land snap"
+      }
+    },
+    {
+      "name": "Squamish River",
+      "proposal_id": "squamish-river",
+      "source_ids": {
+        "CGNDB_KEY": "JBIZV",
+        "TOPONYMIC_FEATURE_ID": "0c9cb365849c20c32c2b9a5b993c23a5"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70264330",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70264330",
+          "matched_source_length_m": 81731.98315520238,
+          "fraction_of_matched_length": 0.9979293755026951,
+          "matched_points": 309
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70266156",
+          "matched_source_length_m": 169.5873983559399,
+          "fraction_of_matched_length": 0.0020706244973048562,
+          "matched_points": 1
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -123.18125000000023,
+        49.70208333333263
+      ],
+      "modeled_drainage_area_km2": 3864.0,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Homathko River",
+      "proposal_id": "homathko-river",
+      "source_ids": {
+        "CGNDB_KEY": "JBFDQ",
+        "TOPONYMIC_FEATURE_ID": "7f01a6d9c6be11d892e2080020a0f4c9"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70221206",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70221206",
+          "matched_source_length_m": 128279.0885210564,
+          "fraction_of_matched_length": 1.0,
+          "matched_points": 700
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -124.85625000000023,
+        50.92708333333261
+      ],
+      "modeled_drainage_area_km2": 5745.8,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Klinaklini River",
+      "proposal_id": "klinaklini-river",
+      "source_ids": {
+        "CGNDB_KEY": "JBYQQ",
+        "TOPONYMIC_FEATURE_ID": "54a0ee25d05511d892e2080020a0f4c9"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70215732",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "candidate_absent_from_current_coastal_outlet_inventory",
+      "method": "Named BC FWA stream geometry basin agreement",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70215732",
+          "matched_source_length_m": 80125.16464894295,
+          "fraction_of_matched_length": 1.0,
+          "matched_points": 405
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": null,
+      "modeled_drainage_area_km2": null,
+      "graph_connection_qc": "canonical_outlet_not_in_coastal_inventory",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false,
+      "inventory_exclusion_diagnostics": {
+        "name": "Klinaklini River",
+        "canonical_candidate": "HYDRORIVERS_V10_70215732",
+        "next_down": 0,
+        "endorheic": 0,
+        "minimum_endpoint_coast_distance_m": 11197.472099793391,
+        "source_scale_limitation": "Candidate not retained by the current terminal/coast-tolerance inventory; no arbitrary creek substitution or cross-land snap"
+      }
+    },
+    {
+      "name": "Nooksack River",
+      "proposal_id": "nooksack-river",
+      "source_ids": {
+        "GNIS_ID": "1523714"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70296640",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70296640",
+          "points": 6,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70295261,
+          "source_distance_m": 153.48577604224383,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70296640",
+          "traced_segments": 19,
+          "drainage_km2": 2154.6
+        },
+        {
+          "source_segment_id": 70295938,
+          "source_distance_m": 156.77716409910312,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70296640",
+          "traced_segments": 20,
+          "drainage_km2": 2154.6
+        },
+        {
+          "source_segment_id": 70294420,
+          "source_distance_m": 176.1910958338957,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70296640",
+          "traced_segments": 20,
+          "drainage_km2": 2154.6
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -122.5937500000002,
+        48.76874999999932
+      ],
+      "modeled_drainage_area_km2": 2154.6,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Skagit River",
+      "proposal_id": "skagit-river",
+      "source_ids": {
+        "GNIS_ID": "1525850"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70310822",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70310822",
+          "points": 18,
+          "matched_fraction": 0.9473684210526315
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70283328",
+          "points": 1,
+          "matched_fraction": 0.05263157894736842
+        }
+      ],
+      "directed_source_trace": [],
+      "source_disagreement_note": "Upstream source-coordinate trace or coarse near-mouth samples disagree with the leading named route; explicit source-scale review retains the named main basin candidate",
+      "modeled_outlet_point_wgs84": [
+        -122.47291666666693,
+        48.35624999999934
+      ],
+      "modeled_drainage_area_km2": 8182.9,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Stillaguamish River",
+      "proposal_id": "stillaguamish-river",
+      "source_ids": {
+        "GNIS_ID": "1508743"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70316857",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70315511",
+          "points": 1,
+          "matched_fraction": 0.3333333333333333
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70315664",
+          "points": 1,
+          "matched_fraction": 0.3333333333333333
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70316857",
+          "points": 1,
+          "matched_fraction": 0.3333333333333333
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70316393,
+          "source_distance_m": 251.24496444740072,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70316857",
+          "traced_segments": 5,
+          "drainage_km2": 1743.6
+        },
+        {
+          "source_segment_id": 70316252,
+          "source_distance_m": 251.24506838821944,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70316857",
+          "traced_segments": 6,
+          "drainage_km2": 1743.6
+        },
+        {
+          "source_segment_id": 70317723,
+          "source_distance_m": 251.24506838821944,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70316857",
+          "traced_segments": 6,
+          "drainage_km2": 1743.6
+        }
+      ],
+      "source_disagreement_note": "Upstream source-coordinate trace or coarse near-mouth samples disagree with the leading named route; explicit source-scale review retains the named main basin candidate",
+      "modeled_outlet_point_wgs84": [
+        -122.36458333333358,
+        48.18958333333266
+      ],
+      "modeled_drainage_area_km2": 1743.6,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Snohomish River",
+      "proposal_id": "snohomish-river",
+      "source_ids": {
+        "GNIS_ID": "1508473"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70324935",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70324935",
+          "points": 4,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70330457,
+          "source_distance_m": 243.12355824316165,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70324935",
+          "traced_segments": 13,
+          "drainage_km2": 4530.8
+        },
+        {
+          "source_segment_id": 70330604,
+          "source_distance_m": 895.7187409989898,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70324935",
+          "traced_segments": 14,
+          "drainage_km2": 4530.8
+        },
+        {
+          "source_segment_id": 70331562,
+          "source_distance_m": 895.7187409989898,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70324935",
+          "traced_segments": 14,
+          "drainage_km2": 4530.8
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -122.21041666666693,
+        48.01874999999933
+      ],
+      "modeled_drainage_area_km2": 4530.8,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Duwamish River",
+      "proposal_id": "duwamish-river",
+      "source_ids": {
+        "GNIS_ID": "1504604"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70343886",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70343886",
+          "points": 2,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70343886,
+          "source_distance_m": 171.81467771193394,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70343886",
+          "traced_segments": 1,
+          "drainage_km2": 1173.9
+        },
+        {
+          "source_segment_id": 70343885,
+          "source_distance_m": 1510.0342608951514,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70343886",
+          "traced_segments": 2,
+          "drainage_km2": 1173.9
+        },
+        {
+          "source_segment_id": 70344169,
+          "source_distance_m": 1586.7249682290046,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70343886",
+          "traced_segments": 2,
+          "drainage_km2": 1173.9
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -122.36041666666692,
+        47.57708333333264
+      ],
+      "modeled_drainage_area_km2": 1173.9,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Puyallup River",
+      "proposal_id": "puyallup-river",
+      "source_ids": {
+        "GNIS_ID": "1524711"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70350974",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70350974",
+          "points": 8,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70365809,
+          "source_distance_m": 17.501143846708803,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70350974",
+          "traced_segments": 26,
+          "drainage_km2": 2637.2
+        },
+        {
+          "source_segment_id": 70365510,
+          "source_distance_m": 65.33576102598339,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70350974",
+          "traced_segments": 26,
+          "drainage_km2": 2637.2
+        },
+        {
+          "source_segment_id": 70364729,
+          "source_distance_m": 92.89416509929565,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70350974",
+          "traced_segments": 25,
+          "drainage_km2": 2637.2
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -122.42291666666688,
+        47.268749999999336
+      ],
+      "modeled_drainage_area_km2": 2637.2,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Nisqually River",
+      "proposal_id": "nisqually-river",
+      "source_ids": {
+        "GNIS_ID": "1533598"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70356708",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70356708",
+          "points": 14,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70367905,
+          "source_distance_m": 39.012459917357546,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70356708",
+          "traced_segments": 42,
+          "drainage_km2": 1878.6
+        },
+        {
+          "source_segment_id": 70367904,
+          "source_distance_m": 1769.775040411628,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70356708",
+          "traced_segments": 42,
+          "drainage_km2": 1878.6
+        },
+        {
+          "source_segment_id": 70367906,
+          "source_distance_m": 1900.3521887941713,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70356708",
+          "traced_segments": 42,
+          "drainage_km2": 1878.6
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -122.69375000000025,
+        47.102083333332665
+      ],
+      "modeled_drainage_area_km2": 1878.6,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Skokomish River",
+      "proposal_id": "skokomish-river",
+      "source_ids": {
+        "GNIS_ID": "1525867"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70349282",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70349282",
+          "points": 2,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70349019,
+          "source_distance_m": 1.3503338167425103,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70349282",
+          "traced_segments": 4,
+          "drainage_km2": 619.6
+        },
+        {
+          "source_segment_id": 70349018,
+          "source_distance_m": 56.551785739753356,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70349282",
+          "traced_segments": 4,
+          "drainage_km2": 619.6
+        },
+        {
+          "source_segment_id": 70349020,
+          "source_distance_m": 56.567976928596934,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70349282",
+          "traced_segments": 3,
+          "drainage_km2": 619.6
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -123.11875000000022,
+        47.33958333333271
+      ],
+      "modeled_drainage_area_km2": 619.6,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Elwha River",
+      "proposal_id": "elwha-river",
+      "source_ids": {
+        "GNIS_ID": "1531449"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70321298",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70321298",
+          "points": 8,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70333112,
+          "source_distance_m": 74.93898501158726,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70321298",
+          "traced_segments": 27,
+          "drainage_km2": 817.6
+        },
+        {
+          "source_segment_id": 70333257,
+          "source_distance_m": 1592.6439502705894,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70321298",
+          "traced_segments": 27,
+          "drainage_km2": 817.6
+        },
+        {
+          "source_segment_id": 70333891,
+          "source_distance_m": 1592.6439502705894,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70321298",
+          "traced_segments": 26,
+          "drainage_km2": 817.6
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -123.56875000000025,
+        48.147916666665985
+      ],
+      "modeled_drainage_area_km2": 817.6,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Dungeness River",
+      "proposal_id": "dungeness-river",
+      "source_ids": {
+        "GNIS_ID": "1528593"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70318953",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70318953",
+          "points": 6,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70331722,
+          "source_distance_m": 68.01529136077698,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70318953",
+          "traced_segments": 14,
+          "drainage_km2": 513.2
+        },
+        {
+          "source_segment_id": 70331220,
+          "source_distance_m": 177.49222822172558,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70318953",
+          "traced_segments": 13,
+          "drainage_km2": 513.2
+        },
+        {
+          "source_segment_id": 70331872,
+          "source_distance_m": 177.49222822172558,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70318953",
+          "traced_segments": 14,
+          "drainage_km2": 513.2
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -123.13541666666693,
+        48.152083333332655
+      ],
+      "modeled_drainage_area_km2": 513.2,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Quillayute River",
+      "proposal_id": "quillayute-river",
+      "source_ids": {
+        "GNIS_ID": "1507677"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70326909",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70327395",
+          "points": 1,
+          "matched_fraction": 0.5
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70326909",
+          "points": 1,
+          "matched_fraction": 0.5
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70327254,
+          "source_distance_m": 103.82455355610509,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70326909",
+          "traced_segments": 5,
+          "drainage_km2": 1613.4
+        },
+        {
+          "source_segment_id": 70327396,
+          "source_distance_m": 418.3436854057942,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70326909",
+          "traced_segments": 4,
+          "drainage_km2": 1613.4
+        },
+        {
+          "source_segment_id": 70327397,
+          "source_distance_m": 418.3436854057942,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70326909",
+          "traced_segments": 5,
+          "drainage_km2": 1613.4
+        }
+      ],
+      "source_disagreement_note": "Upstream source-coordinate trace or coarse near-mouth samples disagree with the leading named route; explicit source-scale review retains the named main basin candidate",
+      "modeled_outlet_point_wgs84": [
+        -124.63958333333355,
+        47.918749999999314
+      ],
+      "modeled_drainage_area_km2": 1613.4,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Hoh River",
+      "proposal_id": "hoh-river",
+      "source_ids": {
+        "GNIS_ID": "1531464"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70333571",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70333571",
+          "points": 12,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70331395,
+          "source_distance_m": 5.693675166441629,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70333571",
+          "traced_segments": 44,
+          "drainage_km2": 777.9
+        },
+        {
+          "source_segment_id": 70331051,
+          "source_distance_m": 2369.075614629158,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70333571",
+          "traced_segments": 44,
+          "drainage_km2": 777.9
+        },
+        {
+          "source_segment_id": 70330598,
+          "source_distance_m": 2370.6219883865,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70333571",
+          "traced_segments": 43,
+          "drainage_km2": 777.9
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -124.42708333333357,
+        47.743749999999324
+      ],
+      "modeled_drainage_area_km2": 777.9,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Queets River",
+      "proposal_id": "queets-river",
+      "source_ids": {
+        "GNIS_ID": "1531493"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70341239",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70341239",
+          "points": 9,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70332326,
+          "source_distance_m": 890.9930226634506,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70341239",
+          "traced_segments": 48,
+          "drainage_km2": 1173.0
+        },
+        {
+          "source_segment_id": 70332325,
+          "source_distance_m": 1961.0141022198443,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70341239",
+          "traced_segments": 48,
+          "drainage_km2": 1173.0
+        },
+        {
+          "source_segment_id": 70332617,
+          "source_distance_m": 1985.348570918236,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70341239",
+          "traced_segments": 47,
+          "drainage_km2": 1173.0
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -124.35208333333352,
+        47.53958333333268
+      ],
+      "modeled_drainage_area_km2": 1173.0,
+      "graph_connection_qc": "source_connector_crosses_land",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Quinault River",
+      "proposal_id": "quinault-river",
+      "source_ids": {
+        "GNIS_ID": "1531496"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70347999",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70347999",
+          "points": 10,
+          "matched_fraction": 1.0
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70335677,
+          "source_distance_m": 1377.312350359271,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70347999",
+          "traced_segments": 52,
+          "drainage_km2": 1140.2
+        },
+        {
+          "source_segment_id": 70335492,
+          "source_distance_m": 1531.995806044247,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70347999",
+          "traced_segments": 52,
+          "drainage_km2": 1140.2
+        },
+        {
+          "source_segment_id": 70335153,
+          "source_distance_m": 1773.9154085545254,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70335493",
+          "traced_segments": 7,
+          "drainage_km2": 303.4
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -124.2979166666669,
+        47.343749999999304
+      ],
+      "modeled_drainage_area_km2": 1140.2,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Chehalis River",
+      "proposal_id": "chehalis-river",
+      "source_ids": {
+        "GNIS_ID": "1503931"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70360842",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70360842",
+          "points": 12,
+          "matched_fraction": 0.9230769230769231
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70362688",
+          "points": 1,
+          "matched_fraction": 0.07692307692307693
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70379174,
+          "source_distance_m": 34.75258946157423,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70360842",
+          "traced_segments": 87,
+          "drainage_km2": 5173.7
+        },
+        {
+          "source_segment_id": 70379001,
+          "source_distance_m": 153.36711000831562,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70360842",
+          "traced_segments": 86,
+          "drainage_km2": 5173.7
+        },
+        {
+          "source_segment_id": 70379465,
+          "source_distance_m": 153.36711000831562,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70360842",
+          "traced_segments": 87,
+          "drainage_km2": 5173.7
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -123.80208333333358,
+        46.972916666666
+      ],
+      "modeled_drainage_area_km2": 5173.7,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Willapa River",
+      "proposal_id": "willapa-river",
+      "source_ids": {
+        "GNIS_ID": "1509528"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70371659",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70371659",
+          "points": 2,
+          "matched_fraction": 0.5
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70369978",
+          "points": 1,
+          "matched_fraction": 0.25
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70360842",
+          "points": 1,
+          "matched_fraction": 0.25
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70377425,
+          "source_distance_m": 1632.6562538747187,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70360842",
+          "traced_segments": 80,
+          "drainage_km2": 5173.7
+        },
+        {
+          "source_segment_id": 70376963,
+          "source_distance_m": 1986.9419053455804,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70371659",
+          "traced_segments": 23,
+          "drainage_km2": 652.8
+        },
+        {
+          "source_segment_id": 70376666,
+          "source_distance_m": 2554.4924306019184,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70371659",
+          "traced_segments": 23,
+          "drainage_km2": 652.8
+        }
+      ],
+      "source_disagreement_note": "Upstream source-coordinate trace or coarse near-mouth samples disagree with the leading named route; explicit source-scale review retains the named main basin candidate",
+      "modeled_outlet_point_wgs84": [
+        -123.81041666666688,
+        46.66874999999933
+      ],
+      "modeled_drainage_area_km2": 652.8,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Naselle River",
+      "proposal_id": "naselle-river",
+      "source_ids": {
+        "GNIS_ID": "1506929"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70381160",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70381160",
+          "points": 3,
+          "matched_fraction": 0.5
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70379169",
+          "points": 1,
+          "matched_fraction": 0.16666666666666666
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70380634",
+          "points": 1,
+          "matched_fraction": 0.16666666666666666
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70371659",
+          "points": 1,
+          "matched_fraction": 0.16666666666666666
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70378267,
+          "source_distance_m": 1670.8191838665057,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70371659",
+          "traced_segments": 18,
+          "drainage_km2": 652.8
+        },
+        {
+          "source_segment_id": 70379597,
+          "source_distance_m": 1922.5719449435205,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70384186",
+          "traced_segments": 13,
+          "drainage_km2": 317.1
+        },
+        {
+          "source_segment_id": 70379598,
+          "source_distance_m": 2794.3588347724058,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70384186",
+          "traced_segments": 13,
+          "drainage_km2": 317.1
+        }
+      ],
+      "source_disagreement_note": "Upstream source-coordinate trace or coarse near-mouth samples disagree with the leading named route; explicit source-scale review retains the named main basin candidate",
+      "modeled_outlet_point_wgs84": [
+        -123.84375000000023,
+        46.40624999999935
+      ],
+      "modeled_drainage_area_km2": 279.0,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    },
+    {
+      "name": "Columbia River",
+      "proposal_id": "columbia-river",
+      "source_ids": {
+        "GNIS_ID": "1140014"
+      },
+      "canonical_fluvial_mouth_id": "HYDRORIVERS_V10_70386275",
+      "binding_kind": "source_linked_modeled_main_basin_outlet",
+      "binding_status": "research_candidate_with_recorded_source_limits",
+      "method": "Official GNIS named-route points cross-checked with directed HydroRIVERS source traces",
+      "candidate_evidence": [
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70386275",
+          "points": 32,
+          "matched_fraction": 0.9411764705882353
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70385457",
+          "points": 1,
+          "matched_fraction": 0.029411764705882353
+        },
+        {
+          "canonical_mouth_id": "HYDRORIVERS_V10_70385458",
+          "points": 1,
+          "matched_fraction": 0.029411764705882353
+        }
+      ],
+      "directed_source_trace": [
+        {
+          "source_segment_id": 70290403,
+          "source_distance_m": 63.90495941251533,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70386275",
+          "traced_segments": 341,
+          "drainage_km2": 651407.1
+        },
+        {
+          "source_segment_id": 70290007,
+          "source_distance_m": 1266.228696908899,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70386275",
+          "traced_segments": 342,
+          "drainage_km2": 651407.1
+        },
+        {
+          "source_segment_id": 70290008,
+          "source_distance_m": 1266.228696908899,
+          "canonical_mouth_id": "HYDRORIVERS_V10_70386275",
+          "traced_segments": 342,
+          "drainage_km2": 651407.1
+        }
+      ],
+      "source_disagreement_note": null,
+      "modeled_outlet_point_wgs84": [
+        -123.43541666666691,
+        46.23958333333268
+      ],
+      "modeled_drainage_area_km2": 651407.1,
+      "graph_connection_qc": "<NA>",
+      "physical_delta_branches_qualified": false,
+      "model_eligible": false
+    }
+  ],
+  "inventory_binding_counts": {
+    "candidate_id_present": 26,
+    "candidate_id_missing": 4,
+    "missing_names": [
+      "Gold River",
+      "Nitinat River",
+      "Fraser River",
+      "Klinaklini River"
+    ]
+  }
+}

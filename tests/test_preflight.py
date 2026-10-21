@@ -436,7 +436,7 @@ def test_execution_and_preflight_share_paths_and_dependencies(workspace, monkeyp
 
 def test_all_packaged_stages_report_missing_inputs_without_execution(workspace):
     report = preflight_build()
-    assert len(report["stages"]) == 26
+    assert len(report["stages"]) == 23
     assert report["status"] == "failed"
     assert any(
         c["status"] == "missing_external" and "HydroRIVERS" in c["name"]
@@ -539,7 +539,7 @@ def test_human_report_lists_checks_actions_destinations_limits(workspace, capsys
     output = capsys.readouterr().out
     assert "Preflight: READY" in output and "checked:" in output and "output:" in output
     assert "Limit:" in output and "publication_requested: True" in output
-    assert "requires a successful executed release audit" in output
+    assert "requires successful producer and H3 support validation" in output
 
 
 def test_barrier_plan_identifies_configured_fluvial_prerequisites(workspace):
@@ -779,3 +779,16 @@ def test_bc_only_habitat_loader_disables_wa_source_even_if_cached(workspace):
     assert config.sources["bc_crims_kelp"]["enabled"]
     assert _source_path(config, "wa_dnr_kelp_persistence") is None
     assert _annual_kelp_inventory(config) == []
+
+
+def test_kelp_preflight_declares_one_static_annual_family_without_confidence(workspace):
+    report = preflight_build(
+        only=["seascape-kelp-habitat"], candidate_root=workspace / ".seascape/candidate"
+    )
+    stage = next(
+        entry for entry in report["stages"] if entry["name"] == "seascape-kelp-habitat"
+    )
+    outputs = " ".join(stage["configured_outputs"])
+    assert "KELP_ANNUAL_RES_6.parquet" in outputs
+    assert "KELP_ANNUAL_RES_8.parquet" in outputs
+    assert "KELP_CONFIDENCE" not in outputs

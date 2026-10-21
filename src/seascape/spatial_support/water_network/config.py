@@ -60,6 +60,7 @@ class WaterNetworkConfig:
     connector_candidate_limit: int
     edge_chunk_size: int
     max_workers: int
+    reporting_mask_path: Path | None = None
 
     def support_path(self, resolution: int) -> Path:
         return self.h3_geometry_output_dir / self.support_filename_template.format(
@@ -168,6 +169,9 @@ def load_water_network_config(
     if not water_mask_version or not support_version:
         raise ValueError("Water-mask and spatial-support versions must be non-empty.")
     return WaterNetworkConfig(
+        reporting_mask_path=_resolve(section["reporting_mask_path"], base_dir)
+        if section.get("reporting_mask_path")
+        else None,
         bbox=bbox_from_config(section),
         model_bbox=bbox_from_config({"area": section.get("model_area", "model_area")}),
         resolutions=resolutions,

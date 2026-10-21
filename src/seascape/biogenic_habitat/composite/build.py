@@ -9,6 +9,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 
 from seascape.benthic_substrate.classification.build import (
     PREFIX as SUBSTRATE_PREFIX,
@@ -97,14 +98,55 @@ def _coverage_gated_richness(
     return minimum_richness.astype("float64").where(complete, np.nan)
 
 
+def _unavailable_legacy_extent(
+    source: pd.DataFrame, target: pd.DataFrame, prefix: str, resolution: int
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Historical extent cannot supply contemporary composite fractions/distances.
+
+    Keep the composite's reef support. Its unavailable legacy fields do not need
+    the historical extent inventory to share the same (potentially wider) grid.
+    No historical source measurements are reindexed, averaged or substituted.
+    """
+    keys = ["H3_INDEX", "H3_RESOLUTION"]
+    if (
+        not set(keys).issubset(source)
+        or source.empty
+        or source[keys].isna().any().any()
+        or source.duplicated(keys).any()
+        or not source.H3_RESOLUTION.eq(resolution).all()
+    ):
+        raise ValueError(
+            f"{prefix} requires unique non-null source keys at resolution {resolution}"
+        )
+    values = target[keys].copy()
+    for column in [
+        *[c for c in CORE_FEATURES if c.startswith(prefix + "_")],
+        f"{prefix}_EDGE_DENSITY_M_PER_KM2",
+    ]:
+        values[column] = np.nan
+    confidence = target[keys].copy()
+    confidence[f"{prefix}_CONFIDENCE"] = 0.0
+    confidence[f"{prefix}_SURVEYED_AREA_FRAC"] = np.nan
+    confidence[f"{prefix}_UNMAPPED_AREA"] = True
+    return values, confidence
+
+
 def _build_resolution(
     configs: dict[str, Any], resolution: int
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     seagrass = pd.read_parquet(configs["seagrass"].feature_path(resolution))
     kelp = pd.read_parquet(configs["kelp"].feature_path(resolution))
     reef = pd.read_parquet(configs["reef"].feature_path(resolution))
-    seagrass_conf = pd.read_parquet(configs["seagrass"].confidence_path(resolution))
-    kelp_conf = pd.read_parquet(configs["kelp"].confidence_path(resolution))
+    if "SEAGRASS_EXTENT_ALL_TIME_M2" in seagrass:
+        seagrass, seagrass_conf = _unavailable_legacy_extent(
+            seagrass, reef, "SEAGRASS", resolution
+        )
+    else:
+        seagrass_conf = pd.read_parquet(configs["seagrass"].confidence_path(resolution))
+    if "KELP_EXTENT_ALL_TIME_M2" in kelp:
+        kelp, kelp_conf = _unavailable_legacy_extent(kelp, reef, "KELP", resolution)
+    else:
+        kelp_conf = pd.read_parquet(configs["kelp"].confidence_path(resolution))
     reef_conf = pd.read_parquet(configs["reef"].confidence_path(resolution))
     substrate_conf = pd.read_parquet(configs["substrate"].confidence_path(resolution))
     keys = ["H3_INDEX", "H3_RESOLUTION"]
@@ -243,11 +285,18 @@ def build_benthic_habitat_composite(
     families = _family_configs(config_path)
     input_paths = [
         path
-        for family in families.values()
+        for name, family in families.items()
         for resolution in (8, 6)
         for path in (
             family.feature_path(resolution),
             family.confidence_path(resolution),
+        )
+        if not (
+            name in {"kelp", "seagrass"}
+            and path == family.confidence_path(resolution)
+            and family.feature_path(resolution).exists()
+            and f"{name.upper()}_EXTENT_ALL_TIME_M2"
+            in pq.read_schema(family.feature_path(resolution)).names
         )
     ]
     missing = [path for path in input_paths if not path.exists()]

@@ -74,6 +74,8 @@ class RiverMouthBuildConfig:
     mouth_width_polygon_match_distance_m: float
     default_stream_mouth_width_m: float
     river_mouth_pressure_decay_km: int
+    us_flowline_source: str = "US_NHD_SMALL_SCALE"
+    us_polygon_source: str = "US_NHDPLUS_HR_NHDAREA"
 
 
 def load_river_mouth_build_config(
@@ -138,6 +140,19 @@ def load_river_mouth_build_config(
         )
 
     raw_paths = {source.name: source.raw_path for source in download.arcgis_sources}
+    overrides = processing.get("source_paths", {})
+    if not isinstance(overrides, dict) or set(overrides) - set(raw_paths):
+        raise ValueError("Freshwater source_paths must use configured source names")
+    raw_paths.update(
+        {name: _resolve(value, base_dir) for name, value in overrides.items()}
+    )
+    flowline_source = str(processing.get("us_flowline_source", "US_NHD_SMALL_SCALE"))
+    polygon_source = str(processing.get("us_polygon_source", "US_NHDPLUS_HR_NHDAREA"))
+    if flowline_source not in {
+        "US_NHD_SMALL_SCALE",
+        "US_NHD_HR_LEGACY",
+    } or polygon_source not in {"US_NHDPLUS_HR_NHDAREA", "US_NHD_HR_LEGACY_NHDAREA"}:
+        raise ValueError("Unknown freshwater U.S. source identity")
     return RiverMouthBuildConfig(
         bbox=download.bbox,
         context_bbox=download.context_bbox,
@@ -161,6 +176,8 @@ def load_river_mouth_build_config(
         ],
         default_stream_mouth_width_m=positive["default_stream_mouth_width_m"],
         river_mouth_pressure_decay_km=int(pressure_decay_km),
+        us_flowline_source=flowline_source,
+        us_polygon_source=polygon_source,
     )
 
 
@@ -192,7 +209,11 @@ def _read_vector(path: Path, *, bbox_value: Mapping[str, float] | None = None):
         read_bbox = tuple(
             bbox_value[key] for key in ("min_lon", "min_lat", "max_lon", "max_lat")
         )
-    frame = gpd.read_file(path, bbox=read_bbox)
+    frame = (
+        gpd.read_parquet(path)
+        if path.suffix.lower() == ".parquet"
+        else gpd.read_file(path, bbox=read_bbox)
+    )
     if frame.crs is None:
         raise ValueError(f"River source has no CRS: {path}")
     frame = frame.to_crs("EPSG:4326")
@@ -242,13 +263,9 @@ def _load_water(config: RiverMouthBuildConfig):
         raise ValueError(
             f"Canonical marine-water geometry has no CRS: {config.water_polygon_path}"
         )
-    model_box = box(
-        config.bbox["min_lon"],
-        config.bbox["min_lat"],
-        config.bbox["max_lon"],
-        config.bbox["max_lat"],
-    )
-    target = safe_polygonal_union(water.to_crs("EPSG:4326"), clip_geometry=model_box)
+    # Use complete acquired water context for source-coast tests. The planning
+    # rectangle must not introduce artificial river-mouth shoreline candidates.
+    target = safe_polygonal_union(water.to_crs("EPSG:4326"))
     if target.is_empty:
         raise ValueError("Canonical marine-water geometry is empty in the model area.")
     projected = (
@@ -388,7 +405,7 @@ def _build_mouths(
     terminal = pd.to_numeric(us_flowlines.get("TERMINALFL"), errors="coerce").eq(1)
     us = _mouth_frame(
         us_flowlines.loc[_nhd_flowline_mask(us_flowlines) & terminal],
-        dataset="US_NHD_SMALL_SCALE",
+        dataset=config.us_flowline_source,
         id_column="COMID",
         name_column="GNIS_NAME",
         width_key_column=None,
@@ -544,7 +561,7 @@ def build_river_mouths(
     target_water, projected_water = _load_water(config)
     frames = _load_source_frames(config)
     mouths = _build_mouths(frames, projected_water, config)
-    systems = _build_river_systems(frames)
+    systems = _build_river_systems(frames, us_dataset=config.us_flowline_source)
     support = load_model_area_support(config.h3_resolution, config_path)
     features = _build_h3_features(target_water, mouths, config, support)
 
@@ -620,7 +637,7 @@ def build_river_mouths(
             "United States Government work",
         ),
         "us_river_polygons": (
-            "United States Geological Survey NHDPlus HR",
+            f"United States Geological Survey {config.us_polygon_source}",
             "United States Government work",
         ),
         "hydrorivers": ("HydroRIVERS v1.0", "HydroSHEDS licence terms"),
@@ -651,8 +668,17 @@ def build_river_mouths(
             {"text": attribution, "license": license_name}
             for attribution, license_name in source_attribution.values()
         ],
-        source_completeness="complete",
-        metadata=detailed_metadata,
+        source_completeness="partial",
+        metadata={
+            **detailed_metadata,
+            "us_flowline_source": config.us_flowline_source,
+            "us_polygon_source": config.us_polygon_source,
+            "us_terminal_availability": frames["us_network_flowlines"]
+            .get("TERMINAL_QC", pd.Series(dtype="string"))
+            .value_counts(dropna=False)
+            .to_dict(),
+            "coverage_warning": "Static mapped mouth inventory; unknown terminals and unmapped geometry are not observed absence. Configured default widths are explicitly estimated, not measured.",
+        },
     )
     publisher.publish_manifest(manifest_path, manifest)
     LOGGER.info(

@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from shapely.ops import unary_union
 
-from seascape.products import resolve_product
+from seascape.legacy_products import resolve_product
 from seascape.utils.habitat_inventory import normalize_inventory
 from seascape.utils.habitat_surface import _composition_metrics, _spatial_pairs
 

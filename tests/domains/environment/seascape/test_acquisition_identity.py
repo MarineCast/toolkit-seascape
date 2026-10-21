@@ -6,6 +6,46 @@ import pytest
 from seascape.utils import habitat_acquisition as module
 
 
+@pytest.mark.parametrize(
+    "failure", ["size", "checksum", "archive", "stream_budget", "header_budget"]
+)
+def test_failed_http_validation_preserves_cached_bytes(tmp_path, failure):
+    class Response:
+        headers = {"Content-Length": "99"} if failure == "header_budget" else {}
+        closed = False
+
+        def raise_for_status(self):
+            return None
+
+        def iter_content(self, **kwargs):
+            yield b"abc"
+            yield b"def"
+
+        def close(self):
+            self.closed = True
+
+    response = Response()
+
+    class Session:
+        def request(self, *args, **kwargs):
+            return response
+
+    destination = tmp_path / ("source.zip" if failure == "archive" else "source.bin")
+    destination.write_bytes(b"trusted previous bytes")
+    source = {"url": "https://example.test/source", "maximum_bytes": 100}
+    if failure == "size":
+        source["expected_bytes"] = 7
+    elif failure == "checksum":
+        source["md5"] = "0" * 32
+    elif failure in {"stream_budget", "header_budget"}:
+        source["maximum_bytes"] = 5
+    with pytest.raises(RuntimeError):
+        module._download_http_file(Session(), source, destination, timeout=1)
+    assert destination.read_bytes() == b"trusted previous bytes"
+    assert not destination.with_suffix(destination.suffix + ".part").exists()
+    assert response.closed
+
+
 def test_cache_requires_matching_query_bytes_and_preserves_retrieval(
     tmp_path, monkeypatch
 ):

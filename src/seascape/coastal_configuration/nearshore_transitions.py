@@ -14,10 +14,11 @@ import rasterio
 from pyproj import CRS
 from rasterio.features import geometry_mask
 from rasterio.windows import from_bounds
-from scipy.ndimage import label
+from scipy.ndimage import find_objects, label
 from shapely.geometry import LineString, Point, box
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import unary_union
+from shapely.strtree import STRtree
 
 
 @dataclass(frozen=True)
@@ -76,6 +77,16 @@ def nearshore_depth_areas(
     if depth_threshold_m < 0 or band_width_m <= 0:
         raise ValueError("Threshold must be nonnegative and band width positive")
     eligible = support.intersection(water).intersection(shoreline.buffer(band_width_m))
+    return _depth_areas(
+        eligible,
+        raster,
+        depth_threshold_m=depth_threshold_m,
+        raster_depth_convention=raster_depth_convention,
+    )
+
+
+def _depth_areas(eligible, raster, *, depth_threshold_m, raster_depth_convention):
+    """Measure a previously intersected support using the same raster footprints."""
     eligible_area = float(eligible.area)
     if eligible_area <= 1e-9:
         return NearshoreArea(0.0, 0.0, None, None, None, "empty_nearshore_support")
@@ -133,6 +144,34 @@ def nearshore_depth_areas(
     )
 
 
+def _eligible_supports(cells, water, shoreline, band_width_m):
+    """Intersect a common full-context shore band in bounded metric tiles."""
+    local_source = shoreline.intersection(box(*water.bounds).buffer(band_width_m + 1))
+    band = local_source.buffer(band_width_m).intersection(water)
+    if band.is_empty:
+        return {cell: geometry.intersection(band) for cell, geometry in cells}
+    xmin, ymin, xmax, ymax = band.bounds
+    step = 20000.0
+    if math.ceil((xmax - xmin) / step + 1) * math.ceil((ymax - ymin) / step + 1) > 4096:
+        raise ValueError("Nearshore context tile budget exceeded")
+    pieces = []
+    for x in np.arange(math.floor(xmin / step) * step, xmax, step):
+        for y in np.arange(math.floor(ymin / step) * step, ymax, step):
+            part = band.intersection(box(x, y, x + step, y + step))
+            if not part.is_empty:
+                pieces.append(part)
+    tree = STRtree(pieces)
+    return {
+        cell: unary_union(
+            [
+                geometry.intersection(pieces[int(i)])
+                for i in tree.query(geometry, predicate="intersects")
+            ]
+        )
+        for cell, geometry in cells
+    }
+
+
 def bounded_deep_target_components(
     cells: list[tuple[str, BaseGeometry]],
     water: BaseGeometry,
@@ -159,11 +198,7 @@ def bounded_deep_target_components(
         or not source_identity
     ):
         raise ValueError("Invalid bounded deep-component settings")
-    band = shoreline.buffer(band_width_m)
-    eligible = {
-        cell_id: geometry.intersection(water).intersection(band)
-        for cell_id, geometry in cells
-    }
+    eligible = _eligible_supports(cells, water, shoreline, band_width_m)
     support = unary_union(
         [geometry for geometry in eligible.values() if not geometry.is_empty]
     )
@@ -216,8 +251,12 @@ def bounded_deep_target_components(
     component_ids: dict[int, str] = {}
     components: list[dict[str, object]] = []
     pixel_area = abs(transform.a * transform.e)
-    for number in range(1, count + 1):
-        rows, cols = np.where(labels == number)
+    for number, slices in enumerate(find_objects(labels, max_label=count), start=1):
+        if slices is None:
+            continue
+        rows, cols = np.where(labels[slices] == number)
+        rows += slices[0].start
+        cols += slices[1].start
         if not len(rows):
             continue
         component_id = (
@@ -241,10 +280,26 @@ def bounded_deep_target_components(
         if geometry.is_empty:
             by_cell[cell_id] = ()
             continue
+        floating_cell = from_bounds(*geometry.bounds, transform=transform)
+        left = max(0, math.floor(floating_cell.col_off))
+        top = max(0, math.floor(floating_cell.row_off))
+        right = min(
+            labels.shape[1], math.ceil(floating_cell.col_off + floating_cell.width)
+        )
+        bottom = min(
+            labels.shape[0], math.ceil(floating_cell.row_off + floating_cell.height)
+        )
+        if left >= right or top >= bottom:
+            by_cell[cell_id] = ()
+            continue
+        local_labels = labels[top:bottom, left:right]
         cell_mask = geometry_mask(
             [geometry],
-            out_shape=values.shape,
-            transform=transform,
+            out_shape=local_labels.shape,
+            transform=rasterio.windows.transform(
+                rasterio.windows.Window(left, top, right - left, bottom - top),
+                transform,
+            ),
             invert=True,
             all_touched=False,
         )
@@ -252,7 +307,7 @@ def bounded_deep_target_components(
             sorted(
                 {
                     component_ids[int(number)]
-                    for number in np.unique(labels[cell_mask])
+                    for number in np.unique(local_labels[cell_mask])
                     if int(number) in component_ids
                 }
             )
@@ -271,11 +326,14 @@ def first_water_facing_contour(
     max_distance_m: float,
     orientation_probe_m: float | None = None,
     raster_depth_convention: str = "positive_down",
+    path_water: BaseGeometry | None = None,
 ) -> TransectCrossing:
     """First interpolated crossing along the contiguous seaward transect.
 
     Samples preserve nonmonotonic profiles. A station with ambiguous water side
     is unresolved; the routine never silently chooses one normal.
+    ``path_water`` optionally reuses exactly ``water.buffer(1e-7)`` across
+    stations; it is a numerical path guard, not a different physical mask.
     """
 
     _require_metric_raster(raster)
@@ -294,14 +352,13 @@ def first_water_facing_contour(
     if sides.count(True) != 1:
         return TransectCrossing(None, None, "ambiguous_water_side", ())
     nx, ny = normals[sides.index(True)]
+    path_water = water.buffer(1e-7) if path_water is None else path_water
     samples: list[tuple[float, float]] = []
     previous_point = station
     distance = 0.0
     while distance <= max_distance_m + 1e-9:
         point = Point(station.x + nx * distance, station.y + ny * distance)
-        if distance > 0 and not water.buffer(1e-7).covers(
-            LineString([previous_point, point])
-        ):
+        if distance > 0 and not path_water.covers(LineString([previous_point, point])):
             return TransectCrossing(None, None, "land_censored", tuple(samples))
         value = next(raster.sample([(point.x, point.y)], masked=True))[0]
         if (

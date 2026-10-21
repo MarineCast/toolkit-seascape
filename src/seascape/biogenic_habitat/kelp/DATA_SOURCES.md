@@ -1,29 +1,30 @@
 # Kelp source contract
 
-- **Washington DNR annual floating-kelp inventories** (1989-2024, excluding
-  unavailable survey years) are direct canopy observations. The roughly 85 MB
-  archive is included by default and required for a production build. Annual
-  polygons are positive canopy observations, not their survey footprints.
-  The latest applicable positive or explicit negative evidence is selected by
-  location and as-of year; an archive-wide latest year does not erase older
-  observations where no later survey evidence applies. `KELP_FRAC` is mapped
-  last-known presence, not a contemporaneous complete canopy census. A
-  generalized-only build requires an explicit override
-  and records the incomplete source state in its manifest.
-- **Washington DNR persistence polygons and ShoreZone** provide generalized
-  spatial coverage and mapped presence/absence. The five-category proportion
-  layer is retained as the midpoint of its published 0.2-wide class
-  (`0.1, 0.3, 0.5, 0.7, 0.9`) and labeled
-  `mapped_binned_proportion_midpoint`; it is not presented as an exact surveyed
-  annual ratio.
-- **B.C. CRIMS kelp beds** are legacy compiled polygons. They contribute mapped
-  area and proximity with confidence 2, but missing coast is not treated as an
-  observed absence.
+The current producer emits one Kelp dataset with **Annual Kelp Extent** and
+**Kelp Extent (All Time)**, in full-native-H3 m². Read the
+[current calculation, source eligibility, date and coverage contract](../../../../docs/kelp.md).
+The older KELP_FRAC/proximity/persistence/confidence family and separate annual
+footprint delivery are superseded; the legacy calculation helper remains readable.
 
-Floating canopy is not all kelp habitat. This product never relabels modeled
-potential kelp habitat as observed kelp. The DNR processing resolution changed
-from approximately 20 m to approximately 4 m in 2010, so annual raw polygon area
-is not assumed perfectly comparable across that break. The current source
-normalizers do not register separate complete survey-footprint geometries or
-availability dates; survey completeness therefore remains unknown and a
-historical as-of export is retrospective rather than an operational replay.
+- Washington DNR's dated mapped-bed observations supply annual and All Time
+  extent, using all available survey years by default. Missing positive evidence
+  is unknown, never surveyed absence. The current retained annual inventory spans
+  1989–2024 excluding 1993; 2025–2026 observations are unavailable.
+- B.C. CRIMS polygons and positive Washington persistence polygons supply
+  source-qualified All Time geometry only. Unknown observation dates remain
+  explicit and are excluded by default from an explicitly year-bounded request.
+  CRIMS is a legacy compilation collected from 1979 onwards, not a standardized
+  annual survey series. Generalized persistence polygons are not exact canopy.
+- The retained audit repairs all 34 previously invalid persistence records with
+  GEOS make_valid, preserving original/result hashes. This is computational
+  repair, not provider certification, completeness, or surveyed absence.
+- ShoreZone floating-kelp lines have no measured bed width and contribute no
+  invented polygon area. They remain retained source evidence. Eelgrass,
+  generic seagrass, modeled potential habitat and no-record zeros are excluded.
+
+Unions prevent double counting across sources and years. Current water masks do
+not erase historical positive bed evidence; neither current presence nor a
+historical water-level surface is reconstructed. Processing-era changes in 1994
+and 2010 limit comparisons of raw annual mapped areas. Source rights, retrieval
+vintage, exact date qualifications and the scoped 2026-10-20 CRIMS acquisition
+are documented in the canonical contract and embedded provenance.

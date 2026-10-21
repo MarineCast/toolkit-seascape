@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from contextlib import ExitStack
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -21,6 +22,7 @@ from seascape.core.config.paths import project_root
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.seafloor_physiography.bathymetry.pipeline import load_bathymetry_config
 from seascape.spatial_support.water_network.config import load_water_network_config
+from seascape.spatial_support.water_network.load import load_model_area_geometry
 from seascape.utils.artifacts import (
     build_manifest,
     checksum_artifact,
@@ -49,6 +51,8 @@ class PassageConfig:
     max_sections: int
     max_cells: int
     max_sills: int
+    depth_vertical_datum: str | None
+    depth_datum_qualified: bool
 
 
 def load_passage_config(config_path: str | Path) -> PassageConfig:
@@ -96,6 +100,12 @@ def load_passage_config(config_path: str | Path) -> PassageConfig:
     }
     if min(bounds.values()) < 1:
         raise ValueError("Passage resource bounds must be positive")
+    qualified = section.get("depth_datum_qualified", False)
+    datum = section.get("depth_vertical_datum")
+    if type(qualified) is not bool or (qualified and not datum):
+        raise ValueError(
+            "Qualified passage depths require an explicit source vertical datum"
+        )
     return PassageConfig(
         registry,
         root / str(section["mapped_sills_path"])
@@ -103,12 +113,36 @@ def load_passage_config(config_path: str | Path) -> PassageConfig:
         else None,
         network.water_polygon_path,
         network.clipped_geometry_path(8),
-        bathymetry.raw_path,
+        root / str(section["depth_raster_path"])
+        if section.get("depth_raster_path")
+        else bathymetry.raw_path,
         output,
         str(section.get("projected_crs", "EPSG:32610")),
         **scales,
         **bounds,
+        depth_vertical_datum=str(datum) if datum else None,
+        depth_datum_qualified=qualified,
     )
+
+
+def qualify_section_depths(row, *, datum_qualified):
+    """Keep nominal diagnostics separate from datum-qualified physical metrics."""
+    result = dict(row)
+    for field in (
+        "CROSS_SECTION_AREA_M2",
+        "VALID_INTEGRAL_AREA_M2",
+        "MAX_DEPTH_M",
+        "WIDTH_AT_DEPTH_THRESHOLD_M",
+        "MAX_CONTIGUOUS_WIDTH_AT_DEPTH_THRESHOLD_M",
+    ):
+        result["NOMINAL_" + field] = result[field]
+        if not datum_qualified:
+            result[field] = None
+    result["NOMINAL_BATHYMETRY_STATUS"] = result["BATHYMETRY_STATUS"]
+    result["DEPTH_DATUM_STATUS"] = "qualified" if datum_qualified else "unqualified"
+    if not datum_qualified:
+        result["BATHYMETRY_STATUS"] = "vertical_datum_unqualified"
+    return result
 
 
 def normalize_mapped_sills(
@@ -178,6 +212,79 @@ def normalize_mapped_sills(
     return projected.sort_values("SILL_ID").reset_index(drop=True)
 
 
+def passage_depth_source(config, passage):
+    """Resolve one declared source/datum; never transfer qualification across sources."""
+    override = getattr(passage, "DEPTH_RASTER_PATH", None)
+    override = override is not None and not pd.isna(override)
+    qualified = config.depth_datum_qualified
+    row_qualified = getattr(passage, "DEPTH_DATUM_QUALIFIED", qualified)
+    if not isinstance(row_qualified, (bool, np.bool_)):
+        raise ValueError("Passage datum qualification must be boolean")
+    if override:
+        fields = (
+            "DEPTH_SOURCE_ID",
+            "DEPTH_SOURCE_VERSION",
+            "DEPTH_RIGHTS",
+            "DEPTH_SOURCE_VERTICAL_DATUM",
+            "DEPTH_UNITS",
+            "DEPTH_ELEVATION_CONVENTION",
+        )
+        values = {field: getattr(passage, field, None) for field in fields}
+        if any(
+            not isinstance(value, str) or not value.strip() for value in values.values()
+        ):
+            raise ValueError(
+                "Per-passage depth override requires complete source provenance"
+            )
+        if (
+            values["DEPTH_UNITS"] != "m"
+            or values["DEPTH_ELEVATION_CONVENTION"] != "positive_up"
+        ):
+            raise ValueError("Passage rasters require metres and positive-up elevation")
+        path = project_root() / str(passage.DEPTH_RASTER_PATH)
+        datum = values["DEPTH_SOURCE_VERTICAL_DATUM"]
+        qualified = bool(row_qualified)
+        source_id, version, rights = (
+            values[key]
+            for key in ("DEPTH_SOURCE_ID", "DEPTH_SOURCE_VERSION", "DEPTH_RIGHTS")
+        )
+    else:
+        path, datum = config.depth_raster_path, config.depth_vertical_datum
+        qualified = qualified and bool(row_qualified)
+        source_id, version, rights = (
+            "configured_default_depth_source",
+            "see source manifest",
+            "See configured bathymetry source terms",
+        )
+    if qualified and str(passage.VERTICAL_DATUM) != datum:
+        raise ValueError("Passage and depth source vertical datums disagree")
+    return {
+        "path": path,
+        "datum": datum or "unverified_source_vertical_datum",
+        "qualified": qualified,
+        "source_id": source_id,
+        "version": version,
+        "rights": rights,
+    }
+
+
+def passage_parent_support(all_cells, selected_cells):
+    """Retain whole available R8-child support for every associated R6 parent."""
+    selected_parents = {
+        cell_to_parent(str(cell), 6) for cell in selected_cells.H3_INDEX
+    }
+    grouped = all_cells.assign(
+        PARENT=all_cells.H3_INDEX.map(lambda value: cell_to_parent(str(value), 6))
+    )
+    rows = [
+        {"H3_INDEX": parent, "geometry": unary_union(list(children.geometry))}
+        for parent, children in grouped.loc[
+            grouped.PARENT.isin(selected_parents)
+        ].groupby("PARENT")
+    ]
+    return gpd.GeoDataFrame(rows, geometry="geometry", crs=all_cells.crs)
+
+
 def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
     config = load_passage_config(config_path)
     passages = gpd.read_parquet(config.registry_path)
@@ -230,7 +337,8 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
         .to_crs(config.projected_crs)
         .geometry.union_all()
     )
-    cells = gpd.read_parquet(config.clipped_r8_path).to_crs(config.projected_crs)
+    cells = load_model_area_geometry(8, config_path).to_crs(config.projected_crs)
+    all_cells = cells
     interest = unary_union(list(passages.geometry)).buffer(config.half_length_m)
     cells = cells.loc[cells.geometry.intersects(interest)].sort_values("H3_INDEX")
     if cells.empty or len(cells) > config.max_cells:
@@ -239,10 +347,51 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
         )
     section_rows = []
     associations = []
-    with rasterio.open(config.depth_raster_path) as source:
-        with WarpedVRT(
-            source, crs=config.projected_crs, resampling=Resampling.nearest
-        ) as depth:
+    depth_cache = {}
+    with ExitStack() as opened:
+        for passage, center in zip(
+            passages.itertuples(index=False), centers, strict=True
+        ):
+            spec = passage_depth_source(config, passage)
+            depth_path = spec["path"].resolve()
+            if depth_path not in depth_cache:
+                source = opened.enter_context(rasterio.open(depth_path))
+                if (
+                    source.dtypes[0] == "uint8"
+                    and source.scales[0] == 1
+                    and source.offsets[0] == 0
+                ):
+                    raise ValueError(
+                        "Rendered unsigned byte data cannot supply numeric passage elevations"
+                    )
+                virtual = opened.enter_context(
+                    WarpedVRT(
+                        source, crs=config.projected_crs, resampling=Resampling.nearest
+                    )
+                )
+                source_record = {
+                    "name": spec["source_id"],
+                    "version": spec["version"],
+                    "path": str(depth_path),
+                    "checksum": checksum_artifact(depth_path),
+                    "license": spec["rights"],
+                    "vertical_datum": spec["datum"],
+                    "units": "m",
+                    "elevation_convention": "positive_up",
+                    "raster_encoding": source.dtypes[0],
+                }
+                depth_cache[depth_path] = (
+                    virtual,
+                    source.scales[0],
+                    source.offsets[0],
+                    source_record,
+                )
+            depth, scale, offset, source_record = depth_cache[depth_path]
+            if source_record["vertical_datum"] != spec["datum"]:
+                raise ValueError(
+                    "One depth raster cannot have conflicting vertical datum declarations"
+                )
+            qualified = spec["qualified"]
             effective_resolution = max(abs(depth.transform.a), abs(depth.transform.e))
 
             def depth_at(x: float, y: float) -> float | None:
@@ -253,31 +402,28 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
                     or (depth.nodata is not None and value == depth.nodata)
                 ):
                     return None
-                return -float(value) if float(value) < 0 else None
+                elevation = float(value) * scale + offset
+                return -elevation if elevation < 0 else None
 
-            for passage, center in zip(
-                passages.itertuples(index=False), centers, strict=True
-            ):
-                count = max(1, math.ceil(center.length / config.section_spacing_m))
-                if len(section_rows) + count > config.max_sections:
-                    raise ValueError("Passage section budget exceeded")
-                for index in range(count):
-                    position = min(
-                        center.length, (index + 0.5) * config.section_spacing_m
-                    )
-                    measured = measure_passage_section(
-                        str(passage.PASSAGE_ID),
-                        passage.geometry,
-                        center,
-                        water,
-                        depth_at,
-                        along_axis_m=position,
-                        half_length_m=config.half_length_m,
-                        sample_step_m=config.sample_step_m,
-                        depth_threshold_m=config.threshold_m,
-                        tangent_scale_m=config.tangent_scale_m,
-                    )
-                    section_rows.append(
+            count = max(1, math.ceil(center.length / config.section_spacing_m))
+            if len(section_rows) + count > config.max_sections:
+                raise ValueError("Passage section budget exceeded")
+            for index in range(count):
+                position = min(center.length, (index + 0.5) * config.section_spacing_m)
+                measured = measure_passage_section(
+                    str(passage.PASSAGE_ID),
+                    passage.geometry,
+                    center,
+                    water,
+                    depth_at,
+                    along_axis_m=position,
+                    half_length_m=config.half_length_m,
+                    sample_step_m=config.sample_step_m,
+                    depth_threshold_m=config.threshold_m,
+                    tangent_scale_m=config.tangent_scale_m,
+                )
+                section_rows.append(
+                    qualify_section_depths(
                         {
                             "SECTION_ID": f"{passage.PASSAGE_ID}:{position:.3f}m",
                             "PASSAGE_ID": str(passage.PASSAGE_ID),
@@ -296,44 +442,37 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
                             "EFFECTIVE_RASTER_RESOLUTION_M": effective_resolution,
                             "WET_INTERVAL_COUNT": measured.wet_intervals,
                             "VERTICAL_DATUM": passage.VERTICAL_DATUM,
+                            "NOMINAL_SOURCE_VERTICAL_DATUM": spec["datum"],
+                            "DEPTH_SOURCE_ID": spec["source_id"],
+                            "DEPTH_SOURCE_FILE_SHA256": source_record["checksum"],
                             "geometry": measured.section,
+                        },
+                        datum_qualified=qualified,
+                    )
+                )
+        supports = {8: cells}
+        supports[6] = passage_parent_support(all_cells, cells)
+        for resolution, frame in supports.items():
+            for passage in passages.itertuples(index=False):
+                wet_passage = passage.geometry.intersection(water)
+                hits = frame.sindex.query(wet_passage, predicate="intersects")
+                for cell in frame.iloc[hits].itertuples(index=False):
+                    overlap = cell.geometry.intersection(wet_passage).area
+                    if overlap <= 0:
+                        continue
+                    associations.append(
+                        {
+                            "H3_INDEX": str(cell.H3_INDEX),
+                            "H3_RESOLUTION": resolution,
+                            "PASSAGE_ID": str(passage.PASSAGE_ID),
+                            "PASSAGE_OVERLAP_AREA_M2": overlap,
+                            "PASSAGE_FRAC_OF_WATER_SUPPORT": overlap
+                            / cell.geometry.area,
+                            "SPATIAL_SUPPORT": "water_clipped_r8"
+                            if resolution == 8
+                            else "hierarchical_whole_available_r8_child_union",
                         }
                     )
-            supports = {8: cells}
-            parent_rows = [
-                {"H3_INDEX": parent, "geometry": unary_union(list(rows.geometry))}
-                for parent, rows in cells.assign(
-                    PARENT=cells.H3_INDEX.map(
-                        lambda value: cell_to_parent(str(value), 6)
-                    )
-                ).groupby("PARENT")
-            ]
-            supports[6] = gpd.GeoDataFrame(
-                parent_rows, geometry="geometry", crs=cells.crs
-            )
-            for resolution, frame in supports.items():
-                for cell in frame.itertuples(index=False):
-                    for passage in passages.itertuples(index=False):
-                        overlap = (
-                            cell.geometry.intersection(passage.geometry)
-                            .intersection(water)
-                            .area
-                        )
-                        if overlap <= 0:
-                            continue
-                        associations.append(
-                            {
-                                "H3_INDEX": str(cell.H3_INDEX),
-                                "H3_RESOLUTION": resolution,
-                                "PASSAGE_ID": str(passage.PASSAGE_ID),
-                                "PASSAGE_OVERLAP_AREA_M2": overlap,
-                                "PASSAGE_FRAC_OF_WATER_SUPPORT": overlap
-                                / cell.geometry.area,
-                                "SPATIAL_SUPPORT": "water_clipped_r8"
-                                if resolution == 8
-                                else "hierarchical_r8_child_union",
-                            }
-                        )
     sections = gpd.GeoDataFrame(
         section_rows, geometry="geometry", crs=config.projected_crs
     )
@@ -399,7 +538,8 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
             }
             for path in (config.registry_path, config.mapped_sills_path)
             if path is not None
-        ],
+        ]
+        + [record for _, _, _, record in depth_cache.values()],
         upstream_artifacts=[
             {"path": str(path), "checksum": checksum_artifact(path)}
             for path in (
@@ -408,11 +548,19 @@ def build_passage_sections(config_path: str | Path) -> tuple[Path, ...]:
                 config.depth_raster_path,
             )
         ],
-        attribution=[],
+        attribution=[
+            {"text": f"{source_id}, version {version}", "license": str(rights)}
+            for source_id, version, rights in passages[
+                ["SOURCE_ID", "SOURCE_VERSION", "RIGHTS"]
+            ]
+            .drop_duplicates()
+            .itertuples(index=False, name=None)
+        ],
         source_completeness="partial",
         metadata={
-            "scientific_method_version": "passage_cross_section_shoal_candidate_v2",
+            "scientific_method_version": "passage_cross_section_per_source_datum_v4",
             "sample_support": "source passage polygon and ordered centerline; virtual projected native raster; bounded R8 child-union R6 associations",
+            "nominal_depth_diagnostics": "Separately named; cannot establish calibrated controlling depths or validated sills",
         },
     )
     publisher.publish_manifest(

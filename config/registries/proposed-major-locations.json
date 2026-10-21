@@ -1,0 +1,1854 @@
+{
+  "schema_version": 1,
+  "status": "proposal_for_review_not_active_registry",
+  "prepared_at_utc": "2026-10-15T23:44:30.537581+00:00",
+  "study_id": "vancouver-island-columbia",
+  "selection_basis": "Geographic coverage of named trunk river outlets, interbasin passages and coastal entrances from northern Vancouver Island to the Columbia; no species observations or model outcomes used, and no quantitative river-size ranking asserted.",
+  "planning_envelope_wgs84": [
+    -129.7,
+    45.9,
+    -121.5,
+    51.5
+  ],
+  "reporting_mask_status": "Source-scale coastal mask materialized and QA checked separately; proposal does not activate shared study membership.",
+  "counts": {
+    "locations": 53,
+    "river_outlets": 30,
+    "waterway_locations": 23,
+    "official_name_ids_resolved": 53,
+    "named_references_with_id_pending": 0
+  },
+  "readiness_requirements": [
+    "Bind outlet names to canonical FLUVIAL_MOUTH_ID values, including delta branches and a qualified water graph",
+    "Review passage polygons and centreline geometry, horizontal/vertical datum and source rights",
+    "Review gateway crossing edges and canonical water-valid graph attachments",
+    "Expand source inventories for northern Vancouver Island/mainland inlets and the Columbia region",
+    "Validate source coverage and study coastal-plus-inland reporting mask"
+  ],
+  "source_evidence_files": [
+    {
+      "file": "active-pass.json",
+      "sha256": "85f71026066d565fec129252d5d70103326269409aa0673a1703580dd9d924ed"
+    },
+    {
+      "file": "alberni-inlet.json",
+      "sha256": "8ef64f069211b15ec5f050939425c97534ee8a49f343a3f19935b19cf50cc5f5"
+    },
+    {
+      "file": "barkley-sound.json",
+      "sha256": "04592a9519cb4ead3eb14d6762c07e9fd9c0bbf43f0a38a664b0984ffbfe357c"
+    },
+    {
+      "file": "boundary-pass.json",
+      "sha256": "de4faf8c21fab4c3128b24949e769c918868a86100ac59e736110190b404285c"
+    },
+    {
+      "file": "campbell-river.json",
+      "sha256": "0714c1911e03d03834d9092d44ac5ee9addff7219ee4e5a4eac2c07eb8f360df"
+    },
+    {
+      "file": "clayoquot-sound.json",
+      "sha256": "9a89bcad3f92329c60fbf256c4faad80a8f2222a7fa04ae6f3e3b1f0373665c6"
+    },
+    {
+      "file": "cowichan-river.json",
+      "sha256": "f51d4e7caa4ab7dffd260cf77509b5c51b95a295a1ae9b058a714b36d94f751a"
+    },
+    {
+      "file": "discovery-passage.json",
+      "sha256": "cbca24f57603200577a52a58976d93e6134eebb81e229dd5553d090e1e40ac5c"
+    },
+    {
+      "file": "fraser-river.json",
+      "sha256": "03cdc6548b9fb92d9172fa881577d1b23e156bdf98f7e9157810564f307f39c5"
+    },
+    {
+      "file": "gold-river.json",
+      "sha256": "30b4e44a3ede27e775c9dee49256017909f7d89c87146c7c1d125b4a7f059c01"
+    },
+    {
+      "file": "haro-strait.json",
+      "sha256": "5b9505660b9e0def2378c42227082ecd5d710383140bbfd7d441a38ed6963962"
+    },
+    {
+      "file": "homathko-river.json",
+      "sha256": "b12ddd79cfe44112c83822492f1fd0d8bc9f5d7cdea144c85845bd51bb427cee"
+    },
+    {
+      "file": "johnstone-strait.json",
+      "sha256": "52ba72232153a8a45b4539ecb39e7c42ab6cffe3b36849d6f70690047326985e"
+    },
+    {
+      "file": "juan-de-fuca-strait.json",
+      "sha256": "c26cbb41aa5816da646b1a3029f7999a87e75fbc5ed1a15f129a28efe12cdedd"
+    },
+    {
+      "file": "klinaklini-river.json",
+      "sha256": "4494ffd6973030aaf6110ffcf2abdab6d89726f0dd01206550052a97e662a2f0"
+    },
+    {
+      "file": "nanaimo-river.json",
+      "sha256": "9447785969e5c3770b415cc81d17933cccbaa601c0e1be191542dc588d40be80"
+    },
+    {
+      "file": "nimpkish-river.json",
+      "sha256": "10809ec68e66b860cab987539624f975cff22569897820c1c4df7e2df7a54ff9"
+    },
+    {
+      "file": "nitinat-river.json",
+      "sha256": "49cac4ec508a5710136de85f3c8a01b4e58a07b18ffd22e2e8f979ce724f5ef4"
+    },
+    {
+      "file": "nootka-sound.json",
+      "sha256": "7116177535fd612007bd41c65889ddfb27b79760027494b75dd7c6b73b4bfa3c"
+    },
+    {
+      "file": "porlier-pass.json",
+      "sha256": "6cf813d2b774df68cdfd763427f8f8d4cc476b646f8bb77a07397691ab19fa44"
+    },
+    {
+      "file": "quatsino-sound.json",
+      "sha256": "f8f27b41836f1fabdadac7309051c2378fbf5a880bfbd067ec0af0f36c504d58"
+    },
+    {
+      "file": "queen-charlotte-strait.json",
+      "sha256": "01a923c7a0c12be4817ec74a2bd806d907f2d340fcf3a4819e699e5b29b04375"
+    },
+    {
+      "file": "san-juan-river.json",
+      "sha256": "8a1b110451e1ea52ffc0f877c14f756c525f16f7dbd6bf82685422c8ba62c28f"
+    },
+    {
+      "file": "sansum-narrows.json",
+      "sha256": "6f8fb64844fc7952142edea125e95c0f8924afb478beac68504764c5150ab907"
+    },
+    {
+      "file": "somass-river.json",
+      "sha256": "a161f8067ab6c48d76db4b29f4e39d25d05a02f43b2f458edfa77d8b5f44357b"
+    },
+    {
+      "file": "squamish-river.json",
+      "sha256": "16d5461a23865d8b084de4423a4fc8bd6d0134d4d804971d17b241ff7c0de4d4"
+    },
+    {
+      "file": "strait-of-georgia.json",
+      "sha256": "f0342eec34d225abb8234f82542418e2265dadd7cc65cf6870587739c6f7279a"
+    },
+    {
+      "file": "usgs-gnis-layer-6.json",
+      "sha256": "06207d229e9d0372c401f40a6a6e8a3d8c090363685e31b8cd2d1b058e7aeb9b"
+    },
+    {
+      "file": "usgs-gnis-layer-7.json",
+      "sha256": "4bb24a9e313bb57af7ff481f57f83159c2f615dcef0e0bd48adb2490eb598a81"
+    },
+    {
+      "file": "usgs-gnis-selected-6.json",
+      "sha256": "e160fdde6ce63753a7cebbc5ee4b8151adcbf2e7baffd49f4e7b895ae6fe6451"
+    },
+    {
+      "file": "usgs-gnis-selected-7-uppercase.json",
+      "sha256": "2e6c92aae17b8b3579f4a55d706e1bf2007413c68cf947cdc6479d48e2e70634"
+    },
+    {
+      "file": "usgs-gnis-selected-7.json",
+      "sha256": "5f3e525784e349bfcb55b33df4969d18e4c764982d3dcb8df722f3b32fc276ad"
+    },
+    {
+      "file": "usgs-gnis-service.json",
+      "sha256": "3039840370df5777f9586da852aa80b95c50a7d1caa47a8e7f6fd8814f316dd6"
+    },
+    {
+      "file": "DomesticNames_WA_Text.zip",
+      "url": "https://prd-tnm.s3.amazonaws.com/StagedProducts/GeographicNames/DomesticNames/DomesticNames_WA_Text.zip",
+      "sha256": "c2ad90a569ba44fdd2406f58c58b5377cc67268569f1c81b32c104b7dc0e1e9e",
+      "rights": "US Government public domain"
+    }
+  ],
+  "locations": [
+    {
+      "proposal_id": "nimpkish-river",
+      "name": "Nimpkish River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAZQU",
+        "TOPONYMIC_FEATURE_ID": "0c97cb85849c20c3898af8cea688e589"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAZQU",
+      "name_reference_point_wgs84": [
+        -126.981944,
+        50.566389
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -127.1033535,
+        49.8704621,
+        -126.2281784,
+        50.5819436
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "campbell-river",
+      "name": "Campbell River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JDEPP",
+        "TOPONYMIC_FEATURE_ID": "0d012b12849c20c385322f7a21cfcc58"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JDEPP",
+      "name_reference_point_wgs84": [
+        -125.258333,
+        50.048611
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -125.719388,
+        49.818168,
+        -125.2446837,
+        50.1681964
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment.",
+        "Resolved the Vancouver Island river namesake; excluded populated places and other river namesakes."
+      ]
+    },
+    {
+      "proposal_id": "gold-river",
+      "name": "Gold River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JASGE",
+        "TOPONYMIC_FEATURE_ID": "0c94036f849c20c3dd9cd7909ede03b4"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JASGE",
+      "name_reference_point_wgs84": [
+        -126.1125,
+        49.681111
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -126.2258276,
+        49.662318,
+        -125.935847,
+        50.0566303
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment.",
+        "Resolved the Vancouver Island river namesake; excluded populated places and other river namesakes."
+      ]
+    },
+    {
+      "proposal_id": "somass-river",
+      "name": "Somass River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBJCB",
+        "TOPONYMIC_FEATURE_ID": "0c9cba40849c20c3ccffd86ccb9e12a7"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBJCB",
+      "name_reference_point_wgs84": [
+        -124.82,
+        49.246389
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -124.8954694,
+        49.2359519,
+        -124.8021385,
+        49.3089716
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "nitinat-river",
+      "name": "Nitinat River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBEEM",
+        "TOPONYMIC_FEATURE_ID": "0c9a2a07849c20c3fffb7696f31c8480"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBEEM",
+      "name_reference_point_wgs84": [
+        -124.681944,
+        48.821389
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -124.6883798,
+        48.7814314,
+        -124.4646873,
+        49.1573686
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment.",
+        "Review river-to-lake versus tidal/marine outlet support explicitly."
+      ]
+    },
+    {
+      "proposal_id": "san-juan-river",
+      "name": "San Juan River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAZUF",
+        "TOPONYMIC_FEATURE_ID": "0c97d9eb849c20c3864b21ad85ea9a14"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAZUF",
+      "name_reference_point_wgs84": [
+        -124.398611,
+        48.559722
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -124.4077553,
+        48.4508333,
+        -123.9295088,
+        48.7269191
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "cowichan-river",
+      "name": "Cowichan River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAHLE",
+        "TOPONYMIC_FEATURE_ID": "0c8df011849c20c36b14465952e252a1"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAHLE",
+      "name_reference_point_wgs84": [
+        -123.636667,
+        48.753333
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -124.0718172,
+        48.7214861,
+        -123.6278883,
+        48.8412312
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "nanaimo-river",
+      "name": "Nanaimo River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAQAP",
+        "TOPONYMIC_FEATURE_ID": "0c92d6a6849c20c38a146a2321e35068"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAQAP",
+      "name_reference_point_wgs84": [
+        -123.895556,
+        49.138333
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -124.5225052,
+        49.027742,
+        -123.8514385,
+        49.1457629
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "fraser-river",
+      "name": "Fraser River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JCLQU",
+        "TOPONYMIC_FEATURE_ID": "3e8bcfbbba3611d892e2080020a0f4c9"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JCLQU",
+      "name_reference_point_wgs84": [
+        -123.190833,
+        49.118611
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -124.4285056,
+        47.9152602,
+        -118.2383859,
+        54.3962161
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "squamish-river",
+      "name": "Squamish River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBIZV",
+        "TOPONYMIC_FEATURE_ID": "0c9cb365849c20c32c2b9a5b993c23a5"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBIZV",
+      "name_reference_point_wgs84": [
+        -123.180556,
+        49.685277
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -123.4652509,
+        49.6630234,
+        -123.1169944,
+        50.3135657
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "homathko-river",
+      "name": "Homathko River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBFDQ",
+        "TOPONYMIC_FEATURE_ID": "7f01a6d9c6be11d892e2080020a0f4c9"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBFDQ",
+      "name_reference_point_wgs84": [
+        -124.860278,
+        50.931111
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -125.1113328,
+        50.9148271,
+        -124.2731235,
+        51.8261268
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "klinaklini-river",
+      "name": "Klinaklini River",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBYQQ",
+        "TOPONYMIC_FEATURE_ID": "54a0ee25d05511d892e2080020a0f4c9"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBYQQ",
+      "name_reference_point_wgs84": [
+        -125.626111,
+        51.092222
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -125.9350701,
+        51.0662162,
+        -124.7151238,
+        52.2581626
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "queen-charlotte-strait",
+      "name": "Queen Charlotte Strait",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBWQJ",
+        "TOPONYMIC_FEATURE_ID": "0ca3c3a2849c20c3bfc8e533a1a90081"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBWQJ",
+      "name_reference_point_wgs84": [
+        -127.358056,
+        50.837778
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -128.0609865,
+        50.4572463,
+        -126.6195313,
+        51.2258788
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "johnstone-strait",
+      "name": "Johnstone Strait",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAVLG",
+        "TOPONYMIC_FEATURE_ID": "0cfdf0c4849c20c3860f64f545140ee1"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAVLG",
+      "name_reference_point_wgs84": [
+        -126.223056,
+        50.469444
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -126.8409608,
+        50.30418,
+        -125.3908674,
+        50.5983438
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "discovery-passage",
+      "name": "Discovery Passage",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBEZC",
+        "TOPONYMIC_FEATURE_ID": "0c9a9abd849c20c3b8773161efe349d2"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBEZC",
+      "name_reference_point_wgs84": [
+        -125.361388888889,
+        50.1766666666667
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -125.4612368,
+        49.9402072,
+        -125.1740736,
+        50.3842074
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "strait-of-georgia",
+      "name": "Strait of Georgia",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAKVY",
+        "TOPONYMIC_FEATURE_ID": "0d08be97849c20c35bd072404e73cbfb"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAKVY",
+      "name_reference_point_wgs84": [
+        -124.0,
+        49.383333
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -125.3077146,
+        48.5302757,
+        -122.5720426,
+        50.1803354
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "juan-de-fuca-strait",
+      "name": "Juan de Fuca Strait",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBUEA",
+        "TOPONYMIC_FEATURE_ID": "10d9bb96bbe111d892e2080020a0f4c9"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBUEA",
+      "name_reference_point_wgs84": [
+        -124.0,
+        48.333333
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -124.7782082,
+        48.0648322,
+        -122.6413594,
+        48.6182934
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "haro-strait",
+      "name": "Haro Strait",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JANPC",
+        "TOPONYMIC_FEATURE_ID": "81a80dfbc6be11d892e2080020a0f4c9"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JANPC",
+      "name_reference_point_wgs84": [
+        -123.241389,
+        48.568333
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -123.4515801,
+        48.3915006,
+        -122.9222073,
+        48.801116
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "boundary-pass",
+      "name": "Boundary Pass",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAAZZ",
+        "TOPONYMIC_FEATURE_ID": "568804cdc6be11d892e2080020a0f4c9"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAAZZ",
+      "name_reference_point_wgs84": [
+        -123.142778,
+        48.731111
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -123.162778,
+        48.711111,
+        -123.122778,
+        48.751111
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "active-pass",
+      "name": "Active Pass",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAAMB",
+        "TOPONYMIC_FEATURE_ID": "0c8a38fe849c20c31a216a7bcfb39996"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAAMB",
+      "name_reference_point_wgs84": [
+        -123.318889,
+        48.858056
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -123.3588075,
+        48.8400196,
+        -123.2820899,
+        48.8942813
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "porlier-pass",
+      "name": "Porlier Pass",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBCXH",
+        "TOPONYMIC_FEATURE_ID": "0c998bcd849c20c374dcfd39d48f857d"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBCXH",
+      "name_reference_point_wgs84": [
+        -123.590833,
+        49.013056
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -123.610833,
+        48.993056,
+        -123.570833,
+        49.033056
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "sansum-narrows",
+      "name": "Sansum Narrows",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JAZUS",
+        "TOPONYMIC_FEATURE_ID": "0c97dc89849c20c32ca24312e928bd51"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JAZUS",
+      "name_reference_point_wgs84": [
+        -123.556944,
+        48.786667
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -123.598441,
+        48.73458,
+        -123.5268125,
+        48.8588893
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "quatsino-sound",
+      "name": "Quatsino Sound",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBWQH",
+        "TOPONYMIC_FEATURE_ID": "82b05655c6be11d892e2080020a0f4c9"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBWQH",
+      "name_reference_point_wgs84": [
+        -127.7,
+        50.508333
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -128.0504856,
+        50.3317598,
+        -127.3874796,
+        50.6292801
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "nootka-sound",
+      "name": "Nootka Sound",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JBEHI",
+        "TOPONYMIC_FEATURE_ID": "7ee34966c6be11d892e2080020a0f4c9"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JBEHI",
+      "name_reference_point_wgs84": [
+        -126.579167,
+        49.6
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -126.7975037,
+        49.3450268,
+        -126.0216232,
+        49.9347078
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "clayoquot-sound",
+      "name": "Clayoquot Sound",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JADRA",
+        "TOPONYMIC_FEATURE_ID": "0cfa3c93849c20c3724b1d35f8740cdc"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JADRA",
+      "name_reference_point_wgs84": [
+        -126.044444,
+        49.233333
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -126.3615549,
+        49.1567569,
+        -125.9531458,
+        49.5169727
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "barkley-sound",
+      "name": "Barkley Sound",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JATTD",
+        "TOPONYMIC_FEATURE_ID": "0c94bf99849c20c318c10bf7854568fe"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JATTD",
+      "name_reference_point_wgs84": [
+        -125.276389,
+        48.895833
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -125.5950955,
+        48.6836136,
+        -124.9800922,
+        49.1380816
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "alberni-inlet",
+      "name": "Alberni Inlet",
+      "jurisdiction": "CA-BC",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "CGNDB_KEY": "JABKO",
+        "TOPONYMIC_FEATURE_ID": "0cfa120e849c20c3962863d9d001d284"
+      },
+      "primary_source_url": "https://geogratis.gc.ca/services/geoname/en/geonames/JABKO",
+      "name_reference_point_wgs84": [
+        -124.849167,
+        49.059444
+      ],
+      "point_use": "name_reference_only",
+      "source_feature_bbox_wgs84": [
+        -125.0402532,
+        48.8807025,
+        -124.7277811,
+        49.2670917
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Official gazetteer point locates the named feature; it is not an outlet, cross-section, sill crest or graph attachment."
+      ]
+    },
+    {
+      "proposal_id": "nooksack-river",
+      "name": "Nooksack River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1523714"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1523714&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23955760",
+          "REACHCODE": "17110004000027",
+          "GNIS_NAME": "Nooksack River",
+          "source_geometry_bounds": [
+            -122.60003334855946,
+            48.77103216968458,
+            -122.59948701476326,
+            48.77370803636931
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "skagit-river",
+      "name": "Skagit River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1525850"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1525850&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment.",
+        "No exact named terminal feature in the retained NHD subset; source expansion or branch matching required."
+      ]
+    },
+    {
+      "proposal_id": "stillaguamish-river",
+      "name": "Stillaguamish River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1508743"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1508743&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment.",
+        "No exact named terminal feature in the retained NHD subset; source expansion or branch matching required."
+      ]
+    },
+    {
+      "proposal_id": "snohomish-river",
+      "name": "Snohomish River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1508473"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1508473&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "24279018",
+          "REACHCODE": "17110011000018",
+          "GNIS_NAME": "Snohomish River",
+          "source_geometry_bounds": [
+            -122.2092862952804,
+            48.00538997968896,
+            -122.17824035287289,
+            48.020277977737926
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "duwamish-river",
+      "name": "Duwamish River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1504604"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1504604&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment.",
+        "No exact named terminal feature in the retained NHD subset; source expansion or branch matching required."
+      ]
+    },
+    {
+      "proposal_id": "puyallup-river",
+      "name": "Puyallup River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1524711"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1524711&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23980371",
+          "REACHCODE": "17110014000026",
+          "GNIS_NAME": "Puyallup River",
+          "source_geometry_bounds": [
+            -122.42642074880469,
+            47.23634238382145,
+            -122.39230853653225,
+            47.268423982010674
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "nisqually-river",
+      "name": "Nisqually River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1533598"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1533598&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "24281956",
+          "REACHCODE": "17110019021224",
+          "GNIS_NAME": "Nisqually River",
+          "source_geometry_bounds": [
+            -122.69604235133015,
+            47.09565347707844,
+            -122.69234921819533,
+            47.100688477719125
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "skokomish-river",
+      "name": "Skokomish River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1525867"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1525867&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "24285484",
+          "REACHCODE": "17110018015438",
+          "GNIS_NAME": "Skokomish River",
+          "source_geometry_bounds": [
+            -123.11758207331057,
+            47.33450010973993,
+            -123.11741500553237,
+            47.33862310986005
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "elwha-river",
+      "name": "Elwha River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1531449"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1531449&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23997022",
+          "REACHCODE": "17110020000010",
+          "GNIS_NAME": "Elwha River",
+          "source_geometry_bounds": [
+            -123.56158160428029,
+            48.13766103186324,
+            -123.55897160581613,
+            48.15058903240149
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "dungeness-river",
+      "name": "Dungeness River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1528593"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1528593&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23997332",
+          "REACHCODE": "17110020000143",
+          "GNIS_NAME": "Dungeness River",
+          "source_geometry_bounds": [
+            -123.13440660679214,
+            48.145889880642564,
+            -123.12669333848771,
+            48.15068488013823
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "quillayute-river",
+      "name": "Quillayute River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1507677"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1507677&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23838450",
+          "REACHCODE": "17100101000159",
+          "GNIS_NAME": "Quillayute River",
+          "source_geometry_bounds": [
+            -124.64183670734499,
+            47.90863976671977,
+            -124.62380044086831,
+            47.921724969350024
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "hoh-river",
+      "name": "Hoh River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1531464"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1531464&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23838154",
+          "REACHCODE": "17100101000016",
+          "GNIS_NAME": "Hoh River",
+          "source_geometry_bounds": [
+            -124.43856037146935,
+            47.74834478592066,
+            -124.41253563420766,
+            47.75078931653055
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "queets-river",
+      "name": "Queets River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1531493"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1531493&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23844949",
+          "REACHCODE": "17100102000183",
+          "GNIS_NAME": "Queets River",
+          "source_geometry_bounds": [
+            -124.35488677546542,
+            47.53753931786289,
+            -124.3350951048038,
+            47.544074116433606
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "quinault-river",
+      "name": "Quinault River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1531496"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1531496&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23844621",
+          "REACHCODE": "17100102000036",
+          "GNIS_NAME": "Quinault River",
+          "source_geometry_bounds": [
+            -124.30042105381332,
+            47.3319527186149,
+            -124.25068324275666,
+            47.34912598045408
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "chehalis-river",
+      "name": "Chehalis River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1503931"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1503931&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23856583",
+          "REACHCODE": "17100105018332",
+          "GNIS_NAME": "Chehalis River",
+          "source_geometry_bounds": [
+            -123.82384049256622,
+            46.96176874841466,
+            -123.80778015949014,
+            46.972636817302266
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "willapa-river",
+      "name": "Willapa River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1509528"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1509528&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [
+        {
+          "COMID": "23864566",
+          "REACHCODE": "17100106000141",
+          "GNIS_NAME": "Willapa River",
+          "source_geometry_bounds": [
+            -123.84310203593765,
+            46.702245000782675,
+            -123.83648683499888,
+            46.70511793362359
+          ]
+        }
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment."
+      ]
+    },
+    {
+      "proposal_id": "naselle-river",
+      "name": "Naselle River",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "selected_outlet"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1506929"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1506929&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment.",
+        "No exact named terminal feature in the retained NHD subset; source expansion or branch matching required."
+      ]
+    },
+    {
+      "proposal_id": "columbia-river",
+      "name": "Columbia River",
+      "jurisdiction": "US-WA-OR",
+      "roles": [
+        "selected_outlet",
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_id_resolved",
+      "source_ids": {
+        "GNIS_ID": "1140014"
+      },
+      "primary_source_url": "https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6/query?f=json&where=gaz_id%3D1140014&outFields=gaz_id%2Cgaz_name%2Cgaz_featureclass&returnGeometry=false",
+      "name_reference_point_wgs84": null,
+      "point_use": "No single mouth coordinate selected from the service multipoint geometry",
+      "cached_provider_features": [],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "GNIS identity is resolved; cached NHD feature IDs are candidates and are not canonical FLUVIAL_MOUTH_ID values.",
+        "Review delta branches and graph-valid marine attachment.",
+        "No exact named terminal feature in the retained NHD subset; source expansion or branch matching required."
+      ]
+    },
+    {
+      "proposal_id": "rosario-strait",
+      "name": "Rosario Strait",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_gnis_name_identity_resolved",
+      "source_ids": {
+        "GNIS": "1507915"
+      },
+      "primary_source_url": "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+      "name_reference_point_wgs84": [
+        -122.740082,
+        48.5693917
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Name supported by NOAA Coast Pilot 10; reviewed source polygon/centreline and graph crossing edges still required.",
+        "GNIS named-area point is an approximate name reference, not a boundary, centreline or crossing geometry. NAD83 source point transformed to WGS84."
+      ],
+      "official_source_name": "Rosario Strait"
+    },
+    {
+      "proposal_id": "san-juan-channel",
+      "name": "San Juan Channel",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_gnis_name_identity_resolved",
+      "source_ids": {
+        "GNIS": "1508076"
+      },
+      "primary_source_url": "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+      "name_reference_point_wgs84": [
+        -123.019141,
+        48.571916
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Name supported by NOAA Coast Pilot 10; reviewed source polygon/centreline and graph crossing edges still required.",
+        "GNIS named-area point is an approximate name reference, not a boundary, centreline or crossing geometry. NAD83 source point transformed to WGS84."
+      ],
+      "official_source_name": "San Juan Channel"
+    },
+    {
+      "proposal_id": "deception-pass",
+      "name": "Deception Pass",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_gnis_name_identity_resolved",
+      "source_ids": {
+        "GNIS": "1504381"
+      },
+      "primary_source_url": "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+      "name_reference_point_wgs84": [
+        -122.6225257,
+        48.4072366
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Name supported by NOAA Coast Pilot 10; reviewed source polygon/centreline and graph crossing edges still required.",
+        "GNIS named-area point is an approximate name reference, not a boundary, centreline or crossing geometry. NAD83 source point transformed to WGS84."
+      ],
+      "official_source_name": "Deception Pass"
+    },
+    {
+      "proposal_id": "admiralty-inlet",
+      "name": "Admiralty Inlet",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_gnis_name_identity_resolved",
+      "source_ids": {
+        "GNIS": "1515733"
+      },
+      "primary_source_url": "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+      "name_reference_point_wgs84": [
+        -122.6107479,
+        48.0221703
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Name supported by NOAA Coast Pilot 10; reviewed source polygon/centreline and graph crossing edges still required.",
+        "GNIS named-area point is an approximate name reference, not a boundary, centreline or crossing geometry. NAD83 source point transformed to WGS84."
+      ],
+      "official_source_name": "Admiralty Inlet"
+    },
+    {
+      "proposal_id": "tacoma-narrows",
+      "name": "Tacoma Narrows",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "geographic_gateway",
+        "passage_section"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_gnis_name_identity_resolved",
+      "source_ids": {
+        "GNIS": "1514657"
+      },
+      "primary_source_url": "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+      "name_reference_point_wgs84": [
+        -122.5429642,
+        47.2889108
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Name supported by NOAA Coast Pilot 10; reviewed source polygon/centreline and graph crossing edges still required.",
+        "GNIS named-area point is an approximate name reference, not a boundary, centreline or crossing geometry. NAD83 source point transformed to WGS84.",
+        "Display name Tacoma Narrows links to official GNIS The Narrows (1514657), the Bay near Tacoma; inland and other coastal namesakes excluded."
+      ],
+      "official_source_name": "The Narrows"
+    },
+    {
+      "proposal_id": "hood-canal",
+      "name": "Hood Canal",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_gnis_name_identity_resolved",
+      "source_ids": {
+        "GNIS": "1520890"
+      },
+      "primary_source_url": "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+      "name_reference_point_wgs84": [
+        -122.8605137,
+        47.6364598
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Name supported by NOAA Coast Pilot 10; reviewed source polygon/centreline and graph crossing edges still required.",
+        "GNIS named-area point is an approximate name reference, not a boundary, centreline or crossing geometry. NAD83 source point transformed to WGS84."
+      ],
+      "official_source_name": "Hood Canal"
+    },
+    {
+      "proposal_id": "grays-harbor",
+      "name": "Grays Harbor",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_gnis_name_identity_resolved",
+      "source_ids": {
+        "GNIS": "1505249"
+      },
+      "primary_source_url": "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+      "name_reference_point_wgs84": [
+        -124.0417134,
+        46.9562342
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Name supported by NOAA Coast Pilot 10; reviewed source polygon/centreline and graph crossing edges still required.",
+        "GNIS named-area point is an approximate name reference, not a boundary, centreline or crossing geometry. NAD83 source point transformed to WGS84."
+      ],
+      "official_source_name": "Grays Harbor"
+    },
+    {
+      "proposal_id": "willapa-bay",
+      "name": "Willapa Bay",
+      "jurisdiction": "US-WA",
+      "roles": [
+        "geographic_gateway"
+      ],
+      "status": "proposed_not_computation_ready",
+      "name_identity_status": "official_gnis_name_identity_resolved",
+      "source_ids": {
+        "GNIS": "1531192"
+      },
+      "primary_source_url": "https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data",
+      "name_reference_point_wgs84": [
+        -123.9681408,
+        46.5866204
+      ],
+      "canonical_fluvial_mouth_id": null,
+      "computational_geometry": null,
+      "graph_attachment": null,
+      "notes": [
+        "Name supported by NOAA Coast Pilot 10; reviewed source polygon/centreline and graph crossing edges still required.",
+        "GNIS named-area point is an approximate name reference, not a boundary, centreline or crossing geometry. NAD83 source point transformed to WGS84."
+      ],
+      "official_source_name": "Willapa Bay"
+    }
+  ],
+  "source_evidence_storage": "Provider response bytes retained in the local acquisition cache; authoritative source URLs and name IDs are provided per location. This file is a proposal, not a computational registry."
+}

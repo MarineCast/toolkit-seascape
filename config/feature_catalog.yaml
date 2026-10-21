@@ -35,9 +35,9 @@ catalog_contract:
       QC; not an eligible physical feature.
   materialization_policy: Generate and verify this catalog from materialized seascape candidate products
     before release.
-product_count: 27
-feature_entry_count: 522
-unique_column_count: 455
+product_count: 26
+feature_entry_count: 472
+unique_column_count: 415
 superseded_products:
   eelgrass:
     status: superseded_artifact_not_current_catalog
@@ -6464,7 +6464,7 @@ products:
         - 6
         - 8
   seagrass:
-    common_name: Sentinel-2 seagrass habitat
+    common_name: Seagrass Extent (All Time)
     metric_family: seascape
     metric_subfamily: benthic
     category: biogenic_habitat
@@ -6479,646 +6479,498 @@ products:
       - 8
     producer: seascape.biogenic_habitat.seagrass.build
     grain: one row per canonical marine-support H3 cell
-    feature_count: 28
+    feature_count: 12
     variable_kind_counts:
-      feature_variable: 14
-      metadata: 14
+      feature_variable: 1
+      metadata: 11
     features:
-      NATIVE_CHILD_WATER_AREA_M2:
-        common_name: Native child water area
+      INTERSECTING_SOURCE_RECORD_COUNT:
+        common_name: Intersecting source record count
         metric_family: seascape
         metric_subfamily: benthic
-        column: NATIVE_CHILD_WATER_AREA_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-        unit: m2
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: NATIVE_CHILD_WATER_AREA_M2
-        available_resolutions:
-        - 6
-      NETWORK_CONNECTOR_DISTANCE_M:
-        common_name: Network connector distance
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: NETWORK_CONNECTOR_DISTANCE_M
+        column: INTERSECTING_SOURCE_RECORD_COUNT
         collection_paths:
           6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
           8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: m
+        unit: count
         role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: NETWORK_CONNECTOR_DISTANCE_M
+        scale_group: INTERSECTING_SOURCE_RECORD_COUNT
         available_resolutions:
         - 6
         - 8
-      NETWORK_CONNECTOR_METHOD:
-        common_name: Network connector method
+        scientific_definition: Intersecting source record count. Consult the producer
+          and source manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      NONANNUAL_EVIDENCE_INCLUDED:
+        common_name: Nonannual evidence included
         metric_family: seascape
         metric_subfamily: benthic
-        column: NETWORK_CONNECTOR_METHOD
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: category_or_text
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: NETWORK_CONNECTOR_METHOD
-        available_resolutions:
-        - 6
-        - 8
-      NETWORK_DISTANCE_QC_REASON:
-        common_name: Network distance QC reason
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: NETWORK_DISTANCE_QC_REASON
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: category_or_text
-        role: evidence
-        variable_kind: metadata
-        topology: water_network
-        scale_group: NETWORK_DISTANCE_QC_REASON
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_AREA_M2:
-        common_name: Seagrass area
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_AREA_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: m2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_AREA_M2
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_AREA_WITHIN_5KM_M2:
-        common_name: Seagrass area within 5 km
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_AREA_WITHIN_5KM_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: m2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_AREA_SCALE_M2
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_DISTANCE_M:
-        common_name: Seagrass distance
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_DISTANCE_M
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: m
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_DISTANCE_M
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_EDGE_DENSITY_M_PER_KM2:
-        common_name: Seagrass edge density
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_EDGE_DENSITY_M_PER_KM2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: m_per_km2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_EDGE_DENSITY_M_PER_KM2
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_EDGE_LENGTH_M:
-        common_name: Seagrass edge length
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_EDGE_LENGTH_M
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: m
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_EDGE_LENGTH_M
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_FIRST_YEAR:
-        common_name: Seagrass first year
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_FIRST_YEAR
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: year
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_FIRST_YEAR
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_FRAC:
-        common_name: Seagrass fraction
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_FRAC
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: proportion
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_FRAC
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_FRAGMENTATION_INDEX:
-        common_name: Seagrass fragmentation index
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_FRAGMENTATION_INDEX
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: dimensionless
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_FRAGMENTATION_INDEX
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_LARGEST_PATCH_AREA_M2:
-        common_name: Seagrass largest patch area
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_LARGEST_PATCH_AREA_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: m2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_LARGEST_PATCH_AREA_M2
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_LAST_YEAR:
-        common_name: Seagrass last year
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_LAST_YEAR
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: year
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_LAST_YEAR
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_MAX_LOCAL_FRAC:
-        common_name: Seagrass max local fraction
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_MAX_LOCAL_FRAC
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: proportion
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_MAX_LOCAL_FRAC
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_MEAN_PATCH_AREA_M2:
-        common_name: Seagrass mean patch area
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_MEAN_PATCH_AREA_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: m2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_MEAN_PATCH_AREA_M2
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_OBSERVED_ABSENCE:
-        common_name: Seagrass observed absence
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_OBSERVED_ABSENCE
+        column: NONANNUAL_EVIDENCE_INCLUDED
         collection_paths:
           6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
           8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
         unit: boolean
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_OBSERVED_ABSENCE
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_OBSERVED_PRESENCE:
-        common_name: Seagrass observed presence
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_OBSERVED_PRESENCE
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: boolean
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_OBSERVED_PRESENCE
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_OCCUPIED_CHILD_COUNT:
-        common_name: Seagrass occupied child count
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_OCCUPIED_CHILD_COUNT
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: count
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_OCCUPIED_CHILD_COUNT
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_PATCH_COUNT:
-        common_name: Seagrass patch count
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_PATCH_COUNT
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: count
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_PATCH_COUNT
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_PERSISTENCE_BASIS:
-        common_name: Seagrass persistence basis
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_PERSISTENCE_BASIS
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: not_encoded
         role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_PERSISTENCE_BASIS
+        scale_group: NONANNUAL_EVIDENCE_INCLUDED
         available_resolutions:
         - 6
         - 8
-      SEAGRASS_PERSISTENCE_RATIO:
-        common_name: Seagrass persistence ratio
+        scientific_definition: Nonannual evidence included. Consult the producer and
+          source manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      OBSERVATION_YEARS_JSON:
+        common_name: Observation years json
         metric_family: seascape
         metric_subfamily: benthic
-        column: SEAGRASS_PERSISTENCE_RATIO
+        column: OBSERVATION_YEARS_JSON
         collection_paths:
           6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
           8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: dimensionless
+        unit: category_or_text
+        role: support_or_qc
+        variable_kind: metadata
+        topology: within_cell_or_nonspatial
+        scale_group: OBSERVATION_YEARS_JSON
+        available_resolutions:
+        - 6
+        - 8
+        scientific_definition: Observation years json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      OBSERVED_VS_MODELED_JSON:
+        common_name: Observed vs modeled json
+        metric_family: seascape
+        metric_subfamily: benthic
+        column: OBSERVED_VS_MODELED_JSON
+        collection_paths:
+          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
+          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
+        unit: category_or_text
+        role: support_or_qc
+        variable_kind: metadata
+        topology: within_cell_or_nonspatial
+        scale_group: OBSERVED_VS_MODELED_JSON
+        available_resolutions:
+        - 6
+        - 8
+        scientific_definition: Observed vs modeled json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      QC:
+        common_name: QC
+        metric_family: seascape
+        metric_subfamily: benthic
+        column: QC
+        collection_paths:
+          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
+          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
+        unit: category_or_text
+        role: support_or_qc
+        variable_kind: metadata
+        topology: within_cell_or_nonspatial
+        scale_group: QC
+        available_resolutions:
+        - 6
+        - 8
+        scientific_definition: QC. Consult the producer and source manifest for the
+          equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      REPAIRED_GEOMETRY_INCLUDED:
+        common_name: Repaired geometry included
+        metric_family: seascape
+        metric_subfamily: benthic
+        column: REPAIRED_GEOMETRY_INCLUDED
+        collection_paths:
+          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
+          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
+        unit: boolean
+        role: support_or_qc
+        variable_kind: metadata
+        topology: within_cell_or_nonspatial
+        scale_group: REPAIRED_GEOMETRY_INCLUDED
+        available_resolutions:
+        - 6
+        - 8
+        scientific_definition: Repaired geometry included. Consult the producer and
+          source manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      SEAGRASS_EXTENT_ALL_TIME_M2:
+        common_name: Seagrass Extent (All Time)
+        metric_family: seascape
+        metric_subfamily: benthic
+        column: SEAGRASS_EXTENT_ALL_TIME_M2
+        collection_paths:
+          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
+          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
+        unit: m2
         role: predictor
         variable_kind: feature_variable
         topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_PERSISTENCE_RATIO
+        scale_group: SEAGRASS_EXTENT_ALL_TIME_M2
         available_resolutions:
         - 6
         - 8
-      SEAGRASS_RECENCY_YEARS:
-        common_name: Seagrass recency years
+        scientific_definition: Seagrass extent all time. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        definition: Geometric union of eligible mapped positive seagrass/eelgrass polygons
+          and classified positive raster footprints intersecting the full native H3
+          cell, EPSG:6933 m². Overlaps are counted once. Missing positive evidence is
+          unknown, never inferred absence. Mapped/classified extent mixes explicitly
+          qualified source methods and species resolution; it is not current presence,
+          pure canopy, field-confirmed satellite occurrence or a historical water-mask
+          measurement. All eligible available history contributes; source observation
+          years, composite periods and legacy map dates remain provenance.
+        family: Biogenic Habitats
+        modeling_eligibility: source_qualified_extent_not_current_presence
+        picker_visible: true
+        qualifiers:
+        - QC
+        - SOURCE_METHODS_JSON
+        - SPECIES_JSON
+        - SOURCE_PERIODS_JSON
+        - SOURCE_MAP_DATES_JSON
+        - OBSERVED_VS_MODELED_JSON
+        - SOURCE_DATASETS_JSON
+        - OBSERVATION_YEARS_JSON
+        - NONANNUAL_EVIDENCE_INCLUDED
+        - REPAIRED_GEOMETRY_INCLUDED
+        - INTERSECTING_SOURCE_RECORD_COUNT
+      SOURCE_DATASETS_JSON:
+        common_name: Source datasets json
         metric_family: seascape
         metric_subfamily: benthic
-        column: SEAGRASS_RECENCY_YEARS
+        column: SOURCE_DATASETS_JSON
         collection_paths:
           6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
           8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: year
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_RECENCY_YEARS
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_RECENT_5YR_PRESENCE:
-        common_name: Seagrass recent 5yr presence
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_RECENT_5YR_PRESENCE
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: boolean
-        role: state
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_RECENT_5YR_PRESENCE
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_UNSURVEYED:
-        common_name: Seagrass unsurveyed
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_UNSURVEYED
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: boolean
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_UNSURVEYED
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_YEARS_OBSERVED:
-        common_name: Seagrass years observed
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_YEARS_OBSERVED
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: not_encoded
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_YEARS_OBSERVED
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_YEARS_SURVEYED:
-        common_name: Seagrass years surveyed
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_YEARS_SURVEYED
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: not_encoded
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_YEARS_SURVEYED
-        available_resolutions:
-        - 6
-        - 8
-      WATER_COMPONENT_ID:
-        common_name: Water component ID
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: WATER_COMPONENT_ID
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
-        unit: not_encoded
-        role: identifier
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: WATER_COMPONENT_ID
-        available_resolutions:
-        - 6
-        - 8
-    null_policy: Satellite non-detection is not interpreted as field-confirmed absence.
-  seagrass_confidence:
-    common_name: Seagrass evidence
-    metric_family: seascape
-    metric_subfamily: benthic
-    category: biogenic_habitat_evidence
-    collection:
-      paths:
-        6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-        8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
-      index_columns:
-      - H3_INDEX
-      resolutions:
-      - 6
-      - 8
-    producer: seascape.biogenic_habitat.seagrass.build
-    grain: one row per canonical marine-support H3 cell
-    feature_count: 10
-    variable_kind_counts:
-      feature_variable: 0
-      metadata: 10
-    features:
-      SEAGRASS_CONFIDENCE:
-        common_name: Seagrass confidence
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_CONFIDENCE
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
-        unit: ordinal
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_CONFIDENCE
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_LATEST_SURVEY_YEAR:
-        common_name: Seagrass latest survey year
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_LATEST_SURVEY_YEAR
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
-        unit: year
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_LATEST_SURVEY_YEAR
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_OBSERVED_VS_MODELED:
-        common_name: Seagrass observed vs modeled
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_OBSERVED_VS_MODELED
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
         unit: category_or_text
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_OBSERVED_VS_MODELED
+        scale_group: SOURCE_DATASETS_JSON
         available_resolutions:
         - 6
         - 8
-      SEAGRASS_SOURCE_COUNT:
-        common_name: Seagrass source count
+        scientific_definition: Source datasets json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      SOURCE_MAP_DATES_JSON:
+        common_name: Source map dates json
         metric_family: seascape
         metric_subfamily: benthic
-        column: SEAGRASS_SOURCE_COUNT
+        column: SOURCE_MAP_DATES_JSON
         collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
-        unit: count
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_SOURCE_COUNT
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_SOURCE_DATASETS:
-        common_name: Seagrass source datasets
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_SOURCE_DATASETS
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
+          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
+          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
         unit: category_or_text
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_SOURCE_DATASETS
+        scale_group: SOURCE_MAP_DATES_JSON
         available_resolutions:
         - 6
         - 8
-      SEAGRASS_SPATIAL_PRECISION_CLASS:
-        common_name: Seagrass spatial precision class
+        scientific_definition: Source map dates json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      SOURCE_METHODS_JSON:
+        common_name: Source methods json
         metric_family: seascape
         metric_subfamily: benthic
-        column: SEAGRASS_SPATIAL_PRECISION_CLASS
+        column: SOURCE_METHODS_JSON
         collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
+          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
+          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
         unit: category_or_text
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_SPATIAL_PRECISION_CLASS
+        scale_group: SOURCE_METHODS_JSON
         available_resolutions:
         - 6
         - 8
-      SEAGRASS_SURVEYED_AREA_FRAC:
-        common_name: Seagrass surveyed area fraction
+        scientific_definition: Source methods json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      SOURCE_PERIODS_JSON:
+        common_name: Source periods json
         metric_family: seascape
         metric_subfamily: benthic
-        column: SEAGRASS_SURVEYED_AREA_FRAC
+        column: SOURCE_PERIODS_JSON
         collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
-        unit: proportion
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_SURVEYED_AREA_FRAC
-        available_resolutions:
-        - 6
-        - 8
-      SEAGRASS_SURVEY_METHOD:
-        common_name: Seagrass survey method
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_SURVEY_METHOD
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
+          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
+          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
         unit: category_or_text
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_SURVEY_METHOD
+        scale_group: SOURCE_PERIODS_JSON
         available_resolutions:
         - 6
         - 8
-      SEAGRASS_TEMPORAL_PRECISION_CLASS:
-        common_name: Seagrass temporal precision class
+        scientific_definition: Source periods json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      SPECIES_JSON:
+        common_name: Species json
         metric_family: seascape
         metric_subfamily: benthic
-        column: SEAGRASS_TEMPORAL_PRECISION_CLASS
+        column: SPECIES_JSON
         collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
+          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_6.parquet
+          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_8.parquet
         unit: category_or_text
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_TEMPORAL_PRECISION_CLASS
+        scale_group: SPECIES_JSON
         available_resolutions:
         - 6
         - 8
-      SEAGRASS_UNMAPPED_AREA:
-        common_name: Seagrass unmapped area
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: SEAGRASS_UNMAPPED_AREA
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_CONFIDENCE_RES_8.parquet
-        unit: boolean
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: SEAGRASS_UNMAPPED_AREA
-        available_resolutions:
-        - 6
-        - 8
+        scientific_definition: Species json. Consult the producer and source manifest
+          for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive footprint union on full native H3, edges
+            densified at 0.001 degrees
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped/classified positive footprint union; source
+          periods, methods and species retained. Missing evidence is unknown.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.seagrass.build
+        method_version: seagrass_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+    null_policy: All-history mapped/classified positive footprint union; source periods,
+      methods and species retained. Missing evidence is unknown.
   kelp:
-    common_name: Kelp habitat
+    common_name: Kelp Extent (All Time)
     metric_family: seascape
     metric_subfamily: benthic
     category: biogenic_habitat
     collection:
-      paths:
+      paths: &id001
         6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
         8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
       index_columns:
@@ -7128,639 +6980,567 @@ products:
       - 8
     producer: seascape.biogenic_habitat.kelp.build
     grain: one row per canonical marine-support H3 cell
-    feature_count: 28
+    feature_count: 7
     variable_kind_counts:
-      feature_variable: 14
-      metadata: 14
+      feature_variable: 1
+      metadata: 6
     features:
-      KELP_AREA_M2:
-        common_name: Kelp area
+      INTERSECTING_SOURCE_RECORD_COUNT:
+        common_name: Intersecting source record count
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_AREA_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: m2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_AREA_M2
-        available_resolutions:
-        - 6
-        - 8
-      KELP_AREA_WITHIN_5KM_M2:
-        common_name: Kelp area within 5 km
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_AREA_WITHIN_5KM_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: m2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_AREA_SCALE_M2
-        available_resolutions:
-        - 6
-        - 8
-      KELP_DISTANCE_M:
-        common_name: Kelp distance
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_DISTANCE_M
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: m
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_DISTANCE_M
-        available_resolutions:
-        - 6
-        - 8
-      KELP_EDGE_DENSITY_M_PER_KM2:
-        common_name: Kelp edge density
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_EDGE_DENSITY_M_PER_KM2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: m_per_km2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_EDGE_DENSITY_M_PER_KM2
-        available_resolutions:
-        - 6
-        - 8
-      KELP_EDGE_LENGTH_M:
-        common_name: Kelp edge length
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_EDGE_LENGTH_M
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: m
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_EDGE_LENGTH_M
-        available_resolutions:
-        - 6
-        - 8
-      KELP_FIRST_YEAR:
-        common_name: Kelp first year
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_FIRST_YEAR
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: year
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_FIRST_YEAR
-        available_resolutions:
-        - 6
-        - 8
-      KELP_FRAC:
-        common_name: Kelp fraction
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_FRAC
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: proportion
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_FRAC
-        available_resolutions:
-        - 6
-        - 8
-      KELP_FRAGMENTATION_INDEX:
-        common_name: Kelp fragmentation index
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_FRAGMENTATION_INDEX
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: dimensionless
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_FRAGMENTATION_INDEX
-        available_resolutions:
-        - 6
-        - 8
-      KELP_LARGEST_PATCH_AREA_M2:
-        common_name: Kelp largest patch area
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_LARGEST_PATCH_AREA_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: m2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_LARGEST_PATCH_AREA_M2
-        available_resolutions:
-        - 6
-        - 8
-      KELP_LAST_YEAR:
-        common_name: Kelp last year
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_LAST_YEAR
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: year
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_LAST_YEAR
-        available_resolutions:
-        - 6
-        - 8
-      KELP_MAX_LOCAL_FRAC:
-        common_name: Kelp max local fraction
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_MAX_LOCAL_FRAC
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: proportion
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_MAX_LOCAL_FRAC
-        available_resolutions:
-        - 6
-        - 8
-      KELP_MEAN_PATCH_AREA_M2:
-        common_name: Kelp mean patch area
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_MEAN_PATCH_AREA_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: m2
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_MEAN_PATCH_AREA_M2
-        available_resolutions:
-        - 6
-        - 8
-      KELP_OBSERVED_ABSENCE:
-        common_name: Kelp observed absence
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_OBSERVED_ABSENCE
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: boolean
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_OBSERVED_ABSENCE
-        available_resolutions:
-        - 6
-        - 8
-      KELP_OBSERVED_PRESENCE:
-        common_name: Kelp observed presence
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_OBSERVED_PRESENCE
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: boolean
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_OBSERVED_PRESENCE
-        available_resolutions:
-        - 6
-        - 8
-      KELP_OCCUPIED_CHILD_COUNT:
-        common_name: Kelp occupied child count
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_OCCUPIED_CHILD_COUNT
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
+        column: INTERSECTING_SOURCE_RECORD_COUNT
+        collection_paths: *id001
         unit: count
-        role: predictor
-        variable_kind: feature_variable
+        role: support_or_qc
+        variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: KELP_OCCUPIED_CHILD_COUNT
+        scale_group: INTERSECTING_SOURCE_RECORD_COUNT
         available_resolutions:
         - 6
         - 8
-      KELP_PATCH_COUNT:
-        common_name: Kelp patch count
+        scientific_definition: Intersecting source record count. Consult the producer
+          and source manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped-positive polygon union. Unknown dates are explicit;
+          missing positive evidence is not absence.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      KELP_EXTENT_ALL_TIME_M2:
+        common_name: Kelp Extent (All Time)
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_PATCH_COUNT
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: count
+        column: KELP_EXTENT_ALL_TIME_M2
+        collection_paths: *id001
+        unit: m2
         role: predictor
         variable_kind: feature_variable
         topology: within_cell_or_nonspatial
-        scale_group: KELP_PATCH_COUNT
+        scale_group: KELP_EXTENT_ALL_TIME_M2
         available_resolutions:
         - 6
         - 8
-      KELP_PERSISTENCE_BASIS:
-        common_name: Kelp persistence basis
+        scientific_definition: Kelp extent all time. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped-positive polygon union. Unknown dates are explicit;
+          missing positive evidence is not absence.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        definition: Geometric union of eligible mapped positive kelp-bed polygons intersecting
+          the full native H3 cell, EPSG:6933 m². Overlaps are counted once. Missing
+          positive evidence is unknown, never inferred absence. Mapped bed extent is
+          not pure canopy, current presence or a historical water-mask measurement.
+          All eligible available years contribute; explicitly flagged legacy evidence
+          may have unknown observation dates.
+        modeling_eligibility: source_qualified_extent_not_current_presence
+        picker_visible: true
+        qualifiers:
+        - QC
+        - SOURCE_DATASETS_JSON
+        - OBSERVATION_YEARS_JSON
+        - UNDATED_EVIDENCE_INCLUDED
+        - REPAIRED_GEOMETRY_INCLUDED
+        - INTERSECTING_SOURCE_RECORD_COUNT
+      OBSERVATION_YEARS_JSON:
+        common_name: Observation years json
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_PERSISTENCE_BASIS
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
+        column: OBSERVATION_YEARS_JSON
+        collection_paths: *id001
         unit: category_or_text
         role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: KELP_PERSISTENCE_BASIS
+        scale_group: OBSERVATION_YEARS_JSON
         available_resolutions:
         - 6
         - 8
-      KELP_PERSISTENCE_RATIO:
-        common_name: Kelp persistence ratio
+        scientific_definition: Observation years json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped-positive polygon union. Unknown dates are explicit;
+          missing positive evidence is not absence.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      QC:
+        common_name: QC
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_PERSISTENCE_RATIO
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: dimensionless
-        role: predictor
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_PERSISTENCE_RATIO
-        available_resolutions:
-        - 6
-        - 8
-      KELP_RECENCY_YEARS:
-        common_name: Kelp recency years
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_RECENCY_YEARS
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: year
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_RECENCY_YEARS
-        available_resolutions:
-        - 6
-        - 8
-      KELP_RECENT_5YR_PRESENCE:
-        common_name: Kelp recent 5yr presence
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_RECENT_5YR_PRESENCE
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: boolean
-        role: state
-        variable_kind: feature_variable
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_RECENT_5YR_PRESENCE
-        available_resolutions:
-        - 6
-        - 8
-      KELP_UNSURVEYED:
-        common_name: Kelp unsurveyed
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_UNSURVEYED
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: boolean
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_UNSURVEYED
-        available_resolutions:
-        - 6
-        - 8
-      KELP_YEARS_OBSERVED:
-        common_name: Kelp years observed
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_YEARS_OBSERVED
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: not_encoded
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_YEARS_OBSERVED
-        available_resolutions:
-        - 6
-        - 8
-      KELP_YEARS_SURVEYED:
-        common_name: Kelp years surveyed
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_YEARS_SURVEYED
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: not_encoded
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_YEARS_SURVEYED
-        available_resolutions:
-        - 6
-        - 8
-      NATIVE_CHILD_WATER_AREA_M2:
-        common_name: Native child water area
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: NATIVE_CHILD_WATER_AREA_M2
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-        unit: m2
-        role: coverage
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: NATIVE_CHILD_WATER_AREA_M2
-        available_resolutions:
-        - 6
-      NETWORK_CONNECTOR_DISTANCE_M:
-        common_name: Network connector distance
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: NETWORK_CONNECTOR_DISTANCE_M
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: m
+        column: QC
+        collection_paths: *id001
+        unit: category_or_text
         role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: NETWORK_CONNECTOR_DISTANCE_M
+        scale_group: QC
         available_resolutions:
         - 6
         - 8
-      NETWORK_CONNECTOR_METHOD:
-        common_name: Network connector method
+        scientific_definition: QC. Consult the producer and source manifest for the
+          equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped-positive polygon union. Unknown dates are explicit;
+          missing positive evidence is not absence.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      REPAIRED_GEOMETRY_INCLUDED:
+        common_name: Repaired geometry included
         metric_family: seascape
         metric_subfamily: benthic
-        column: NETWORK_CONNECTOR_METHOD
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: category_or_text
-        role: evidence
+        column: REPAIRED_GEOMETRY_INCLUDED
+        collection_paths: *id001
+        unit: boolean
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: NETWORK_CONNECTOR_METHOD
+        scale_group: REPAIRED_GEOMETRY_INCLUDED
         available_resolutions:
         - 6
         - 8
-      NETWORK_DISTANCE_QC_REASON:
-        common_name: Network distance QC reason
+        scientific_definition: Repaired geometry included. Consult the producer and
+          source manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped-positive polygon union. Unknown dates are explicit;
+          missing positive evidence is not absence.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      SOURCE_DATASETS_JSON:
+        common_name: Source datasets json
         metric_family: seascape
         metric_subfamily: benthic
-        column: NETWORK_DISTANCE_QC_REASON
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
+        column: SOURCE_DATASETS_JSON
+        collection_paths: *id001
         unit: category_or_text
-        role: evidence
-        variable_kind: metadata
-        topology: water_network
-        scale_group: NETWORK_DISTANCE_QC_REASON
-        available_resolutions:
-        - 6
-        - 8
-      WATER_COMPONENT_ID:
-        common_name: Water component ID
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: WATER_COMPONENT_ID
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_8.parquet
-        unit: not_encoded
-        role: identifier
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: WATER_COMPONENT_ID
+        scale_group: SOURCE_DATASETS_JSON
         available_resolutions:
         - 6
         - 8
-    null_policy: Unsurveyed cells remain distinct from explicit absence.
-  kelp_confidence:
-    common_name: Kelp evidence
+        scientific_definition: Source datasets json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped-positive polygon union. Unknown dates are explicit;
+          missing positive evidence is not absence.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      UNDATED_EVIDENCE_INCLUDED:
+        common_name: Undated evidence included
+        metric_family: seascape
+        metric_subfamily: benthic
+        column: UNDATED_EVIDENCE_INCLUDED
+        collection_paths: *id001
+        unit: boolean
+        role: support_or_qc
+        variable_kind: metadata
+        topology: within_cell_or_nonspatial
+        scale_group: UNDATED_EVIDENCE_INCLUDED
+        available_resolutions:
+        - 6
+        - 8
+        scientific_definition: Undated evidence included. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: all-history positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: one row per canonical marine-support H3 cell
+        denominator: not applicable or specified by the producer
+        missingness: All-history mapped-positive polygon union. Unknown dates are explicit;
+          missing positive evidence is not absence.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+    null_policy: All-history mapped-positive polygon union. Unknown dates are explicit;
+      missing positive evidence is not absence.
+  kelp_annual:
+    common_name: Annual Kelp Extent
     metric_family: seascape
     metric_subfamily: benthic
-    category: biogenic_habitat_evidence
+    category: biogenic_habitat
     collection:
-      paths:
-        6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-        8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
+      paths: &id002
+        6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_ANNUAL_RES_6.parquet
+        8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_ANNUAL_RES_8.parquet
       index_columns:
       - H3_INDEX
+      - date
       resolutions:
       - 6
       - 8
     producer: seascape.biogenic_habitat.kelp.build
-    grain: one row per canonical marine-support H3 cell
-    feature_count: 10
+    grain: native H3 cell and recorded survey year; January 1 is a year label
+    feature_count: 7
     variable_kind_counts:
-      feature_variable: 0
-      metadata: 10
+      feature_variable: 1
+      metadata: 6
     features:
-      KELP_CONFIDENCE:
-        common_name: Kelp confidence
+      ANNUAL_KELP_EXTENT_M2:
+        common_name: Annual Kelp Extent
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_CONFIDENCE
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
-        unit: ordinal
-        role: evidence
-        variable_kind: metadata
+        column: ANNUAL_KELP_EXTENT_M2
+        collection_paths: *id002
+        unit: m2
+        role: predictor
+        variable_kind: feature_variable
         topology: within_cell_or_nonspatial
-        scale_group: KELP_CONFIDENCE
+        scale_group: ANNUAL_KELP_EXTENT_M2
         available_resolutions:
         - 6
         - 8
-      KELP_LATEST_SURVEY_YEAR:
-        common_name: Kelp latest survey year
+        scientific_definition: Annual kelp extent. Consult the producer and source manifest
+          for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: survey-year positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: native H3 cell and recorded survey year; January 1 is a year
+            label
+        denominator: not applicable or specified by the producer
+        missingness: Null and QC/evidence fields retain unavailable states.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        definition: Geometric union of eligible mapped positive kelp-bed polygons intersecting
+          the full native H3 cell, EPSG:6933 m². Overlaps are counted once. Missing
+          positive evidence is unknown, never inferred absence. Mapped bed extent is
+          not pure canopy, current presence or a historical water-mask measurement.
+          Only the selected survey year contributes.
+        modeling_eligibility: source_qualified_extent_not_current_presence
+        picker_visible: true
+        qualifiers:
+        - QC
+        - SOURCE_DATASETS_JSON
+        - OBSERVATION_YEARS_JSON
+        - UNDATED_EVIDENCE_INCLUDED
+        - REPAIRED_GEOMETRY_INCLUDED
+        - INTERSECTING_SOURCE_RECORD_COUNT
+      INTERSECTING_SOURCE_RECORD_COUNT:
+        common_name: Intersecting source record count
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_LATEST_SURVEY_YEAR
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
-        unit: year
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_LATEST_SURVEY_YEAR
-        available_resolutions:
-        - 6
-        - 8
-      KELP_OBSERVED_VS_MODELED:
-        common_name: Kelp observed vs modeled
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_OBSERVED_VS_MODELED
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
-        unit: category_or_text
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_OBSERVED_VS_MODELED
-        available_resolutions:
-        - 6
-        - 8
-      KELP_SOURCE_COUNT:
-        common_name: Kelp source count
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_SOURCE_COUNT
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
+        column: INTERSECTING_SOURCE_RECORD_COUNT
+        collection_paths: *id002
         unit: count
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: KELP_SOURCE_COUNT
+        scale_group: INTERSECTING_SOURCE_RECORD_COUNT
         available_resolutions:
         - 6
         - 8
-      KELP_SOURCE_DATASETS:
-        common_name: Kelp source datasets
+        scientific_definition: Intersecting source record count. Consult the producer
+          and source manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: survey-year positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: native H3 cell and recorded survey year; January 1 is a year
+            label
+        denominator: not applicable or specified by the producer
+        missingness: Null and QC/evidence fields retain unavailable states.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      OBSERVATION_YEARS_JSON:
+        common_name: Observation years json
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_SOURCE_DATASETS
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
+        column: OBSERVATION_YEARS_JSON
+        collection_paths: *id002
         unit: category_or_text
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: KELP_SOURCE_DATASETS
+        scale_group: OBSERVATION_YEARS_JSON
         available_resolutions:
         - 6
         - 8
-      KELP_SPATIAL_PRECISION_CLASS:
-        common_name: Kelp spatial precision class
+        scientific_definition: Observation years json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: survey-year positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: native H3 cell and recorded survey year; January 1 is a year
+            label
+        denominator: not applicable or specified by the producer
+        missingness: Null and QC/evidence fields retain unavailable states.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      QC:
+        common_name: QC
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_SPATIAL_PRECISION_CLASS
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
+        column: QC
+        collection_paths: *id002
         unit: category_or_text
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: KELP_SPATIAL_PRECISION_CLASS
+        scale_group: QC
         available_resolutions:
         - 6
         - 8
-      KELP_SURVEYED_AREA_FRAC:
-        common_name: Kelp surveyed area fraction
+        scientific_definition: QC. Consult the producer and source manifest for the
+          equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: survey-year positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: native H3 cell and recorded survey year; January 1 is a year
+            label
+        denominator: not applicable or specified by the producer
+        missingness: Null and QC/evidence fields retain unavailable states.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      REPAIRED_GEOMETRY_INCLUDED:
+        common_name: Repaired geometry included
         metric_family: seascape
         metric_subfamily: benthic
-        column: KELP_SURVEYED_AREA_FRAC
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
-        unit: proportion
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_SURVEYED_AREA_FRAC
-        available_resolutions:
-        - 6
-        - 8
-      KELP_SURVEY_METHOD:
-        common_name: Kelp survey method
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_SURVEY_METHOD
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
-        unit: category_or_text
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_SURVEY_METHOD
-        available_resolutions:
-        - 6
-        - 8
-      KELP_TEMPORAL_PRECISION_CLASS:
-        common_name: Kelp temporal precision class
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_TEMPORAL_PRECISION_CLASS
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
-        unit: category_or_text
-        role: evidence
-        variable_kind: metadata
-        topology: within_cell_or_nonspatial
-        scale_group: KELP_TEMPORAL_PRECISION_CLASS
-        available_resolutions:
-        - 6
-        - 8
-      KELP_UNMAPPED_AREA:
-        common_name: Kelp unmapped area
-        metric_family: seascape
-        metric_subfamily: benthic
-        column: KELP_UNMAPPED_AREA
-        collection_paths:
-          6: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_6.parquet
-          8: data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_CONFIDENCE_RES_8.parquet
+        column: REPAIRED_GEOMETRY_INCLUDED
+        collection_paths: *id002
         unit: boolean
-        role: evidence
+        role: support_or_qc
         variable_kind: metadata
         topology: within_cell_or_nonspatial
-        scale_group: KELP_UNMAPPED_AREA
+        scale_group: REPAIRED_GEOMETRY_INCLUDED
         available_resolutions:
         - 6
         - 8
+        scientific_definition: Repaired geometry included. Consult the producer and
+          source manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: survey-year positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: native H3 cell and recorded survey year; January 1 is a year
+            label
+        denominator: not applicable or specified by the producer
+        missingness: Null and QC/evidence fields retain unavailable states.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      SOURCE_DATASETS_JSON:
+        common_name: Source datasets json
+        metric_family: seascape
+        metric_subfamily: benthic
+        column: SOURCE_DATASETS_JSON
+        collection_paths: *id002
+        unit: category_or_text
+        role: support_or_qc
+        variable_kind: metadata
+        topology: within_cell_or_nonspatial
+        scale_group: SOURCE_DATASETS_JSON
+        available_resolutions:
+        - 6
+        - 8
+        scientific_definition: Source datasets json. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: survey-year positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: native H3 cell and recorded survey year; January 1 is a year
+            label
+        denominator: not applicable or specified by the producer
+        missingness: Null and QC/evidence fields retain unavailable states.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+      UNDATED_EVIDENCE_INCLUDED:
+        common_name: Undated evidence included
+        metric_family: seascape
+        metric_subfamily: benthic
+        column: UNDATED_EVIDENCE_INCLUDED
+        collection_paths: *id002
+        unit: boolean
+        role: support_or_qc
+        variable_kind: metadata
+        topology: within_cell_or_nonspatial
+        scale_group: UNDATED_EVIDENCE_INCLUDED
+        available_resolutions:
+        - 6
+        - 8
+        scientific_definition: Undated evidence included. Consult the producer and source
+          manifest for the equation.
+        units_sign_range: unit and sign are in the unit field and producer contract;
+          no universal range asserted
+        source_support:
+          identity: exact source and version in the candidate release family manifest
+          native_spacing: source-specific; consult the family manifest
+          sampling_method: survey-year positive polygon union intersected with full
+            native H3 support
+          effective_scale: H3 reporting scale; not native observation resolution
+          spatial_support: native H3 cell and recorded survey year; January 1 is a year
+            label
+        denominator: not applicable or specified by the producer
+        missingness: Null and QC/evidence fields retain unavailable states.
+        aggregation: Producer-defined; H3 reporting is not automatically an areal observation.
+        deterministic_dependencies:
+        - seascape.biogenic_habitat.kelp.build
+        method_version: kelp_positive_extent_union_v2
+        validation_status: software contract only; independent scientific validation
+          not established
+        uncertainty_availability: not inferred from source type or H3 resolution
+        picker_visible: false
+    temporal_column: date
   reef_habitat:
     common_name: Reef habitat
     metric_family: seascape

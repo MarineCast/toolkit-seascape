@@ -170,7 +170,7 @@ def accept(wheel: Path, source: Path, output: Path, forbidden: Path) -> int:
             workspace,
             "build",
             "--dry-run",
-            marker="seascape-release",
+            marker="seascape-parquets",
         )
         assert not (controls / "01_TOOLKIT_VALIDATION.ipynb").exists()
         run(

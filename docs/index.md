@@ -7,7 +7,7 @@
 Seascape Toolkit turns reviewed source datasets into spatial features with explicit support, provenance, and missingness. Researchers and downstream applications can use those features for ecological analysis and modeling, while keeping source evidence separate from ecological conclusions.
 
 !!! important "Interpretation boundary"
-    A depth, shoreline, or mapped habitat feature is not species occurrence, habitat suitability, or a forecast. The package includes software and an offline synthetic demo; it does not bundle regional source data or a certified regional release.
+    A depth, shoreline, or mapped habitat feature is not species occurrence, habitat suitability, or a forecast. The package includes software and an offline synthetic demo; it does not bundle regional source data or a regional dataset.
 
 <div class="grid cards" markdown>
 
@@ -25,11 +25,11 @@ Seascape Toolkit turns reviewed source datasets into spatial features with expli
 
 -   **Understand the method**
 
-    Trace spatial support, source grids and inventories, derived features, and release manifests.
+    Trace spatial support, source grids and inventories, derived features, and flat area tables.
 
     [Concepts](concepts/index.md) · [Processing](methodology/index.md)
 
--   **Use an existing release**
+-   **Use current area tables**
 
     Discover exact resolutions and checksum-verified products through the supported Python facade.
 
@@ -55,6 +55,6 @@ See the [catalog guide](variables/index.md) for exact field names and the [capab
 
 1. **Try the offline demo** to inspect a production bathymetry transform on a deliberately synthetic fixture.
 2. **Prepare a bounded real-data candidate** after reviewing inputs, source rights, and processing settings.
-3. **Read an audited release** by exact release ID, product, and resolution for reproducible downstream use.
+3. **Read current area Parquets** from `Data/Seascape` and inspect their embedded definitions and source limits.
 
 [Choose a workflow](examples/index.md) · [View the source repository](https://github.com/MarineCast/toolkit-seascape)

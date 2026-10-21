@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -9,6 +10,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio
+import shapely
 from rasterio.enums import Resampling
 from rasterio.vrt import WarpedVRT
 from shapely.ops import unary_union
@@ -20,6 +22,7 @@ from seascape.seafloor_physiography.bathymetry.pipeline import load_bathymetry_c
 from seascape.spatial_support.water_network.config import load_water_network_config
 from seascape.spatial_support.water_network.graph import target_graph_mapping
 from seascape.spatial_support.water_network.load import (
+    load_model_area_geometry,
     load_water_graph,
     multi_source_shortest_paths,
 )
@@ -29,12 +32,17 @@ from seascape.utils.artifacts import (
     stage_parquet_family,
 )
 
+from .coast_complexity import sample_line_positions
 from .nearshore_transitions import (
+    TransectCrossing,
+    _depth_areas,
+    _eligible_supports,
     bounded_deep_target_components,
     first_water_facing_contour,
-    nearshore_depth_areas,
 )
 from .shoreline_characterization.build import load_shoreline_config
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -55,6 +63,8 @@ class NearshoreConfig:
     max_transects: int
     max_component_pixels: int
     selected_h3_indices: tuple[str, ...]
+    max_context_cells: int = 200000
+    reporting_mask_path: Path | None = None
 
 
 def load_nearshore_config(config_path: str | Path) -> NearshoreConfig:
@@ -99,7 +109,9 @@ def load_nearshore_config(config_path: str | Path) -> NearshoreConfig:
     if not output.resolve().is_relative_to(project_root().resolve()):
         raise ValueError("Nearshore output escapes workspace")
     return NearshoreConfig(
-        shoreline.inventory_path,
+        project_root() / str(section["shoreline_path"])
+        if section.get("shoreline_path")
+        else shoreline.inventory_path,
         network.water_polygon_path,
         network.clipped_geometry_path(8),
         bathymetry.raw_path,
@@ -110,18 +122,35 @@ def load_nearshore_config(config_path: str | Path) -> NearshoreConfig:
         max_transects=max_transects,
         max_component_pixels=max_component_pixels,
         selected_h3_indices=selected,
+        max_context_cells=int(section.get("max_context_cells", 200000)),
+        reporting_mask_path=network.reporting_mask_path,
     )
 
 
 def _deep_network_distance(
-    table: pd.DataFrame, graph: object, *, resolution: int
+    table: pd.DataFrame,
+    graph: object,
+    *,
+    resolution: int,
+    source_table: pd.DataFrame | None = None,
 ) -> tuple[np.ndarray, list[str], list[str | None]]:
     cells = table.H3_INDEX.astype(str).tolist()
     positions, connectors, reasons = target_graph_mapping(graph, cells)
-    deep = table.DEEP_TARGET_COMPONENT_IDS.fillna("").astype(str).ne("").to_numpy()
+    source_table = (
+        table if source_table is None else source_table.reset_index(drop=True)
+    )
+    source_positions, source_connectors, _ = target_graph_mapping(
+        graph, source_table.H3_INDEX.astype(str).tolist()
+    )
+    deep = (
+        source_table.DEEP_TARGET_COMPONENT_IDS.fillna("").astype(str).ne("").to_numpy()
+    )
+    target_deep = (
+        table.DEEP_TARGET_COMPONENT_IDS.fillna("").astype(str).ne("").to_numpy()
+    )
     seeds = [
-        (str(graph.cells[int(position)]), float(connectors[index]), index)
-        for index, position in enumerate(positions)
+        (str(graph.cells[int(position)]), float(source_connectors[index]), index)
+        for index, position in enumerate(source_positions)
         if position >= 0 and deep[index]
     ]
     distances = np.full(len(cells), np.nan)
@@ -134,21 +163,45 @@ def _deep_network_distance(
                 qc[index] = str(reasons[index] or "target_attachment_unavailable")
             elif np.isfinite(routed[int(position)]):
                 distances[index] = (
-                    0.0 if deep[index] else routed[int(position)] + connectors[index]
+                    0.0
+                    if target_deep[index]
+                    else routed[int(position)] + connectors[index]
                 )
                 qc[index] = "mapped_deep_h3_target_graph_v1"
-                owner = index if deep[index] else int(owners[int(position)])
-                nearest_components[index] = str(
-                    table.iloc[owner].DEEP_TARGET_COMPONENT_IDS
+                nearest_components[index] = (
+                    str(table.iloc[index].DEEP_TARGET_COMPONENT_IDS)
+                    if target_deep[index]
+                    else str(
+                        source_table.iloc[
+                            int(owners[int(position)])
+                        ].DEEP_TARGET_COMPONENT_IDS
+                    )
                 )
             else:
                 qc[index] = "disconnected_within_available_graph"
     return distances, qc, nearest_components
 
 
+def _station_tangent_points(line, positions, scale_m):
+    half_window = min(scale_m / 2, line.length / 4) if line.is_ring else scale_m / 2
+    before = positions - half_window
+    after = positions + half_window
+    if line.is_ring:
+        before = np.mod(before, line.length)
+        after = np.mod(after, line.length)
+    else:
+        before = np.maximum(0, before)
+        after = np.minimum(line.length, after)
+    return (
+        sample_line_positions(line, before),
+        sample_line_positions(line, after),
+        half_window,
+    )
+
+
 def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
     config = load_nearshore_config(config_path)
-    cells = gpd.read_parquet(config.clipped_r8_path)
+    cells = load_model_area_geometry(8, config_path)
     if config.selected_h3_indices:
         missing = set(config.selected_h3_indices) - set(cells.H3_INDEX.astype(str))
         if missing:
@@ -165,6 +218,11 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
         .sort_values("H3_INDEX")
         .reset_index(drop=True)
     )
+    context_cells = gpd.read_parquet(config.clipped_r8_path).to_crs(
+        config.projected_crs
+    )
+    if len(context_cells) > config.max_context_cells or config.max_context_cells < 1:
+        raise ValueError("Nearshore full-context cell budget exceeded")
     water = (
         gpd.read_parquet(config.water_path)
         .to_crs(config.projected_crs)
@@ -173,8 +231,30 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
     shoreline = gpd.read_parquet(config.shoreline_path).to_crs(config.projected_crs)
     if shoreline.SEGMENT_ID.isna().any() or shoreline.SEGMENT_ID.duplicated().any():
         raise ValueError("Source shoreline segment IDs must be unique and nonnull")
-    interest = unary_union(list(cells.geometry)).buffer(config.transect_max_m)
-    shoreline = shoreline.loc[shoreline.geometry.intersects(interest)]
+    if config.reporting_mask_path is not None and not config.selected_h3_indices:
+        # Conservative station-source collar includes the complete reporting
+        # cells at regional R8, without dissolving every detailed coastal clip.
+        interest = (
+            gpd.read_parquet(config.reporting_mask_path)
+            .to_crs(config.projected_crs)
+            .geometry.union_all()
+            .buffer(config.transect_max_m + 2000)
+        )
+    else:
+        interest = unary_union(list(cells.geometry)).buffer(config.transect_max_m)
+    shapely.prepare(interest)
+    shapely.prepare(water)
+    path_water = water.buffer(1e-7)
+    shapely.prepare(path_water)
+    shoreline = shoreline.loc[
+        shoreline.geometry.intersects(water.buffer(config.transect_max_m))
+    ]
+    LOGGER.info(
+        "Nearshore context: %d cells, %d reporting cells, %d source segments",
+        len(context_cells),
+        len(cells),
+        len(shoreline),
+    )
     summary_rows = []
     components: list[dict[str, object]] = []
     station_rows = []
@@ -203,7 +283,7 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
             components, r8_components = bounded_deep_target_components(
                 [
                     (str(cell.H3_INDEX), cell.geometry)
-                    for cell in cells.itertuples(index=False)
+                    for cell in context_cells.itertuples(index=False)
                 ],
                 water,
                 shoreline.geometry.union_all(),
@@ -214,6 +294,7 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
                 source_identity=depth_checksum[:16],
                 raster_depth_convention="negative_elevation",
             )
+            LOGGER.info("Labeled %d shared deep components", len(components))
             component_by_resolution = {
                 8: r8_components,
                 6: {
@@ -233,15 +314,38 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
                     ).groupby("PARENT_H3_INDEX", sort=True)
                 },
             }
+            for component in components:
+                component["COMPONENT_CONTEXT_STATUS"] = (
+                    "canonical_context_boundary_censored"
+                )
+            eligible_r8 = _eligible_supports(
+                [
+                    (str(row.H3_INDEX), row.geometry)
+                    for row in cells.itertuples(index=False)
+                ],
+                water,
+                shoreline.geometry.union_all(),
+                config.band_width_m,
+            )
+            eligible = {
+                8: eligible_r8,
+                6: {
+                    parent: unary_union(
+                        [eligible_r8[str(child)] for child in group.H3_INDEX]
+                    )
+                    for parent, group in cells.assign(
+                        PARENT=cells.H3_INDEX.map(
+                            lambda value: cell_to_parent(str(value), 6)
+                        )
+                    ).groupby("PARENT")
+                },
+            }
             for resolution, frame in supports.items():
                 for cell in frame.itertuples(index=False):
-                    area = nearshore_depth_areas(
-                        cell.geometry,
-                        water,
-                        shoreline.geometry.union_all(),
+                    area = _depth_areas(
+                        eligible[resolution][str(cell.H3_INDEX)],
                         depth,
                         depth_threshold_m=config.threshold_m,
-                        band_width_m=config.band_width_m,
                         raster_depth_convention="negative_elevation",
                     )
                     summary_rows.append(
@@ -278,30 +382,34 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
                 count = max(1, int(line.length // config.station_spacing_m))
                 if len(station_rows) + count > config.max_transects:
                     raise ValueError("Nearshore transect budget exceeded")
-                for index in range(count):
-                    position = min(
-                        line.length, (index + 0.5) * config.station_spacing_m
-                    )
-                    station = line.interpolate(position)
+                positions = np.minimum(
+                    line.length, (np.arange(count) + 0.5) * config.station_spacing_m
+                )
+                stations = sample_line_positions(line, positions)
+                before_points, after_points, tangent_half_window = (
+                    _station_tangent_points(line, positions, config.tangent_scale_m)
+                )
+                for position, station, before, after in zip(
+                    positions, stations, before_points, after_points, strict=True
+                ):
                     if not interest.covers(station):
                         continue
-                    before = line.interpolate(
-                        max(0, position - config.tangent_scale_m / 2)
-                    )
-                    after = line.interpolate(
-                        min(line.length, position + config.tangent_scale_m / 2)
-                    )
                     tangent = (after.x - before.x, after.y - before.y)
                     station_id = f"{segment.SEGMENT_ID}:{position:.3f}m"
-                    crossing = first_water_facing_contour(
-                        station,
-                        tangent,
-                        water,
-                        depth,
-                        depth_threshold_m=config.threshold_m,
-                        step_m=config.transect_step_m,
-                        max_distance_m=config.transect_max_m,
-                        raster_depth_convention="negative_elevation",
+                    crossing = (
+                        TransectCrossing(None, None, "degenerate_source_tangent", ())
+                        if np.hypot(*tangent) <= 1e-9
+                        else first_water_facing_contour(
+                            station,
+                            tangent,
+                            water,
+                            depth,
+                            depth_threshold_m=config.threshold_m,
+                            step_m=config.transect_step_m,
+                            max_distance_m=config.transect_max_m,
+                            raster_depth_convention="negative_elevation",
+                            path_water=path_water,
+                        )
                     )
                     station_rows.append(
                         {
@@ -310,6 +418,7 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
                             "ALONG_SEGMENT_M": position,
                             "TANGENT_X": tangent[0],
                             "TANGENT_Y": tangent[1],
+                            "TANGENT_HALF_WINDOW_M": tangent_half_window,
                             "geometry": station,
                         }
                     )
@@ -324,11 +433,40 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
                         }
                     )
     summary = pd.DataFrame(summary_rows)
+    context_sources = {
+        8: pd.DataFrame(
+            {
+                "H3_INDEX": list(r8_components),
+                "DEEP_TARGET_COMPONENT_IDS": [
+                    "|".join(ids) for ids in r8_components.values()
+                ],
+            }
+        )
+    }
+    context_sources[6] = (
+        context_sources[8]
+        .assign(
+            PARENT=context_sources[8].H3_INDEX.map(
+                lambda value: cell_to_parent(str(value), 6)
+            )
+        )
+        .groupby("PARENT", sort=True)
+        .DEEP_TARGET_COMPONENT_IDS.agg(
+            lambda values: "|".join(
+                sorted({item for value in values for item in value.split("|") if item})
+            )
+        )
+        .rename_axis("H3_INDEX")
+        .reset_index()
+    )
     for resolution in (8, 6):
         index = summary.H3_RESOLUTION.eq(resolution)
         graph = load_water_graph(resolution, config_path)
         distances, qc, nearest = _deep_network_distance(
-            summary.loc[index], graph, resolution=resolution
+            summary.loc[index],
+            graph,
+            resolution=resolution,
+            source_table=context_sources[resolution],
         )
         summary.loc[index, "DISTANCE_TO_CONNECTED_DEEP_WATER_M"] = distances
         summary.loc[index, "DEEP_WATER_NETWORK_QC"] = qc
@@ -387,11 +525,16 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
                 config.clipped_r8_path,
             )
         ],
-        attribution=[],
+        attribution=[
+            {
+                "text": "Configured source shoreline and bathymetry; source identities retained in input registries and manifests",
+                "license": "Per-source terms; see the configured source records",
+            }
+        ],
         source_completeness="partial",
         metadata={
-            "scientific_method_version": "nearshore_raster_footprint_component_v2",
-            "sample_support": "nearest-neighbor virtual projected source-scale raster; four-neighbor deep pixel components bounded by selected R8 nearshore support; R6 union of selected R8 water-clipped supports; boundary censored",
+            "scientific_method_version": "nearshore_raster_footprint_full_context_component_v3",
+            "sample_support": "nearest-neighbor virtual projected source-scale raster; globally shared four-neighbor deep pixel components within canonical graph context; report only model-area R8 and their R6 child unions; context boundary censored",
         },
     )
     publisher.publish_manifest(

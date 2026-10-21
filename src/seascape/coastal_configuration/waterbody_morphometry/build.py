@@ -30,6 +30,7 @@ from seascape.core.geo.geometry import (
     normalize_polygonal_geometry,
     safe_polygonal_union,
 )
+from seascape.spatial_support.provenance import water_geometry_provenance
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
 )
@@ -488,6 +489,7 @@ def _build_output(
             pl.col("NETWORK_CONNECTOR_METHOD").cast(pl.String),
             pl.col("NETWORK_DISTANCE_QC_REASON").cast(pl.String),
         )
+        .with_columns(pl.col(pl.Float64).fill_nan(None))
         .select(OUTPUT_COLUMNS)
         .sort("H3_INDEX")
     )
@@ -665,6 +667,20 @@ def build_waterbody_morphometry(
         ((output, config.output_path),),
     )
     network = load_water_network_config(config_path)
+    geometry_lineage = water_geometry_provenance(
+        config.water_polygon_path, project_root()
+    )
+    geometry_sources = (
+        geometry_lineage["sources"]
+        if geometry_lineage
+        else [
+            {
+                "name": "Configured land and water geometry",
+                "license": "Unverified; consult configured source terms",
+                "observation_period": "Static source reference; source dates unverified",
+            }
+        ]
+    )
     manifest = build_manifest(
         dataset_family="environment.seascape.waterbody_morphometry",
         run_id=publisher.run_id,
@@ -672,11 +688,12 @@ def build_waterbody_morphometry(
         artifacts=publisher.artifacts,
         project_root=project_root(),
         sources=[
+            *geometry_sources,
             {
-                "name": "Natural Earth water geometry and GEBCO bathymetry",
-                "license": "Natural Earth public domain; GEBCO terms of use",
+                "name": "Configured bathymetry",
+                "license": "Consult configured bathymetry source terms",
                 "observation_period": "compiled and generalized sources; see upstream manifests",
-            }
+            },
         ],
         upstream_artifacts=[
             {"path": str(path), "checksum": checksum_artifact(path)}
@@ -688,12 +705,13 @@ def build_waterbody_morphometry(
             )
         ],
         attribution=[
+            *(geometry_lineage["attribution"] if geometry_lineage else []),
             {
-                "text": "Natural Earth and GEBCO Compilation Group; derived metrics by Seascape Toolkit",
-                "license": "Natural Earth public domain; GEBCO terms of use",
-            }
+                "text": "Configured bathymetry and geometry sources; derived metrics by Seascape Toolkit",
+                "license": "Consult configured source terms",
+            },
         ],
-        source_completeness="complete",
+        source_completeness="partial",
         metadata={
             "neighborhood_semantics": "canonical water-passable graph neighborhoods",
             "censoring_contract": (

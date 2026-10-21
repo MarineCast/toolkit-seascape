@@ -1,13 +1,5 @@
-# Sentinel-2 seagrass source
+# Seagrass source evidence
 
-The production layer uses Peng et al. (2026), *Global 10-meter seagrass maps*,
-Zenodo DOI `10.5281/zenodo.18612240`, for the 2023-2024 period. The archive is
-CC BY 4.0 and is checksum- and size-validated by `download.py`.
+The [canonical Seagrass contract](../../../../docs/seagrass.md) documents source rights, eligible geometry, species and temporal support. All Time geometrically unions the WA DNR Whatcom 1995 and Skagit 1996 remotely mapped eelgrass class polygons with legacy BC CRIMS eelgrass polygons and the retained Peng et al. (2026) Sentinel-2 2019–2020 and 2023–2024 positive classified pixel footprints (CC BY 4.0, DOI 10.5281/zenodo.18612240).
 
-This is one generic seagrass class derived from Sentinel-2 imagery. The
-distributed extent tiles are binary (`1` = mapped seagrass; `0` =
-background/nodata), so dense and sparse model classes are intentionally
-combined. It is not an eelgrass species map, a field survey, or evidence of
-absence outside mapped positive pixels. Its published scope is clear, shallow
-coastal water; turbidity and depth therefore remain observation limitations
-rather than habitat zeros.
+The annual generated feature is retired; original survey years remain provenance. Unknown observation dates stay unknown; CRIMS map dates and composite endpoints never become observation years. Relative abundance/importance never scales footprint area. Generic satellite seagrass remains modeled, with no species resolution and clear-water/depth/turbidity limits. Background/nodata is not field absence. Monitoring sample frames, point/line evidence and all Kelp are excluded from mapped area. Per-record original attributes, source methods, periods, species resolution and recorded geometry processing remain in the internal normalized inventory and source/quality metadata.

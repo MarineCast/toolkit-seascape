@@ -42,6 +42,7 @@ class DomainBuildContext:
     continue_on_error: bool = False
     resume: bool = False
     publish: bool = True
+    output_dir: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -86,9 +87,7 @@ def plan_domain_layer_build(
     candidate = (
         Path(candidate_root).expanduser().resolve()
         if candidate_root is not None
-        else canonical
-        / ".seascape/candidates/seascape"
-        / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        else canonical / ".seascape/work/seascape"
     )
     available = tuple(stage_definitions or DOMAIN_LAYER_STAGES)
     for stage in available:
@@ -371,66 +370,13 @@ def _run_environment_feature_catalog(ctx: DomainBuildContext) -> None:
         namespace["main"]()
 
 
-def _run_seascape_feature_eligibility(ctx: DomainBuildContext) -> None:
-    from seascape.governance.feature_eligibility import main
+def _run_seascape_parquets(ctx: DomainBuildContext) -> None:
+    from seascape.domain_parquets import export_domain_parquets
 
-    catalog = ctx.candidate_root / "config/feature_catalog.yaml"
-    output = ctx.candidate_root / "config/feature_eligibility.yaml"
-    with _patched_argv(
-        "feature_eligibility.py",
-        [
-            "--catalog",
-            str(catalog),
-            "--output",
-            str(output),
-            "--materialization-root",
-            str(ctx.candidate_root),
-        ],
-    ):
-        main()
-
-
-def _run_seascape_documentation(ctx: DomainBuildContext) -> None:
-    script = Path(
-        __import__(
-            "seascape.maintenance.update_seascape_docs", fromlist=["__file__"]
-        ).__file__
+    export_domain_parquets(
+        workspace=ctx.candidate_root,
+        output=ctx.output_dir or ctx.canonical_root / "Data/Seascape",
     )
-    catalog = ctx.candidate_root / "config/feature_catalog.yaml"
-    canonical_readme = project_root() / "docs/products.md"
-    readme = ctx.candidate_root / "docs/products.md"
-    readme.parent.mkdir(parents=True, exist_ok=True)
-    if not readme.exists():
-        shutil.copy2(canonical_readme, readme)
-    with _patched_argv(
-        "update_seascape_docs.py",
-        ["--catalog", str(catalog), "--readme", str(readme)],
-    ):
-        namespace = runpy.run_path(str(script))
-        namespace["main"]()
-
-
-def _run_seascape_release_audit(ctx: DomainBuildContext) -> None:
-    from seascape.core.artifacts import atomic_write_json
-    from seascape.release import build_release_audit
-
-    catalog = ctx.candidate_root / "config/feature_catalog.yaml"
-    output = (
-        ctx.candidate_root
-        / "outputs/domains/environmental_layer/seascape/seascape_release_audit.json"
-    )
-    audit = build_release_audit(ctx.candidate_root, catalog)
-    atomic_write_json(output, audit, overwrite=True)
-
-
-def _run_seascape_release(ctx: DomainBuildContext) -> None:
-    from seascape.release import publish_candidate_release
-
-    if ctx.publish:
-        publish_candidate_release(
-            canonical_project_root=ctx.canonical_root,
-            candidate_project_root=ctx.candidate_root,
-        )
 
 
 def _environment_domain_config(ctx: DomainBuildContext, key: str) -> Path:
@@ -733,7 +679,7 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
     ),
     DomainBuildStage(
         "seascape-seagrass-habitat",
-        "Build Sentinel-2 seagrass values and modeled-confidence products at H3 r8 and r6.",
+        "Build Seagrass Extent (All Time), retaining all eligible source history and date provenance at native H3 r8 and r6.",
         _run_seascape_seagrass_habitat,
         dependencies=("h3-marine-spatial-support",),
         declared_outputs=(
@@ -745,7 +691,7 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
     ),
     DomainBuildStage(
         "seascape-kelp-habitat",
-        "Build kelp values and survey-confidence products at H3 r8 and r6.",
+        "Build Annual Kelp Extent and the all-history polygon union at native H3 r8 and r6.",
         _run_seascape_kelp_habitat,
         dependencies=("h3-marine-spatial-support",),
         declared_outputs=(
@@ -812,37 +758,10 @@ DOMAIN_LAYER_STAGES: tuple[DomainBuildStage, ...] = (
         declared_outputs=("config/feature_catalog.yaml",),
     ),
     DomainBuildStage(
-        "seascape-feature-eligibility",
-        "Regenerate species-neutral materialization and feature eligibility metadata.",
-        _run_seascape_feature_eligibility,
+        "seascape-parquets",
+        "Write flat per-area static/dynamic Parquets and catalog.json.",
+        _run_seascape_parquets,
         dependencies=("environment-feature-catalog",),
-        declared_outputs=("config/feature_eligibility.yaml",),
-    ),
-    DomainBuildStage(
-        "seascape-documentation",
-        "Regenerate the seascape README product and variable index.",
-        _run_seascape_documentation,
-        dependencies=("environment-feature-catalog",),
-        declared_outputs=("docs/products.md",),
-    ),
-    DomainBuildStage(
-        "seascape-release-audit",
-        "Audit candidate artifacts, manifests, catalog, eligibility, and documentation.",
-        _run_seascape_release_audit,
-        dependencies=("seascape-feature-eligibility", "seascape-documentation"),
-        declared_outputs=(
-            "outputs/domains/environmental_layer/seascape/seascape_release_audit.json",
-        ),
-        terminal_action=True,
-    ),
-    DomainBuildStage(
-        "seascape-release",
-        "Promote the approved candidate release to stable canonical paths.",
-        _run_seascape_release,
-        dependencies=("seascape-release-audit",),
-        declared_outputs=(
-            "data/processed/domain/environmental_layer/seascape/seascape_release_manifest.json",
-        ),
         terminal_action=True,
     ),
 )
@@ -1418,10 +1337,8 @@ def run_domain_layer_build(
             )
         ):
             action = "reuse"
-        elif stage.name == "seascape-release":
-            action = "publish" if publish else "retain-candidate"
         elif stage.terminal_action:
-            action = "release-gate"
+            action = "write-parquets"
         print(f"  {index:02d}. [{action}] {stage.name} - {stage.description}")
     if dry_run:
         for stage in stages:
@@ -1507,7 +1424,7 @@ def run_domain_layer_build(
             with _candidate_environment(candidate):
                 stage_context = replace(ctx, overwrite=True) if ctx.resume else ctx
                 stage.runner(stage_context)
-            if stage.name != "seascape-release":
+            if not stage.terminal_action:
                 _record_stage_state(
                     stage,
                     source_config=source_config,
@@ -1542,6 +1459,17 @@ def run_domain_layer_build(
             print(f"[build-domain-layers] {stage.name} complete ({elapsed:.1f}s)")
 
     _write_manifest_if_requested(manifest_path, source_config, results, dry_run=False)
+    # Successful normal builds retain only the flat data outputs. Failed or
+    # explicitly selected work roots remain available for repair/resume.
+    if (
+        candidate_root is None
+        and any(
+            result.name == "seascape-parquets" and result.status == "complete"
+            for result in results
+        )
+        and all(result.status in {"complete", "reused"} for result in results)
+    ):
+        shutil.rmtree(candidate)
     return results
 
 

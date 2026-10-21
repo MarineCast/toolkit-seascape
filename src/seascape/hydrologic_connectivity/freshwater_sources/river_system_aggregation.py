@@ -47,7 +47,7 @@ def system_frame(
     return gpd.GeoDataFrame(records, geometry="geometry", crs=lines.crs)
 
 
-def build_river_systems(frames: dict[str, Any]):
+def build_river_systems(frames: dict[str, Any], *, us_dataset="US_NHD_SMALL_SCALE"):
     """Build the normalized B.C., U.S., and HydroRIVERS segment inventory."""
 
     import geopandas as gpd
@@ -67,7 +67,7 @@ def build_river_systems(frames: dict[str, Any]):
                 ),
                 system_frame(
                     us,
-                    dataset="US_NHD_SMALL_SCALE",
+                    dataset=us_dataset,
                     id_column="COMID",
                     name_column="GNIS_NAME",
                 ),

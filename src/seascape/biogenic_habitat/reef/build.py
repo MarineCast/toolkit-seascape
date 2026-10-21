@@ -46,6 +46,7 @@ from seascape.utils.artifacts import (
 from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.config import require_mapping as _mapping
 from seascape.utils.config import resolve_project_path as _resolve
+from seascape.utils.geometry_quality import audit_polygon_inventory
 from seascape.utils.habitat_acquisition import (
     load_habitat_download_config,
 )
@@ -652,6 +653,10 @@ def build_reef_habitat(
     config = load_habitat_surface_config(SECTION_NAME, PREFIX, config_path)
     processing = _reef_processing(config_path)
     inventory = load_reef_inventory(config_path)
+    geometry_audit = audit_polygon_inventory(
+        inventory, policy=config.invalid_geometry_policy
+    )
+    inventory = geometry_audit.frame
     bbox = model_bbox_tuple(config)
     support_r8 = load_model_area_support(8, config_path)
     cells = load_cell_geometry(config, support_r8)
@@ -772,6 +777,7 @@ def build_reef_habitat(
         ],
         source_completeness="partial",
         metadata={
+            "source_geometry_quality": geometry_audit.report,
             "scientific_method_version": "reef_no_unverified_hardness_v2",
             "modeled_rock_area_status": "unavailable: source rock presence is not verified areal cover",
             "radius_operator_lineage": {

@@ -679,6 +679,19 @@ seagrass_habitat:
     page_size: 2000
     overwrite: false
     sources:
+      global_sentinel2_seagrass_2019_2020:
+        enabled: true  # Positive composite footprints contribute only to All Time.
+        kind: http_archive
+        url: https://zenodo.org/records/18612240/files/GlobalSeagrass2019_2020.zip?download=1
+        raw_filename: GlobalSeagrass2019_2020.zip
+        extract: false
+        expected_bytes: 438032562
+        maximum_bytes: 438032562
+        md5: 2046bf6c62d85f4d57e678bf6ef1cd07
+        observation_period: 2019-2020 composite
+        evidence_class: satellite_model
+        license: CC BY 4.0
+        attribution: Peng et al. (2026), Global 10-meter seagrass maps, Zenodo 10.5281/zenodo.18612240
       global_sentinel2_seagrass_2023_2024:
         kind: http_archive
         url: https://zenodo.org/api/records/18612240/files/GlobalSeagrass2023_2024.zip/content
@@ -691,13 +704,38 @@ seagrass_habitat:
         evidence_class: satellite_model
         license: CC BY 4.0
         attribution: Peng et al. (2026), Global 10-meter seagrass maps, Zenodo 10.5281/zenodo.18612240
+      wa_dnr_intertidal_eelgrass_1995:
+        kind: arcgis
+        layer_url: https://gis.dnr.wa.gov/site3/rest/services/Aquatics/AQ_Environment/MapServer/66
+        where: IVEG_CD = 'eel'
+        fields: '*'
+        raw_filename: WA_DNR_INTERTIDAL_EELGRASS_1995.geojson
+        license: Washington State agency open data terms
+        attribution: Washington DNR, Whatcom intertidal vegetation inventory 1995
+      wa_dnr_intertidal_eelgrass_1996:
+        kind: arcgis
+        layer_url: https://gis.dnr.wa.gov/site3/rest/services/Aquatics/AQ_Environment/MapServer/60
+        where: GRID_CODE = 5
+        fields: '*'
+        raw_filename: WA_DNR_INTERTIDAL_EELGRASS_1996.geojson
+        license: Washington State agency open data terms
+        attribution: Washington DNR, Skagit intertidal vegetation inventory 1996
+      bc_crims_eelgrass:
+        kind: wfs
+        url: https://openmaps.gov.bc.ca/geo/pub/WHSE_WILDLIFE_MANAGEMENT.CRIMS_EELGRASSES/ows
+        type_name: pub:WHSE_WILDLIFE_MANAGEMENT.CRIMS_EELGRASSES
+        sort_by: EELGRASS_ID
+        raw_filename: BC_CRIMS_EELGRASS.geojson
+        license: Open Government Licence - British Columbia
+        attribution: Province of British Columbia
   processing:
+    invalid_geometry_policy: make_valid
     native_h3_resolution: 8
     model_h3_resolution: 6
     equal_area_crs: EPSG:6933
     reference_year: 2026
     marine_buffer_m: 5000
-    observation_period: 2023-2024
+    observation_period: available history; composites are not annual observations
     # The distributed extent tiles are binary: 1 = mapped seagrass and
     # 0 = background/nodata. Dense/sparse model classes are not retained.
     positive_values: [1]
@@ -751,6 +789,7 @@ kelp_habitat:
         license: Open Government Licence - British Columbia
         attribution: Province of British Columbia
   processing:
+    invalid_geometry_policy: make_valid
     native_h3_resolution: 8
     model_h3_resolution: 6
     equal_area_crs: EPSG:6933

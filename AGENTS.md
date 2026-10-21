@@ -4,8 +4,8 @@
 
 Bathymetry, marine geomorphology, coastal geometry, and derived features.
 
-The toolkit owns species-neutral product schemas, static feature eligibility and immutable release
-resolution. Applications own prediction targets, temporal validation, predictive feature/scale
+The toolkit owns species-neutral product schemas, static feature eligibility and flat per-area Parquet
+output contracts. Applications own prediction targets, temporal validation, predictive feature/scale
 selection, model fitting and evaluation.
 
 This repository contains the installable `seascape` package extracted from OrcaCast on 2026-09-15.
@@ -167,7 +167,7 @@ Install `.[test,quality]`, then run `ruff check src tests scripts`, `python -m m
 `ruff format --check src tests scripts`. Use `ruff format src tests scripts` for formatting;
 keep lint autofixes, import reordering and semantic edits in separate changes. The format gate
 covers all Python in those paths with the existing Ruff defaults and Python 3.14 target;
-there are no additional generated-code exclusions. Mypy checks the 12 interface modules listed
+there are no additional generated-code exclusions. Mypy checks the 21 interface modules listed
 in `docs/environments/README.md`; skipped external imports remain documented there.
 Run installed-wheel imports using `scripts/check_installed_package.py` from outside the checkout.
 Capture the runtime/test/quality closure with `scripts/environment_snapshot.py --extra test
@@ -175,3 +175,46 @@ Capture the runtime/test/quality closure with `scripts/environment_snapshot.py -
 and audit it with `pip-audit --disable-pip --no-deps --strict -r /tmp/seascape-env.txt`.
 CI also runs Gitleaks over history and the working tree. Scope and platform limits are documented in
 `docs/environments/README.md`; API/storage changes are documented in `docs/API.md`.
+
+## Current data output workflow
+
+For coastal-policy mask, native membership or reporting-mask changes, run
+`python -m pytest -q tests/test_coastal_policy.py`, then the full suite, documentation,
+notebook and quality checks above. Regional geometry validation remains separate from synthetic tests.
+
+For common-denominator mapped substrate classes, run `python -m pytest -q
+tests/test_areal_substrate.py`, then the full suite and quality/documentation checks above.
+Mapped class fractions must not fill unavailable physical hardness fields.
+
+For historical extraction, native positive-footprint and explicit geometry-QC changes, run
+`python -m pytest -q tests/test_historical.py tests/test_geometry_quality.py
+tests/test_native_seagrass.py tests/test_native_kelp.py tests/domains/environment/seascape/test_acquisition_identity.py`,
+then the full suite, documentation, notebook and quality checks above. Historical source gaps
+and unknown availability remain explicit; extraction does not approve pending regional inputs.
+
+Normal builds write only flat `Data/Seascape/<area>-r<resolution>-static.parquet`, optional
+`<area>-r<resolution>-dynamic.parquet` with a `date` column, and one small `catalog.json`.
+No versioned filenames, release folders, retained generations or per-area sidecars.
+The optional `research/` child is reserved for separately keyed object/long tables and is preserved
+by flat area writes and historical output replacement. It is not another H3 product generation.
+Keep definitions, units, source context and temporal precision embedded in Parquet.
+Internal source caches and scratch computation are separate; successful default
+builds remove scratch. Historical release APIs live in `seascape.legacy_products`
+for explicit migration only and must not be reintroduced into normal builds.
+For these changes run `python -m pytest -q tests/test_domain_parquets.py
+tests/test_workflow.py tests/test_preflight.py`, then the required full suite,
+documentation, notebook and quality checks above.
+
+For shared-study selection and source-derived channel/outlet changes, run
+`python -m pytest -q tests/test_study_selection.py tests/test_research_geometry.py
+tests/test_native_nhd.py tests/domains/environment/seascape/test_gateways.py`, then the full,
+quality, documentation, notebook and installed-wheel checks above. Native NHD archive network
+flags, datum qualification and source-version conflicts must remain explicit. The portable
+notebook also checks a packaged pending-study example; it does not certify regional inputs.
+
+Flat-product publication control now lives outside the delivery parent at
+`output.parent.parent/.marinecast-work/seascape/<destination-hash>`: stable lock,
+transient staging and recovery journal. Do not recreate `.seascape-io` under Data.
+Successful publication removes staged payloads/backups; default successful builds
+already remove owned scratch. Supplied inputs and failed/explicit work roots are
+not swept. See `docs/API.md` for the current storage contract.

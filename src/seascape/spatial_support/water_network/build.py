@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
+import h3
 import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
@@ -31,7 +32,6 @@ from seascape.core.geo.geometry import safe_polygonal_union
 from seascape.core.geo.h3 import (
     cell_to_latlng,
     cell_to_parent,
-    polygon_to_cells_overlap,
     polygonize_h3_indices,
 )
 from seascape.publication import (
@@ -170,6 +170,32 @@ def _tiled_water_parts(
     return output
 
 
+def _model_reporting_geometry(config: WaterNetworkConfig, water_geometry: Any) -> Any:
+    """Select reporting support independently of a larger source/graph context."""
+    if config.reporting_mask_path is None:
+        return box(
+            config.model_bbox["min_lon"],
+            config.model_bbox["min_lat"],
+            config.model_bbox["max_lon"],
+            config.model_bbox["max_lat"],
+        )
+    frame = gpd.read_parquet(config.reporting_mask_path)
+    if (
+        frame.crs is None
+        or frame.empty
+        or frame.geometry.isna().any()
+        or frame.geometry.is_empty.any()
+        or not frame.geometry.is_valid.all()
+    ):
+        raise ValueError("Reporting mask requires valid nonempty geometry and CRS")
+    geometry = frame.to_crs(4326).geometry.union_all()
+    if geometry.geom_type not in {"Polygon", "MultiPolygon"}:
+        raise ValueError("Reporting mask must be polygonal")
+    if geometry.difference(water_geometry).area > 1e-12:
+        raise ValueError("Reporting mask extends outside the canonical water context")
+    return geometry
+
+
 def _tiled_overlap_cells(
     water_geometry: Any,
     resolution: int,
@@ -187,15 +213,52 @@ def _tiled_overlap_cells(
         water_geometry,
         tile_size_degrees=tile_size_degrees,
     )
+    if not hasattr(h3, "polygon_to_cells_experimental"):
+        raise ImportError(
+            "Canonical positive-overlap support requires H3 experimental bounding-overlap enumeration"
+        )
+
+    def candidates(part, level):
+        # H3's overlap mode can omit a wet cell containing a small land hole.
+        # Bounding overlap is a conservative candidate set; exact polygon
+        # clipping below determines positive-area membership.
+        return h3.polygon_to_cells_experimental(
+            h3.geo_to_h3shape(part.__geo_interface__), level, contain="bbox_overlap"
+        )
+
     cells: set[str] = set()
     for part in parts:
-        cells.update(polygon_to_cells_overlap(part, resolution))
+        cells.update(candidates(part, resolution))
     if resolution == 6:
         child_cells: set[str] = set()
         for part in parts:
-            child_cells.update(polygon_to_cells_overlap(part, 8))
+            child_cells.update(candidates(part, 8))
         cells.update(cell_to_parent(cell, 6) for cell in child_cells)
     return sorted(cells)
+
+
+def _positive_reporting_overlap(
+    clipped: gpd.GeoDataFrame, reporting: Any
+) -> np.ndarray:
+    """Exact projected positive-area membership, using bounded spatial pieces."""
+    projected = clipped.to_crs(6933)
+    mask = gpd.GeoSeries([reporting], crs=4326).to_crs(6933).iloc[0]
+    min_x, min_y, max_x, max_y = mask.bounds
+    pieces = []
+    tile_m = 50000.0
+    for x in np.arange(math.floor(min_x / tile_m) * tile_m, max_x, tile_m):
+        for y in np.arange(math.floor(min_y / tile_m) * tile_m, max_y, tile_m):
+            piece = mask.intersection(box(x, y, x + tile_m, y + tile_m))
+            if not piece.is_empty:
+                pieces.append(piece)
+    tree = STRtree(pieces)
+    selected = np.zeros(len(projected), dtype=bool)
+    for index, geometry in enumerate(projected.geometry):
+        selected[index] = any(
+            geometry.intersection(pieces[int(position)]).area > 0
+            for position in tree.query(geometry, predicate="intersects")
+        )
+    return selected
 
 
 def _build_geometry_and_base_support(
@@ -557,6 +620,7 @@ def build_marine_spatial_support(
         )
     provenance = water_geometry_provenance(config.water_polygon_path, project_root())
     water_geometry, aoi = _load_water_geometry(config)
+    reporting_geometry = _model_reporting_geometry(config, water_geometry)
     water_checksum = checksum_path(config.water_polygon_path)
     run = run_id or f"marine-spatial-support-{uuid.uuid4().hex[:12]}"
     transaction_root = Path(
@@ -609,27 +673,11 @@ def build_marine_spatial_support(
             )
             validate_geometry_products(full, clipped, resolution)
             if resolution == 8:
-                model_bounds = (
-                    gpd.GeoSeries(
-                        [
-                            box(
-                                config.model_bbox["min_lon"],
-                                config.model_bbox["min_lat"],
-                                config.model_bbox["max_lon"],
-                                config.model_bbox["max_lat"],
-                            )
-                        ],
-                        crs="EPSG:4326",
-                    )
-                    .to_crs("EPSG:6933")
-                    .iloc[0]
+                positive_overlap = _positive_reporting_overlap(
+                    clipped, reporting_geometry
                 )
-                projected_clipped = clipped.to_crs("EPSG:6933")
-                positive_overlap = projected_clipped.geometry.intersection(
-                    model_bounds
-                ).area.gt(0)
                 model_cells_by_resolution[8] = set(
-                    clipped.loc[positive_overlap.to_numpy(), "H3_INDEX"].astype(str)
+                    clipped.loc[positive_overlap, "H3_INDEX"].astype(str)
                 )
             elif resolution == 6:
                 if 8 not in model_cells_by_resolution:
@@ -855,6 +903,16 @@ def build_marine_spatial_support(
             ],
             upstream_artifacts=[
                 {"path": str(config.water_polygon_path), "checksum": water_checksum},
+                *(
+                    [
+                        {
+                            "path": str(config.reporting_mask_path),
+                            "checksum": checksum_path(config.reporting_mask_path),
+                        }
+                    ]
+                    if config.reporting_mask_path is not None
+                    else []
+                ),
                 *([provenance["upstream"]] if provenance else []),
             ],
             attribution=provenance["attribution"]
@@ -882,6 +940,11 @@ def build_marine_spatial_support(
                 ),
                 "water_mask_version": config.water_mask_version,
                 "spatial_support_version": config.spatial_support_version,
+                "model_support_selection": (
+                    "native_R8_positive_reporting_mask_intersection_R6_exact_parents"
+                    if config.reporting_mask_path
+                    else "legacy_rectangle_R8_R6_exact_parents"
+                ),
                 "summary": summary,
                 "radius_operator_lineage": {
                     "path": str(config.radius_sum_operator_path),

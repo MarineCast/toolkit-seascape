@@ -250,6 +250,12 @@ def _query_tiles(
 ) -> list[dict[str, float]]:
     """Split a query envelope into bounded ArcGIS requests."""
 
+    width = float(bbox["max_lon"]) - float(bbox["min_lon"])
+    height = float(bbox["max_lat"]) - float(bbox["min_lat"])
+    if not all(math.isfinite(v) and v > 0 for v in (width, height, tile_degrees)):
+        raise ValueError("Freshwater query bounds must be positive and finite")
+    if math.ceil(width / tile_degrees) * math.ceil(height / tile_degrees) > 4096:
+        raise ValueError("Freshwater query tile budget exceeded")
     tiles: list[dict[str, float]] = []
     longitude = float(bbox["min_lon"])
     while longitude < float(bbox["max_lon"]):
@@ -281,6 +287,8 @@ def _arcgis_object_ids(
     """Collect unique object IDs with tiled requests to avoid service proxy limits."""
 
     tiles = _query_tiles(bbox, tile_degrees)
+    if len(tiles) > 4096:
+        raise ValueError("Freshwater query tile budget exceeded")
     object_ids: set[int] = set()
     object_id_field = "OBJECTID"
     for index, tile in enumerate(tiles, start=1):
@@ -290,7 +298,11 @@ def _arcgis_object_ids(
             session.get(f"{source.layer_url}/query", params=id_params, timeout=timeout),
             f"{source.name} object-ID tile {index}/{len(tiles)}",
         )
+        if "objectIds" not in payload or payload.get("exceededTransferLimit"):
+            raise RuntimeError(f"{source.name} object-ID inventory is incomplete")
         object_ids.update(int(value) for value in payload.get("objectIds") or [])
+        if len(object_ids) > 500000:
+            raise ValueError("Freshwater feature budget exceeded")
         object_id_field = str(payload.get("objectIdFieldName") or object_id_field)
         if index % 10 == 0 or index == len(tiles):
             LOGGER.info(
@@ -312,7 +324,26 @@ def _download_arcgis_geojson(
     timeout: float,
     overwrite: bool,
 ) -> tuple[Path, int]:
+    identity = {
+        "layer_url": source.layer_url,
+        "where": source.where,
+        "fields": list(source.fields),
+        "bbox_wgs84": dict(bbox),
+        "query_tile_degrees": tile_degrees,
+    }
+    receipt_path = source.raw_path.with_suffix(source.raw_path.suffix + ".source.json")
     if source.raw_path.exists() and not overwrite:
+        if not receipt_path.is_file():
+            raise ValueError(
+                f"Existing {source.name} extract has no bound source identity; reacquire with overwrite"
+            )
+        receipt = json.loads(receipt_path.read_text())
+        if receipt.get("request") != identity or receipt.get("sha256") != _sha256(
+            source.raw_path
+        ):
+            raise ValueError(
+                f"Existing {source.name} extract differs from its requested source or bytes; reacquire with overwrite"
+            )
         with source.raw_path.open(encoding="utf-8") as existing:
             count = len(json.load(existing).get("features", []))
         LOGGER.info(
@@ -353,6 +384,23 @@ def _download_arcgis_geojson(
             raise RuntimeError(
                 f"{source.name} query did not return a GeoJSON feature list."
             )
+        returned = []
+        for feature in batch:
+            properties = {
+                str(k).casefold(): v for k, v in feature.get("properties", {}).items()
+            }
+            value = properties.get(object_id_field.casefold(), feature.get("id"))
+            if value is None:
+                raise RuntimeError(f"{source.name} feature has no source object ID")
+            returned.append(int(value))
+        if (
+            len(returned) != len(set(returned))
+            or set(returned) != set(chunk)
+            or geojson.get("exceededTransferLimit")
+        ):
+            raise RuntimeError(
+                f"{source.name} returned duplicate, missing or unexpected source IDs"
+            )
         features.extend(batch)
         downloaded = min(start + len(chunk), len(object_ids))
         if downloaded % 10_000 == 0 or downloaded == len(object_ids):
@@ -391,6 +439,22 @@ def _download_arcgis_geojson(
         partial.replace(source.raw_path)
     finally:
         partial.unlink(missing_ok=True)
+    receipt_partial = receipt_path.with_suffix(receipt_path.suffix + ".part")
+    try:
+        receipt_partial.write_text(
+            json.dumps(
+                {
+                    "request": identity,
+                    "sha256": _sha256(source.raw_path),
+                    "feature_count": len(features),
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        receipt_partial.replace(receipt_path)
+    finally:
+        receipt_partial.unlink(missing_ok=True)
     LOGGER.info(
         "Saved %s extract (%d features): %s",
         source.name,

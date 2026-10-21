@@ -42,7 +42,8 @@ write caches. They require separately reviewed source/bounds/resource authorizat
 families validate local inventories instead. Builds expect configured local sources and never
 serve as a universal downloader. Inspect preflight before selecting a fresh candidate.
 
-### Plan and build a candidate
+<a id="plan-and-build-a-candidate"></a>
+### Plan and build current data
 
 The workflow expects configured source inputs to be available. A subset plan expands dependencies:
 
@@ -51,10 +52,10 @@ seascape --workspace "$SEASCAPE_WORKSPACE" build --only seascape-geomorphometry 
 seascape --workspace "$SEASCAPE_WORKSPACE" build --only seascape-geomorphometry --dry-run --check-inputs --json
 ```
 
-A full build creates products, metadata and a release audit while retaining the candidate by default:
+A full build uses temporary producer tables, then writes flat area Parquets and `catalog.json`:
 
 ```sh
-seascape --workspace "$SEASCAPE_WORKSPACE" build --candidate-root "$SEASCAPE_WORKSPACE/.seascape/candidate"
+seascape --workspace "$SEASCAPE_WORKSPACE" build
 ```
 
 | Option | Behavior |
@@ -65,14 +66,15 @@ seascape --workspace "$SEASCAPE_WORKSPACE" build --candidate-root "$SEASCAPE_WOR
 | `--dry-run` | Print the plan without running builders |
 | `--check-inputs` | With `--dry-run`, inspect selected local prerequisites; return 1 on required missing, invalid or unverified inputs |
 | `--json` | With `--dry-run`, emit one JSON planning/preflight report; without `--check-inputs`, inspection status is `not_run` |
-| `--candidate-root PATH` | Reuse an explicit candidate location instead of a timestamped default |
+| `--work-root PATH` | Select an explicit scratch location for processing/resume |
+| `--output-dir PATH` | Select the flat output directory; default `Data/Seascape` in the workspace |
 | `--resume` | Reuse stages whose recorded checks pass |
 | `--overwrite` | Rebuild rather than reuse valid resume state |
-| `--publish` | Promote the candidate after the release gate passes |
 
-The default candidate path is `<workspace>/.seascape/candidates/seascape/<UTC timestamp>`.
-Use a distinct directory for each independent run. See the [configuration guide](CONFIGURATION.md)
-for which paths are isolated and which changes resume checks detect.
+The default scratch path is `<workspace>/.seascape/work/seascape`. Successful full
+builds remove it. Consumer outputs use stable `<area>-r<resolution>-static.parquet` and optional
+`<area>-r<resolution>-dynamic.parquet` names. Only `catalog.json` accompanies them. There is no
+data-release or promotion step. Failed scratch products remain available for repair.
 
 Input preflight uses the same dependency expansion and candidate configuration rendering as
 execution. It calls existing family configuration loaders in memory, checks local file readability
@@ -82,7 +84,7 @@ publishes. The report includes workspace/config selection, expanded stages, defa
 and actual configured destinations, publication intent, performed checks, corrective actions and
 required/optional flags. Workspace precedence remains `--workspace`, `SEASCAPE_WORKSPACE`, cwd.
 Pass the same explicit `--candidate-root` to preflight and execution when reusing the exact printed
-destination; the timestamped default is resolved separately for each invocation.
+destination; the default scratch path is stable across invocations.
 
 `ready` means only the reported preflight checks passed. `missing_external` identifies an absent
 local prerequisite; `invalid` identifies failed configuration/access/header checks;
@@ -117,18 +119,13 @@ seascape --workspace "$SEASCAPE_WORKSPACE" inspect bathymetry --config "$SEASCAP
 Use explicit inspection output paths when keeping diagnostics inside the candidate; presentation
 settings may otherwise route maps into the workspace's standard output directory.
 
-### Publish after review
+<a id="publish-after-review"></a>
+### Read current outputs
 
-Use the same configuration and candidate directory:
-
-```sh
-seascape --workspace "$SEASCAPE_WORKSPACE" build --candidate-root "$SEASCAPE_WORKSPACE/.seascape/candidate" --resume --publish
-```
-
-Publication retains a copied generation under `.seascape/releases/<release_id>` and promotes
-canonical compatibility paths and the schema-3 release manifest in one journaled transaction.
-It is local artifact publication, not a Git push or a public dataset upload. Direct family APIs
-can also publish their own outputs; the candidate workflow's release gate is a separate operation.
+Use `seascape.read_area` or read `Data/Seascape/<area>-r<resolution>-static.parquet` directly.
+Dated variants have a `date` column. Definitions, units and source limits are
+embedded in Parquet metadata; [the layout guide](metric-matrix.md) describes it.
+Normal builds retain no data generations or release manifests.
 
 ## Consume an audited release
 
@@ -155,7 +152,7 @@ source rights remain governed by the selected configuration and owning family's 
 | `build --dry-run [--check-inputs] --json` and human input preflight | Selected config; local inputs for input checks | No acquisition; local inspection only | JSON report on stdout or human report; no writes/hashes/producers; failure guidance on stderr | No build or release approval |
 | `download FAMILY` | Reviewed config, source rights/access, provider credentials where required | Family-specific HTTP acquisition or local input validation/reuse; see family help/source guide | Configured raw caches, archives and inventories; overwrite/reuse rules vary by family | No whole-release promotion |
 | `build` | Configured local inputs and selected dependencies | No downloader is invoked by the candidate runners; source locations must be local | Candidate config/products/manifests/catalog/audit/docs. Fresh directory recommended; producer replacement rules vary, and some producers replace configured outputs even without `--overwrite`. `--resume` / `--skip` require existing identity/checksum validation | Retains candidate by default; selected family products may be published within that candidate |
-| `build --resume --publish` | Same candidate/config, valid reuse state, complete passing release audit | No acquisition | Retained generation, canonical compatibility products and release manifest; local journaled promotion. Existing retained releases remain | Whole-release promotion only after existing gates pass |
+| `build --resume` | Same scratch/config and valid reuse state | No acquisition | Current flat per-area Parquets and catalog | Producer/support validation before replacement |
 | `inspect FAMILY` | Existing configured products and presentation config | Local rendering; opening HTML can fetch external basemap tiles | Maps/diagnostics at configured or explicit output paths, which can replace existing visualizations; no resume contract | No scientific release approval |
 | `export-metric-matrix` / `build_metric_matrix` | Validated release and archived catalog (or explicit existing legacy mode) | None | Parquet with embedded export metadata at explicit destination; existing output requires `--overwrite`; no resume | Export only; does not publish a release |
 | Product discovery/resolution Python facade | Completed release; requested product/resolution/retained identity | None | Reader lock bookkeeping may be created; no data writes | Checksum-verifies existing release/products |

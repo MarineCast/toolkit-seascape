@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 from shapely.ops import unary_union
 
@@ -16,7 +17,12 @@ from seascape.core.config.paths import project_root
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.spatial_support.water_network.config import load_water_network_config
 from seascape.spatial_support.water_network.graph import target_graph_mapping
-from seascape.spatial_support.water_network.load import load_water_graph
+from seascape.spatial_support.water_network.load import (
+    load_model_area_geometry,
+    load_radius_sum_operator,
+    load_water_graph,
+)
+from seascape.spatial_support.water_network.radius_operator import RadiusSumOperator
 from seascape.utils.artifacts import (
     build_manifest,
     checksum_artifact,
@@ -134,8 +140,24 @@ def _network_mosaic_metrics(
         return frame
     graph = load_water_graph(resolution, config_path)
     groups = list(marine.groupby("HABITAT_TYPE", sort=True))
-    if sum(len(group) for _name, group in groups) > max_searches:
-        raise ValueError("Habitat radius-search budget exceeded")
+    targets = sorted(set(marine.H3_INDEX.astype(str)))
+    if resolution == 8:
+        operator = load_radius_sum_operator(config_path)
+        if operator.radius_m != 5000:
+            raise ValueError(
+                "Habitat mosaic requires the canonical 5000 m radius operator"
+            )
+    else:
+        if len(targets) > max_searches:
+            raise ValueError("Habitat radius-search budget exceeded")
+        network = load_water_network_config(config_path)
+        operator = RadiusSumOperator.build(
+            graph,
+            targets,
+            radius_m=5000,
+            graph_checksum=checksum_artifact(network.edge_path(resolution)),
+            source_cells=sorted(graph.support.H3_INDEX.astype(str)),
+        )
     for habitat_type, group in groups:
         cells = group.H3_INDEX.astype(str).tolist()
         area = group.set_index("H3_INDEX").MAPPED_AREA_M2.astype(float)
@@ -143,23 +165,9 @@ def _network_mosaic_metrics(
         distance, _unused_area, qc = habitat_network_metrics(
             graph, cells, present, area, None
         )
-        source_area = {
-            str(cell): float(value)
-            for cell, value in area.items()
-            if pd.notna(value) and value > 0
-        }
-        source_cells = sorted(source_area)
-        source_positions, source_connectors, _ = target_graph_mapping(
-            graph, source_cells
-        )
-        sources = [
-            (cell, int(position), float(connector), source_area[cell])
-            for cell, position, connector in zip(
-                source_cells, source_positions, source_connectors, strict=True
-            )
-            if position >= 0 and math.isfinite(float(connector))
-        ]
-        radius = [_radius_area(graph, cell, sources, 5000.0) for cell in cells]
+        radius = _operator_mapped_area(operator, area, cells)
+        positions, _connectors, _reasons = target_graph_mapping(graph, cells)
+        radius[positions < 0] = np.nan
         frame.loc[group.index, "NEAREST_MAPPED_HABITAT_M"] = distance
         frame.loc[group.index, "MAPPED_AREA_WITHIN_5KM_OF_SELECTED_SUPPORT_M2"] = radius
         frame.loc[group.index, "NETWORK_QC"] = [
@@ -169,6 +177,67 @@ def _network_mosaic_metrics(
             for value in qc
         ]
     return frame
+
+
+def _operator_mapped_area(operator, area, cells):
+    values = area.reindex(operator.source_cells.astype(str)).to_numpy(dtype=float)
+    summed = operator.apply(values, eligible_sources=np.isfinite(values) & (values > 0))
+    return (
+        pd.Series(summed, index=operator.cells.astype(str))
+        .reindex(cells)
+        .to_numpy(dtype=float, copy=True)
+    )
+
+
+def _validate_tidal_support(intertidal):
+    required = {
+        "H3_INDEX",
+        "H3_RESOLUTION",
+        "TIDAL_FRAME",
+        "VERTICAL_DATUM",
+        "SOURCE_RIGHTS",
+        "SOURCE_ID",
+        "SOURCE_VERSION",
+        "INDEPENDENT_TIDAL_SUPPORT",
+    }
+    if required - set(intertidal) or intertidal.crs is None or intertidal.empty:
+        raise ValueError(
+            "Intertidal support needs R8 H3, independent source identity, tidal frame, datum and rights"
+        )
+    if (
+        not intertidal.H3_RESOLUTION.eq(8).all()
+        or intertidal.H3_INDEX.duplicated().any()
+        or not intertidal.INDEPENDENT_TIDAL_SUPPORT.eq(True).all()
+    ):
+        raise ValueError(
+            "Intertidal support needs unique R8 identities and an independent tidal source"
+        )
+    for name in (
+        "TIDAL_FRAME",
+        "VERTICAL_DATUM",
+        "SOURCE_RIGHTS",
+        "SOURCE_ID",
+        "SOURCE_VERSION",
+    ):
+        if (
+            intertidal[name].isna().any()
+            or intertidal[name]
+            .astype(str)
+            .str.strip()
+            .str.casefold()
+            .isin(
+                {"", "unknown", "unspecified", "none", "nan", "null", "not_available"}
+            )
+            .any()
+        ):
+            raise ValueError(f"Intertidal support {name} is unqualified")
+    if (
+        intertidal.geometry.isna().any()
+        or not intertidal.geometry.is_valid.all()
+        or intertidal.geometry.is_empty.any()
+        or intertidal.to_crs(6933).geometry.area.le(0).any()
+    ):
+        raise ValueError("Intertidal support must have valid positive-area geometry")
 
 
 def build_mapped_habitat_mosaic(config_path: str | Path) -> tuple[Path, ...]:
@@ -200,7 +269,7 @@ def build_mapped_habitat_mosaic(config_path: str | Path) -> tuple[Path, ...]:
         or inventory.SOURCE_RIGHTS.astype(str).str.len().eq(0).any()
     ):
         raise ValueError("Every mapped habitat source needs explicit rights")
-    marine = gpd.read_parquet(config.marine_r8_path)
+    marine = load_model_area_geometry(8, config_path)
     marine["H3_RESOLUTION"] = 8
     marine["SUPPORT_TYPE"] = "marine"
     if config.selected_h3_indices:
@@ -217,21 +286,7 @@ def build_mapped_habitat_mosaic(config_path: str | Path) -> tuple[Path, ...]:
         if config.intertidal_support_path is None:
             raise ValueError("Intertidal habitat requires separate tidal-frame support")
         intertidal = gpd.read_parquet(config.intertidal_support_path)
-        needed = {
-            "H3_INDEX",
-            "H3_RESOLUTION",
-            "TIDAL_FRAME",
-            "VERTICAL_DATUM",
-            "SOURCE_RIGHTS",
-        }
-        if (
-            needed - set(intertidal)
-            or intertidal.crs is None
-            or not intertidal.H3_RESOLUTION.eq(8).all()
-        ):
-            raise ValueError(
-                "Intertidal support needs R8 H3, tidal frame, datum and source rights"
-            )
+        _validate_tidal_support(intertidal)
         if config.selected_h3_indices:
             intertidal = intertidal.loc[
                 intertidal.H3_INDEX.isin(config.selected_h3_indices)
@@ -296,7 +351,12 @@ def build_mapped_habitat_mosaic(config_path: str | Path) -> tuple[Path, ...]:
                 "checksum": checksum_artifact(config.marine_r8_path),
             }
         ],
-        attribution=[],
+        attribution=[
+            {"text": str(source_id), "license": str(rights)}
+            for source_id, rights in inventory[["SOURCE_DATASET", "SOURCE_RIGHTS"]]
+            .drop_duplicates()
+            .itertuples(index=False, name=None)
+        ],
         source_completeness="partial",
         metadata={
             "scientific_method_version": "resolved_mapped_habitat_mosaic_v1",

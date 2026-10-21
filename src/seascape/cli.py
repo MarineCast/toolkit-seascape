@@ -75,12 +75,16 @@ def initialize_workspace(root: Path) -> None:
 
 
 def _config_selection(args: argparse.Namespace) -> str:
+    if getattr(args, "command", None) == "history":
+        return str(args.study_config)
     if hasattr(args, "config"):
         return args.config
     for index, argument in enumerate(getattr(args, "arguments", [])):
-        if argument.startswith("--config="):
+        if argument.startswith(("--config=", "--study-config=")):
             return argument.split("=", 1)[1]
-        if argument == "--config" and index + 1 < len(args.arguments):
+        if argument in {"--config", "--study-config"} and index + 1 < len(
+            args.arguments
+        ):
             return args.arguments[index + 1]
     return "family default (see --help) / release metadata"
 
@@ -112,12 +116,18 @@ def main(argv: list[str] | None = None) -> int:
         help="Replace only known artifacts in an owned demo directory",
     )
     build = commands.add_parser(
-        "build", help="Build an isolated candidate from local source data"
+        "build", help="Build flat per-area Parquets from local source data"
     )
     build.add_argument("--config", default="config/data/project.yaml")
     build.add_argument("--only", action="append", default=[])
     build.add_argument("--skip", action="append", default=[])
-    build.add_argument("--candidate-root", type=Path)
+    build.add_argument(
+        "--work-root",
+        "--candidate-root",
+        dest="candidate_root",
+        type=Path,
+        help="Optional scratch directory for processing/resume",
+    )
     build.add_argument("--dry-run", action="store_true")
     build.add_argument(
         "--check-inputs",
@@ -129,22 +139,38 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Emit machine-readable planning/preflight output; requires --dry-run",
     )
+    build.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Flat output directory (default: Data/Seascape in the workspace)",
+    )
     build.add_argument("--resume", action="store_true")
     build.add_argument("--overwrite", action="store_true")
     build.add_argument(
         "--publish",
         action="store_true",
-        help="Promote candidate after the release audit passes",
+        help=argparse.SUPPRESS,
     )
     export = commands.add_parser(
         "export-metric-matrix",
-        help="Write one H3 cell by metric Parquet from a Seascape release",
+        help="Legacy release migration helper (use export for current per-area outputs)",
     )
     export.add_argument("--output", type=Path, required=True)
     export.add_argument("--resolution", type=int, action="append", choices=(6, 8))
     export.add_argument("--catalog", type=Path)
     export.add_argument("--legacy-unverified", action="store_true")
     export.add_argument("--overwrite", action="store_true")
+    export_current = commands.add_parser(
+        "export", help="Write flat per-area Parquets from existing producer tables"
+    )
+    export_current.add_argument("--output-dir", type=Path)
+    export_current.add_argument("--catalog", type=Path)
+    from seascape.historical import add_history_arguments
+
+    history = commands.add_parser(
+        "history", help="Extract native historical evidence and report source gaps"
+    )
+    add_history_arguments(history)
     for action in ("download", "inspect"):
         sub = commands.add_parser(
             action, help=f"Run a family's {action} command", add_help=False
@@ -192,6 +218,10 @@ def main(argv: list[str] | None = None) -> int:
             ):
                 print(path)
             return 0
+        if args.command == "history":
+            from seascape.historical import run_history_cli
+
+            return run_history_cli(args)
         if args.command in {"download", "inspect"}:
             module = f"seascape.{FAMILIES[args.family]}.{args.command}"
             old_argv = sys.argv
@@ -201,6 +231,16 @@ def main(argv: list[str] | None = None) -> int:
                 return int(result or 0)
             finally:
                 sys.argv = old_argv
+        if args.command == "export":
+            from seascape.domain_parquets import export_domain_parquets
+
+            catalog = export_domain_parquets(
+                workspace=project_root(),
+                output=args.output_dir,
+                catalog_path=args.catalog,
+            )
+            print(json.dumps(catalog, indent=2))
+            return 0
         if args.command == "export-metric-matrix":
             from seascape.metric_matrix import build_metric_matrix
 
@@ -268,6 +308,7 @@ def main(argv: list[str] | None = None) -> int:
             resume=args.resume,
             overwrite=args.overwrite,
             publish=args.publish,
+            output_dir=args.output_dir,
             _failure_reporter=lambda name, elapsed, exc: print(
                 f"build / {name}: failed ({elapsed:.1f}s; {type(exc).__name__})",
                 file=sys.stderr,

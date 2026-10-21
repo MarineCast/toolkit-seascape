@@ -1,4 +1,4 @@
-"""Download the global Sentinel-2 shallow-water seagrass product."""
+"""Download configured mapped eelgrass polygons and compressed Sentinel-2 composites."""
 
 from __future__ import annotations
 

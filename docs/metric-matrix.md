@@ -1,83 +1,96 @@
-# H3 metric matrix export
+# Flat H3 domain tables
 
-`seascape export-metric-matrix` writes one Parquet file with one row per canonical
-`(H3_INDEX, H3_RESOLUTION)` cell. It is a convenience product for downstream
-inspection and joins, not a new seascape calculation or an ecological model.
-The default includes R6 and R8. It names each field `<product_id>__<source_column>`
-so columns from different families cannot collide. All cataloged physical variables,
-states, coverage, evidence, and QC fields are retained. A field unavailable at a
-resolution is null there; no missing value is replaced with zero. The Parquet schema
-metadata key `seascape_metric_matrix` contains the field-to-source mapping, units,
-roles, available resolutions, original field types by resolution, source table
-checksums, and validation status. Compatible source types may widen in the combined
-Parquet (for example, a year stored as integer at R6 and floating point at R8).
-Newly generated candidate catalogs also carry field definitions, native-versus-reporting
-support, denominator, missingness, aggregation, method version, dependencies and uncertainty
-availability. The exporter copies those into each namespaced field record. Older archived
-catalogs may lack these keys; their absence is not evidence of known precision or coverage.
+The flat H3 output consists of `<area>-r<resolution>-static.parquet`, optional
+`<area>-r<resolution>-dynamic.parquet`, and `catalog.json`. Each area and native resolution has at most two files.
+Names never include dates or versions, and updates replace the current files.
+There is no data-release directory, publication receipt or separate manifest.
 
-The input grain is the toolkit's canonical model-area H3 support at each resolution.
-R8 cells have nonzero water overlap; R6 is the exact parent union of those cells and
-may include a hierarchy-only parent. The exporter requires each source table to have
-the same unique H3 support and validates every H3 index and declared resolution.
-The matrix has no geometry or time axis. Its values describe static physical/source
-snapshots, with source vintage and retrieval/build timing retained in the referenced
-release and family manifests. Units and sign conventions remain those of each cataloged
-field, including positive-down bathymetry where configured. Nulls, coverage, evidence,
-and QC columns must be interpreted together; a null is not a surveyed zero or absence.
-The export does not establish predictive eligibility or species habitat suitability.
-Source rights and attribution continue to apply; a local export is not redistribution
-approval.
+An optional `research/` child contains separately keyed named-object and long relationship tables,
+referenced by the study registry. These objects are outside the H3 area catalog. Rebuilds and
+historical replacement preserve that directory byte-for-byte; arbitrary extra directories and
+symbolic links are rejected. Domain products stay canonical under `Data/Seascape/`, while study
+definitions, masks and H3 registries remain separate from their selected products.
 
-## Validated toolkit release
+Static grain is `(H3_INDEX, H3_RESOLUTION)` with metric columns and no time axis.
+Dynamic grain adds a nonnull Arrow `date32` column named `date`. Native R6 and R8
+rows are stored in separate files. Each file has exactly one native resolution; no resampling occurs.
+Missing measurements remain null. Padding columns explicitly unavailable at a
+resolution are omitted from its file. Physical values, evidence,
+coverage and QC stay together. Unknown coverage never becomes zero or absence.
 
-Set `SEASCAPE_WORKSPACE` to an existing audited schema-3 release workspace as in the
-[consumer example](API.md#freeze-and-read-a-release), then export using its archived
-catalog and immutable products. The exporter calls the public `resolve_product` API
-for each table, which verifies the release and source artifact checksums. It rejects
-missing products, unexpected grain, catalog path disagreements, missing columns,
-duplicate or invalid keys, and support mismatches. The output is written through a
-temporary file and atomically replaced only when `--overwrite` is explicit.
-Support must be nonempty. Even with `--overwrite`, an export cannot replace an input table,
-its catalog, the canonical release manifest, or any retained release generation. Validation,
-serialization and replacement failures preserve an existing destination. Each export freezes
-one release ID before reading its catalog and tables; a concurrent publication cannot mix generations.
+Directional quantities become separate columns for each native bearing. Annual
+observations use January 1 as a year index label, with explicit year precision in
+Parquet metadata; that label never claims an observed survey day. Annual data are
+not expanded into daily rows or forward filled. Exact duplicate convenience
+aliases and row-level release IDs are omitted during migration.
 
-```sh
-seascape --workspace "$SEASCAPE_WORKSPACE" export-metric-matrix \
-  --output "$SEASCAPE_WORKSPACE/exports/seascape-h3-metrics.parquet"
+The `seascape_domain` Parquet schema metadata contains definitions, units, source
+context, limitations and temporal support. `catalog.json` is deliberately small:
+
+```json
+{
+  "kelp": {
+    "last_updated_utc": "2026-10-14T12:00:00+00:00",
+    "static": {"6": "kelp-r6-static.parquet", "8": "kelp-r8-static.parquet"},
+    "dynamic": {"6": "kelp-r6-dynamic.parquet", "8": "kelp-r8-dynamic.parquet"}
+  }
+}
 ```
 
-Pass `--resolution 8` to select only R8. Repeat `--resolution` for both. The default
-is both. The caller chooses the output location; the toolkit never assumes an
-OrcaCast checkout.
-
-## Explicit legacy bridge
-
-For retained schema-1 materializations only, pass `--legacy-unverified` and an
-explicit catalog path. This path checks table structure and records source checksums,
-but it cannot claim the current schema-3 release guarantees. The embedded metadata
-sets `source_validation=legacy_structural_only`, carries the old release's
-`model_policy_complete` value, and lists any family-manifest checksum mismatches.
-Use a clearly marked output filename and keep it internal until a current release
-replaces it.
-
-Select the existing legacy workspace explicitly; the catalog path below is an absolute placeholder.
+The timestamp records when these outputs were successfully updated, not source
+observation time or newly established accuracy. Untouched areas retain their
+files and timestamp. Failed writes preserve previous files and the catalog.
+`export` replaces only the variants supplied by its producer catalog. An existing
+annual variant remains unchanged when the supplied source has only static data;
+its embedded source/update context is preserved.
+Temporary processing, locks and recovery journals stay outside the output
+folder; successful normal builds remove their scratch products.
 
 ```sh
-export SEASCAPE_WORKSPACE="/absolute/path/to/legacy-workspace"
-seascape --workspace "$SEASCAPE_WORKSPACE" export-metric-matrix \
-  --catalog /absolute/path/to/reference-feature-catalog.yaml \
-  --legacy-unverified \
-  --output "$SEASCAPE_WORKSPACE/exports/seascape-h3-metrics-legacy-unverified.parquet"
+seascape --workspace "$SEASCAPE_WORKSPACE" build
+seascape --workspace "$SEASCAPE_WORKSPACE" export
 ```
 
-### Historical consumer observation (2026-09 migration/remediation)
+`export` converts existing producer tables using their generated feature catalog,
+without data-release resolution. `--output-dir` selects a flat output directory.
+A catalog product can declare `temporal_column: date` or `temporal_column: OBSERVATION_YEAR`
+for existing dated producer tables. These are validated on cell/date keys, with no
+implicit daily expansion. Undated snapshots remain static.
+See [the current Python API](API.md#current-area-tables). The old
+`export-metric-matrix` command is a historical migration helper only.
 
-The historical retained OrcaCast schema-1 workspace had 46 structurally aligned R6/R8
-tables, but its water-geometry family manifest differs from the release checksum.
-Its release also recorded `model_policy_complete=false`. A bridge export from those
-tables is therefore only an inspectable legacy artifact. It had 1,263 R6 and
-43,393 R8 cells and 522 cataloged fields. The migration/remediation record reported that OrcaCast's local data product used
-a fresh audited schema-3 toolkit release through the validated path above; the
-legacy bridge file was removed from its `data/seascape/processed/` directory.
+To migrate an existing consolidated directory, run `python scripts/migrate_flat_data.py
+--source /absolute/path/to/old-consolidated-directory --output /absolute/path/to/staging`.
+It verifies source checksums, preserves retained arrays and missingness, pivots
+native bearings and writes the annual table. It never deletes input files.
+Review readback before replacing an old data tree.
+
+## Substrate feature projection
+
+The prepared `substrate` area omits these reviewed native field names from its
+feature columns: `SOURCE_OBSERVATION_DATE_STATUS`, `SEDIMENT_TEXTURE_STATUS`,
+`SAND_POINT_SAMPLE_STATUS`, `SAND_MASK_STATUS`, `ROCK_POINT_SAMPLE_STATUS`,
+`ROCK_MASK_STATUS`, `POINT_SUPPORT_STATUS`, `MUD_POINT_SAMPLE_STATUS`,
+`MUD_MASK_STATUS`, `H3_AREAL_SUBSTRATE_COVERAGE`, `GRAVEL_POINT_SAMPLE_STATUS`,
+`GRAVEL_MASK_STATUS`, `UNSUPPORTED_PHYSICAL_METRICS_REASON`,
+`SOURCE_OBSERVATION_PERIOD`, and `SOURCE_GRID_DEGREES`. In the retained native R6
+product these have the `SUBSTRATE_MODEL__` namespace. The current benthic
+producer's equivalent `SUBSTRATE_SEDIMENT_TEXTURE_STATUS` spelling is also
+projected out. Other substrate measurements and evidence remain unchanged.
+
+`write_areas` applies this projection after native table validation, including
+when called by `export_domain_parquets` or the retained-data migration helper.
+Missing cataloged native fields still fail producer validation; no null columns
+are synthesized. The projection changes neither scientific calculations nor
+retained values, Arrow types, nulls, keys or native resolution. Prepared field
+definitions and qualifier references omit the removed columns. Embedded
+`source_context` preserves the original source manifests, dictionaries and method
+scope, including the 0.1-degree point support and unknown observation dates;
+native source contracts are unchanged. `delivery_projection` records the policy
+and omitted names. The explorer regenerates its checked encoding when current
+catalog/Parquet bindings change, so removed features disappear from its picker
+and a previous removed selection uses the existing available-feature fallback.
+
+Offline checks: `python -m pytest -q tests/test_delivery_projection.py
+tests/test_domain_parquets.py`. This projection does not establish regional
+scientific validation or improve physical hardness or surveyed-coverage support.

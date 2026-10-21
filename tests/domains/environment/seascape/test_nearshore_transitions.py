@@ -6,13 +6,24 @@ from rasterio.io import MemoryFile
 from rasterio.transform import from_origin
 from shapely.geometry import LineString, Point, box
 
-from seascape.coastal_configuration.nearshore_build import _deep_network_distance
+from seascape.coastal_configuration.nearshore_build import (
+    _deep_network_distance,
+    _station_tangent_points,
+)
 from seascape.coastal_configuration.nearshore_transitions import (
     bounded_deep_target_components,
     first_water_facing_contour,
     nearshore_depth_areas,
 )
 from seascape.spatial_support.water_network.graph import WaterGraph
+
+
+def test_short_closed_island_tangent_wraps_the_source_seam():
+    ring = LineString([(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)])
+    before, after, half = _station_tangent_points(ring, np.array([40.0]), 1000)
+    assert half == 10
+    assert before[0].distance(after[0]) > 0
+    assert before[0].equals(Point(0, 10)) and after[0].equals(Point(10, 0))
 
 
 def test_pixel_footprint_denominators_and_analytic_slope() -> None:
@@ -55,6 +66,17 @@ def test_pixel_footprint_denominators_and_analytic_slope() -> None:
             assert crossing.status == "crossed"
             assert crossing.width_m == 20
             assert crossing.gradient_m_per_m == 1
+            cached = first_water_facing_contour(
+                Point(0, 50),
+                (0, 1),
+                water,
+                raster,
+                depth_threshold_m=25,
+                step_m=10,
+                max_distance_m=90,
+                path_water=water.buffer(1e-7),
+            )
+            assert cached == crossing
             values[:, 1] = -9999
             raster.write(values, 1)
             partial = nearshore_depth_areas(
@@ -197,3 +219,10 @@ def test_network_distance_identifies_the_reached_deep_component() -> None:
     assert distances.tolist() == [0, 100, 0]
     assert qc == ["mapped_deep_h3_target_graph_v1"] * 3
     assert nearest == ["left", "left", "right"]
+    contextual = table.iloc[[0]].copy()
+    targets = table.iloc[[1]].copy()
+    distances, _qc, nearest = _deep_network_distance(
+        targets, graph, resolution=8, source_table=contextual
+    )
+    assert distances.tolist() == [100]
+    assert nearest == ["left"]

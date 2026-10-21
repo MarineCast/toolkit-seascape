@@ -14,8 +14,8 @@ import yaml
 from seascape import metric_matrix
 from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.data.registry import DATASETS
+from seascape.legacy_products import resolve_product
 from seascape.metric_matrix import build_metric_matrix
-from seascape.products import resolve_product
 from seascape.release import publish_candidate_release
 from tests.test_products import _candidate_fixture, _refresh_candidate_audit
 

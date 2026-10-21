@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from seascape.core.artifacts.checksums import checksum_path
-from seascape.products import list_products, list_resolutions, resolve_product
+from seascape.legacy_products import list_products, list_resolutions, resolve_product
 
 
 def _release_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:

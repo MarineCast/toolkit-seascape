@@ -93,3 +93,34 @@ def test_gateway_pivot_rejects_null_object_identity() -> None:
     )
     with pytest.raises(ValueError, match="ambiguous"):
         pivot_selected_gateways(frame, ["gate"])
+
+
+def test_regional_gateway_targets_preserve_unmapped_support():
+    from seascape.coastal_configuration.gateway_build import (
+        reporting_gateway_relationships,
+    )
+
+    graph = _graph()
+    cells = pd.DataFrame({"H3_INDEX": ["a", "outside"], "H3_RESOLUTION": [8, 8]})
+    attachments = pd.DataFrame(
+        {
+            "GATEWAY_ID": ["gate"],
+            "GRAPH_H3_INDEX": ["d"],
+            "GATEWAY_CONNECTOR_DISTANCE_M": [0.0],
+        }
+    )
+    result = reporting_gateway_relationships(
+        cells, attachments, graph, max_pairs=2
+    ).set_index("H3_INDEX")
+    assert result.loc["a", "WATER_NETWORK_DISTANCE_M"] == 2
+    assert pd.isna(result.loc["outside", "WATER_NETWORK_DISTANCE_M"])
+    assert result.loc["outside", "REACHABILITY_STATUS"] == "unmapped_canonical_target"
+    assert result.loc["outside", "QC_REASON"] == "cell_outside_loaded_canonical_support"
+    with pytest.raises(ValueError, match="pair budget"):
+        reporting_gateway_relationships(cells, attachments, graph, max_pairs=1)
+    absent = cells.loc[cells.H3_INDEX.eq("outside")]
+    result = reporting_gateway_relationships(absent, attachments, graph, max_pairs=1)
+    assert result.WATER_NETWORK_DISTANCE_M.isna().all()
+    attachments["GRAPH_H3_INDEX"] = "invalid-source"
+    with pytest.raises(ValueError, match="outside canonical graph"):
+        reporting_gateway_relationships(absent, attachments, graph, max_pairs=1)

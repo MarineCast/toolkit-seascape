@@ -6,7 +6,7 @@ import pytest
 from shapely.geometry import LineString, box
 
 from seascape.coastal_configuration.passage_sections import measure_passage_section
-from seascape.products import resolve_product
+from seascape.legacy_products import resolve_product
 from seascape.publication import SeascapeReleasePublisher
 from seascape.release import publish_candidate_release
 from tests.test_products import _candidate_fixture

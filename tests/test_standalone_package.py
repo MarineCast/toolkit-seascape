@@ -116,11 +116,11 @@ def test_required_modules_and_editable_templates_are_in_installed_package():
         assert resources.joinpath(name).is_file(), name
 
 
-def test_release_plan_is_seascape_only():
-    stages = selected_stages(only=["seascape-release"])
-    assert len(stages) == 26
-    assert stages[-1].name == "seascape-release"
-    assert any(stage.name == "seascape-feature-eligibility" for stage in stages)
+def test_parquet_plan_is_seascape_only():
+    stages = selected_stages(only=["seascape-parquets"])
+    assert len(stages) == 23
+    assert stages[-1].name == "seascape-parquets"
+    assert not any("release" in stage.name for stage in stages)
     assert not any(stage.name == "seascape-model-policy" for stage in stages)
     assert not any(
         "meteorological" in output

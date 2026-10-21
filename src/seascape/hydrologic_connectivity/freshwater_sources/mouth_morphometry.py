@@ -73,6 +73,7 @@ def width_from_polygons(
     allowed_source = {
         "BC_FWA_STREAM_NETWORK": "BC_FWA_RIVER_POLYGONS",
         "US_NHD_SMALL_SCALE": "US_NHDPLUS_HR_NHDAREA",
+        "US_NHD_HR_LEGACY": "US_NHD_HR_LEGACY_NHDAREA",
     }.get(dataset)
     for index in polygons.sindex.query(search_geometry, predicate="intersects"):
         if (
@@ -117,7 +118,7 @@ def apply_mouth_widths(mouths: Any, bc_polygons: Any, us_polygons: Any, config: 
     frames = []
     for frame, source in (
         (bc_polygons, "BC_FWA_RIVER_POLYGONS"),
-        (us_polygons, "US_NHDPLUS_HR_NHDAREA"),
+        (us_polygons, getattr(config, "us_polygon_source", "US_NHDPLUS_HR_NHDAREA")),
     ):
         polygons = polygon_parts(frame).to_crs(config.projected_crs)
         polygons["WIDTH_SOURCE_DATASET"] = source

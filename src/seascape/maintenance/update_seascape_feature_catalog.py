@@ -24,7 +24,7 @@ from seascape.governance.feature_eligibility import (
 
 DEFAULT_OUTPUT_PATH = Path("config/feature_catalog.yaml")
 SEASCAPE_ROOT = Path("data/processed/domain/environmental_layer/seascape")
-KEY_COLUMNS = {"H3_INDEX", "H3_RESOLUTION"}
+KEY_COLUMNS = {"H3_INDEX", "H3_RESOLUTION", "date"}
 METRIC_FAMILY = "seascape"
 FEATURE_VARIABLE_ROLES = {"predictor", "categorical", "state"}
 
@@ -38,6 +38,7 @@ class ProductSpec:
     grain: str = "one row per canonical marine-support H3 cell"
     null_policy: str | None = None
     optional: bool = False
+    temporal_column: str | None = None
 
 
 def _paths(template: str, resolutions: tuple[int, ...] = (6, 8)) -> dict[int, str]:
@@ -266,42 +267,33 @@ PRODUCTS: dict[str, ProductSpec] = {
         "seascape.benthic_substrate.bottom_hardness.build",
     ),
     "seagrass": ProductSpec(
-        "Sentinel-2 seagrass habitat",
+        "Seagrass Extent (All Time)",
         "biogenic_habitat",
         _paths(
-            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/"
-            "seagrass/SEAGRASS_RES_{resolution}.parquet"
+            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/seagrass/SEAGRASS_RES_{resolution}.parquet"
         ),
         "seascape.biogenic_habitat.seagrass.build",
-        null_policy="Satellite non-detection is not interpreted as field-confirmed absence.",
-    ),
-    "seagrass_confidence": ProductSpec(
-        "Seagrass evidence",
-        "biogenic_habitat_evidence",
-        _paths(
-            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/"
-            "seagrass/SEAGRASS_CONFIDENCE_RES_{resolution}.parquet"
-        ),
-        "seascape.biogenic_habitat.seagrass.build",
+        null_policy="All-history mapped/classified positive footprint union; source periods, methods and species retained. Missing evidence is unknown.",
     ),
     "kelp": ProductSpec(
-        "Kelp habitat",
+        "Kelp Extent (All Time)",
         "biogenic_habitat",
         _paths(
-            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/"
-            "kelp/KELP_RES_{resolution}.parquet"
+            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_RES_{resolution}.parquet"
         ),
         "seascape.biogenic_habitat.kelp.build",
-        null_policy="Unsurveyed cells remain distinct from explicit absence.",
+        null_policy="All-history mapped-positive polygon union. Unknown dates are explicit; missing positive evidence is not absence.",
     ),
-    "kelp_confidence": ProductSpec(
-        "Kelp evidence",
-        "biogenic_habitat_evidence",
+    "kelp_annual": ProductSpec(
+        "Annual Kelp Extent",
+        "biogenic_habitat",
         _paths(
-            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/"
-            "kelp/KELP_CONFIDENCE_RES_{resolution}.parquet"
+            "data/processed/domain/environmental_layer/seascape/biogenic_habitat/kelp/KELP_ANNUAL_RES_{resolution}.parquet"
         ),
         "seascape.biogenic_habitat.kelp.build",
+        grain="native H3 cell and recorded survey year; January 1 is a year label",
+        temporal_column="date",
+        optional=True,
     ),
     "reef_habitat": ProductSpec(
         "Reef habitat",
@@ -700,8 +692,9 @@ def scientific_metadata(
         "geomorphic_units": "geomorphic_evidence_v2",
         "benthic_substrate": "separate_rock_presence_sediment_texture_v2",
         "bottom_hardness": "hardness_unavailable_unverified_joint_denominator_v2",
-        "seagrass": "survey_opportunity_asof_v2",
-        "kelp": "survey_opportunity_asof_v2",
+        "seagrass": "seagrass_positive_extent_union_v2",
+        "kelp": "kelp_positive_extent_union_v2",
+        "kelp_annual": "kelp_positive_extent_union_v2",
         "reef": "survey_opportunity_asof_v2",
         "exposure_and_enclosure": "geometric_fetch_16_bearings_v1",
         "nearshore_transitions": "nearshore_raster_footprint_v1",
@@ -712,8 +705,9 @@ def scientific_metadata(
         "gebco_tid": "categorical native pixel centers aligned to the depth grid; no resampling",
         "benthic_substrate": "modeled raster sampled at representative point; not areal coverage",
         "bottom_hardness": "derived from separately supported source fields",
-        "seagrass": "observation geometry intersected with water-clipped H3 support",
-        "kelp": "observation geometry intersected with water-clipped H3 support",
+        "seagrass": "all-history positive footprint union on full native H3, edges densified at 0.001 degrees",
+        "kelp": "all-history positive polygon union intersected with full native H3 support",
+        "kelp_annual": "survey-year positive polygon union intersected with full native H3 support",
         "reef": "observation geometry intersected with water-clipped H3 support",
         "exposure_and_enclosure": "16 geometric rays from H3 representative points",
         "nearshore_transitions": "area-weighted overlap of virtual projected native bathymetry pixels and water-clipped nearshore band",
@@ -863,6 +857,19 @@ def build_catalog(root: Path) -> dict[str, Any]:
                 "available_resolutions": available,
                 **scientific_metadata(product_id, column, spec),
             }
+            if product_id in {"kelp", "kelp_annual", "seagrass"}:
+                import json
+
+                context = json.loads(
+                    (schemas[available[0]].metadata or {}).get(
+                        b"seascape_domain", b"{}"
+                    )
+                )
+                declared = context.get("fields", {}).get(column, {})
+                features[column].update(declared)
+                features[column]["variable_kind"] = (
+                    "feature_variable" if declared.get("picker_visible") else "metadata"
+                )
             feature_entry_count += 1
             unique_columns.add(column)
         variable_kind_counts = {
@@ -885,6 +892,9 @@ def build_catalog(root: Path) -> dict[str, Any]:
             "variable_kind_counts": variable_kind_counts,
             "features": features,
         }
+        if spec.temporal_column:
+            product["temporal_column"] = spec.temporal_column
+            product["collection"]["index_columns"].append(spec.temporal_column)
         if spec.null_policy:
             product["null_policy"] = spec.null_policy
         products[product_id] = product
@@ -946,7 +956,7 @@ def build_catalog(root: Path) -> dict[str, Any]:
                 "status": "superseded_artifact_not_current_catalog",
                 "replacement": "seagrass",
                 "reason": (
-                    "The current contract uses the Sentinel-2 generic seagrass product in place "
+                    "The current contract consolidates mapped eelgrass and modeled generic seagrass extents in place "
                     "of the earlier jurisdictionally uneven eelgrass layer."
                 ),
                 "legacy_paths": {

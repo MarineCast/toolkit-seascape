@@ -23,6 +23,8 @@ The live explorer is a separate research path with explicit acquisition and expl
 | Document | Purpose |
 | --- | --- |
 | [Workflow and operation effects](WORKFLOWS.md) | Planning, processing, inspection, promotion and failure guidance |
+| [Historical data](historical-data.md) | Modeling-window extraction, native annual/composite support, geometry QC and explicit source gaps |
+| [Regional completion](regional-completion.md) | Source-identified coastal policy, native memberships, wider graph context and bounded regional execution |
 | [Bounded San Juan pilot](pilots/san-juan.md) | Executed exploratory R6/R8 family pilot, measurements and limits; not a complete regional release |
 | [Scientific hardening evidence](scientific-hardening.md) | Development-branch issue results, migrations and blockers |
 | [Capability coverage](capability-coverage.md) | Existing, unmaterialized, data-blocked and deferred physical capabilities |

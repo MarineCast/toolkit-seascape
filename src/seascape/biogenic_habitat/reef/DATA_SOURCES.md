@@ -14,3 +14,5 @@ This package keeps three concepts separate:
    access-only. The current pipeline exports null values, confidence 0, and an
    explicit no-public-export status rather than pretending the habitat is
    absent.
+
+The canonical user-facing Bivalve Extent (All-Time) now has a separate mapped-bed producer in `seascape.biogenic_habitat.bivalve`. This older reef proxy is retained for compatibility and must not be substituted for mapped-bed area. See `docs/bivalve.md` for admission/exclusion criteria.

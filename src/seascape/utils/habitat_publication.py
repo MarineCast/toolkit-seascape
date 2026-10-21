@@ -22,6 +22,7 @@ from seascape.spatial_support.water_network.load import (
 )
 
 from .artifacts import build_manifest, checksum_artifact, stage_parquet_family
+from .geometry_quality import prepare_mixed_habitat_inventory
 from .habitat_aggregation import aggregate_r8_to_r6
 from .habitat_configuration import (
     HabitatSurfaceConfig,
@@ -45,7 +46,13 @@ def build_habitat_products(
     """Build normalized inventory plus r8/r6 feature and confidence products."""
 
     inventory = normalize_inventory(inventory)
-    availability_year_known = bool(inventory["AVAILABLE_YEAR"].notna().all())
+    availability_year_known = bool(
+        len(inventory) and inventory["AVAILABLE_YEAR"].notna().all()
+    )
+    geometry_audit = prepare_mixed_habitat_inventory(
+        inventory, policy=config.invalid_geometry_policy
+    )
+    inventory = geometry_audit.frame
     inventory = inventory.loc[
         (
             inventory["OBSERVATION_END_YEAR"].isna()
@@ -211,9 +218,14 @@ def build_habitat_products(
             for source in sources
         ],
         source_completeness=(
-            "partial" if declared_status not in {"", "complete"} else "complete"
+            "partial"
+            if declared_status not in {"", "complete"}
+            or geometry_audit.report["repaired_records"]
+            or geometry_audit.report["quarantined_records"]
+            else "complete"
         ),
         metadata={
+            "source_geometry_quality": geometry_audit.report,
             "scientific_method_version": "habitat_topology_v2",
             "evidence_method_version": "survey_opportunity_asof_v2",
             "as_of_year": config.reference_year,
