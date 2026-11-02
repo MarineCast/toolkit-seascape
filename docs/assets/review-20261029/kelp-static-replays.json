@@ -1,0 +1,16 @@
+{
+  "6": {
+    "cells": 30,
+    "positive": 20,
+    "null": 10,
+    "max_abs_area_error_m2": 0.0,
+    "scope": "area, nulls and keys only; reconstructed BC records replace prior subset; record-count/source-ID qualifier parity not asserted"
+  },
+  "8": {
+    "cells": 30,
+    "positive": 20,
+    "null": 10,
+    "max_abs_area_error_m2": 0.0,
+    "scope": "area, nulls and keys only; reconstructed BC records replace prior subset; record-count/source-ID qualifier parity not asserted"
+  }
+}

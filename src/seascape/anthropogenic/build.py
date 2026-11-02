@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import json
 import logging
 from collections.abc import Mapping
 from dataclasses import asdict
@@ -12,7 +13,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from shapely import area, intersection, length, union_all
+from shapely import area, intersection, union_all
 from shapely.geometry import box
 
 from seascape.core.config.paths import project_root
@@ -50,6 +51,7 @@ from seascape.utils.surface import (
 )
 
 from .aggregation import aggregate_r8_to_r6
+from .armoring import dataset_estimates, maximum_estimate
 from .download import DEFAULT_CONFIG_PATH, SECTION_NAME
 from .sources import (
     CONFIDENCE_FAMILIES,
@@ -85,6 +87,8 @@ def _armoring_metrics(
     inventory: Any,
     pairs: pd.DataFrame,
     target_cells: list[str],
+    *,
+    estimates_by_cell: dict | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     cell_positions = {cell: index for index, cell in enumerate(target_cells)}
     surveyed = np.zeros(len(target_cells), dtype="float64")
@@ -94,24 +98,65 @@ def _armoring_metrics(
         & inventory["ARMORING_FRACTION_ESTIMATE"].notna()
     ]
     selected = pairs.loc[pairs["index_right"].isin(set(eligible))]
-    for cell, source_index in selected.itertuples(index=False):
+    fraction = np.full(len(target_cells), np.nan, dtype="float64")
+    for cell, rows in selected.groupby("H3_INDEX", sort=True):
         cell_index = cell_positions[str(cell)]
         cell_geometry = cells.geometry.iloc[cell_index]
-        source_geometry = inventory.geometry.iloc[int(source_index)]
-        shared_length = float(length(intersection(cell_geometry, source_geometry)))
-        if shared_length <= 0:
-            continue
-        surveyed[cell_index] += shared_length
-        armored[cell_index] += shared_length * float(
-            inventory.loc[int(source_index), "ARMORING_FRACTION_ESTIMATE"]
+        estimates = dataset_estimates(
+            (
+                intersection(cell_geometry, inventory.geometry.iloc[int(index)]),
+                inventory.loc[int(index), "ARMORING_FRACTION_ESTIMATE"],
+                inventory.loc[int(index), "SOURCE_DATASET"],
+            )
+            for index in rows.index_right
         )
-    fraction = np.divide(
-        armored,
-        surveyed,
-        out=np.full(len(target_cells), np.nan, dtype="float64"),
-        where=surveyed > 0,
-    )
-    return armored, surveyed, np.clip(fraction, 0.0, 1.0)
+        armored[cell_index], surveyed[cell_index], fraction[cell_index] = (
+            maximum_estimate(estimates)
+        )
+        if estimates_by_cell is not None:
+            estimates_by_cell[str(cell)] = estimates
+    return armored, surveyed, fraction
+
+
+def _mapped_evidence_fields(inventory, target_cells, resolution):
+    """Assign qualified physical locations directly to full native H3 cells."""
+    import geopandas as gpd
+    import h3
+
+    from seascape.core.geo.h3 import cell_to_polygon
+
+    classes = ("aquaculture", "artificial_reef", "disposal_site", "dredged_channel")
+    present = {name: set() for name in classes}
+    source = inventory.loc[
+        inventory.IS_CANONICAL & inventory.FEATURE_CLASS.isin(classes)
+    ].to_crs(4326)
+    points = source.loc[source.geom_type.eq("Point")]
+    for row in points.itertuples():
+        present[row.FEATURE_CLASS].add(
+            h3.latlng_to_cell(row.geometry.y, row.geometry.x, resolution)
+        )
+    polygons = source.loc[
+        source.SUPPORTS_AREA & source.geom_type.isin(["Polygon", "MultiPolygon"])
+    ]
+    if not polygons.empty:
+        full = gpd.GeoDataFrame(
+            {"H3_INDEX": target_cells},
+            geometry=[cell_to_polygon(cell) for cell in target_cells],
+            crs=4326,
+        )
+        full, polygons, pairs = _spatial_pairs(full, polygons, "EPSG:6933")
+        by_cell = full.set_index("H3_INDEX").geometry
+        for cell, index in pairs.itertuples(index=False):
+            row = polygons.iloc[int(index)]
+            if by_cell.loc[cell].intersection(row.geometry).area > 0:
+                present[row.FEATURE_CLASS].add(cell)
+    return {
+        name.upper() + "_MAPPED_POSITIVE_EVIDENCE": pd.array(
+            [True if cell in present[name] else None for cell in target_cells],
+            dtype="boolean",
+        )
+        for name in classes
+    }
 
 
 def _area_metrics(
@@ -426,8 +471,13 @@ def build_r8_tables(
         water_geometry,
         processing,
     )
+    armoring_estimates: dict = {}
     armored_length, surveyed_length, armoring_fraction = _armoring_metrics(
-        projected_cells, projected_inventory, pairs, target_cells
+        projected_cells,
+        projected_inventory,
+        pairs,
+        target_cells,
+        estimates_by_cell=armoring_estimates,
     )
     dredged_area, dredged_fraction = _area_metrics(
         projected_cells,
@@ -456,12 +506,17 @@ def build_r8_tables(
         "SHORELINE_ARMORING_LENGTH_M": armored_length,
         "SHORELINE_SURVEYED_LENGTH_M": surveyed_length,
         "SHORELINE_ARMORING_FRAC": armoring_fraction,
+        "ARMORING_SOURCE_ESTIMATES_JSON": [
+            json.dumps(armoring_estimates.get(cell, {}), sort_keys=True)
+            for cell in target_cells
+        ],
         "DREDGED_AREA_M2": dredged_area,
         "DREDGED_AREA_FRAC": dredged_fraction,
         "DISPOSAL_SITE_AREA_M2": disposal_area,
         "DISPOSAL_SITE_AREA_FRAC": disposal_fraction,
         "AQUACULTURE_FOOTPRINT_AREA_M2": aquaculture_area,
         "AQUACULTURE_FOOTPRINT_FRAC": aquaculture_fraction,
+        **_mapped_evidence_fields(inventory, target_cells, 8),
     }
     for output_column, feature_class in DISTANCE_FEATURES.items():
         sources, direct, failures = _seed_sources(
@@ -615,6 +670,10 @@ def build_anthropogenic_seascape(
         crosswalk,
         support_r6,
     )
+    for column, values in _mapped_evidence_fields(
+        inventory, r6_features.H3_INDEX.astype(str).tolist(), 6
+    ).items():
+        r6_features[column] = values
     paths = (
         config.inventory_path,
         config.feature_path(8),
@@ -672,6 +731,8 @@ def build_anthropogenic_seascape(
         ],
         source_completeness="partial",
         metadata={
+            "armoring_method": "maximum_available_dataset_cell_fraction_v1",
+            "armoring_parent_method": "sum_child_lengths_within_each_dataset_then_maximum",
             "radius_operator_lineage": {
                 "path": str(network_config.radius_sum_operator_path),
                 "checksum": _sha256(network_config.radius_sum_operator_path),
@@ -679,7 +740,7 @@ def build_anthropogenic_seascape(
                 "support_hash": radius_operator.support_hash,
                 "source_support_hash": radius_operator.source_support_hash,
                 "graph_checksum": radius_operator.graph_checksum,
-            }
+            },
         },
     )
     publisher.publish_manifest(config.manifest_path, manifest)

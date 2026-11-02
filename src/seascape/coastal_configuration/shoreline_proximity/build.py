@@ -73,6 +73,15 @@ OUTPUT_COLUMNS = [
 ]
 
 
+def _nullable_network_distances(frame: pl.DataFrame) -> pl.DataFrame:
+    """Persist unknown network distances as nulls, retaining their QC reason."""
+    return frame.with_columns(
+        pl.col("WATER_NETWORK_DISTANCE_M", "NETWORK_CONNECTOR_DISTANCE_M").fill_nan(
+            None
+        )
+    )
+
+
 @dataclass(frozen=True)
 class ShorelineProximityConfig:
     """Resolved inputs and parameters for shoreline-proximity processing."""
@@ -386,6 +395,7 @@ def build_shoreline_proximity(
         )
         .select(OUTPUT_COLUMNS)
         .sort("H3_INDEX")
+        .pipe(_nullable_network_distances)
     )
     if output["H3_INDEX"].n_unique() != output.height:
         raise ValueError(

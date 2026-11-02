@@ -2,13 +2,11 @@ import json
 
 import h3
 import pyarrow as pa
-import pyarrow.parquet as pq
 
 from seascape.delivery_projection import (
     SPATIAL_SUPPORT_OMITTED_FIELDS,
     project_delivery_table,
 )
-from seascape.domain_parquets import AreaTables, write_areas
 
 
 def test_public_projection_preserves_native_support_and_other_arrays(tmp_path):
@@ -31,9 +29,7 @@ def test_public_projection_preserves_native_support_and_other_arrays(tmp_path):
     native = pa.table(values).replace_schema_metadata(
         {b"seascape_domain": json.dumps(context).encode()}
     )
-    root = tmp_path / "Data/Seascape"
-    write_areas({"spatial-support": AreaTables(native)}, output=root)
-    actual = pq.read_table(root / "spatial-support-r6-static.parquet")
+    actual = project_delivery_table("spatial-support", native)
     assert actual.equals(native.select(list(values)[:4]), check_metadata=False)
     assert native.num_columns == 14
     result = json.loads(actual.schema.metadata[b"seascape_domain"])

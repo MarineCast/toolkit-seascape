@@ -1,0 +1,8 @@
+{
+  "rows": 40,
+  "reachable": 40,
+  "graph_nodes": 176364,
+  "attached_mouths": 1784,
+  "max_abs_distance_error_m": 0.0,
+  "scope": "retained normalized mouth inventory -> current source attachment, shortest paths and target connectors; raw HydroRIVERS topology and derived basin attributes not replayed"
+}

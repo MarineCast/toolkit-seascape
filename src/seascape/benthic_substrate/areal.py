@@ -43,7 +43,7 @@ def build_areal_class_fractions(
     if (
         min(max_cells, max_records, max_pairs) < 1
         or not 0 < len(support) <= max_cells
-        or not 0 < len(inventory) <= max_records
+        or len(inventory) > max_records
     ):
         raise ValueError("Areal class resource bounds exceeded or inputs empty")
     if {"RECORD_ID", "CLASS_CODE"} - set(inventory) or {

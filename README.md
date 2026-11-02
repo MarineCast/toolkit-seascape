@@ -9,6 +9,15 @@
 
 **The shape, composition, and connectivity of the marine environment.**
 
+Normal exports retain existing metric names and the family's `h3_index` or `H3_INDEX` key; dated exports add `date`.
+Missing metrics remain null. Coverage, audit and provenance columns are excluded;
+source validation remains in the producers. See the [metric-only contract](docs/metric-only-exports.md).
+The [older compact delivery](docs/reviewed-delivery.md) documents explicit legacy migration only.
+
+The scoped [artificial reef integration](docs/artificial-reefs.md) enriches the
+currently delivered reef Boolean using ARSBC, WDFW and NOAA inventories while
+preserving that delivery's existing compact schema and unrelated measurements.
+
 [Documentation site](https://marinecast.github.io/toolkit-seascape/) · [Variables](https://marinecast.github.io/toolkit-seascape/variables/) · [Methods](https://marinecast.github.io/toolkit-seascape/methodology/) · [Examples](https://marinecast.github.io/toolkit-seascape/examples/)
 
 Seascape Toolkit turns reviewed geospatial sources into reproducible physical and structural marine features. It supports bathymetry and terrain, modeled substrate, shoreline and waterbody geometry, freshwater connections, mapped vegetation and reef evidence, built coastal features, and the H3 water support that relates them. It is an independently installable Python package; no OrcaCast checkout is required.
@@ -72,6 +81,14 @@ python -m pip check
 For iterative development in the cloned checkout, use
 `python -m pip install -e '.[test,docs,quality]'`.
 
+Regional OSM acquisition also requires the native `osmium-tool` executable on
+`PATH`. It filters checksum-bound Geofabrik PBF extracts; the synthetic demo
+does not need it. See [source rebuild recovery](docs/source-rebuild-recovery.md).
+
+Use [`build --profile metrics`](docs/metric-rebuild.md) for a single-command
+rebuild of all 29 current metric tables from explicitly configured scientific
+source caches, with fresh geometry/graphs and isolated producer processes.
+
 Leave the checkout and select a fresh owned workspace:
 
 <!-- BEGIN QUICKSTART demo -->
@@ -116,3 +133,14 @@ The [Seagrass contract](docs/seagrass.md) exposes only **Seagrass Extent (All Ti
 ## Bivalve extent
 
 The [Bivalve contract](docs/bivalve.md) defines the static **Bivalve Extent (All-Time)** mapped-bed union, source admission, temporal caveats and bounded replay. Scientific source identity and provenance remain distinct from the Biogenic Habitats presentation family.
+
+The [2026-10-29 reproducibility review](docs/reproducibility-review.md) records
+current delivery integrity, a bounded real-data replay, remaining gaps and eight
+reproducible layer maps. The [scientific replay matrix](docs/source-replay-matrix.md)
+separates bounded source replays from projection-only checks and broken source bindings.
+
+For explicit source-pinned scientific candidates, see the
+[real-data production guide](docs/real-data-production.md).
+
+- [Installed real-source producer validation and maps](docs/installed-producer-closeout.md) — current metric-only terrain/substrate acceptance.
+- [Full-area rebuild verification](docs/full-rebuild-verification.md) — current producer runs, metric-format checks and source limitations.

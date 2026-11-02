@@ -10,15 +10,25 @@ and `AreaTables`. The default directory is `Data/Seascape` below `SEASCAPE_WORKS
 (or cwd). Pass `output=` to select that directory explicitly. Files have stable
 names and are replaced in place. No release ID, frozen path or retained generation
 is part of this interface. `read_area` returns a fully loaded Arrow table under
-the writer lock; consumers can also read the Parquets directly.
+the writer lock; consumers can also read the Parquets directly. New exports use [metric-only schemas](metric-only-exports.md) and preserve nulls.
+The normal reader/writer does not read historical audit files. Explicit legacy
+restoration remains available separately for historical comparisons.
+
+Metric names and key spelling match the existing delivered family layout. Native
+producer fields map to those public names; coverage/quality/status fields are
+excluded. Lineage and qualifications remain embedded metadata. Updating one variant
+preserves the files and context of other retained variants. See the
+[producer alignment and combination rules](metric-only-exports.md).
 
 Publication staging, recovery journals and the stable lock inode live outside the
 delivery parent at `output.parent.parent/.marinecast-work/seascape/<destination-hash>`.
-Successful publication removes staged data/backups; only small control directories
-and the reusable lock remain. Default successful builds already remove their owned
+Successful publication removes staged data/backups; small control directories,
+the reusable lock remain. Default successful builds already remove their owned
 computation scratch. Explicit work roots and failed builds remain resumable; supplied
 source inputs and other workflows' caches are never swept. `Data/Seascape` contains
-only current flat products/catalog and its separately keyed `research/` tables.
+current flat products/catalog, separately keyed `research/` tables and preserved
+user `.txt`/`.md` review notes. The legacy `audit_root` argument remains accepted for call compatibility but is not
+used to create or read audit files by the normal writer.
 
 ## Read a current table
 
@@ -41,9 +51,14 @@ print(table.num_rows, table.column_names)
 `read_area("kelp", resolution=6, dynamic=True, output=output)` reads the dated variant when present.
 A missing area/resolution/variant raises `KeyError`. If several resolutions exist,
 `resolution=` is required; there is no silent fallback or combined-resolution read. Preserve native H3 resolution, nulls,
-units and per-metric quality/coverage fields. Embedded `seascape_domain` metadata
+units and metric missingness. Diagnostic fields are excluded from final tables. Embedded `seascape_domain` metadata
 contains field definitions, source context and temporal support. A date labeling
 an annual survey does not establish a survey day or daily coverage.
+
+`read_study_area` accepts either public H3 key spelling and retains the compact
+schema while selecting exact pinned R6 membership. Its metadata reports missing
+and excluded native keys. Missing and excluded keys are diagnostics in metadata, never additional metric columns.
+
 
 <a id="freeze-and-read-a-release"></a>
 Historical release readers have moved to `seascape.legacy_products` solely for
@@ -79,7 +94,10 @@ see [historical data](historical-data.md#native-annual-positive-footprints).
 `seascape.spatial_support.coastal_policy_build.build_coastal_policy(config_path)` builds explicit
 source registries into a coastal reporting mask, native memberships and a wider graph context.
 Its manifest binds source bytes and code; successful processing does not establish modern shoreline,
-tidal or historical coverage. See [regional completion](regional-completion.md).
+tidal or historical coverage. Coastal buffers dissolve batches of 64 source-line chunks before
+the final union; round joins/end caps, source geometry and geodesic envelope checks remain in use.
+This bounds the intermediate GEOS operation without relaxing the configured distance tolerance.
+See [regional completion](regional-completion.md).
 
 `seascape.spatial_support.water_network.load_model_area_geometry(resolution, config_path)`
 loads checksum-verified water-clipped reporting geometry (`water_clipped=False` selects full cells).
@@ -264,3 +282,19 @@ channel lengths. Inventory attachment status and canonical node IDs are recorded
 ## Bivalve mapped-bed API
 
 `seascape.biogenic_habitat.bivalve.extents.build_bivalve_extents` returns static-only `AreaTables` and a source/geometry report. `bivalve.build.build_bivalve_habitat` writes the canonical area at explicit native resolutions; inputs and output are required and acquisition is separate. See [Bivalve](bivalve.md).
+
+## Bounded source acquisition and freshwater processing
+
+The [complete metrics CLI profile](metric-rebuild.md) composes these producer APIs
+with fresh geometry/graphs and all current habitat/mapped-substrate families.
+`export_domain_parquets(..., additional_areas=...)` accepts source-derived native
+`AreaTables` for families produced outside the feature catalog, and includes them
+in the same final writer transaction. Duplicate area names fail before publication.
+
+`seascape.utils.habitat_acquisition.download_habitat_sources` supports `osm_pbf`
+for checksum-bound regional OSM extracts as well as optional Overpass. Regional
+PBF filtering requires native `osmium-tool`; point/center records do not qualify
+areas. `freshwater_sources.build.build_river_mouths(config_path)` reads source
+vectors in batches and streams the complete river-system inventory independently
+of terminal mouth selection. Public H3 layout and null semantics are unchanged.
+See [configuration, source semantics and measured recovery](source-rebuild-recovery.md).

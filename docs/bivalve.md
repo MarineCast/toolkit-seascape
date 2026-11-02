@@ -1,5 +1,10 @@
 # Bivalve mapped-bed extent
 
+Public static delivery now has H3, all-time area (m²) and an int64 0/1 mapped
+presence field. Source null areas become zero by explicit delivery policy, with
+original unknowns and source details retained externally. See [reviewed delivery](reviewed-delivery.md).
+The native footprint producer and source-admission rules below are unchanged.
+
 The canonical `seascape.biogenic_habitat.bivalve` producer emits only **Bivalve Extent (All-Time)** (`BIVALVE_EXTENT_ALL_TIME_M2`), a static square-metre union on each full native H3 grid. Its scientific identity remains Bivalve; the intended presentation family is **Biogenic Habitats** alongside the two Kelp products and Seagrass All Time. This presentation does not merge their measurements or temporal meanings.
 
 ## Source admission and limitations

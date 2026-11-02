@@ -178,6 +178,38 @@ CI also runs Gitleaks over history and the working tree. Scope and platform limi
 
 ## Current data output workflow
 
+For the complete metrics CLI profile, run `python -m pytest -q
+tests/test_metric_rebuild.py tests/test_workflow.py tests/test_preflight.py
+tests/test_cli_diagnostics.py tests/test_domain_parquets.py`, then the full suite,
+quality, docs, notebook and installed-wheel checks above. A real source rebuild
+is a separate `build --profile metrics` run in a new workspace with explicit
+source pins and reporting inputs; do not count prior metric/graph artifacts as
+source data. See [complete CLI workflow](docs/metric-rebuild.md).
+
+For streaming river-source or OSM extract acquisition changes, run
+`python -m pytest -q tests/test_vector_source.py tests/test_osm_extract.py
+tests/domains/environment/seascape/test_acquisition_identity.py`, then the full
+suite and quality/documentation checks. Real PBF acquisition requires native
+`osmium-tool` on PATH; the offline native fixture skips when it is absent.
+Check actual regional process-tree memory and source receipts separately from
+synthetic tests. See [source rebuild recovery](docs/source-rebuild-recovery.md).
+
+For public metric-format, shoreline-overlap or maximum-dataset armoring changes,
+run `python -m pytest -q tests/test_metric_export.py tests/test_producer_exports.py
+tests/test_physical_combination.py tests/test_domain_parquets.py
+tests/domains/environment/seascape/test_anthropogenic_contracts.py
+tests/domains/environment/seascape/test_shoreline_characterization.py
+tests/regional/test_runner.py`, then the full suite and quality/documentation checks.
+Keep existing scientific metric names/layout and omit final diagnostic columns;
+lineage stays embedded. See `docs/metric-only-exports.md` for the current contract.
+
+For scoped artificial-reef source enrichment, run `python -m pytest -q
+tests/test_artificial_reefs.py tests/test_core_delivery.py
+tests/test_anthropogenic_presentation.py`, then the full suite and quality/docs
+checks above. Read [reef sources and integration](docs/artificial-reefs.md) before
+running the updater. It preserves the current audited compact delivery and does
+not authorize migration of unrelated metrics or expansion of native support.
+
 For coastal-policy mask, native membership or reporting-mask changes, run
 `python -m pytest -q tests/test_coastal_policy.py`, then the full suite, documentation,
 notebook and quality checks above. Regional geometry validation remains separate from synthetic tests.

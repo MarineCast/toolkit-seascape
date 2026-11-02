@@ -21,9 +21,6 @@ import pandas as pd
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.core.geo.h3 import cell_to_polygon
-from seascape.spatial_support.water_network import (
-    load_water_neighborhoods,
-)
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
 )
@@ -34,7 +31,6 @@ from seascape.utils.artifacts import (
 )
 from seascape.utils.config import require_mapping as _mapping
 from seascape.utils.config import resolve_project_path as _resolve
-from seascape.utils.spatial import water_neighborhood_lookup
 
 LOGGER = logging.getLogger(__name__)
 
@@ -246,7 +242,12 @@ def _plane_coefficients(
         ]
     )
     values = np.asarray([depths[cell] for cell in cells])
-    return np.linalg.lstsq(design, values, rcond=None)[0]
+    # A large depth baseline can contaminate tiny fitted gradients. Centering
+    # the response preserves the same OLS plane and restores its intercept.
+    baseline = float(np.mean(values))
+    coefficients = np.linalg.lstsq(design, values - baseline, rcond=None)[0]
+    coefficients[2] += baseline
+    return coefficients
 
 
 def _plane_metrics(
@@ -347,59 +348,73 @@ def _native_raster_slope_summary(
 
     if not raster_path.exists():
         raise FileNotFoundError(f"Native GEBCO raster not found: {raster_path}")
-    with rasterio.open(raster_path) as raster:
-        validate_native_raster_header(raster)
-        elevation = raster.read(1, masked=True).astype("float64").filled(np.nan)
-        transform = raster.transform
+    from rasterio.windows import Window
 
-    rows, columns = np.indices(elevation.shape)
-    longitudes, latitudes = rasterio.transform.xy(
-        transform, rows, columns, offset="center"
-    )
-    latitudes = np.asarray(latitudes, dtype="float64").reshape(elevation.shape)
-    longitudes = np.asarray(longitudes, dtype="float64").reshape(elevation.shape)
-    marine = np.isfinite(elevation) & (elevation < 0.0)
-    latitude_step_m = abs(float(transform.e)) * 110_574.0
-    longitude_step_m = (
-        abs(float(transform.a))
-        * 111_320.0
-        * np.maximum(np.cos(np.deg2rad(latitudes)), 0.1)
-    )
-    # Central differences require marine support on both sides. Raster edges
-    # retain numpy's one-sided stencil; land and nodata never contribute.
-    marine_elevation = np.where(marine, elevation, np.nan)
-    gradient_row = np.gradient(marine_elevation, axis=0) / latitude_step_m
-    gradient_column = np.gradient(marine_elevation, axis=1) / longitude_step_m
-    slope = np.degrees(np.arctan(np.hypot(gradient_column, gradient_row)))
-    valid = marine & np.isfinite(slope)
-    valid_latitudes = latitudes[valid]
-    valid_longitudes = longitudes[valid]
-    pixel_cells = np.fromiter(
-        (
-            h3.latlng_to_cell(float(latitude), float(longitude), resolution)
-            for latitude, longitude in zip(
-                valid_latitudes, valid_longitudes, strict=True
+    groups = []
+    values = []
+    with rasterio.Env(GDAL_CACHEMAX=64 * 1024**2), rasterio.open(raster_path) as raster:
+        validate_native_raster_header(raster)
+        transform = raster.transform
+        latitude_step_m = abs(float(transform.e)) * 110_574.0
+        for first in range(0, raster.height, 128):
+            stop = min(first + 128, raster.height)
+            begin, end = max(0, first - 1), min(raster.height, stop + 1)
+            elevation = (
+                raster.read(
+                    1, window=Window(0, begin, raster.width, end - begin), masked=True
+                )
+                .astype("float64")
+                .filled(np.nan)
             )
-        ),
-        dtype=object,
-        count=len(valid_latitudes),
-    )
-    in_target = np.fromiter(
-        (cell in target_cells for cell in pixel_cells),
-        dtype=bool,
-        count=len(pixel_cells),
-    )
+            rows, columns = np.indices(elevation.shape)
+            longitudes, latitudes = rasterio.transform.xy(
+                transform, rows + begin, columns, offset="center"
+            )
+            latitudes = np.asarray(latitudes, dtype="float64").reshape(elevation.shape)
+            longitudes = np.asarray(longitudes, dtype="float64").reshape(
+                elevation.shape
+            )
+            marine = np.isfinite(elevation) & (elevation < 0.0)
+            longitude_step_m = (
+                abs(float(transform.a))
+                * 111_320.0
+                * np.maximum(np.cos(np.deg2rad(latitudes)), 0.1)
+            )
+            marine_elevation = np.where(marine, elevation, np.nan)
+            gradient_row = np.gradient(marine_elevation, axis=0) / latitude_step_m
+            gradient_column = np.gradient(marine_elevation, axis=1) / longitude_step_m
+            slope = np.degrees(np.arctan(np.hypot(gradient_column, gradient_row)))
+            valid = marine & np.isfinite(slope)
+            valid[: first - begin] = False
+            valid[stop - begin :] = False
+            pixel_cells = [
+                h3.latlng_to_cell(float(latitude), float(longitude), resolution)
+                for latitude, longitude in zip(
+                    latitudes[valid], longitudes[valid], strict=True
+                )
+            ]
+            selected = np.fromiter(
+                (cell in target_cells for cell in pixel_cells), dtype=bool
+            )
+            groups.append(
+                np.fromiter(
+                    (
+                        h3.str_to_int(cell)
+                        for cell, keep in zip(pixel_cells, selected, strict=True)
+                        if keep
+                    ),
+                    dtype=np.uint64,
+                )
+            )
+            values.append(slope[valid][selected])
     samples = pd.DataFrame(
-        {
-            "H3_INDEX": pixel_cells[in_target],
-            "NATIVE_SLOPE": slope[valid][in_target],
-        }
+        {"H3_INDEX": np.concatenate(groups), "NATIVE_SLOPE": np.concatenate(values)}
     )
     if samples.empty:
         raise ValueError(
             "No native-raster slope pixels overlap the H3 bathymetry universe."
         )
-    return (
+    result = (
         samples.groupby("H3_INDEX", observed=True)["NATIVE_SLOPE"]
         .agg(
             SLOPE_MEAN_NATIVE_RASTER="mean",
@@ -407,6 +422,8 @@ def _native_raster_slope_summary(
         )
         .reset_index()
     )
+    result["H3_INDEX"] = result["H3_INDEX"].map(lambda value: h3.int_to_str(int(value)))
+    return result
 
 
 def _neighbors(
@@ -700,7 +717,9 @@ def build_geomorphometry(
         raise FileNotFoundError(
             f"Bathymetry Parquet not found: {config.bathymetry_path}"
         )
-    bathymetry = pd.read_parquet(config.bathymetry_path)
+    bathymetry = pd.read_parquet(
+        config.bathymetry_path, columns=["H3_INDEX", "BATHYMETRY"]
+    )
     missing = sorted({"H3_INDEX", "BATHYMETRY"}.difference(bathymetry.columns))
     if missing:
         raise ValueError(f"Bathymetry Parquet is missing columns: {missing}")
@@ -708,23 +727,16 @@ def build_geomorphometry(
         raise ValueError("Bathymetry must contain one non-null row per H3_INDEX.")
     source = bathymetry[["H3_INDEX", "BATHYMETRY"]].copy()
     source["H3_INDEX"] = source["H3_INDEX"].astype(str)
-    required_hops = sorted(
-        {
-            config.neighbor_ring,
-            config.openness_radius_rings,
-            *config.neighborhood_rings,
-        }
-    )
-    neighborhoods = load_water_neighborhoods(
-        config.h3_resolution,
-        max(required_hops),
-        config_path,
-    )
-    neighborhood_lookups = {
-        hops: water_neighborhood_lookup(neighborhoods, maximum_hops=hops)
-        for hops in required_hops
-    }
-    result = _derive_metrics(source, config, neighborhood_lookups)
+    from .bounded import derive_bounded
+
+    result = derive_bounded(source, config, config_path)
+    import gc
+
+    import pyarrow as pa
+
+    del bathymetry
+    gc.collect()
+    pa.default_memory_pool().release_unused()
     native_slope = _native_raster_slope_summary(
         config.native_raster_path,
         set(source["H3_INDEX"]),

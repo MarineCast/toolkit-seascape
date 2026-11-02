@@ -19,7 +19,7 @@ import yaml
 
 from seascape.core.artifacts import TransactionalFamilyPublisher
 from seascape.core.config.paths import project_root
-from seascape.delivery_projection import project_delivery_table
+from seascape.metric_export import native_keys, project_metrics, supports_resolution
 
 DEFAULT_OUTPUT = Path("Data/Seascape")
 METADATA_KEY = b"seascape_domain"
@@ -80,6 +80,28 @@ def _io_root(root: Path) -> Path:
     # Recovery bookkeeping is temporary/internal and never appears in Data/Seascape.
     identity = hashlib.sha256(str(root).casefold().encode()).hexdigest()[:16]
     return root.parent.parent / ".marinecast-work" / "seascape" / identity
+
+
+def _audit_root(root: Path) -> Path:
+    """Required retained support, outside disposable transaction staging."""
+    return _io_root(root) / "audit"
+
+
+def _review_notes(root: Path) -> list[Path]:
+    return (
+        [
+            p
+            for p in root.iterdir()
+            if p.is_file() and p.suffix.lower() in {".txt", ".md"}
+        ]
+        if root.exists()
+        else []
+    )
+
+
+def _copy_review_notes(source: Path, destination: Path) -> None:
+    for path in _review_notes(source):
+        shutil.copyfile(path, destination / path.name)
 
 
 def validate_table(table: pa.Table, *, dynamic: bool) -> pa.Table:
@@ -151,6 +173,7 @@ def _catalog(root: Path) -> dict[str, Any]:
     if not isinstance(catalog, dict):
         raise ValueError("Invalid Seascape catalog")
     expected = {"catalog.json"}
+    expected.update(path.name for path in _review_notes(root))
     if (root / "research").exists() or (root / "research").is_symlink():
         _research_tree(root)
         expected.add("research")
@@ -230,12 +253,21 @@ def _resolution_variant(table: pa.Table, resolution: int) -> pa.Table:
     return table.select(selected).replace_schema_metadata(metadata)
 
 
+def _prepare_native(area: str, table: pa.Table, *, dynamic: bool) -> pa.Table:
+    if b"seascape_review" in (table.schema.metadata or {}):
+        raise ValueError(
+            "Rebuild legacy compact metrics from scientific inputs; historical audits are not a production prerequisite"
+        )
+    return validate_table(native_keys(table), dynamic=dynamic)
+
+
 def write_areas(
     areas: Mapping[str, AreaTables],
     *,
     output: str | Path | None = None,
     _preserve_existing_variants: bool = False,
     retire_areas: tuple[str, ...] = (),
+    audit_root: str | Path | None = None,
 ) -> dict[str, Any]:
     """Replace selected areas and update one small catalog in a recoverable transaction.
 
@@ -244,6 +276,8 @@ def write_areas(
     Metadata, definitions and source context are embedded in the Parquet schema.
     """
     root = Path(output).expanduser().resolve() if output else output_root()
+    if audit_root is not None and Path(audit_root).resolve().is_relative_to(root):
+        raise ValueError("Required audit storage must be outside public delivery")
     if not areas:
         raise ValueError("Select at least one Seascape area")
     if set(retire_areas) & set(areas):
@@ -256,10 +290,10 @@ def write_areas(
         if pair.static is None and pair.dynamic is None:
             raise ValueError(f"Area has no tables: {area}")
         validated[area] = AreaTables(
-            project_delivery_table(area, validate_table(pair.static, dynamic=False))
+            _prepare_native(area, pair.static, dynamic=False)
             if pair.static is not None
             else None,
-            project_delivery_table(area, validate_table(pair.dynamic, dynamic=True))
+            _prepare_native(area, pair.dynamic, dynamic=True)
             if pair.dynamic is not None
             else None,
         )
@@ -273,9 +307,10 @@ def write_areas(
         catalog = {
             area: record for area, record in catalog.items() if area not in retire_areas
         }
-        staged = writer.stage_path(root)
+        staged = writer.stage_path(root, terminal=True)
         staged.mkdir()
         _copy_research_tree(root, staged)
+        _copy_review_notes(root, staged)
         for area, previous_record in catalog.items():
             if area not in validated:
                 for kind in ("static", "dynamic"):
@@ -284,6 +319,11 @@ def write_areas(
         now = datetime.now(timezone.utc).isoformat()
         for area, pair in validated.items():
             record: dict[str, Any] = {"last_updated_utc": now}
+            if _preserve_existing_variants:
+                previous = catalog.get(area, {})
+                record["contexts"] = dict(previous.get("contexts", {}))
+                if "delivery_schema" in previous:
+                    record["delivery_schema"] = previous["delivery_schema"]
             for kind in ("static", "dynamic"):
                 variants = {}
                 if _preserve_existing_variants:
@@ -322,9 +362,24 @@ def write_areas(
                             context, sort_keys=True, default=str
                         ).encode()
                         native = native.replace_schema_metadata(metadata)
-                        pq.write_table(native, staged / name, compression="zstd")
+                        record.setdefault("contexts", {})[name] = {
+                            key: value
+                            for key, value in context.items()
+                            if key
+                            in {
+                                "reporting_mask_file_sha256",
+                                "reporting_mask_geometry_sha256",
+                                "historical_request",
+                                "resolution_contexts",
+                                "availability_known",
+                                "support",
+                            }
+                        }
+                        public = project_metrics(area, native)
+                        record["delivery_schema"] = "keys-and-metrics-v1"
+                        pq.write_table(public, staged / name, compression="zstd")
                         if not pq.read_table(staged / name).equals(
-                            native, check_metadata=True
+                            public, check_metadata=True
                         ):
                             raise ValueError(f"Parquet readback mismatch: {name}")
                         variants[str(resolution)] = name
@@ -372,9 +427,14 @@ def read_area(
         if name is None:
             raise KeyError(f"Seascape {area} has no R{resolution} {kind} table")
         table = pq.read_table(root / name)
-        if pc.unique(table["H3_RESOLUTION"]).to_pylist() != [resolution]:
+        native = native_keys(table)
+        if pc.unique(native["H3_RESOLUTION"]).to_pylist() != [resolution]:
             raise ValueError("Filename and native H3 resolution disagree")
-        return table
+        metadata = dict(table.schema.metadata or {})
+        context = json.loads(metadata.get(METADATA_KEY, b"{}"))
+        context.update(record.get("contexts", {}).get(name, {}))
+        metadata[METADATA_KEY] = json.dumps(context, default=str).encode()
+        return table.replace_schema_metadata(metadata)
 
 
 def export_domain_parquets(
@@ -382,6 +442,7 @@ def export_domain_parquets(
     workspace: str | Path,
     output: str | Path | None = None,
     catalog_path: str | Path | None = None,
+    additional_areas: Mapping[str, AreaTables] | None = None,
 ) -> dict[str, Any]:
     """Join generated producer tables by native keys and export each area once."""
     from seascape.metric_matrix import _validated_table
@@ -419,6 +480,10 @@ def export_domain_parquets(
                 if resolution in feature["collection_paths"]
             )
             area = PRODUCT_AREAS.get(product_id, product_id.replace("_", "-"))
+            if not product.get("temporal_column") and not supports_resolution(
+                area, resolution
+            ):
+                continue
             source_context.setdefault(area, {})[f"{product_id}.r{resolution}"] = {
                 "table_metadata": {
                     key.decode(): value.decode(errors="replace")
@@ -480,6 +545,8 @@ def export_domain_parquets(
             table, _ = _validated_table(
                 source, resolution=resolution, expected_keys=keys, selected=selected
             )
+            if not selected:
+                continue  # Identity-only support remains a join input, not an empty metric product.
             values = columns.setdefault(
                 area,
                 {
@@ -522,11 +589,18 @@ def export_domain_parquets(
                             METADATA_KEY, b"{}"
                         )
                     )
-                    context.update(original_context)
+                    context = {**original_context, **context}
                 variants[kind] = table.replace_schema_metadata(
                     {METADATA_KEY: json.dumps(context, default=str).encode()}
                 )
         pairs[area] = AreaTables(**variants)
+    if additional_areas:
+        conflicts = pairs.keys() & additional_areas.keys()
+        if conflicts:
+            raise ValueError(
+                f"Additional areas conflict with catalog products: {sorted(conflicts)}"
+            )
+        pairs.update(additional_areas)
     # An undated producer snapshot is not a replacement for an existing annual
     # series. Replace only generated variants; retain a dated variant until its
     # own source is supplied, with its embedded update/source context unchanged.

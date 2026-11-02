@@ -291,6 +291,7 @@ def validate_neighborhoods(
     resolution: int,
     *,
     maximum_hops: int,
+    source_cells: set[str] | None = None,
 ) -> None:
     """Validate bounded water-passable neighborhood rows."""
 
@@ -303,7 +304,10 @@ def validate_neighborhoods(
             "Water neighborhood table contains duplicate source-target rows."
         )
     support_cells = set(support["H3_INDEX"].astype(str))
-    if set(frame["SOURCE_H3_INDEX"].astype(str)) != support_cells:
+    expected_sources = support_cells if source_cells is None else source_cells
+    if not expected_sources.issubset(support_cells):
+        raise ValueError("Neighborhood source selection lies outside support")
+    if set(frame["SOURCE_H3_INDEX"].astype(str)) != expected_sources:
         raise ValueError("Every support cell must own at least one neighborhood row.")
     if not set(frame["TARGET_H3_INDEX"].astype(str)).issubset(support_cells):
         raise ValueError("Water neighborhood target lies outside canonical support.")
@@ -327,7 +331,7 @@ def validate_neighborhoods(
             "Water neighborhood self rows must use zero hops and distance."
         )
     self_counts = frame.loc[self_rows, "SOURCE_H3_INDEX"].astype(str).value_counts()
-    if set(self_counts.index) != support_cells or not (self_counts == 1).all():
+    if set(self_counts.index) != expected_sources or not (self_counts == 1).all():
         raise ValueError(
             "Every support cell must have exactly one neighborhood self row."
         )

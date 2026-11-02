@@ -51,6 +51,17 @@ def _manifest(config: WaterNetworkConfig) -> dict[str, Any]:
         raise ValueError("Configured and manifested water-mask versions disagree.")
     if metadata["spatial_support_version"] != config.spatial_support_version:
         raise ValueError("Configured and manifested spatial-support versions disagree.")
+    bindings = config.source_bindings or {}
+    identities = [str(a["path"]) for a in payload["artifacts"]]
+    if any(identities.count(key) != 1 for key in bindings):
+        raise ValueError(
+            "Source binding must identify exactly one original manifest artifact"
+        )
+    targets = [str(value.resolve()) for value in bindings.values()]
+    if len(set(targets)) != len(targets):
+        raise ValueError("Source bindings must have unique target paths")
+    # Runtime resolution only: preserve original manifest paths and checksums.
+    payload["_source_bindings"] = dict(zip(bindings, targets, strict=True))
     return payload
 
 
@@ -63,7 +74,9 @@ def _verify_artifact(path: Path, payload: dict[str, Any]) -> None:
         artifact
         for artifact in payload["artifacts"]
         if (
-            Path(str(artifact["path"])).resolve()
+            Path(payload["_source_bindings"][str(artifact["path"])]).resolve()
+            if str(artifact["path"]) in payload.get("_source_bindings", {})
+            else Path(str(artifact["path"])).resolve()
             if Path(str(artifact["path"])).is_absolute()
             else (artifact_root / str(artifact["path"])).resolve()
         )
@@ -72,7 +85,7 @@ def _verify_artifact(path: Path, payload: dict[str, Any]) -> None:
     if len(matches) != 1:
         raise ValueError(f"Manifest does not identify exactly one artifact for {path}.")
     expected = str(matches[0]["checksum"])
-    observed = checksum_path(path)
+    observed = checksum_path(path, logical_name=Path(str(matches[0]["path"])).name)
     if observed != expected:
         raise ValueError(
             f"Artifact checksum does not match canonical manifest: {path}; "
@@ -186,6 +199,7 @@ def load_model_area_geometry(
     config_path: str | Path = DEFAULT_CONFIG_PATH,
     *,
     water_clipped: bool = True,
+    columns: list[str] | None = None,
     verify_checksum: bool = True,
 ):
     """Load reporting geometries while retaining graph context in separate products."""
@@ -202,7 +216,16 @@ def load_model_area_geometry(
     )
     if verify_checksum:
         _verify_artifact(path, _manifest(config))
-    frame = gpd.read_parquet(path)
+    # Check the complete identity column before filtering geometry reads.
+    identities = pd.read_parquet(path, columns=["H3_INDEX"])["H3_INDEX"]
+    if identities.isna().any() or identities.duplicated().any():
+        raise ValueError(
+            "Canonical reporting geometry requires unique H3 identity with nonnull keys"
+        )
+    keys = support.H3_INDEX.astype(str).tolist()
+    if set(keys) - set(identities.astype(str)):
+        raise ValueError("Canonical reporting geometry is missing model-support keys")
+    frame = gpd.read_parquet(path, columns=columns, filters=[("H3_INDEX", "in", keys)])
     if frame.crs is None or frame.H3_INDEX.duplicated().any():
         raise ValueError(
             "Canonical reporting geometry requires CRS and unique H3 identity"

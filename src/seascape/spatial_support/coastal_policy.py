@@ -89,6 +89,22 @@ def _polygons(geometry: Any) -> list[Any]:
     return []
 
 
+def _buffer_coast_chunks(chunks: Any, distance_m: float) -> Any:
+    """Buffer a line union without constructing one large GEOS offset graph.
+
+    A buffer distributes over the union of its source lines. Dissolve small
+    batches first so overlapping coastal segments do not accumulate in one
+    unbounded intermediate graph. Keep the same round joins and end caps.
+    """
+    batches = [
+        shapely.union_all(
+            shapely.buffer(chunks[first : first + 64], distance_m, quad_segs=32)
+        )
+        for first in range(0, len(chunks), 64)
+    ]
+    return shapely.union_all(batches)
+
+
 def geodesic_coastal_corridor(
     coast: Any,
     *,
@@ -151,7 +167,7 @@ def geodesic_coastal_corridor(
         return joined[:, 0], joined[:, 1], joined[:, 2], joined[:, 3]
 
     corridor = shapely.segmentize(
-        source.buffer(distance_m + tolerance_m / 2, quad_segs=32), 250
+        _buffer_coast_chunks(chunks_array, distance_m + tolerance_m / 2), 250
     )
     if shapely.get_num_coordinates(corridor) > max_vertices:
         raise ValueError("Corridor vertex bound exceeded")

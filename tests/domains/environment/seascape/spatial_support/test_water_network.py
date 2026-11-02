@@ -402,3 +402,33 @@ def test_manifest_schema_version_mismatch_fails_closed():
     }
     with pytest.raises(ValueError, match="schema version"):
         validate_manifest_payload(payload)
+
+
+@pytest.mark.parametrize("batch_size", [1, 7])
+def test_streamed_neighborhoods_preserve_hops_distances_order_and_nulls(
+    tmp_path, network_config, batch_size
+):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    from seascape.spatial_support.water_network.graph import StreamedNeighborhoods
+
+    water = box(-123.2, 48.4, -123.18, 48.42)
+    _, _, support = _build_geometry_and_base_support(water, water, 8, network_config)
+    edges = _build_edges(support, water, 8, network_config)
+    _assign_components(support, edges)
+    connectors = _build_connectors(support, water, 8, network_config)
+    expected = _build_neighborhoods(support, edges, connectors, 8, network_config)
+    output = tmp_path / "neighborhoods.parquet"
+    StreamedNeighborhoods(
+        support, edges, connectors, 8, network_config, batch_size=batch_size
+    ).to_parquet(output)
+    actual = pd.read_parquet(output)
+    written = pq.read_table(output)
+    reference = pa.Table.from_pandas(
+        expected, schema=written.schema, preserve_index=False
+    )
+    assert written.equals(reference, check_metadata=False)
+    validate_neighborhoods(
+        actual, support, 8, maximum_hops=network_config.maximum_neighborhood_hops
+    )

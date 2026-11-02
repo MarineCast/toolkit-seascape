@@ -6,6 +6,7 @@ import logging
 import math
 import time
 from collections import deque
+from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -443,14 +444,20 @@ def _crosswalk(
     return frame.sort_values("CHILD_H3_INDEX").reset_index(drop=True)
 
 
-def _build_neighborhoods(
+def _iter_neighborhoods(
     support: pd.DataFrame,
     edges: pd.DataFrame,
     connectors: pd.DataFrame,
     resolution: int,
     config: WaterNetworkConfig,
-) -> pd.DataFrame:
-    """Materialize deterministic bounded neighborhoods from water-passable links."""
+    *,
+    batch_size: int = 512,
+) -> Iterator[pd.DataFrame]:
+    """Yield complete-source batches with the original hop/distance traversal."""
+
+    if batch_size < 1:
+        raise ValueError("Neighborhood batch_size must be positive")
+    support = support.sort_values("H3_INDEX").reset_index(drop=True)
 
     cells = support["H3_INDEX"].astype(str).tolist()
     positions = {cell: index for index, cell in enumerate(cells)}
@@ -534,8 +541,94 @@ def _build_neighborhoods(
                     "SPATIAL_SUPPORT_VERSION": config.spatial_support_version,
                 }
             )
-    return (
-        pd.DataFrame(rows)
-        .sort_values(["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"])
-        .reset_index(drop=True)
+        if (source_position + 1) % batch_size == 0:
+            yield (
+                pd.DataFrame(rows)
+                .sort_values(
+                    ["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"]
+                )
+                .reset_index(drop=True)
+            )
+            rows = []
+    if rows:
+        yield (
+            pd.DataFrame(rows)
+            .sort_values(["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"])
+            .reset_index(drop=True)
+        )
+
+
+def _build_neighborhoods(support, edges, connectors, resolution, config):
+    """Retain the in-memory fixture/helper interface; regional builds stream."""
+    return pd.concat(
+        _iter_neighborhoods(support, edges, connectors, resolution, config),
+        ignore_index=True,
     )
+
+
+class StreamedNeighborhoods:
+    """Validate and write bounded neighborhood batches inside the graph transaction."""
+
+    def __init__(
+        self, support, edges, connectors, resolution, config, *, batch_size=512
+    ):
+        self.support = support.sort_values("H3_INDEX").reset_index(drop=True)
+        self.edges = edges
+        self.connectors = connectors
+        self.resolution = resolution
+        self.config = config
+        self.batch_size = batch_size
+
+    def to_parquet(self, path, *, index=False, compression="zstd"):
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+
+        from .validation import validate_neighborhoods
+
+        schema = pa.schema(
+            [
+                ("SOURCE_H3_INDEX", pa.string()),
+                ("TARGET_H3_INDEX", pa.string()),
+                ("H3_RESOLUTION", pa.int64()),
+                ("MINIMUM_HOP_COUNT", pa.int64()),
+                ("NETWORK_DISTANCE_M", pa.float64()),
+                ("CONNECTIVITY_STATUS", pa.string()),
+                ("QC_REASON", pa.string()),
+                ("WATER_MASK_VERSION", pa.string()),
+                ("SPATIAL_SUPPORT_VERSION", pa.string()),
+            ]
+        )
+        cells = self.support.H3_INDEX.astype(str).tolist()
+        position = 0
+        writer = None
+        try:
+            for batch in _iter_neighborhoods(
+                self.support,
+                self.edges,
+                self.connectors,
+                self.resolution,
+                self.config,
+                batch_size=self.batch_size,
+            ):
+                selected = set(cells[position : position + self.batch_size])
+                validate_neighborhoods(
+                    batch,
+                    self.support,
+                    self.resolution,
+                    maximum_hops=self.config.maximum_neighborhood_hops,
+                    source_cells=selected,
+                )
+                position += len(selected)
+                table = pa.Table.from_pandas(batch, schema=schema, preserve_index=False)
+                if writer is None:
+                    writer = pq.ParquetWriter(
+                        path, table.schema, compression=compression
+                    )
+                writer.write_table(table)
+            if writer is None or position != len(cells):
+                raise ValueError(
+                    "Neighborhood stream did not cover every model-support source"
+                )
+        finally:
+            if writer is not None:
+                writer.close()

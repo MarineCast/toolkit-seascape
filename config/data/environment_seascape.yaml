@@ -884,30 +884,34 @@ anthropogenic_seascape:
     overwrite: false
     sources:
       osm_cross_border_anthropogenic:
-        kind: overpass
-        endpoints:
-          - https://overpass-api.de/api/interpreter
-          - https://overpass.kumi.systems/api/interpreter
-          - https://overpass.private.coffee/api/interpreter
-        attempts_per_endpoint: 2
-        retry_backoff_seconds: 2
-        request_delay_seconds: 1
-        query_timeout_seconds: 120
-        tile_degrees: 1.5
-        # OSM is the common coverage backbone, not the exact-area authority.
-        # Centers retain every tagged feature with far lower public-server load;
-        # government polygons/lines provide defensible fractions where available.
+        kind: osm_pbf
+        # Immutable raw extracts avoid public query-server queues. Requires osmium-tool.
         geometry_mode: center
-        query_filters:
-          - '["man_made"~"^(seawall|breakwater|groyne|jetty|pier|causeway|quay)$"]'
-          - '["amenity"="ferry_terminal"]'
-          - '["leisure"="marina"]'
-          - '["industrial"="port"]'
-          - '["harbour"="yes"]'
-          - '["seamark:type"~"^(causeway|dredged_area|dumping_ground|artificial_reef|shoreline_construction|marine_farm|harbour)$"]'
-          - '["landuse"="aquaculture"]'
-          - '["aquaculture"]'
-        raw_filename: OSM_ANTHROPOGENIC_FEATURES.json
+        extracts:
+          - name: british-columbia
+            url: https://download.geofabrik.de/north-america/canada/british-columbia-latest.osm.pbf
+            md5_url: https://download.geofabrik.de/north-america/canada/british-columbia-latest.osm.pbf.md5
+          - name: washington
+            url: https://download.geofabrik.de/north-america/us/washington-latest.osm.pbf
+            md5_url: https://download.geofabrik.de/north-america/us/washington-latest.osm.pbf.md5
+          - name: oregon
+            url: https://download.geofabrik.de/north-america/us/oregon-latest.osm.pbf
+            md5_url: https://download.geofabrik.de/north-america/us/oregon-latest.osm.pbf.md5
+        supported_bbox: {min_lon: -129.7, min_lat: 45.9, max_lon: -121.5, max_lat: 51.5}
+        maximum_nodes: 2000000
+        maximum_elements: 500000
+        maximum_bytes: 134217728
+        processing_timeout_seconds: 1800
+        tag_filters:
+          - nwr/man_made=seawall,breakwater,groyne,jetty,pier,causeway,quay
+          - nwr/amenity=ferry_terminal
+          - nwr/leisure=marina
+          - nwr/industrial=port
+          - nwr/harbour=yes
+          - nwr/seamark:type=causeway,dredged_area,dumping_ground,artificial_reef,shoreline_construction,marine_farm,harbour
+          - nwr/landuse=aquaculture
+          - nwr/aquaculture
+        raw_filename: OSM_ANTHROPOGENIC_FEATURES_PBF.json
         normalizer: osm
         evidence_class: volunteered_mapping
         license: Open Database License 1.0
@@ -964,8 +968,9 @@ anthropogenic_seascape:
         layer_url: https://gis.ecology.wa.gov/serverext/rest/services/GIS/CoastalAtlas/MapServer/314
         fields: '*'
         raw_filename: WA_ECOLOGY_COMMERCIAL_SHELLFISH.geojson
-        normalizer: aquaculture
-        evidence_class: authoritative_inventory
+        # Harvest/water-quality regulation, not physical aquaculture footprints.
+        normalizer: shellfish_harvest_classification
+        evidence_class: regulatory_classification_inventory
         license: Washington State agency open data terms
         attribution: Washington State Department of Ecology Coastal Atlas
       bc_dfo_shellfish_licences:

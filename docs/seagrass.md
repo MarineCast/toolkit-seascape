@@ -1,5 +1,11 @@
 # Seagrass mapped extent
 
+Public static delivery now has H3, all-time area (m²) and an int64 0/1 mapped
+presence field. Source null areas become zero by approved delivery policy;
+native calculations and the required external audit retain unknowns. See
+[compact schemas and interpretation](reviewed-delivery.md). Native methods below
+are unchanged.
+
 The canonical producer, `seascape.biogenic_habitat.seagrass.build`, exposes only **Seagrass Extent (All Time)** (`SEAGRASS_EXTENT_ALL_TIME_M2`), presented in **Biogenic Habitats**. The annual generated feature and delivery were retired at the user's request; original survey geometry, observation years and source qualifications remain in the union and provenance. Status, methods, observed/modeled class, source periods, map dates, species resolution and computational geometry repairs remain internal support fields.
 
 The producer geometrically unions eligible positive polygons and classified raster footprints before intersecting each full native H3 cell, independently at R6 and R8 in EPSG:6933 m². H3 edges are segmentized at 0.001° before projection. Coincident evidence and overlapping periods count once. Neither a sum nor a maximum of per-source cell areas replaces this union. Missing positive evidence remains null/unknown, with no claim of surveyed absence, current presence, completeness or pure canopy.

@@ -1,0 +1,1166 @@
+{
+  "shoreline-r6": {
+    "status": "real_source_to_candidate_completed",
+    "rows": 16,
+    "source_vintage": "new download; historical identity unproven",
+    "comparisons": {
+      "SHORELINE_TOTAL_MAPPED_LENGTH_M": {
+        "delivered_field": "SHORELINE__SHORELINE_TOTAL_MAPPED_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SHORELINE_CLASSIFIED_LENGTH_M": {
+        "delivered_field": "SHORELINE__SHORELINE_CLASSIFIED_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SHORELINE_CLASSIFIED_COVERAGE_FRAC": {
+        "delivered_field": "SHORELINE__SHORELINE_CLASSIFIED_COVERAGE_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ROCKY_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__ROCKY_SHORE_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ROCKY_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__ROCKY_SHORE_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SANDY_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__SANDY_SHORE_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SANDY_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__SANDY_SHORE_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "GRAVEL_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__GRAVEL_SHORE_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "GRAVEL_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__GRAVEL_SHORE_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "CLIFF_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__CLIFF_SHORE_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "CLIFF_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__CLIFF_SHORE_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "BLUFF_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__BLUFF_SHORE_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "BLUFF_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__BLUFF_SHORE_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DELTAIC_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__DELTAIC_SHORE_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DELTAIC_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__DELTAIC_SHORE_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ESTUARINE_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__ESTUARINE_SHORE_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ESTUARINE_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__ESTUARINE_SHORE_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "CLASSIFICATION_AVAILABILITY_DISAGREEMENT_LENGTH_M": {
+        "delivered_field": "SHORELINE__CLASSIFICATION_AVAILABILITY_DISAGREEMENT_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "CLASS_MEMBERSHIP_DISAGREEMENT_LENGTH_M": {
+        "delivered_field": "SHORELINE__CLASS_MEMBERSHIP_DISAGREEMENT_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "H3_RESOLUTION": {
+        "delivered_field": "H3_RESOLUTION",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SHORELINE_CLASSIFIED_SHARE_OF_MAPPED_LENGTH_FRAC": {
+        "delivered_field": "SHORELINE__SHORELINE_CLASSIFIED_SHARE_OF_MAPPED_LENGTH_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      }
+    },
+    "spec": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/shoreline-r6/spec.json"
+  },
+  "shoreline-r8": {
+    "status": "real_source_to_candidate_completed",
+    "rows": 40,
+    "source_vintage": "new download; historical identity unproven",
+    "comparisons": {
+      "SHORELINE_TOTAL_MAPPED_LENGTH_M": {
+        "delivered_field": "SHORELINE__SHORELINE_TOTAL_MAPPED_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SHORELINE_CLASSIFIED_LENGTH_M": {
+        "delivered_field": "SHORELINE__SHORELINE_CLASSIFIED_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SHORELINE_CLASSIFIED_COVERAGE_FRAC": {
+        "delivered_field": "SHORELINE__SHORELINE_CLASSIFIED_COVERAGE_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ROCKY_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__ROCKY_SHORE_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ROCKY_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__ROCKY_SHORE_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SANDY_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__SANDY_SHORE_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SANDY_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__SANDY_SHORE_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "GRAVEL_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__GRAVEL_SHORE_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "GRAVEL_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__GRAVEL_SHORE_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "CLIFF_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__CLIFF_SHORE_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "CLIFF_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__CLIFF_SHORE_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "BLUFF_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__BLUFF_SHORE_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "BLUFF_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__BLUFF_SHORE_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DELTAIC_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__DELTAIC_SHORE_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DELTAIC_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__DELTAIC_SHORE_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ESTUARINE_SHORE_LENGTH_M": {
+        "delivered_field": "SHORELINE__ESTUARINE_SHORE_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ESTUARINE_SHORE_FRAC": {
+        "delivered_field": "SHORELINE__ESTUARINE_SHORE_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "CLASSIFICATION_AVAILABILITY_DISAGREEMENT_LENGTH_M": {
+        "delivered_field": "SHORELINE__CLASSIFICATION_AVAILABILITY_DISAGREEMENT_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "CLASS_MEMBERSHIP_DISAGREEMENT_LENGTH_M": {
+        "delivered_field": "SHORELINE__CLASS_MEMBERSHIP_DISAGREEMENT_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "H3_RESOLUTION": {
+        "delivered_field": "H3_RESOLUTION",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SHORELINE_CLASSIFIED_SHARE_OF_MAPPED_LENGTH_FRAC": {
+        "delivered_field": "SHORELINE__SHORELINE_CLASSIFIED_SHARE_OF_MAPPED_LENGTH_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      }
+    },
+    "spec": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/shoreline-r8/spec.json"
+  },
+  "anthropogenic-r6": {
+    "status": "real_source_to_candidate_completed",
+    "rows": 16,
+    "source_vintage": "new download; historical identity unproven",
+    "comparisons": {
+      "H3_RESOLUTION": {
+        "delivered_field": "H3_RESOLUTION",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MAPPED_WATER_AREA_M2": {
+        "delivered_field": "ANTHROPOGENIC__MAPPED_WATER_AREA_M2",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 1399977.1462752,
+        "values_different": 16
+      },
+      "MAPPED_WATER_SHARE_OF_FULL_CELL": {
+        "delivered_field": "ANTHROPOGENIC__MAPPED_WATER_SHARE_OF_FULL_CELL",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.044100318721102205,
+        "values_different": 16
+      },
+      "COMPREHENSIVE_SURVEY_COVERAGE_ESTABLISHED": {
+        "delivered_field": "ANTHROPOGENIC__COMPREHENSIVE_SURVEY_COVERAGE_ESTABLISHED",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MAPPED_INVENTORY_RECORD_INTERSECTION_COUNT": {
+        "delivered_field": "ANTHROPOGENIC__MAPPED_INVENTORY_RECORD_INTERSECTION_COUNT",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 43.0,
+        "values_different": 15
+      },
+      "GLOBAL_INVENTORY_COMPLETE": {
+        "delivered_field": "ANTHROPOGENIC__GLOBAL_INVENTORY_COMPLETE",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DISTANCE_TO_SEAWALL_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_SEAWALL_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_BREAKWATER_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_BREAKWATER_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_JETTY_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_JETTY_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_CAUSEWAY_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_CAUSEWAY_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_PIER_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_PIER_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_FERRY_TERMINAL_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_FERRY_TERMINAL_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_MARINA_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_MARINA_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_PORT_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_PORT_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_DREDGED_CHANNEL_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_DREDGED_CHANNEL_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_DISPOSAL_SITE_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_DISPOSAL_SITE_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_ARTIFICIAL_REEF_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_ARTIFICIAL_REEF_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_AQUACULTURE_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_AQUACULTURE_M",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "OVERWATER_STRUCTURE_DENSITY_PER_KM2": {
+        "delivered_field": "ANTHROPOGENIC__OVERWATER_STRUCTURE_DENSITY_PER_KM2",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "OVERWATER_STRUCTURE_COUNT_WITHIN_5KM": {
+        "delivered_field": "ANTHROPOGENIC__OVERWATER_STRUCTURE_COUNT_WITHIN_5KM",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DREDGED_CHANNEL_MAPPED_AREA_M2": {
+        "delivered_field": "ANTHROPOGENIC__DREDGED_CHANNEL_MAPPED_AREA_M2",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DREDGED_CHANNEL_POSITIVE_MAPPED_WATER_FRAC": {
+        "delivered_field": "ANTHROPOGENIC__DREDGED_CHANNEL_POSITIVE_MAPPED_WATER_FRAC",
+        "both_present": 1,
+        "candidate_nulls": 15,
+        "delivered_nulls": 15,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0002914640865495045,
+        "values_different": 1
+      },
+      "DISPOSAL_SITE_MAPPED_AREA_M2": {
+        "delivered_field": "ANTHROPOGENIC__DISPOSAL_SITE_MAPPED_AREA_M2",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DISPOSAL_SITE_POSITIVE_MAPPED_WATER_FRAC": {
+        "delivered_field": "ANTHROPOGENIC__DISPOSAL_SITE_POSITIVE_MAPPED_WATER_FRAC",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "AQUACULTURE_MAPPED_AREA_M2": {
+        "delivered_field": "ANTHROPOGENIC__AQUACULTURE_MAPPED_AREA_M2",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "AQUACULTURE_POSITIVE_MAPPED_WATER_FRAC": {
+        "delivered_field": "ANTHROPOGENIC__AQUACULTURE_POSITIVE_MAPPED_WATER_FRAC",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "SYSTEMATIC_KNOWN_ARMORING_UNION_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__SYSTEMATIC_KNOWN_ARMORING_UNION_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 5.4569682106375694e-12,
+        "values_different": 0
+      },
+      "SYSTEMATIC_UNKNOWN_ARMORING_UNION_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__SYSTEMATIC_UNKNOWN_ARMORING_UNION_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ARMORING_ESTIMATE_DISAGREEMENT_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__ARMORING_ESTIMATE_DISAGREEMENT_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ARMORING_AVAILABILITY_DISAGREEMENT_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__ARMORING_AVAILABILITY_DISAGREEMENT_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ARMORING_WEIGHTED_UNION_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__ARMORING_WEIGHTED_UNION_LENGTH_M",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 2.2737367544323206e-13,
+        "values_different": 0
+      },
+      "SHORELINE_ARMORING_FRAC": {
+        "delivered_field": "ANTHROPOGENIC__SHORELINE_ARMORING_FRAC",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 1.1102230246251565e-16,
+        "values_different": 0
+      }
+    },
+    "spec": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/anthropogenic-r6/spec.json"
+  },
+  "anthropogenic-r8": {
+    "status": "real_source_to_candidate_completed",
+    "rows": 40,
+    "source_vintage": "new download; historical identity unproven",
+    "comparisons": {
+      "H3_RESOLUTION": {
+        "delivered_field": "H3_RESOLUTION",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MAPPED_WATER_AREA_M2": {
+        "delivered_field": "ANTHROPOGENIC__MAPPED_WATER_AREA_M2",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 175011.8949430769,
+        "values_different": 13
+      },
+      "MAPPED_WATER_SHARE_OF_FULL_CELL": {
+        "delivered_field": "ANTHROPOGENIC__MAPPED_WATER_SHARE_OF_FULL_CELL",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.2703641810022487,
+        "values_different": 13
+      },
+      "COMPREHENSIVE_SURVEY_COVERAGE_ESTABLISHED": {
+        "delivered_field": "ANTHROPOGENIC__COMPREHENSIVE_SURVEY_COVERAGE_ESTABLISHED",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MAPPED_INVENTORY_RECORD_INTERSECTION_COUNT": {
+        "delivered_field": "ANTHROPOGENIC__MAPPED_INVENTORY_RECORD_INTERSECTION_COUNT",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 43.0,
+        "values_different": 16
+      },
+      "GLOBAL_INVENTORY_COMPLETE": {
+        "delivered_field": "ANTHROPOGENIC__GLOBAL_INVENTORY_COMPLETE",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DISTANCE_TO_SEAWALL_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_SEAWALL_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_BREAKWATER_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_BREAKWATER_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_JETTY_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_JETTY_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_CAUSEWAY_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_CAUSEWAY_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_PIER_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_PIER_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_FERRY_TERMINAL_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_FERRY_TERMINAL_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_MARINA_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_MARINA_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_PORT_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_PORT_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_DREDGED_CHANNEL_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_DREDGED_CHANNEL_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_DISPOSAL_SITE_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_DISPOSAL_SITE_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_ARTIFICIAL_REEF_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_ARTIFICIAL_REEF_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISTANCE_TO_AQUACULTURE_M": {
+        "delivered_field": "ANTHROPOGENIC__DISTANCE_TO_AQUACULTURE_M",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "OVERWATER_STRUCTURE_DENSITY_PER_KM2": {
+        "delivered_field": "ANTHROPOGENIC__OVERWATER_STRUCTURE_DENSITY_PER_KM2",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "OVERWATER_STRUCTURE_COUNT_WITHIN_5KM": {
+        "delivered_field": "ANTHROPOGENIC__OVERWATER_STRUCTURE_COUNT_WITHIN_5KM",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DREDGED_CHANNEL_MAPPED_AREA_M2": {
+        "delivered_field": "ANTHROPOGENIC__DREDGED_CHANNEL_MAPPED_AREA_M2",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DREDGED_CHANNEL_POSITIVE_MAPPED_WATER_FRAC": {
+        "delivered_field": "ANTHROPOGENIC__DREDGED_CHANNEL_POSITIVE_MAPPED_WATER_FRAC",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "DISPOSAL_SITE_MAPPED_AREA_M2": {
+        "delivered_field": "ANTHROPOGENIC__DISPOSAL_SITE_MAPPED_AREA_M2",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "DISPOSAL_SITE_POSITIVE_MAPPED_WATER_FRAC": {
+        "delivered_field": "ANTHROPOGENIC__DISPOSAL_SITE_POSITIVE_MAPPED_WATER_FRAC",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "AQUACULTURE_MAPPED_AREA_M2": {
+        "delivered_field": "ANTHROPOGENIC__AQUACULTURE_MAPPED_AREA_M2",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "AQUACULTURE_POSITIVE_MAPPED_WATER_FRAC": {
+        "delivered_field": "ANTHROPOGENIC__AQUACULTURE_POSITIVE_MAPPED_WATER_FRAC",
+        "both_present": 0,
+        "candidate_nulls": 40,
+        "delivered_nulls": 40,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "SYSTEMATIC_KNOWN_ARMORING_UNION_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__SYSTEMATIC_KNOWN_ARMORING_UNION_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 4.547473508864641e-13,
+        "values_different": 0
+      },
+      "SYSTEMATIC_UNKNOWN_ARMORING_UNION_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__SYSTEMATIC_UNKNOWN_ARMORING_UNION_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ARMORING_ESTIMATE_DISAGREEMENT_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__ARMORING_ESTIMATE_DISAGREEMENT_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ARMORING_AVAILABILITY_DISAGREEMENT_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__ARMORING_AVAILABILITY_DISAGREEMENT_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ARMORING_WEIGHTED_UNION_LENGTH_M": {
+        "delivered_field": "ANTHROPOGENIC__ARMORING_WEIGHTED_UNION_LENGTH_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SHORELINE_ARMORING_FRAC": {
+        "delivered_field": "ANTHROPOGENIC__SHORELINE_ARMORING_FRAC",
+        "both_present": 12,
+        "candidate_nulls": 28,
+        "delivered_nulls": 28,
+        "null_mismatches": 0,
+        "max_abs_error": 1.1102230246251565e-16,
+        "values_different": 0
+      }
+    },
+    "spec": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/anthropogenic-r8/spec.json"
+  },
+  "estuary-r8": {
+    "status": "real_source_to_candidate_completed",
+    "rows": 40,
+    "source_vintage": "new download; historical identity unproven",
+    "comparisons": {
+      "H3_RESOLUTION": {
+        "delivered_field": "H3_RESOLUTION",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MINIMUM_DISTANCE_M": {
+        "delivered_field": "ESTUARY__DISTANCE_TO_QUALIFIED_NORMALIZED_MAPPED_ESTUARY_POINT_M",
+        "both_present": 40,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      }
+    },
+    "spec": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/estuary-r8/spec.json"
+  },
+  "substrate-r6": {
+    "status": "real_source_to_candidate_completed",
+    "rows": 16,
+    "source_vintage": "new download; historical identity unproven",
+    "comparisons": {
+      "MODELED_ROCK_PRESENCE_SCORE": {
+        "delivered_field": "SUBSTRATE_MODEL__MODELED_ROCK_PRESENCE_SCORE",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ROCK_VALID_NEIGHBOR_WEIGHT": {
+        "delivered_field": "SUBSTRATE_MODEL__ROCK_VALID_NEIGHBOR_WEIGHT",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "ROCK_VALID_POSITIVE_WEIGHT_NEIGHBORS": {
+        "delivered_field": "SUBSTRATE_MODEL__ROCK_VALID_POSITIVE_WEIGHT_NEIGHBORS",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MODELED_SEDIMENT_GRAVEL_FRACTION": {
+        "delivered_field": "SUBSTRATE_MODEL__MODELED_SEDIMENT_GRAVEL_FRACTION",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "GRAVEL_VALID_NEIGHBOR_WEIGHT": {
+        "delivered_field": "SUBSTRATE_MODEL__GRAVEL_VALID_NEIGHBOR_WEIGHT",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "GRAVEL_VALID_POSITIVE_WEIGHT_NEIGHBORS": {
+        "delivered_field": "SUBSTRATE_MODEL__GRAVEL_VALID_POSITIVE_WEIGHT_NEIGHBORS",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MODELED_SEDIMENT_SAND_FRACTION": {
+        "delivered_field": "SUBSTRATE_MODEL__MODELED_SEDIMENT_SAND_FRACTION",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SAND_VALID_NEIGHBOR_WEIGHT": {
+        "delivered_field": "SUBSTRATE_MODEL__SAND_VALID_NEIGHBOR_WEIGHT",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SAND_VALID_POSITIVE_WEIGHT_NEIGHBORS": {
+        "delivered_field": "SUBSTRATE_MODEL__SAND_VALID_POSITIVE_WEIGHT_NEIGHBORS",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MODELED_SEDIMENT_MUD_FRACTION": {
+        "delivered_field": "SUBSTRATE_MODEL__MODELED_SEDIMENT_MUD_FRACTION",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MUD_VALID_NEIGHBOR_WEIGHT": {
+        "delivered_field": "SUBSTRATE_MODEL__MUD_VALID_NEIGHBOR_WEIGHT",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "MUD_VALID_POSITIVE_WEIGHT_NEIGHBORS": {
+        "delivered_field": "SUBSTRATE_MODEL__MUD_VALID_POSITIVE_WEIGHT_NEIGHBORS",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SEDIMENT_FRACTION_SUM": {
+        "delivered_field": "SUBSTRATE_MODEL__SEDIMENT_FRACTION_SUM",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "SEDIMENT_NORMALIZED_ENTROPY": {
+        "delivered_field": "SUBSTRATE_MODEL__SEDIMENT_NORMALIZED_ENTROPY",
+        "both_present": 16,
+        "candidate_nulls": 0,
+        "delivered_nulls": 0,
+        "null_mismatches": 0,
+        "max_abs_error": 0.0,
+        "values_different": 0
+      },
+      "PHYSICAL_HARDNESS": {
+        "delivered_field": "SUBSTRATE_MODEL__PHYSICAL_HARDNESS",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      },
+      "JOINT_ROCK_SEDIMENT_FRACTION": {
+        "delivered_field": "SUBSTRATE_MODEL__JOINT_ROCK_SEDIMENT_FRACTION",
+        "both_present": 0,
+        "candidate_nulls": 16,
+        "delivered_nulls": 16,
+        "null_mismatches": 0,
+        "max_abs_error": null,
+        "values_different": 0
+      }
+    },
+    "spec": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/substrate-r6/spec.json"
+  }
+}

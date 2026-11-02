@@ -1,0 +1,68 @@
+{
+  "6": {
+    "retained_mask_candidates": {
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/H3_COASTAL_WATER_RES_6.parquet": {
+        "rows": 16,
+        "max_abs_area_error_m2": 1603276.4565361403,
+        "raw_sha256": "f6b4b69d1ce80b21935ef45974489d9aeb220c022e57db3cb01d181812ec82f2"
+      },
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet": {
+        "rows": 16,
+        "max_abs_area_error_m2": 1399994.9262842797,
+        "raw_sha256": "f34326fa1cc3852ae9da687222efc67b94cccd8ea2e4e3c6b8c428bfc99ddb6b"
+      },
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/regional-completion-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/H3_COASTAL_WATER_RES_6.parquet": {
+        "rows": 16,
+        "max_abs_area_error_m2": 1603276.4565361403,
+        "raw_sha256": "b9cec9eb54286b9cd7be62d162437717d600bcfced8e773de6bf6914206eee49"
+      },
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/regional-completion-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_6.parquet": {
+        "rows": 16,
+        "max_abs_area_error_m2": 1399994.9262842797,
+        "raw_sha256": "8c4eeb5f61b3002eaabaf2f9fa7abeed4fb4677c9a51fb0498213153da5e8d9e"
+      },
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/regional-completion-20261016/H3_WATER_RES_6.parquet": {
+        "rows": 16,
+        "max_abs_area_error_m2": 1603276.4565361403,
+        "raw_sha256": "8a7b0ae281e734b8b0b3e915d24752c89ff4b168763cd810419a66928bf3fbd3"
+      }
+    },
+    "current_source_water_sha256": "b9e009d96e28cbb845ab1c71ae5b9bb16fc07230e490e572759bf9c7a88eb19a",
+    "independent_overlay_max_abs_error_m2": 1.9632279872894287e-06,
+    "historical_mask_identity": "not recovered from inspected retained masks",
+    "fraction_identity_verified": true
+  },
+  "8": {
+    "retained_mask_candidates": {
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/H3_COASTAL_WATER_RES_8.parquet": {
+        "rows": 40,
+        "max_abs_area_error_m2": 175892.50101255375,
+        "raw_sha256": "373fb94902f23a86d42d86b6fa10727255eea10db9e8b980c46f30652c73e57c"
+      },
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet": {
+        "rows": 40,
+        "max_abs_area_error_m2": 175011.66658404842,
+        "raw_sha256": "b587dc3e990715f4583f9804f90eae20e2c26d7fcbafb5eea03cef0fda4b69c2"
+      },
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/regional-completion-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/H3_COASTAL_WATER_RES_8.parquet": {
+        "rows": 40,
+        "max_abs_area_error_m2": 175892.50101255375,
+        "raw_sha256": "8da1987733046abbce1ca268b78af4ce336fa40b6879d25981bafc914e43302a"
+      },
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/regional-completion-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/h3_geometry/H3_MARINE_WATER_CLIPPED_GEOMETRY_RES_8.parquet": {
+        "rows": 40,
+        "max_abs_area_error_m2": 175011.66658404842,
+        "raw_sha256": "78ac26db89cd4dde08631b8af9c9fc90c6ab088992d32fc6d61ca2ddc177edbf"
+      },
+      "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/regional-completion-20261016/H3_WATER_RES_8.parquet": {
+        "rows": 40,
+        "max_abs_area_error_m2": 175892.50101255375,
+        "raw_sha256": "800ec6fcc04ffa1353ba7c37295b3b28656f3395c6f5b057a9eeabc27ac9b3df"
+      }
+    },
+    "current_source_water_sha256": "b9e009d96e28cbb845ab1c71ae5b9bb16fc07230e490e572759bf9c7a88eb19a",
+    "independent_overlay_max_abs_error_m2": 1.759035512804985e-07,
+    "historical_mask_identity": "not recovered from inspected retained masks",
+    "fraction_identity_verified": true
+  }
+}

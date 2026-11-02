@@ -13,17 +13,19 @@ from typing import Any
 
 import pyarrow as pa
 import pyarrow.compute as pc
-import pyarrow.parquet as pq
 
 from seascape.core.artifacts import TransactionalFamilyPublisher
 from seascape.domain_parquets import (
     METADATA_KEY,
     AreaTables,
+    _audit_root,
     _copy_research_tree,
+    _copy_review_notes,
     _io_root,
     list_areas,
     write_areas,
 )
+from seascape.metric_export import native_keys
 
 
 def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -150,6 +152,23 @@ def _select_dynamic(
             raise ValueError(
                 "Composite support requires distinct start/end interval columns"
             )
+        if (
+            temporal.get("intervals")
+            and start_col not in table.column_names
+            and end_col not in table.column_names
+        ):
+            labels = table["date"].to_pylist()
+            table = table.append_column(start_col, table["date"])
+            table = table.append_column(
+                end_col,
+                pa.array(
+                    [
+                        date.fromisoformat(temporal["intervals"][label.isoformat()])
+                        for label in labels
+                    ],
+                    type=pa.date32(),
+                ),
+            )
         for column in (start_col, end_col):
             if (
                 column not in table.column_names
@@ -229,7 +248,16 @@ def export_history(
             for resolution, filename in sorted(catalog[area].get(kind, {}).items()):
                 path = source / filename
                 hashes[filename] = _digest(path)
-                table = pq.read_table(path)
+                from seascape.domain_parquets import read_area
+
+                table = native_keys(
+                    read_area(
+                        area,
+                        resolution=int(resolution),
+                        dynamic=kind == "dynamic",
+                        output=source,
+                    )
+                )
                 context = json.loads(
                     (table.schema.metadata or {}).get(METADATA_KEY, b"{}")
                 )
@@ -376,8 +404,9 @@ def export_history(
         # areas that no longer intersect a changed request on --overwrite.
         with TransactionalFamilyPublisher(_io_root(output)) as writer:
             staged = writer.stage_path(output)
-            write_areas(selected_areas, output=staged)
+            write_areas(selected_areas, output=staged, audit_root=_audit_root(output))
             _copy_research_tree(output, staged)
+            _copy_review_notes(output, staged)
             writer.publish()
         temporary.replace(report_dest)
     finally:

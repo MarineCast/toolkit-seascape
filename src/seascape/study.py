@@ -397,9 +397,10 @@ def read_study_area(area, *, study_config=None, dynamic=False):
         raise ValueError(
             "Seascape catalog product belongs to a different reporting mask"
         )
-    keys = set(table["H3_INDEX"].to_pylist())
+    key = "h3_index" if "h3_index" in table.column_names else "H3_INDEX"
+    keys = set(table[key].to_pylist())
     ids = set(membership["cells"])
-    table = table.filter(pc.is_in(table["H3_INDEX"], value_set=pa.array(sorted(ids))))
+    table = table.filter(pc.is_in(table[key], value_set=pa.array(sorted(ids))))
     context["study_selection"] = {
         "config_sha256": identity["config_sha256"],
         "membership_sha256": membership["artifact_sha256"],

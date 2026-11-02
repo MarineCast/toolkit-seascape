@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "scope": "Existing public metric spellings and order after requested diagnostic removal; no historical row/value parity implied",
+  "files": {
+    "anthropogenic-r6-static.parquet": [
+      "h3_index",
+      "has_mapped_aquaculture",
+      "has_mapped_artificial_reef",
+      "has_mapped_disposal_site",
+      "has_mapped_dredged_channel",
+      "shoreline_armoring_fraction"
+    ],
+    "anthropogenic-r8-static.parquet": [
+      "h3_index",
+      "has_mapped_aquaculture",
+      "has_mapped_artificial_reef",
+      "has_mapped_disposal_site",
+      "has_mapped_dredged_channel",
+      "shoreline_armoring_fraction"
+    ],
+    "bathymetry-r6-static.parquet": [
+      "H3_INDEX",
+      "bathymetry__BATHYMETRY",
+      "bathymetry__BATHYMETRY_FRAC_0_10_M",
+      "bathymetry__BATHYMETRY_FRAC_100_200_M",
+      "bathymetry__BATHYMETRY_FRAC_10_30_M",
+      "bathymetry__BATHYMETRY_FRAC_30_50_M",
+      "bathymetry__BATHYMETRY_FRAC_50_100_M",
+      "bathymetry__BATHYMETRY_FRAC_OVER_200_M",
+      "bathymetry__BATHYMETRY_LOCAL_ANOMALY",
+      "bathymetry__BATHYMETRY_MAX",
+      "bathymetry__BATHYMETRY_MEDIAN",
+      "bathymetry__BATHYMETRY_MIN",
+      "bathymetry__BATHYMETRY_Q10",
+      "bathymetry__BATHYMETRY_Q25",
+      "bathymetry__BATHYMETRY_Q75",
+      "bathymetry__BATHYMETRY_Q90",
+      "bathymetry__BATHYMETRY_RANGE",
+      "bathymetry__BATHYMETRY_STD",
+      "bathymetry__DISTANCE_TO_ISOBATH_100_M",
+      "bathymetry__DISTANCE_TO_ISOBATH_200_M",
+      "bathymetry__DISTANCE_TO_ISOBATH_50_M",
+      "bathymetry__DISTANCE_TO_ISOBATH_6_1_M"
+    ],
+    "bathymetry-r8-static.parquet": [
+      "H3_INDEX",
+      "bathymetry__BATHYMETRY",
+      "bathymetry__BATHYMETRY_FRAC_0_10_M",
+      "bathymetry__BATHYMETRY_FRAC_100_200_M",
+      "bathymetry__BATHYMETRY_FRAC_10_30_M",
+      "bathymetry__BATHYMETRY_FRAC_30_50_M",
+      "bathymetry__BATHYMETRY_FRAC_50_100_M",
+      "bathymetry__BATHYMETRY_FRAC_OVER_200_M",
+      "bathymetry__BATHYMETRY_LOCAL_ANOMALY",
+      "bathymetry__BATHYMETRY_MAX",
+      "bathymetry__BATHYMETRY_MEDIAN",
+      "bathymetry__BATHYMETRY_MIN",
+      "bathymetry__BATHYMETRY_Q10",
+      "bathymetry__BATHYMETRY_Q25",
+      "bathymetry__BATHYMETRY_Q75",
+      "bathymetry__BATHYMETRY_Q90",
+      "bathymetry__BATHYMETRY_RANGE",
+      "bathymetry__BATHYMETRY_STD",
+      "bathymetry__DISTANCE_TO_ISOBATH_100_M",
+      "bathymetry__DISTANCE_TO_ISOBATH_200_M",
+      "bathymetry__DISTANCE_TO_ISOBATH_50_M",
+      "bathymetry__DISTANCE_TO_ISOBATH_6_1_M"
+    ],
+    "bivalve-r6-static.parquet": [
+      "H3_INDEX",
+      "BIVALVE_EXTENT_ALL_TIME_M2",
+      "BIVALVE_EXTENT_BOOL"
+    ],
+    "bivalve-r8-static.parquet": [
+      "H3_INDEX",
+      "BIVALVE_EXTENT_ALL_TIME_M2",
+      "BIVALVE_EXTENT_BOOL"
+    ],
+    "coast-complexity-r6-static.parquet": [
+      "h3_index",
+      "shoreline_density_m_per_km2",
+      "shoreline_orientation_sin_2theta",
+      "shoreline_orientation_cos_2theta",
+      "shoreline_orientation_concentration",
+      "shoreline_sinuosity_500m",
+      "shoreline_sinuosity_2000m",
+      "island_count",
+      "island_fraction",
+      "distance_to_headland_candidate_m"
+    ],
+    "coast-complexity-r8-static.parquet": [
+      "h3_index",
+      "shoreline_density_m_per_km2",
+      "shoreline_orientation_sin_2theta",
+      "shoreline_orientation_cos_2theta",
+      "shoreline_orientation_concentration",
+      "shoreline_sinuosity_500m",
+      "shoreline_sinuosity_2000m",
+      "island_count",
+      "island_fraction",
+      "distance_to_headland_candidate_m"
+    ],
+    "coastal-bounds-r8-static.parquet": [
+      "h3_index",
+      "distance_to_open_water_m",
+      "ocean_openness_index",
+      "embayment_index",
+      "open_water_aperture_deg"
+    ],
+    "estuary-r8-static.parquet": [
+      "h3_index",
+      "distance_to_mapped_estuary_point_m"
+    ],
+    "fluvial-connectivity-r8-static.parquet": [
+      "h3_index",
+      "water_network_distance_to_river_mouth_m",
+      "connected_drainage_area_km2",
+      "connected_river_network_length_km",
+      "connected_upstream_distance_km",
+      "connected_strahler_order",
+      "connected_headwater_count",
+      "connected_tributary_junction_count",
+      "has_reachable_river_mouth"
+    ],
+    "freshwater-r8-static.parquet": [
+      "H3_INDEX",
+      "freshwater_sources__DISTANCE_TO_RIVER_MOUTH_M",
+      "freshwater_sources__MAPPED_RIVER_MOUTH_PRESSURE_5KM",
+      "freshwater_sources__MAPPED_WIDTH_WEIGHTED_RIVER_MOUTH_PRESSURE_5KM",
+      "freshwater_sources__NEAREST_RIVER_MOUTH_WIDTH_M"
+    ],
+    "kelp-r6-dynamic.parquet": [
+      "H3_INDEX",
+      "ANNUAL_KELP_EXTENT_M2",
+      "date"
+    ],
+    "kelp-r6-static.parquet": [
+      "H3_INDEX",
+      "KELP_EXTENT_ALL_TIME_M2",
+      "KELP_EXTENT_BOOL"
+    ],
+    "kelp-r8-dynamic.parquet": [
+      "H3_INDEX",
+      "ANNUAL_KELP_EXTENT_M2",
+      "date"
+    ],
+    "kelp-r8-static.parquet": [
+      "H3_INDEX",
+      "KELP_EXTENT_ALL_TIME_M2",
+      "KELP_EXTENT_BOOL"
+    ],
+    "mapped-substrate-classes-r6-static.parquet": [
+      "h3_index",
+      "mapped_hard_substrate_fraction",
+      "mapped_mixed_substrate_fraction",
+      "mapped_soft_substrate_fraction"
+    ],
+    "mapped-substrate-classes-r8-static.parquet": [
+      "h3_index",
+      "mapped_hard_substrate_fraction",
+      "mapped_mixed_substrate_fraction",
+      "mapped_soft_substrate_fraction"
+    ],
+    "nearshore-transitions-r6-static.parquet": [
+      "h3_index",
+      "nearshore_deep_water_fraction",
+      "distance_to_connected_deep_water_m"
+    ],
+    "nearshore-transitions-r8-static.parquet": [
+      "h3_index",
+      "nearshore_deep_water_fraction",
+      "distance_to_connected_deep_water_m"
+    ],
+    "seagrass-r6-static.parquet": [
+      "H3_INDEX",
+      "SEAGRASS_EXTENT_ALL_TIME_M2",
+      "SEAGRASS_EXTENT_BOOL"
+    ],
+    "seagrass-r8-static.parquet": [
+      "H3_INDEX",
+      "SEAGRASS_EXTENT_ALL_TIME_M2",
+      "SEAGRASS_EXTENT_BOOL"
+    ],
+    "shoreline-r6-static.parquet": [
+      "h3_index",
+      "mapped_shoreline_length_m",
+      "rocky_shore_fraction",
+      "sandy_shore_fraction",
+      "gravel_shore_fraction",
+      "cliff_shore_fraction",
+      "bluff_shore_fraction",
+      "deltaic_shore_fraction",
+      "estuarine_shore_fraction"
+    ],
+    "shoreline-r8-static.parquet": [
+      "h3_index",
+      "mapped_shoreline_length_m",
+      "rocky_shore_fraction",
+      "sandy_shore_fraction",
+      "gravel_shore_fraction",
+      "cliff_shore_fraction",
+      "bluff_shore_fraction",
+      "deltaic_shore_fraction",
+      "estuarine_shore_fraction",
+      "distance_to_mapped_shoreline_m"
+    ],
+    "spatial-support-r6-static.parquet": [
+      "h3_index",
+      "water_area_m2",
+      "water_fraction",
+      "intersects_shoreline"
+    ],
+    "spatial-support-r8-static.parquet": [
+      "h3_index",
+      "water_area_m2",
+      "water_fraction",
+      "intersects_shoreline"
+    ],
+    "substrate-r6-static.parquet": [
+      "h3_index",
+      "modeled_rock_presence_score",
+      "modeled_gravel_fraction",
+      "modeled_sand_fraction",
+      "modeled_mud_fraction"
+    ],
+    "terrain-r8-static.parquet": [
+      "h3_index",
+      "seafloor_slope_mean_deg",
+      "seafloor_northness",
+      "seafloor_eastness",
+      "terrain_position_ring_2_z",
+      "depth_std_ring_2_m",
+      "vector_ruggedness_ring_2",
+      "positive_terrain_openness_deg",
+      "negative_terrain_openness_deg"
+    ],
+    "waterbody-morphometry-r8-static.parquet": [
+      "h3_index",
+      "local_waterbody_min_width_m",
+      "waterbody_mean_width_m",
+      "constriction_index",
+      "distance_to_constricted_passage_m",
+      "distance_to_sill_candidate_m",
+      "local_waterspace_area_km2"
+    ]
+  }
+}

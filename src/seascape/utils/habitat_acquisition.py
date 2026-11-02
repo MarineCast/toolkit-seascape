@@ -351,14 +351,19 @@ def _download_overpass(
                     response = session.post(
                         endpoint, data={"data": query}, timeout=timeout
                     )
-                    tile_document = _response_json(
+                    candidate = _response_json(
                         response, f"Overpass query for {endpoint}"
                     )
-                    elements = tile_document.get("elements")
+                    elements = candidate.get("elements")
                     if not isinstance(elements, list):
                         raise RuntimeError(
                             f"Overpass endpoint returned invalid elements: {endpoint}"
                         )
+                    if candidate.get("remark"):
+                        raise RuntimeError(
+                            f"Overpass returned an incomplete query: {candidate['remark']}"
+                        )
+                    tile_document = candidate
                     endpoints_used.append(endpoint)
                     break
                 except (requests.RequestException, RuntimeError, ValueError) as exc:
@@ -566,12 +571,18 @@ def _extract_zip(archive_path: Path, destination: Path) -> None:
 def _validate_existing(path: Path, kind: str) -> int:
     if not path.exists() or not path.is_file() or path.stat().st_size <= 0:
         raise RuntimeError(f"Existing habitat source is invalid: {path}")
-    if kind in {"arcgis", "wfs", "overpass"}:
+    if kind in {"arcgis", "wfs", "overpass", "osm_pbf"}:
         with path.open(encoding="utf-8") as source:
             document = json.load(source)
-        records = document.get("elements" if kind == "overpass" else "features")
+        records = document.get(
+            "elements" if kind in {"overpass", "osm_pbf"} else "features"
+        )
         if not isinstance(records, list) or not records:
-            label = "OSM elements" if kind == "overpass" else "GeoJSON features"
+            label = (
+                "OSM elements"
+                if kind in {"overpass", "osm_pbf"}
+                else "GeoJSON features"
+            )
             raise RuntimeError(f"Existing habitat source has no {label}: {path}")
         return len(records)
     return int(path.stat().st_size)
@@ -670,6 +681,11 @@ def download_habitat_sources(
                 if kind == "overpass":
                     with destination.open(encoding="utf-8") as input_file:
                         result_metadata = _overpass_metadata(json.load(input_file))
+                elif kind == "osm_pbf":
+                    with destination.open(encoding="utf-8") as input_file:
+                        result_metadata = {
+                            "osm_extract": json.load(input_file)["_orcacast"]
+                        }
                 status = "existing"
             elif kind == "local_raster":
                 if not destination.exists():
@@ -709,6 +725,17 @@ def download_habitat_sources(
                 status = "downloaded"
             elif kind == "overpass":
                 count, result_metadata = _download_overpass(
+                    session,
+                    source,
+                    destination,
+                    bbox=config.bbox,
+                    timeout=config.request_timeout_seconds,
+                )
+                status = "downloaded"
+            elif kind == "osm_pbf":
+                from .osm_extract import download_osm_extract
+
+                count, result_metadata = download_osm_extract(
                     session,
                     source,
                     destination,

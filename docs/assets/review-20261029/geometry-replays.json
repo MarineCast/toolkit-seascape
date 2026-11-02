@@ -1,0 +1,26 @@
+{
+  "nearshore-transitions": {
+    "rows": 20,
+    "max_absolute_errors": {
+      "NEARSHORE_ELIGIBLE_AREA_M2": 1.7462298274040222e-10,
+      "NEARSHORE_VALID_BATHYMETRY_AREA_M2": 0.0,
+      "NEARSHORE_DEEP_WATER_AREA_M2": 0.0,
+      "NEARSHORE_DEEP_WATER_FRAC_OF_VALID": 0.0,
+      "NEARSHORE_BATHYMETRY_COVERAGE_FRAC": 2.220446049250313e-16
+    },
+    "status": "matched"
+  },
+  "coast-complexity": {
+    "rows": 20,
+    "max_absolute_errors": {
+      "SHORELINE_LENGTH_M": 0.0,
+      "SHORELINE_LENGTH_DENSITY_M_PER_KM2": 0.0,
+      "SHORELINE_AXIAL_SIN_2THETA": 0.0,
+      "SHORELINE_AXIAL_COS_2THETA": 0.0,
+      "SHORELINE_ORIENTATION_CONCENTRATION": 0.0,
+      "ISLAND_COUNT": 0.0,
+      "ISLAND_FRACTION_OF_SUPPORT": 0.0
+    },
+    "status": "matched"
+  }
+}

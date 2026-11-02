@@ -1,0 +1,133 @@
+{
+  "BC_DFO_SHELLFISH_LICENCES.csv.receipt.json": {
+    "url": "https://api-proxy.edh-cde.dfo-mpo.gc.ca/catalogue/records/522d1b67-30d8-4a34-9b62-5da99b1035e6/attachments/licence-permis-shell-conch-rpt-pac-dfo-mpo-aquaculture-eng.csv",
+    "post": null,
+    "bytes": 382249,
+    "sha256": "47eec38e5323bee7ba2fc2cf0cc23e61d702bd70644a5d6dac86ffc718aa327c",
+    "retrieved_at": "2026-10-29T16:17:41.404563+00:00"
+  },
+  "BC_SHOREZONE_COMPLETE.geojson.receipt.json": {
+    "url": "https://openmaps.gov.bc.ca/geo/pub/WHSE_ENVIRONMENTAL_MONITORING.SHZN_SHORE_UNIT_CLASS_LINES_SV/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=pub%3AWHSE_ENVIRONMENTAL_MONITORING.SHZN_SHORE_UNIT_CLASS_LINES_SV&outputFormat=application%2Fjson&srsName=EPSG%3A4326&bbox=-123.42%2C48.62%2C-123.35%2C48.68%2CEPSG%3A4326&count=1000",
+    "post": null,
+    "bytes": 1281680,
+    "sha256": "24f6debb33385f491e011f3eb058eb0ee9922c645f757981f05b8fe627bf5093",
+    "retrieved_at": "2026-10-29T16:17:40.373432+00:00"
+  },
+  "BC_SHOREZONE_SMALL.geojson.receipt.json": {
+    "url": "https://openmaps.gov.bc.ca/geo/pub/WHSE_ENVIRONMENTAL_MONITORING.SHZN_SHORE_UNIT_CLASS_LINES_SV/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=pub%3AWHSE_ENVIRONMENTAL_MONITORING.SHZN_SHORE_UNIT_CLASS_LINES_SV&outputFormat=application%2Fjson&srsName=EPSG%3A4326&bbox=-123.6%2C48.4%2C-123.2%2C48.8%2CEPSG%3A4326&count=1000",
+    "post": null,
+    "bytes": 1810699,
+    "sha256": "d2f06a9fc223037f4d47fb0a52af1b6d1238e229268663f0d8921a3fbafc35c8",
+    "retrieved_at": "2026-10-29T16:15:56.430435+00:00"
+  },
+  "CA_DISPOSAL.metadata.json.receipt.json": {
+    "url": "https://maps-cartes.ec.gc.ca/arcgis/rest/services/DMS/ActiveDisposalSites_SitesImmersionActifs/MapServer/0?f=pjson",
+    "post": null,
+    "bytes": 22757,
+    "sha256": "50b190a86bcfb9a81f293f6db566a2496e0bb76df7d9a806151391f90068a058",
+    "retrieved_at": "2026-10-29T16:15:56.869463+00:00"
+  },
+  "CA_DISPOSAL_SMALL.geojson.receipt.json": {
+    "url": "https://maps-cartes.ec.gc.ca/arcgis/rest/services/DMS/ActiveDisposalSites_SitesImmersionActifs/MapServer/0/query?f=geojson&where=1%3D1&outFields=%2A&outSR=4326&geometry=-125%2C48%2C-122%2C50&geometryType=esriGeometryEnvelope&inSR=4326&returnGeometry=true&resultRecordCount=1000",
+    "post": null,
+    "bytes": 127796,
+    "sha256": "be7021c8770e6240025ec03ff9766c54ab27f8f99bbd476f86cba220a4df4509",
+    "retrieved_at": "2026-10-29T16:15:59.847811+00:00"
+  },
+  "DBSEABED_GRAVEL_PERCENT.tif.receipt.json": {
+    "url": "https://api.hubocean.earth/api/table/v2/raw/download?table_id=5065080c-b9e7-4e08-b1f5-3a757007cade&raw_id=43bb37e3-a2f",
+    "method": "POST",
+    "bytes": 25931296,
+    "sha256": "4572edc909d8c81180681d08aeee542b48bb69836b6c1e5adfc171a6f7defd34",
+    "retrieved_at": "2026-10-29T16:01:40.253351+00:00",
+    "license": "CC-BY-4.0",
+    "metadata": "HUB_SUBSTRATE_STAC.json",
+    "new_source_reproduction": true
+  },
+  "DBSEABED_MUD_PERCENT.tif.receipt.json": {
+    "url": "https://api.hubocean.earth/api/table/v2/raw/download?table_id=5065080c-b9e7-4e08-b1f5-3a757007cade&raw_id=13b201b8-e1b",
+    "method": "POST",
+    "bytes": 25931296,
+    "sha256": "e4cbefa11284082e0f4b4f186353e7c610e351a2b083030ef0e95959522b8315",
+    "retrieved_at": "2026-10-29T16:01:47.979597+00:00",
+    "license": "CC-BY-4.0",
+    "metadata": "HUB_SUBSTRATE_STAC.json",
+    "new_source_reproduction": true
+  },
+  "DBSEABED_ROCK_PERCENT.tif.receipt.json": {
+    "url": "https://api.hubocean.earth/api/table/v2/raw/download?table_id=e36187d8-c249-45ed-af53-47a06f52cf5d&raw_id=00b96e00-1b5",
+    "method": "POST",
+    "bytes": 25931296,
+    "sha256": "17f5a1bb5dc1618f2a304e4b7d878e1bf067802771789977931918445ac6d4fa",
+    "retrieved_at": "2026-10-29T16:01:36.446548+00:00",
+    "license": "CC-BY-4.0",
+    "metadata": "HUB_SUBSTRATE_STAC.json",
+    "new_source_reproduction": true
+  },
+  "DBSEABED_SAND_PERCENT.tif.receipt.json": {
+    "url": "https://api.hubocean.earth/api/table/v2/raw/download?table_id=5065080c-b9e7-4e08-b1f5-3a757007cade&raw_id=c6e23264-ac2",
+    "method": "POST",
+    "bytes": 25931296,
+    "sha256": "4a92890e741fe569f9181ccc34d9668f8baf0137e772c9843bcdcb78a3896ca7",
+    "retrieved_at": "2026-10-29T16:01:43.938490+00:00",
+    "license": "CC-BY-4.0",
+    "metadata": "HUB_SUBSTRATE_STAC.json",
+    "new_source_reproduction": true
+  },
+  "NOAA_DREDGED.geojson.receipt.json": {
+    "url": "https://encdirect.noaa.gov/arcgis/rest/services/NavigationChartData/MarineTransportation/FeatureServer/1/query?f=geojson&where=1%3D1&outFields=%2A&outSR=4326&geometry=-123.3%2C47.5%2C-122.1%2C48.7&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=true&resultRecordCount=2000",
+    "bytes": 173771,
+    "sha256": "9ae5795493093bb59d81bc4ef747a79ea7ace7a3bc50649d808654dd1824fa87",
+    "retrieved_at": "2026-10-29T15:58:18.529823+00:00",
+    "new_source_reproduction": true
+  },
+  "NOAA_DREDGED.metadata.json.receipt.json": {
+    "url": "https://encdirect.noaa.gov/arcgis/rest/services/NavigationChartData/MarineTransportation/FeatureServer/1?f=pjson",
+    "bytes": 6933,
+    "sha256": "2a0484d66cb86787caa5e011d35ed71b57c18068d9b081d80b5723bf670cb1d4",
+    "retrieved_at": "2026-10-29T15:58:17.138760+00:00",
+    "new_source_reproduction": true
+  },
+  "NOAA_SHORELINES_2018.zip.receipt.json": {
+    "url": "https://media.fisheries.noaa.gov/2020-04/shstmp-ps-marine-shorelines-2018-nwfsc.zip",
+    "bytes": 3062105,
+    "sha256": "c3604ac7b87f43e8cca32307b223965fa3855b3afe541e166874aba535ec68e4",
+    "retrieved_at": "2026-10-29T15:57:57.582905+00:00",
+    "new_source_reproduction": true
+  },
+  "PMEP_ESTUARY.geojson.receipt.json": {
+    "url": "https://gis.psmfc.org/server/rest/services/PMEP/PMEP_Estuary_Points/MapServer/0/query?f=geojson&where=1%3D1&outFields=%2A&outSR=4326&geometry=-123.3%2C47.5%2C-122.1%2C48.7&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=true&resultRecordCount=2000",
+    "bytes": 36467,
+    "sha256": "08094e94227b74d2d3c07509fd5759bd578913f2e72f16f0728526282b2c07bf",
+    "retrieved_at": "2026-10-29T15:57:58.089005+00:00",
+    "new_source_reproduction": true
+  },
+  "PMEP_ESTUARY.metadata.json.receipt.json": {
+    "url": "https://gis.psmfc.org/server/rest/services/PMEP/PMEP_Estuary_Points/MapServer/0?f=pjson",
+    "bytes": 23336,
+    "sha256": "d1be54458ee9125ede5d523b4d3ca9a2618d2fbc47cd213b26947e1d143c6adf",
+    "retrieved_at": "2026-10-29T15:57:57.887135+00:00",
+    "new_source_reproduction": true
+  },
+  "WA_ARMORING.geojson.receipt.json": {
+    "url": "https://gis.dnr.wa.gov/site3/rest/services/Aquatics/AQ_Environment/MapServer/51/query?f=geojson&where=1%3D1&outFields=%2A&outSR=4326&geometry=-123.3%2C47.5%2C-122.1%2C48.7&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=true&resultRecordCount=2000",
+    "bytes": 2652475,
+    "sha256": "2c4f5397d5a5ad530faf25597c83428712dd54d1774fd9452a4b11221a9c1526",
+    "retrieved_at": "2026-10-29T15:58:16.404099+00:00",
+    "new_source_reproduction": true
+  },
+  "WA_ARMORING.metadata.json.receipt.json": {
+    "url": "https://gis.dnr.wa.gov/site3/rest/services/Aquatics/AQ_Environment/MapServer/51?f=pjson",
+    "bytes": 9484,
+    "sha256": "029ad63d2ace82e73dd5ac8a6c313fdfa77850ea1b69695551d1594f8ad916cf",
+    "retrieved_at": "2026-10-29T15:57:58.449010+00:00",
+    "new_source_reproduction": true
+  },
+  "WA_ARMORING_SMALL.geojson.receipt.json": {
+    "url": "https://gis.dnr.wa.gov/site3/rest/services/Aquatics/AQ_Environment/MapServer/51/query?f=geojson&where=1%3D1&outFields=%2A&outSR=4326&geometry=-122.7%2C47.8%2C-122.3%2C48.1&geometryType=esriGeometryEnvelope&inSR=4326&returnGeometry=true&resultRecordCount=2000",
+    "bytes": 706969,
+    "sha256": "5005fc6c8c1089fa01347f4e377dce21378ec829f3b1f0df837cb363f2997f3f",
+    "retrieved_at": "2026-10-29T16:00:38.789202+00:00",
+    "new_source_reproduction": true
+  }
+}

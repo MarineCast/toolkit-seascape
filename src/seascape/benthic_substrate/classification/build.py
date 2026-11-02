@@ -49,6 +49,24 @@ SEDIMENT_CLASSES = ("GRAVEL", "SAND", "MUD")
 DBSEABED_VARIABLES = ("rock", "gravel", "sand", "mud")
 
 
+def _native_delivery_samples(inventory, support):
+    """Sample each R6 representative point directly for the public native product."""
+    columns = {}
+    for row in inventory.itertuples(index=False):
+        values, _valid = sample_raster_bilinear(
+            Path(row.PATH),
+            support.REPRESENTATIVE_POINT_LONGITUDE.to_numpy(dtype=float),
+            support.REPRESENTATIVE_POINT_LATITUDE.to_numpy(dtype=float),
+        )
+        field = (
+            "MODELED_ROCK_PRESENCE_SCORE"
+            if row.VARIABLE == "rock"
+            else "MODELED_SEDIMENT_" + str(row.VARIABLE).upper() + "_FRACTION"
+        )
+        columns[field] = validate_percentage(values, str(row.VARIABLE))
+    return columns
+
+
 def load_substrate_inventory(
     config_path: str | Path = DEFAULT_CONFIG_PATH,
 ) -> pd.DataFrame:
@@ -397,6 +415,11 @@ def build_substrate_classification(
     r6_features, r6_confidence = _r6_tables(
         r8_features, r8_confidence, crosswalk, support_r6
     )
+    native_support = (
+        support_r6.set_index("H3_INDEX").loc[r6_features.H3_INDEX].reset_index()
+    )
+    for column, values in _native_delivery_samples(inventory, native_support).items():
+        r6_features[column] = values
     paths = (
         config.inventory_path,
         config.feature_path(8),
@@ -456,6 +479,7 @@ def build_substrate_classification(
         metadata={
             "scientific_method_version": "separate_rock_presence_sediment_texture_v2",
             "sample_support": "bilinear representative-point sample from native 0.1-degree modeled grid",
+            "public_r6_fields": "Direct native R6 representative-point samples; legacy SUBSTRATE_* aggregation fields remain internal",
             "rock_measurement": "modeled rock-presence score; not an areal cover fraction",
             "sediment_measurement": "source gravel, sand, and mud texture percentages kept separately from rock",
             "joint_composition_status": "unverified; no four-part closure or physical hardness index",

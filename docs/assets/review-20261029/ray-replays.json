@@ -1,0 +1,20 @@
+{
+  "coastal-bounds": {
+    "rows": 20,
+    "max_absolute_errors": {
+      "OPENNESS_TO_OCEAN_INDEX": 0.0,
+      "EMBAYMENT_INDEX": 0.0,
+      "OPEN_WATER_ANGULAR_APERTURE_DEG": 0.0
+    },
+    "scope": "local directional geometry only; network distances not replayed"
+  },
+  "waterbody-morphometry": {
+    "rows": 20,
+    "max_absolute_errors": {
+      "LOCAL_WATERBODY_WIDTH_M": 0.0,
+      "WATERBODY_WIDTH_MEAN_M": 0.0,
+      "WATERBODY_WIDTH_CENSORED_FRACTION": 0.0
+    },
+    "scope": "local directional geometry only; network distances not replayed"
+  }
+}

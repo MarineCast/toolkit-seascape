@@ -1,5 +1,10 @@
 # Kelp extent
 
+Static public delivery now has H3, all-time area (m²) and an int64 0/1 mapped
+presence field. Source nulls become zero by explicit delivery policy; native
+unknowns and source details remain in the required audit. Annual delivery is
+unchanged and its review remains pending. See [reviewed delivery](reviewed-delivery.md).
+
 Kelp has one producer, `seascape.biogenic_habitat.kelp.build.build_kelp_habitat`,
 and one delivered area, `kelp`. The Data Atlas exposes two scientific features:
 
@@ -11,7 +16,7 @@ and one delivered area, `kelp`. The Data Atlas exposes two scientific features:
 The static and dynamic Parquets are cadence variants of this one dataset, at R6
 and R8. They replace the separate annual-footprint and mapped-kelp-mosaic areas.
 Quality, source IDs, observation years, unknown-date contributions and geometry
-repair flags remain in the tables and inspector; they are not additional picker
+repair flags remain in annual tables and required static audits/inspector; they are not additional picker
 features. The normalized inventory and source audit are internal lineage.
 
 ## Calculation and interpretation

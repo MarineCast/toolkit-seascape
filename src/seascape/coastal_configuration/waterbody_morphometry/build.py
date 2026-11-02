@@ -34,9 +34,6 @@ from seascape.spatial_support.provenance import water_geometry_provenance
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
 )
-from seascape.spatial_support.water_network.geometry import (
-    directional_water_fraction,
-)
 from seascape.spatial_support.water_network.graph import (
     target_graph_mapping,
 )
@@ -47,6 +44,7 @@ from seascape.spatial_support.water_network.load import (
     multi_source_shortest_paths,
     nullable_string_values,
 )
+from seascape.spatial_support.water_network.rays import directional_distances
 from seascape.utils.artifacts import (
     build_manifest,
     checksum_artifact,
@@ -242,30 +240,11 @@ def _directional_shore_distances(
 ) -> np.ndarray:
     """Measure uninterrupted center-to-shore distance on 16 bearings."""
 
-    bearings = np.linspace(0.0, 360.0, len(BEARING_LABELS), endpoint=False)
-    maximum_search_m = float(maximum_search_km) * 1_000.0
-    output = np.empty((len(cells), len(BEARING_LABELS)), dtype="float64")
-    for index, (_cell, latitude, longitude) in enumerate(
-        zip(cells, latitudes, longitudes, strict=True)
-    ):
-        for bearing_index, bearing in enumerate(bearings):
-            output[index, bearing_index] = (
-                maximum_search_m
-                * directional_water_fraction(
-                    float(longitude),
-                    float(latitude),
-                    float(bearing),
-                    maximum_search_m,
-                    water_geometry,
-                )
-            )
-        if (index + 1) % 10_000 == 0:
-            LOGGER.info(
-                "Calculated directional shore distances for %d/%d cells",
-                index + 1,
-                len(cells),
-            )
-    return np.clip(output, 0.0, maximum_search_m)
+    if len(cells) != len(latitudes) or len(cells) != len(longitudes):
+        raise ValueError("Ray cells and coordinates must have equal lengths")
+    return directional_distances(
+        longitudes, latitudes, float(maximum_search_km) * 1_000.0, water_geometry
+    )
 
 
 def _width_metrics(

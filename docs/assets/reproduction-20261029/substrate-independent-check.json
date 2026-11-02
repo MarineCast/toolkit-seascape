@@ -1,0 +1,26 @@
+{
+  "MODELED_ROCK_PRESENCE_SCORE": {
+    "max_abs_error": 0.0,
+    "values_different": 0,
+    "null_mismatches": 0,
+    "independent_scalar_agrees": true
+  },
+  "MODELED_SEDIMENT_GRAVEL_FRACTION": {
+    "max_abs_error": 0.0,
+    "values_different": 0,
+    "null_mismatches": 0,
+    "independent_scalar_agrees": true
+  },
+  "MODELED_SEDIMENT_SAND_FRACTION": {
+    "max_abs_error": 0.0,
+    "values_different": 0,
+    "null_mismatches": 0,
+    "independent_scalar_agrees": true
+  },
+  "MODELED_SEDIMENT_MUD_FRACTION": {
+    "max_abs_error": 0.0,
+    "values_different": 0,
+    "null_mismatches": 0,
+    "independent_scalar_agrees": true
+  }
+}

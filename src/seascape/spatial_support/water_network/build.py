@@ -47,12 +47,13 @@ from seascape.utils.spatial import h3_cell_set_hash
 
 from .config import DEFAULT_CONFIG_PATH, WaterNetworkConfig, load_water_network_config
 from .graph import (
+    StreamedNeighborhoods,
     _assign_components,
     _build_connectors,
     _build_edges,
-    _build_neighborhoods,
     _crosswalk,
 )
+from .graph import _build_neighborhoods as _build_neighborhoods
 from .load import _csr
 from .radius_operator import RadiusSumOperator
 from .validation import (
@@ -60,7 +61,6 @@ from .validation import (
     validate_connectors,
     validate_edges,
     validate_geometry_products,
-    validate_neighborhoods,
     validate_support,
 )
 
@@ -752,18 +752,12 @@ def build_marine_spatial_support(
                 spatial_support_version=config.spatial_support_version,
                 area_tolerance_m2=config.area_tolerance_m2,
             )
-            neighborhoods = _build_neighborhoods(
+            neighborhoods = StreamedNeighborhoods(
                 model_support,
                 edges,
                 connectors,
                 resolution,
                 config,
-            )
-            validate_neighborhoods(
-                neighborhoods,
-                model_support,
-                resolution,
-                maximum_hops=config.maximum_neighborhood_hops,
             )
             support_by_resolution[resolution] = support
             model_support_by_resolution[resolution] = model_support

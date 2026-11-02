@@ -4,7 +4,6 @@ from datetime import date
 
 import h3
 import pyarrow as pa
-import pyarrow.parquet as pq
 import pytest
 
 from seascape.cli import main
@@ -153,7 +152,13 @@ def test_composite_keeps_two_year_support_and_overwrite_removes_stale_areas(tmp_
     )
     kept = read_area("seagrass", resolution=6, dynamic=True, output=result.output_dir)
     assert kept["date"].to_pylist() == [date(2019, 1, 1)]
-    assert kept["period_end_exclusive"].to_pylist() == [date(2021, 1, 1)]
+    assert "period_end_exclusive" not in kept.column_names
+    assert (
+        json.loads(kept.schema.metadata[METADATA_KEY])["temporal_support"]["intervals"][
+            "2019-01-01"
+        ]
+        == "2021-01-01"
+    )
     request(tmp_path, "2009-01-01", "2010-01-01")
     result = export_history(
         study_config=study,
@@ -198,7 +203,7 @@ def test_mixed_native_resolutions_and_metadata_are_preserved(tmp_path):
     )
     for resolution in (6, 8):
         kept = read_area("depth", resolution=resolution, output=result.output_dir)
-        assert kept["H3_RESOLUTION"].to_pylist() == [resolution]
+        assert h3.get_resolution(kept["h3_index"][0].as_py()) == resolution
         context = json.loads(kept.schema.metadata[METADATA_KEY])
         assert str(resolution) in context["resolution_contexts"]
         assert context["historical_request"]["start"] == "2009-01-01"
@@ -245,16 +250,12 @@ def test_history_preserves_common_mask_identity_and_rejects_conflicts(tmp_path):
         retained = json.loads(kept.schema.metadata[METADATA_KEY])
         for key, value in context.items():
             assert retained[key] == value
-    path = source / "depth-r8-static.parquet"
-    changed = pq.read_table(path)
-    different = {
-        **json.loads(changed.schema.metadata[METADATA_KEY]),
-        "reporting_mask_file_sha256": "c" * 64,
-    }
-    pq.write_table(
-        changed.replace_schema_metadata({METADATA_KEY: json.dumps(different).encode()}),
-        path,
-    )
+    catalog_path = source / "catalog.json"
+    catalog = json.loads(catalog_path.read_text())
+    catalog["depth"]["contexts"]["depth-r8-static.parquet"][
+        "reporting_mask_file_sha256"
+    ] = "c" * 64
+    catalog_path.write_text(json.dumps(catalog))
     with pytest.raises(ValueError, match="different reporting mask"):
         export_history(
             study_config=study,

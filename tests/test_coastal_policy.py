@@ -4,15 +4,32 @@ import geopandas as gpd
 import h3
 import numpy as np
 import pytest
+import shapely
 from pyproj import Geod
 from shapely.geometry import LineString, Point, box
 
 from seascape.spatial_support.coastal_policy import (
     CoastalMask,
+    _buffer_coast_chunks,
     build_coastal_mask,
     geodesic_coastal_corridor,
     native_mask_membership,
 )
+
+
+def test_batched_coast_buffer_keeps_connected_seams_and_disjoint_coasts():
+    coast = np.asarray(
+        [LineString([(i * 10, 0), (i * 10 + 10, 0)]) for i in range(129)]
+        + [LineString([(0, 200), (20, 200)])],
+        dtype=object,
+    )
+    actual = _buffer_coast_chunks(coast, 25)
+    expected = shapely.union_all(coast).buffer(25, quad_segs=32)
+    assert actual.is_valid
+    assert actual.symmetric_difference(expected).area == pytest.approx(0, abs=1e-7)
+    assert actual.covers(Point(640, 24))
+    assert actual.covers(Point(10, 220))
+    assert not actual.covers(Point(10, 100))
 
 
 def source(geometry, **columns):

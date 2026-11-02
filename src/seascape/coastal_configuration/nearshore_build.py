@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -34,9 +35,11 @@ from seascape.utils.artifacts import (
 
 from .coast_complexity import sample_line_positions
 from .nearshore_transitions import (
+    BufferedInterest,
     TransectCrossing,
     _depth_areas,
     _eligible_supports,
+    _shoreline_near_water_mask,
     bounded_deep_target_components,
     first_water_facing_contour,
 )
@@ -201,7 +204,7 @@ def _station_tangent_points(line, positions, scale_m):
 
 def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
     config = load_nearshore_config(config_path)
-    cells = load_model_area_geometry(8, config_path)
+    cells = load_model_area_geometry(8, config_path, columns=["H3_INDEX", "geometry"])
     if config.selected_h3_indices:
         missing = set(config.selected_h3_indices) - set(cells.H3_INDEX.astype(str))
         if missing:
@@ -218,9 +221,9 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
         .sort_values("H3_INDEX")
         .reset_index(drop=True)
     )
-    context_cells = gpd.read_parquet(config.clipped_r8_path).to_crs(
-        config.projected_crs
-    )
+    context_cells = gpd.read_parquet(
+        config.clipped_r8_path, columns=["H3_INDEX", "geometry"]
+    ).to_crs(config.projected_crs)
     if len(context_cells) > config.max_context_cells or config.max_context_cells < 1:
         raise ValueError("Nearshore full-context cell budget exceeded")
     water = (
@@ -234,20 +237,23 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
     if config.reporting_mask_path is not None and not config.selected_h3_indices:
         # Conservative station-source collar includes the complete reporting
         # cells at regional R8, without dissolving every detailed coastal clip.
-        interest = (
-            gpd.read_parquet(config.reporting_mask_path)
+        interest = BufferedInterest(
+            gpd.read_parquet(config.reporting_mask_path, columns=["geometry"])
             .to_crs(config.projected_crs)
-            .geometry.union_all()
-            .buffer(config.transect_max_m + 2000)
+            .geometry.union_all(),
+            config.transect_max_m + 2000,
         )
     else:
-        interest = unary_union(list(cells.geometry)).buffer(config.transect_max_m)
-    shapely.prepare(interest)
+        interest = BufferedInterest(
+            unary_union(list(cells.geometry)), config.transect_max_m
+        )
     shapely.prepare(water)
     path_water = water.buffer(1e-7)
     shapely.prepare(path_water)
     shoreline = shoreline.loc[
-        shoreline.geometry.intersects(water.buffer(config.transect_max_m))
+        _shoreline_near_water_mask(
+            shoreline.geometry.to_numpy(), water, config.transect_max_m
+        )
     ]
     LOGGER.info(
         "Nearshore context: %d cells, %d reporting cells, %d source segments",
@@ -260,7 +266,11 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
     station_rows = []
     transect_rows = []
     depth_checksum = checksum_artifact(config.depth_raster_path)
-    with rasterio.open(config.depth_raster_path) as source:
+    # Bound GDAL block retention across area and station phases (bytes).
+    with (
+        rasterio.Env(GDAL_CACHEMAX=64 * 1024**2),
+        rasterio.open(config.depth_raster_path) as source,
+    ):
         with WarpedVRT(
             source, crs=config.projected_crs, resampling=Resampling.nearest
         ) as depth:
@@ -294,6 +304,7 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
                 source_identity=depth_checksum[:16],
                 raster_depth_convention="negative_elevation",
             )
+            del context_cells
             LOGGER.info("Labeled %d shared deep components", len(components))
             component_by_resolution = {
                 8: r8_components,
@@ -375,6 +386,10 @@ def build_nearshore_transitions(config_path: str | Path) -> tuple[Path, ...]:
                             else "hierarchical_r8_child_union",
                         }
                     )
+            # Area summaries and component identities now own scalar values only.
+            # Release detailed supports before allocating station buffers/graphs.
+            del eligible, eligible_r8, supports, cells, frame, parent_rows, child_rows
+            gc.collect()
             for segment in shoreline.itertuples(index=False):
                 line = segment.geometry
                 if line.geom_type != "LineString" or line.length <= 0:

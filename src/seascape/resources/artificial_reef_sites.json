@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "checked": "2026-11-01",
+  "sources": {
+    "arsbc": {
+      "url": "https://artificialreefsocietybc.ca/uploads/6/9/3/9/69390363/arsbc_2016.pdf",
+      "locator": "PDF page 2, named reef entries",
+      "vintage": "2016 brochure; deployments 1991-2015",
+      "sha256": null,
+      "extraction": "factual coordinates transcribed from web-reader source text; raw PDF HTTP 465, original bytes unavailable",
+      "rights": "Factual coordinates only; no brochure copyright licence asserted; no artwork or prose copied",
+      "datum": "not stated; nominal EPSG:4326 mapping assumption"
+    },
+    "wdfw": {
+      "url": "https://wdfw.wa.gov/sites/default/files/2025-06/2025-comm-editsv4-team-final.pdf",
+      "locator": "PDF page 54, printed page 48, Artificial Fishing Reef Locations",
+      "vintage": "2025 publication; deployment dates unspecified",
+      "sha256": "97280f94af05d1a7fe9d2bc49f13cc81be9848f448b691da49598d626578bca2",
+      "extraction": "coordinate table checked using pypdf and rendered page",
+      "rights": "Factual coordinate table from Washington Department of Fish and Wildlife; no document artwork or prose redistributed",
+      "datum": "not stated; nominal EPSG:4326 mapping assumption"
+    }
+  },
+  "sites": [
+    {
+      "source": "arsbc",
+      "site_id": "gb-church",
+      "name": "G.B. Church",
+      "latitude_components": [
+        48,
+        43.323
+      ],
+      "longitude_components": [
+        123,
+        21.339
+      ],
+      "deployment_date": "1991-08-11"
+    },
+    {
+      "source": "arsbc",
+      "site_id": "chaudiere",
+      "name": "Chaudiere",
+      "latitude_components": [
+        49,
+        37.694
+      ],
+      "longitude_components": [
+        123,
+        48.699
+      ],
+      "deployment_date": "1992-12-05"
+    },
+    {
+      "source": "arsbc",
+      "site_id": "mackenzie",
+      "name": "Mackenzie",
+      "latitude_components": [
+        48,
+        40.094
+      ],
+      "longitude_components": [
+        123,
+        17.17
+      ],
+      "deployment_date": "1995-09-16"
+    },
+    {
+      "source": "arsbc",
+      "site_id": "columbia",
+      "name": "Columbia",
+      "latitude_components": [
+        50,
+        8.031
+      ],
+      "longitude_components": [
+        125,
+        20.152
+      ],
+      "deployment_date": "1996-06-22"
+    },
+    {
+      "source": "arsbc",
+      "site_id": "saskatchewan",
+      "name": "Saskatchewan",
+      "latitude_components": [
+        49,
+        12.96
+      ],
+      "longitude_components": [
+        123,
+        53.07
+      ],
+      "deployment_date": "1997-06-14"
+    },
+    {
+      "source": "arsbc",
+      "site_id": "cape-breton",
+      "name": "Cape Breton",
+      "latitude_components": [
+        49,
+        12.88
+      ],
+      "longitude_components": [
+        123,
+        53.067
+      ],
+      "deployment_date": "2001-10-20"
+    },
+    {
+      "source": "arsbc",
+      "site_id": "xihwu",
+      "name": "Xihwu Boeing 737",
+      "latitude_components": [
+        48,
+        56.142
+      ],
+      "longitude_components": [
+        123,
+        43.13
+      ],
+      "deployment_date": "2006-01-14"
+    },
+    {
+      "source": "arsbc",
+      "site_id": "annapolis",
+      "name": "Annapolis",
+      "latitude_components": [
+        49,
+        26,
+        55.0
+      ],
+      "longitude_components": [
+        123,
+        19,
+        51.1
+      ],
+      "deployment_date": "2015-04-04"
+    },
+    {
+      "source": "wdfw",
+      "site_id": "onamac-point",
+      "name": "Onamac Point",
+      "latitude_components": [
+        48,
+        11,
+        9
+      ],
+      "longitude_components": [
+        122,
+        32,
+        17
+      ],
+      "deployment_date": null
+    },
+    {
+      "source": "wdfw",
+      "site_id": "gedney-island",
+      "name": "Gedney Island",
+      "latitude_components": [
+        47,
+        59,
+        58
+      ],
+      "longitude_components": [
+        122,
+        18,
+        37
+      ],
+      "deployment_date": null
+    },
+    {
+      "source": "wdfw",
+      "site_id": "the-trees",
+      "name": "The Trees",
+      "latitude_components": [
+        47,
+        41,
+        56
+      ],
+      "longitude_components": [
+        122,
+        23,
+        12
+      ],
+      "deployment_date": null
+    },
+    {
+      "source": "wdfw",
+      "site_id": "blake-island",
+      "name": "Blake Island",
+      "latitude_components": [
+        47,
+        31,
+        43
+      ],
+      "longitude_components": [
+        122,
+        29,
+        30
+      ],
+      "deployment_date": null
+    },
+    {
+      "source": "wdfw",
+      "site_id": "alki",
+      "name": "Alki",
+      "latitude_components": [
+        47,
+        33,
+        23
+      ],
+      "longitude_components": [
+        122,
+        24,
+        26
+      ],
+      "deployment_date": null
+    },
+    {
+      "source": "wdfw",
+      "site_id": "point-heyer",
+      "name": "Point Heyer",
+      "latitude_components": [
+        47,
+        25,
+        13
+      ],
+      "longitude_components": [
+        122,
+        25,
+        40
+      ],
+      "deployment_date": null
+    },
+    {
+      "source": "wdfw",
+      "site_id": "misery-point",
+      "name": "Misery Point",
+      "latitude_components": [
+        47,
+        39,
+        28
+      ],
+      "longitude_components": [
+        122,
+        49,
+        49
+      ],
+      "deployment_date": null
+    }
+  ]
+}

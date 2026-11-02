@@ -66,8 +66,7 @@ def test_projection_retains_all_other_arrays_nulls_types_keys_and_source_context
     source_context = json.loads(original.schema.metadata[b"seascape_domain"])[
         "source_context"
     ]
-    write_areas({"substrate": AreaTables(original)}, output=tmp_path / "Seascape")
-    result = read_area("substrate", output=tmp_path / "Seascape")
+    result = project_delivery_table("substrate", original)
     retained = original.column_names[:5]
     assert result.equals(original.select(retained), check_metadata=False)
     assert result.num_columns == original.num_columns - 15
@@ -98,6 +97,14 @@ def test_projection_is_scoped_and_matches_only_exact_native_names():
 def test_validation_runs_before_projection_and_preserves_last_product(tmp_path):
     root = tmp_path / "Seascape"
     original = substrate()
+    for name in [
+        "MODELED_ROCK_PRESENCE_SCORE",
+        "MODELED_SEDIMENT_GRAVEL_FRACTION",
+        "MODELED_SEDIMENT_MUD_FRACTION",
+    ]:
+        original = original.append_column(
+            "SUBSTRATE_MODEL__" + name, pa.array([0.0, None])
+        )
     write_areas({"substrate": AreaTables(original)}, output=root)
     before = {path.name: path.read_bytes() for path in root.iterdir()}
     index = original.column_names.index("SUBSTRATE_MODEL__SOURCE_GRID_DEGREES")
@@ -119,7 +126,13 @@ def test_export_keeps_native_required_field_validation_and_projects_producer_ali
             "SUBSTRATE_SEDIMENT_TEXTURE_STATUS", pa.array(["available", "missing"])
         )
     )
-    table = table.append_column("SUBSTRATE_SAND_FRAC", pa.array([0.0, None]))
+    for name in [
+        "MODELED_ROCK_PRESENCE_SCORE",
+        "MODELED_SEDIMENT_GRAVEL_FRACTION",
+        "MODELED_SEDIMENT_SAND_FRACTION",
+        "MODELED_SEDIMENT_MUD_FRACTION",
+    ]:
+        table = table.append_column(name, pa.array([0.0, None]))
     pq.write_table(
         table.select(["H3_INDEX", "H3_RESOLUTION"]), tmp_path / "support.parquet"
     )
@@ -145,11 +158,13 @@ def test_export_keeps_native_required_field_validation_and_projects_producer_ali
     export_domain_parquets(workspace=tmp_path, output=output, catalog_path=path)
     result = read_area("substrate", output=output)
     assert result.column_names == [
-        "H3_INDEX",
-        "H3_RESOLUTION",
-        "benthic_substrate__SUBSTRATE_SAND_FRAC",
+        "h3_index",
+        "modeled_rock_presence_score",
+        "modeled_gravel_fraction",
+        "modeled_sand_fraction",
+        "modeled_mud_fraction",
     ]
-    assert result.column(2).to_pylist() == [0.0, None]
+    assert result["modeled_sand_fraction"].to_pylist() == [0.0, None]
     before = (output / "catalog.json").read_bytes()
     pq.write_table(
         table.drop(["SUBSTRATE_SEDIMENT_TEXTURE_STATUS"]), tmp_path / "native.parquet"

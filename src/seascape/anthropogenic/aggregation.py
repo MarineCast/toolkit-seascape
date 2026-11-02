@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from seascape.utils.values import pipe_delimited_union as _pipe_union
+
+from .armoring import combine_estimates, maximum_estimate
 
 
 def aggregate_r8_to_r6(
@@ -24,6 +27,11 @@ def aggregate_r8_to_r6(
         validate_confidence_table,
         validate_feature_table,
     )
+
+    if "ARMORING_SOURCE_ESTIMATES_JSON" not in features:
+        raise ValueError(
+            "Rebuild native armoring with per-dataset estimates before R6 aggregation"
+        )
 
     child = features.merge(
         crosswalk[["CHILD_H3_INDEX", "PARENT_H3_INDEX", "CHILD_WATER_AREA_M2"]],
@@ -46,8 +54,10 @@ def aggregate_r8_to_r6(
     for parent, rows in child.groupby("PARENT_H3_INDEX", sort=True):
         weights = rows["CHILD_WATER_AREA_M2"].to_numpy(dtype="float64")
         parent_area = float(weights.sum())
-        armored = float(rows["SHORELINE_ARMORING_LENGTH_M"].sum())
-        surveyed = float(rows["SHORELINE_SURVEYED_LENGTH_M"].sum())
+        estimates = combine_estimates(
+            json.loads(value) for value in rows.ARMORING_SOURCE_ESTIMATES_JSON
+        )
+        armored, surveyed, _fraction = maximum_estimate(estimates)
         dredged = float(rows["DREDGED_AREA_M2"].sum())
         disposal = float(rows["DISPOSAL_SITE_AREA_M2"].sum())
         aquaculture = float(rows["AQUACULTURE_FOOTPRINT_AREA_M2"].sum())
@@ -91,6 +101,7 @@ def aggregate_r8_to_r6(
             ],
             "NETWORK_DISTANCE_QC_REASON": support.loc[str(parent), "GRAPH_QC_REASON"],
         }
+        row["ARMORING_SOURCE_ESTIMATES_JSON"] = json.dumps(estimates, sort_keys=True)
         for column in distance_columns:
             row[column] = rows[column].min(skipna=True)
             qc_column = column.removesuffix("_M") + "_QC_REASON"

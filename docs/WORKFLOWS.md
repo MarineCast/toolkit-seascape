@@ -54,6 +54,12 @@ seascape --workspace "$SEASCAPE_WORKSPACE" build --only seascape-geomorphometry 
 
 A full build uses temporary producer tables, then writes flat area Parquets and `catalog.json`:
 
+The complete current 29-table delivery has a dedicated
+[`build --profile metrics` workflow](metric-rebuild.md). It includes source
+acquisition/verification, fresh coastal geometry and water graphs, current habitat
+and mapped-substrate producers, isolated workers and final schema/row readback.
+Its source registry and reporting grids are explicit configuration inputs.
+
 ```sh
 seascape --workspace "$SEASCAPE_WORKSPACE" build
 ```

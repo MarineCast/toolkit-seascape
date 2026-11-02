@@ -1,0 +1,38 @@
+{
+  "Toolkits/toolkit-seascape/.seascape/work/history-2009-2026/kelp-audited-inventory.parquet": {
+    "bytes": 18958612,
+    "sha256": "c5b50e94f601df11de2f00bce117603cebbe76f6e14d0ce29b52e7c12a821e74"
+  },
+  "Toolkits/toolkit-seascape/.seascape/work/seagrass-consolidation-20261020/all-time-producer/SEAGRASS_SOURCE_INVENTORY.parquet": {
+    "bytes": 15043772,
+    "sha256": "d9d911c5bce392794c64ce03d7328dd5b55fbf7b19b7290bca6af758acc23c48"
+  },
+  "Toolkits/toolkit-seascape/.seascape/cache/regional/bathymetry/GEBCO_2026_COASTAL_CONTEXT.tif": {
+    "bytes": 7537892,
+    "sha256": "7d2c247f47114eb14082905096745b961e6d13d010025bb76ada98dda4f7bc23"
+  },
+  "Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/DFO_BOTTOM_PATCHES_REGIONAL_SOURCE.parquet": {
+    "bytes": 166399518,
+    "sha256": "33c29c3f0847ddd26ba87da008db43638099a689d3303593a985362adcd9bffe"
+  },
+  "Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/SOURCE_COASTLINE.parquet": {
+    "bytes": 3002066,
+    "sha256": "048f41e38f877f9bbf4e9df63f518f3792fe3575910c27b85e16998f83633bdd"
+  },
+  "Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/land-component-registry.parquet": {
+    "bytes": 13011475,
+    "sha256": "2b2d23ab3dc1d33805862fde2112f4b94946e2ac5b090d64be14078998045424"
+  },
+  "Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/source-context.parquet": {
+    "bytes": 9018,
+    "sha256": "f793c06e3ae39ffb50b81580fa0bb8b05d75bac9c9a0b44a1e6261674c767b30"
+  },
+  "Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/config/data/environment_seascape.yaml": {
+    "bytes": 48215,
+    "sha256": "6191be008a4756a81b8d8f4b133fd0b428b06a871595f67df59078a4ec3978b2"
+  },
+  "Data/Seascape/research/freshwater-mouth-inventory.parquet": {
+    "bytes": 287584,
+    "sha256": "f3ea1bb2fa6bdaaf99c20b9e8395112fda23ad922c6273efdfd4b48c728a9e79"
+  }
+}

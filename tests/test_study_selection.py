@@ -54,8 +54,9 @@ def test_no_outside_data_root_fallback(tmp_path, study_fixture):
         load_study_membership(path, resolution=7)
 
 
+@pytest.mark.parametrize("area", ["example", "spatial-support"])
 def test_catalog_filter_preserves_structural_support_and_reports_missing(
-    tmp_path, study_fixture
+    tmp_path, study_fixture, area
 ):
     import hashlib
 
@@ -77,11 +78,28 @@ def test_catalog_filter_preserves_structural_support_and_reports_missing(
     table = pa.table(
         {"H3_INDEX": [native, outside], "H3_RESOLUTION": [6, 6], "VALUE_M": [2.0, 3.0]}
     ).replace_schema_metadata({METADATA_KEY: json.dumps(context).encode()})
-    write_areas(
-        {"example": AreaTables(static=table)}, output=tmp_path / "Data/Seascape"
-    )
-    result = read_study_area("example", study_config=path)
-    assert result["H3_INDEX"].to_pylist() == [native]
+    if area == "spatial-support":
+        table = table.append_column(
+            "h3_marine_support__WATER_AREA_M2", pa.array([2.0, 3.0])
+        )
+        table = table.append_column(
+            "h3_marine_support__WATER_FRACTION", pa.array([0.5, None])
+        )
+        table = table.append_column(
+            "h3_marine_support__INTERSECTS_SHORELINE", pa.array([True, False])
+        )
+    write_areas({area: AreaTables(static=table)}, output=tmp_path / "Data/Seascape")
+    result = read_study_area(area, study_config=path)
+    key = "h3_index"
+    assert result[key].to_pylist() == [native]
+    if area == "spatial-support":
+        assert result.column_names == [
+            "h3_index",
+            "water_area_m2",
+            "water_fraction",
+            "intersects_shoreline",
+        ]
+        assert result["water_area_m2"].to_pylist() == [2.0]
     metadata = json.loads(result.schema.metadata[METADATA_KEY])
     assert metadata["support"] == "hierarchical_r8_child_union"
     assert metadata["study_selection"]["excluded_producer_ids"] == [outside]

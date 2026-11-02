@@ -5,18 +5,27 @@ The flat H3 output consists of `<area>-r<resolution>-static.parquet`, optional
 Names never include dates or versions, and updates replace the current files.
 There is no data-release directory, publication receipt or separate manifest.
 
+Current production follows [metric-only exports](metric-only-exports.md): existing
+scientific metric names and key spelling are retained, diagnostic columns are
+omitted, and source lineage stays embedded. The compact imputation/external-audit
+descriptions below document retained legacy files, not prerequisites for a new build.
+
 An optional `research/` child contains separately keyed named-object and long relationship tables,
 referenced by the study registry. These objects are outside the H3 area catalog. Rebuilds and
 historical replacement preserve that directory byte-for-byte; arbitrary extra directories and
 symbolic links are rejected. Domain products stay canonical under `Data/Seascape/`, while study
 definitions, masks and H3 registries remain separate from their selected products.
 
-Static grain is `(H3_INDEX, H3_RESOLUTION)` with metric columns and no time axis.
+Native static grain is `(H3_INDEX, H3_RESOLUTION)` with metric columns and no time axis.
+The [reviewed compact static schemas](reviewed-delivery.md) use `H3_INDEX` (initial five areas) or `h3_index` (twelve additional cores) alone
+within each resolution-specific file; required external audits retain native support.
 Dynamic grain adds a nonnull Arrow `date32` column named `date`. Native R6 and R8
 rows are stored in separate files. Each file has exactly one native resolution; no resampling occurs.
 Missing measurements remain null. Padding columns explicitly unavailable at a
 resolution are omitted from its file. Physical values, evidence,
-coverage and QC stay together. Unknown coverage never becomes zero or absence.
+coverage and QC stay together in native tables. Reviewed habitat delivery explicitly
+fills unknown areas with zero as a no-mapped-positive-evidence policy, retaining
+original nulls and QC externally. It does not establish habitat absence.
 
 Directional quantities become separate columns for each native bearing. Annual
 observations use January 1 as a year index label, with explicit year precision in

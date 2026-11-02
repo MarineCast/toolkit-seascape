@@ -49,7 +49,9 @@ their manifest references the canonical domain products. Byte checksums and nati
 attached to reads. No duplicate study-specific domain product directory is maintained.
 
 The historical extraction has 13 areas and 21 native resolution/time variants. Canonical storage
-also retains six older areas, yielding 19 areas and 33 variants. Older-only areas retain their
+also retains six older areas, yielding 19 areas and 33 variants in that historical snapshot. The 2026-10-29
+inventory contains 17 families and 29 H3 tables after the documented habitat
+consolidation; see the [current review](reproducibility-review.md). Older-only areas retain their
 original source context and do not acquire the new mask qualification through relocation. New
 versions replace matching areas, including removal of stale omitted variants. Fourteen additional
 named-object and long relationship artifacts are pinned in the research manifest. Regional

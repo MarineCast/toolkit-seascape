@@ -105,7 +105,8 @@ def main(argv: list[str] | None = None) -> int:
     commands.add_parser(
         "init", help="Create editable configuration from packaged templates"
     )
-    commands.add_parser("stages", help="List dependency-ordered build stages")
+    stages = commands.add_parser("stages", help="List dependency-ordered build stages")
+    stages.add_argument("--profile", choices=("default", "metrics"), default="default")
     demo = commands.add_parser(
         "demo",
         help="Run synthetic offline software acceptance (not a regional release)",
@@ -119,6 +120,12 @@ def main(argv: list[str] | None = None) -> int:
         "build", help="Build flat per-area Parquets from local source data"
     )
     build.add_argument("--config", default="config/data/project.yaml")
+    build.add_argument(
+        "--profile",
+        choices=("default", "metrics"),
+        default="default",
+        help="metrics rebuilds and verifies the complete current 29-table delivery",
+    )
     build.add_argument("--only", action="append", default=[])
     build.add_argument("--skip", action="append", default=[])
     build.add_argument(
@@ -165,6 +172,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     export_current.add_argument("--output-dir", type=Path)
     export_current.add_argument("--catalog", type=Path)
+    compact = commands.add_parser(
+        "compact-reviewed",
+        help="Apply approved static delivery schemas; retain native audit externally",
+    )
+    compact.add_argument("--output-dir", type=Path, required=True)
+    compact.add_argument("--audit-root", type=Path)
     from seascape.historical import add_history_arguments
 
     history = commands.add_parser(
@@ -179,6 +192,19 @@ def main(argv: list[str] | None = None) -> int:
             "family", choices=DOWNLOAD_FAMILIES if action == "download" else FAMILIES
         )
         sub.add_argument("arguments", nargs=argparse.REMAINDER)
+    from seascape.benthic_substrate.areal_stream import (
+        add_arguments as add_mapped_arguments,
+    )
+
+    mapped = commands.add_parser(
+        "mapped-substrate", help="Build source-bound mapped substrate metrics"
+    )
+    add_mapped_arguments(mapped)
+    regional = commands.add_parser(
+        "regional", help="Run a source-bound scientific candidate"
+    )
+    regional.add_argument("--spec", type=Path, required=True)
+    regional.add_argument("--preflight", action="store_true")
     args = parser.parse_args(argv)
     if (
         args.command == "build"
@@ -192,6 +218,25 @@ def main(argv: list[str] | None = None) -> int:
     try:
         from seascape.core.config.paths import project_root
 
+        if args.command == "mapped-substrate":
+            from seascape.benthic_substrate.areal_stream import run as mapped_main
+
+            return mapped_main(args)
+        if args.command == "regional":
+            from seascape.regional.runner import run_spec
+
+            print(json.dumps(run_spec(args.spec, preflight=args.preflight), indent=2))
+            return 0
+        if args.command == "compact-reviewed":
+            from seascape.reviewed_delivery import compact_existing
+
+            print(
+                json.dumps(
+                    compact_existing(args.output_dir, audit_root=args.audit_root),
+                    indent=2,
+                )
+            )
+            return 0
         if args.command == "init":
             initialize_workspace(project_root())
             print(f"Initialized seascape workspace: {project_root()}")
@@ -259,11 +304,29 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         from seascape.workflow import DOMAIN_LAYER_STAGES, run_domain_layer_build
 
+        stage_definitions = None
+        if args.profile == "metrics":
+            from seascape.metric_rebuild import metric_stages
+
+            stage_definitions = metric_stages()
+
         if args.command == "stages":
-            for stage in DOMAIN_LAYER_STAGES:
+            for stage in stage_definitions or DOMAIN_LAYER_STAGES:
                 print(f"{stage.name}: {stage.description}")
             return 0
         if args.check_inputs or args.json:
+            if args.profile == "metrics":
+                from seascape.metric_rebuild import preflight_metrics
+
+                metric_report = preflight_metrics(
+                    config_path=args.config,
+                    only=args.only,
+                    skip=args.skip,
+                    candidate_root=args.candidate_root,
+                    check_inputs=args.check_inputs,
+                )
+                print(json.dumps(metric_report, indent=2))
+                return int(metric_report["status"] == "failed")
             from seascape.preflight import preflight_build, print_preflight
 
             def report_failure(stage: str, exc: BaseException) -> None:
@@ -309,6 +372,11 @@ def main(argv: list[str] | None = None) -> int:
             overwrite=args.overwrite,
             publish=args.publish,
             output_dir=args.output_dir,
+            **(
+                {"stage_definitions": stage_definitions}
+                if stage_definitions is not None
+                else {}
+            ),
             _failure_reporter=lambda name, elapsed, exc: print(
                 f"build / {name}: failed ({elapsed:.1f}s; {type(exc).__name__})",
                 file=sys.stderr,

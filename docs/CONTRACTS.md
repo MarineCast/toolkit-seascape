@@ -29,6 +29,19 @@ A source's publication vintage differs from acquisition time. Unknown, unavailab
 not-applicable and observed zero remain distinct. Unreachable graph distances retain null values
 and QC reasons. Survey coverage does not imply observed absence outside that coverage.
 
+Normal exports retain existing public scientific metric names and H3 key spelling
+(`H3_INDEX` for bathymetry/freshwater/habitat extents, `h3_index` for compact cores).
+Dynamic exports also retain `date`. Missing values remain null. Coverage, audit,
+status and provenance columns are excluded. Optional diagnostics and source receipts
+remain separate. Scientific source geometry, raster support and identity checks are
+still required where the producer needs them; historical audit outputs are not required
+by the final writer or historical date selector. See [metric-only exports](metric-only-exports.md).
+
+The older [compact delivery](reviewed-delivery.md) imputation and external-audit
+behavior is limited to explicit legacy migration. Normal builds do not apply it.
+Legacy compact files with previously filled nulls must be rebuilt from scientific
+inputs before new production; guessing which zeros were missing is prohibited.
+
 ## Validation and publication
 
 The optional [structural-variable contracts](structural-variables.md) define the
@@ -100,6 +113,21 @@ Historical release manifests can be read explicitly through `seascape.legacy_pro
 while migrating old workspaces. Current output grain and storage are described in
 [flat domain tables](metric-matrix.md); scientific qualifications are not upgraded
 by that storage conversion.
+
+## Physical source combination — 2026-11-01
+
+Normal and source-bound regional shoreline calculations share unique physical
+line unions. Coincident records do not increase total or per-class lengths;
+independently accepted classes remain nonexclusive.
+
+Armoring follows the user-selected maximum available dataset estimate per cell.
+Each dataset first measures unique line locations and a length-weighted fraction;
+coincident differing estimates use their maximum at that location. The largest
+dataset cell fraction is delivered. Missing data do not become zero. Parent cells
+combine child lengths within each dataset before selecting the maximum; the
+internal per-dataset receipt is required for that aggregation. Historical tables
+without it must be rebuilt rather than averaging already collapsed cell values.
+Source provenance and this method remain metadata, without final quality columns.
 
 ## Source-derived research channel geometry
 
@@ -178,6 +206,14 @@ water-network and network-consumer contract tests, then the full suite.
 
 
 ### Anthropogenic presence selectors (2026-10-20)
+
+**Artificial reef source enrichment (2026-11-01):** the reef Boolean now supports
+the reconciled ARSBC, WDFW and NOAA location inventories. True means a retained
+canonical site is assigned directly to the native H3 cell. False remains no mapped
+positive evidence, not confirmed absence. The earlier all-unknown reef statement
+below describes the pre-enrichment delivery. Source vintage, coordinate conflicts,
+datum assumptions and outside-grid records are retained; see
+[artificial reef contract](artificial-reefs.md).
 
 **Superseding public policy:** the user explicitly requested unknown/null values
 be filled False for these four delivered booleans only. True cells are unchanged.

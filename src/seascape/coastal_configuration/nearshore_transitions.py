@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from functools import lru_cache
 
 import numpy as np
 import rasterio
+import shapely
 from pyproj import CRS
 from rasterio.features import geometry_mask
 from rasterio.windows import from_bounds
@@ -145,31 +147,64 @@ def _depth_areas(eligible, raster, *, depth_threshold_m, raster_depth_convention
 
 
 def _eligible_supports(cells, water, shoreline, band_width_m):
-    """Intersect a common full-context shore band in bounded metric tiles."""
-    local_source = shoreline.intersection(box(*water.bounds).buffer(band_width_m + 1))
-    band = local_source.buffer(band_width_m).intersection(water)
-    if band.is_empty:
-        return {cell: geometry.intersection(band) for cell, geometry in cells}
-    xmin, ymin, xmax, ymax = band.bounds
+    # Preserve the original full-context collar and intact line segmentation.
+    # Cutting lines before buffering changes GEOS buffer geometry even with a collar.
+    source = shoreline.intersection(box(*water.bounds).buffer(band_width_m + 1))
+    parts = list(shapely.get_parts(source))
+    tree = STRtree(parts)
     step = 20000.0
-    if math.ceil((xmax - xmin) / step + 1) * math.ceil((ymax - ymin) / step + 1) > 4096:
+    tile_keys = set()
+    cell_tiles = {}
+    for name, geometry in cells:
+        if geometry.is_empty:
+            cell_tiles[name] = []
+            continue
+        xmin, ymin, xmax, ymax = geometry.bounds
+        keys = [
+            (x, y)
+            for x in range(math.floor(xmin / step), math.floor(xmax / step) + 1)
+            for y in range(math.floor(ymin / step), math.floor(ymax / step) + 1)
+        ]
+        cell_tiles[name] = keys
+        tile_keys.update(keys)
+    if len(tile_keys) > 4096:
         raise ValueError("Nearshore context tile budget exceeded")
-    pieces = []
-    for x in np.arange(math.floor(xmin / step) * step, xmax, step):
-        for y in np.arange(math.floor(ymin / step) * step, ymax, step):
-            part = band.intersection(box(x, y, x + step, y + step))
-            if not part.is_empty:
-                pieces.append(part)
-    tree = STRtree(pieces)
-    return {
-        cell: unary_union(
+
+    @lru_cache(maxsize=32)
+    def part_buffer(index):
+        return parts[index].buffer(band_width_m)
+
+    bands = {}
+    for x, y in sorted(tile_keys):
+        tile = box(x * step, y * step, (x + 1) * step, (y + 1) * step)
+        collar = tile.buffer(band_width_m + 1)
+        # Buffer each intact source part once; clip only the resulting polygon.
+        local = unary_union(
             [
-                geometry.intersection(pieces[int(i)])
-                for i in tree.query(geometry, predicate="intersects")
+                part_buffer(int(i)).intersection(tile)
+                for i in tree.query(collar, predicate="intersects")
             ]
         )
-        for cell, geometry in cells
+        bands[(x, y)] = local.intersection(water)
+    return {
+        name: unary_union(
+            [geometry.intersection(bands[key]) for key in cell_tiles[name]]
+        )
+        for name, geometry in cells
     }
+
+
+def _shoreline_near_water_mask(geometries, water, distance_m):
+    import numpy as np
+
+    shapely.prepare(water)
+    result = np.asarray(shapely.intersects(water, geometries), dtype=bool)
+    for index in np.flatnonzero(~result):
+        geometry = geometries[index]
+        collar = box(*geometry.bounds).buffer(distance_m + 1)
+        local_water = water.intersection(collar)
+        result[index] = local_water.buffer(distance_m).intersects(geometry)
+    return result
 
 
 def bounded_deep_target_components(
@@ -388,3 +423,30 @@ def first_water_facing_contour(
         previous_point = point
         distance += step_m
     return TransectCrossing(None, None, "search_limited", tuple(samples))
+
+
+class BufferedInterest:
+    """Station membership using cached buffers of intact polygon parts."""
+
+    def __init__(self, geometry, distance):
+        self.parts = list(shapely.get_parts(geometry))
+        self.tree = STRtree(self.parts)
+        self.distance = distance
+        self._buffer = lru_cache(maxsize=8)(
+            lambda index: self.parts[index].buffer(distance)
+        )
+
+    def covers(self, point):
+        x, y = point.x, point.y
+        bounds = box(
+            x - self.distance, y - self.distance, x + self.distance, y + self.distance
+        )
+        for index in self.tree.query(bounds):
+            part = self.parts[int(index)]
+            if part.covers(point):
+                return True
+            if part.distance(point) > self.distance:
+                continue
+            if self._buffer(int(index)).covers(point):
+                return True
+        return False

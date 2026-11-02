@@ -122,10 +122,14 @@ def test_resolution_files_preserve_native_rows_and_require_explicit_reads(tmp_pa
             result = read_area(
                 "kelp", resolution=resolution, dynamic=dated, output=tmp_path
             )
-            assert result.equals(
-                fixture_table(resolution=resolution, dynamic=dated),
-                check_metadata=False,
+            assert result["H3_INDEX"].equals(
+                fixture_table(resolution=resolution)["H3_INDEX"]
             )
+            assert result["depth_m"].to_pylist() == [0.0, None]
+            assert result.column_names == [
+                "H3_INDEX",
+                "depth_m",
+            ] + (["date"] if dated else [])
             assert (
                 json.loads(result.schema.metadata[b"seascape_domain"])["resolution"]
                 == resolution
@@ -134,6 +138,30 @@ def test_resolution_files_preserve_native_rows_and_require_explicit_reads(tmp_pa
         read_area("kelp", output=tmp_path)
     with pytest.raises(KeyError, match="no R7"):
         read_area("kelp", resolution=7, output=tmp_path)
+
+
+def test_preserved_variants_keep_their_embedded_and_catalog_context(tmp_path):
+    original = fixture_table().replace_schema_metadata(
+        {
+            b"seascape_domain": json.dumps(
+                {"reporting_mask_file_sha256": "a" * 64, "availability_known": True}
+            ).encode()
+        }
+    )
+    write_areas({"depth": AreaTables(original)}, output=tmp_path / "data")
+    path = tmp_path / "data/depth-r6-static.parquet"
+    before = path.read_bytes()
+    context = read_area("depth", resolution=6, output=tmp_path / "data").schema.metadata
+    write_areas(
+        {"depth": AreaTables(fixture_table(resolution=8))},
+        output=tmp_path / "data",
+        _preserve_existing_variants=True,
+    )
+    assert path.read_bytes() == before
+    assert (
+        read_area("depth", resolution=6, output=tmp_path / "data").schema.metadata
+        == context
+    )
 
 
 def test_resolution_split_drops_only_declared_unavailable_padding(tmp_path):
@@ -285,7 +313,7 @@ def test_export_annual_source_keeps_year_precision_and_nulls(tmp_path):
     )
     result = read_area("kelp", dynamic=True, output=tmp_path / "out")
     assert result["date"].to_pylist() == [date(2021, 1, 1)] * 2
-    assert result["kelp__depth_m"].to_pylist() == [0.0, None]
+    assert result["depth_m"].to_pylist() == [0.0, None]
     assert (
         json.loads(result.schema.metadata[b"seascape_domain"])["temporal_support"][
             "precision"
@@ -364,12 +392,20 @@ def test_named_area_retirement_is_transactional_and_preserves_unrelated_bytes(
     ],
 )
 def test_presentation_family_preserves_native_values_and_units(tmp_path, area, family):
-    table = fixture_table().replace_schema_metadata(
+    from seascape.reviewed_delivery import CORE_SCHEMAS
+
+    table = fixture_table().drop(["depth_m"])
+    metrics = CORE_SCHEMAS[area]["metrics"]
+    for metric in metrics:
+        if 6 in metric["resolutions"]:
+            table = table.append_column(metric["source_column"], pa.array([0.0, None]))
+    field_name = metrics[0]["source_column"]
+    table = table.replace_schema_metadata(
         {
             b"seascape_domain": json.dumps(
                 {
                     "fields": {
-                        "depth_m": {
+                        field_name: {
                             "unit": "m",
                             "6": {"unit": "m", "available_resolutions": [6]},
                         }
@@ -381,10 +417,8 @@ def test_presentation_family_preserves_native_values_and_units(tmp_path, area, f
     root = tmp_path / "Data/Seascape"
     write_areas({area: AreaTables(table)}, output=root)
     actual = pq.read_table(root / f"{area}-r6-static.parquet")
-    assert actual.equals(table, check_metadata=False)
-    field = json.loads(actual.schema.metadata[b"seascape_domain"])["fields"]["depth_m"]
-    assert field == {
-        "unit": "m",
-        "family": family,
-        "6": {"unit": "m", "available_resolutions": [6], "family": family},
-    }
+    name = metrics[0]["proposed_column"]
+    assert actual[name].equals(table[field_name])
+    field = json.loads(actual.schema.metadata[b"seascape_domain"])["fields"][name]
+    assert field["unit"] == "m"
+    assert field["family"] == family
