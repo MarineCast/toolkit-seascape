@@ -1,0 +1,4 @@
+# Credentials are never source-distribution inputs.
+exclude .env
+exclude .env.*
+include .env.example

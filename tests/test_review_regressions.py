@@ -294,7 +294,11 @@ def test_resume_tracks_common_extends_and_environment(workspace, monkeypatch):
     assert run() == "reused"
     common = workspace / "config/common.yaml"
     raw = yaml.safe_load(common.read_text())
-    raw["areas"]["model_area"]["bbox_wgs84"]["max_lon"] -= 0.01
+    from seascape.core.config.common_areas import bbox_for_area
+
+    raw["areas"]["model_area"]["bbox_wgs84"]["max_lon"] = (
+        bbox_for_area("model_area")["max_lon"] - 0.01
+    )
     common.write_text(yaml.safe_dump(raw))
     assert run() == "complete"
     monkeypatch.setenv("SEASCAPE_TEST_VALUE", "second")

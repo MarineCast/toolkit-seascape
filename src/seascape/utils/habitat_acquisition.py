@@ -18,11 +18,13 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import requests
 
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
+from seascape.core.config.environment import required_environment_value
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.config import require_mapping as _mapping
@@ -170,13 +172,35 @@ def _download_http_file(
     method = str(source.get("http_method", "GET")).strip().upper()
     if method not in {"GET", "POST"}:
         raise ValueError(f"Unsupported HTTP download method: {method}")
-    response = session.request(method, str(source["url"]), timeout=timeout, stream=True)
+    credential = source.get("bearer_token_env")
+    request_options = {}
+    if credential:
+        url = urlsplit(str(source["url"]))
+        if url.scheme != "https" or not url.hostname or url.username or url.password:
+            raise ValueError(
+                "Authenticated HTTP sources require an HTTPS URL without userinfo"
+            )
+        request_options["headers"] = {
+            "Authorization": "Bearer " + required_environment_value(str(credential))
+        }
+    try:
+        response = session.request(
+            method, str(source["url"]), timeout=timeout, stream=True, **request_options
+        )
+    except requests.RequestException:
+        if credential:
+            raise RuntimeError("Authenticated HTTP download request failed") from None
+        raise
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(destination.suffix + ".part")
     try:
         try:
             response.raise_for_status()
         except requests.RequestException as exc:
+            if credential:
+                raise RuntimeError(
+                    "Authenticated HTTP download request failed"
+                ) from None
             raise RuntimeError(
                 f"HTTP download failed for {source['url']}: {exc}"
             ) from exc
@@ -205,6 +229,10 @@ def _download_http_file(
                     f"Downloaded archive is not a valid ZIP: {destination}"
                 ) from exc
         partial.replace(destination)
+    except requests.RequestException:
+        if credential:
+            raise RuntimeError("Authenticated HTTP download stream failed") from None
+        raise
     finally:
         partial.unlink(missing_ok=True)
         close = getattr(response, "close", None)

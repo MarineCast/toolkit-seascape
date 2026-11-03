@@ -29,19 +29,130 @@ def verify_source(item):
     expected = item.get("sha256")
     if not isinstance(expected, str) or len(expected) != 64:
         raise ValueError(f"A pinned SHA256 is required: {path}")
+    members = sorted(path.rglob("*")) if path.is_dir() else [path]
+    if path.is_dir() and any(member.is_symlink() for member in members):
+        raise ValueError(
+            f"Pinned source directories cannot contain symbolic links: {path}"
+        )
     actual = checksum_path(path) if path.is_dir() else digest(path)
     if actual != expected:
         raise ValueError(f"Scientific source checksum mismatch: {path}")
-    if path.suffix.lower() == ".parquet":
-        names = set(pq.read_schema(path).names)
+    for member in members:
+        if not member.is_file() or member.suffix.lower() not in {
+            ".parquet",
+            ".geoparquet",
+        }:
+            continue
+        names = set(pq.read_schema(member).names)
         if names & {"h3_index", "H3_INDEX"} and (
             item.get("role") != "reporting_keys"
             or names - {"h3_index", "H3_INDEX", "H3_RESOLUTION"}
         ):
             raise ValueError(
-                f"Computed H3 measurements cannot be rebuild inputs: {path}"
+                f"Computed H3 measurements cannot be rebuild inputs: {member}"
             )
     return {**item, "path": str(path), "sha256": actual}
+
+
+def configured_source_paths(cfg):
+    """Enumerate direct metric-profile inputs independently of the pin registry."""
+    paths = []
+    for habitat_cfg in cfg.get("habitats", {}).values():
+        paths.extend([habitat_cfg["inventory"], habitat_cfg["source_context"]])
+        paths.extend(habitat_cfg["reporting_keys"].values())
+        paths.extend(habitat_cfg.get("additional_crims_pages", []))
+    if cfg.get("mapped_substrate"):
+        paths.append(cfg["mapped_substrate"]["source"])
+    if cfg.get("artificial_reefs"):
+        paths.extend(
+            cfg["artificial_reefs"][key] for key in ("wdfw_pdf", "noaa_archive")
+        )
+    return [source_path(path) for path in paths]
+
+
+def require_registered(paths, sources):
+    """Accept exact pinned files or members of a pinned directory tree."""
+    registered = [source_path(item["path"]) for item in sources]
+    for value in paths:
+        path = Path(value).resolve()
+        if not any(
+            path == pin or (pin.is_dir() and path.is_relative_to(pin))
+            for pin in registered
+        ):
+            raise ValueError(f"Consumed scientific input is not registered: {path}")
+        if not path.exists():
+            raise FileNotFoundError(path)
+
+
+def verify_consumed_sources(ctx, sources):
+    """Cross-check producer receipts, keeping generated candidate dependencies separate."""
+    from seascape.core.artifacts.checksums import checksum_path
+
+    require_registered(configured_source_paths(settings(ctx.config_path)), sources)
+    candidate = ctx.candidate_root.resolve()
+    from seascape.metric_rebuild import metric_stages
+
+    output_roots = tuple(
+        (candidate / relative).resolve()
+        for stage in metric_stages()
+        for relative in stage.declared_outputs
+    )
+
+    def output_path(path):
+        return path.is_relative_to(candidate) and any(
+            path.is_relative_to(root) for root in output_roots
+        )
+
+    manifests = {
+        path.resolve(): json.loads(path.read_text())
+        for path in sorted((candidate / BASE).rglob("*manifest*.json"))
+    }
+    # Location alone never proves generation. Admit exact producer outputs with
+    # checksum receipts, plus their producer manifests as upstream dependencies.
+    generated = {}
+    for manifest, payload in manifests.items():
+        artifacts = payload.get("artifacts", [])
+        if artifacts and not output_path(manifest):
+            raise ValueError(f"Producer manifest escapes declared outputs: {manifest}")
+        for artifact in artifacts:
+            value, checksum = artifact.get("path"), artifact.get("checksum")
+            if not value or not checksum:
+                raise ValueError(f"Incomplete generated artifact receipt: {manifest}")
+            path = (candidate / Path(value).expanduser()).resolve()
+            if not output_path(path):
+                raise ValueError(f"Generated artifact escapes declared outputs: {path}")
+            if path in generated and generated[path] != checksum:
+                raise ValueError(f"Conflicting generated artifact receipts: {path}")
+            generated[path] = checksum
+        if artifacts:
+            generated[manifest] = checksum_path(manifest)
+
+    for payload in manifests.values():
+        for section in ("sources", "upstream_artifacts"):
+            for item in payload.get(section, []):
+                value = item.get("path")
+                if not value or "://" in str(value):
+                    continue
+                path = Path(value).expanduser()
+                if not path.is_absolute():
+                    path = (
+                        candidate / path
+                        if (candidate / path).exists()
+                        else source_path(path)
+                    )
+                path = path.resolve()
+                expected = item.get("checksum")
+                if path in generated:
+                    if not expected or expected != generated[path]:
+                        raise ValueError(
+                            f"Consumed generated artifact has no matching receipt: {path}"
+                        )
+                else:
+                    require_registered([path], sources)
+                if expected and checksum_path(path) != expected:
+                    raise ValueError(
+                        f"Consumed source differs from producer receipt: {path}"
+                    )
 
 
 def acquire_sources(ctx):
@@ -94,6 +205,7 @@ def acquire_sources(ctx):
                     "license": "ODbL-1.0",
                 }
             )
+    require_registered(configured_source_paths(cfg), sources)
     path = ctx.candidate_root / ".seascape/metric-sources.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -114,10 +226,13 @@ def verify_sources(ctx):
     )
     for item in receipt["sources"]:
         verify_source(item)
+    verify_consumed_sources(ctx, receipt["sources"])
     return receipt
 
 
-def _publish_tables(directory, outputs, *, context, source_paths=()):
+def _publish_tables(
+    directory, outputs, *, context, source_paths=(), generated_paths=()
+):
     import pyarrow.parquet as pq
 
     from seascape.publication import TransactionalSeascapePublisher
@@ -135,6 +250,7 @@ def _publish_tables(directory, outputs, *, context, source_paths=()):
             staged = writer.stage_path(target)
             pq.write_table(table, staged, compression="zstd")
             artifacts.append(capture_staged_parquet_artifact(writer, target))
+        artifacts.extend(Path(path) for path in generated_paths)
         manifest = build_manifest(
             dataset_family="environment.seascape.metric_profile",
             run_id=writer.run_id,
@@ -367,6 +483,7 @@ def anthropogenic(ctx):
             source_path(cfg["noaa_archive"]),
             normalized,
         ],
+        generated_paths=[normalized],
     )
 
 
@@ -479,11 +596,19 @@ def export_metrics(ctx):
                 variants[kind] = _combine([pq.read_table(p) for p in paths])
         additions[area] = AreaTables(**variants)
     output = ctx.output_dir or ctx.canonical_root / "Data/Seascape"
+    report = {}
+
+    def validate_staged(staged):
+        report.update(verify_metrics(staged))
+        report["sources_verified_after_build"] = len(verify_sources(ctx)["sources"])
+
     export_domain_parquets(
-        workspace=root, output=output, catalog_path=catalog, additional_areas=additions
+        workspace=root,
+        output=output,
+        catalog_path=catalog,
+        additional_areas=additions,
+        _validate_staged=validate_staged,
     )
-    report = verify_metrics(output)
-    report["sources_verified_after_build"] = len(verify_sources(ctx)["sources"])
     path = root / ".seascape/metric-verification.json"
     path.write_text(json.dumps(report, indent=2) + "\n")
     print(
@@ -502,7 +627,16 @@ def verify_metrics(output):
     contract = json.loads(
         files("seascape").joinpath("resources/metric_delivery_schema.json").read_text()
     )["files"]
-    if {p.name for p in output.iterdir()} != {*contract, "catalog.json"}:
+    from seascape.domain_parquets import _catalog
+
+    catalog = _catalog(output)
+    catalog_files = {
+        name
+        for record in catalog.values()
+        for kind in ("static", "dynamic")
+        for name in record.get(kind, {}).values()
+    }
+    if catalog_files != set(contract):
         raise ValueError(
             "The metric output file set differs from the 29-table contract"
         )
@@ -591,4 +725,11 @@ def execute(name, ctx):
         "bivalve": lambda c: habitat("bivalve", c),
         "export": export_metrics,
     }
+    if name != "sources":
+        receipt = json.loads(
+            (ctx.candidate_root / ".seascape/metric-sources.json").read_text()
+        )
+        require_registered(
+            configured_source_paths(settings(ctx.config_path)), receipt["sources"]
+        )
     calls[name](ctx)

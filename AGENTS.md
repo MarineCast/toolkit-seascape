@@ -250,3 +250,11 @@ transient staging and recovery journal. Do not recreate `.seascape-io` under Dat
 Successful publication removes staged payloads/backups; default successful builds
 already remove owned scratch. Supplied inputs and failed/explicit work roots are
 not swept. See `docs/API.md` for the current storage contract.
+
+For workspace `.env`, named-area defaults or HTTP bearer-token changes, run
+`python -m pytest -q tests/test_environment_config.py tests/test_workflow.py
+tests/test_preflight.py tests/domains/environment/seascape/test_acquisition_identity.py`,
+then the full suite, quality, docs, notebook and installed-wheel checks above.
+Keep `.env` untracked and out of distributions; only `.env.example` is shareable.
+Credential references remain variable names in YAML; never freeze tokens into
+workflow snapshots or provenance. See `docs/CONFIGURATION.md`.

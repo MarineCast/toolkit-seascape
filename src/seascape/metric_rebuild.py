@@ -302,7 +302,7 @@ def preflight_metrics(**kwargs):
     checks = []
     if check_inputs:
         for item in settings(plan.source_config)["sources"]:
-            path = Path(item["path"])
+            path = (plan.canonical_root / Path(item["path"]).expanduser()).resolve()
             present = path.exists()
             checks.append(
                 {

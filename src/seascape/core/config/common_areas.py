@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 from pathlib import Path
 from typing import Any, Mapping
@@ -58,7 +59,11 @@ def bbox_for_area(
             f"Common area {area_name_value!r} bbox_wgs84 is missing {missing}."
         )
     out = {key: float(bbox[key]) for key in required}
-    if out["min_lon"] >= out["max_lon"] or out["min_lat"] >= out["max_lat"]:
+    if (
+        not all(math.isfinite(value) for value in out.values())
+        or not -180 <= out["min_lon"] < out["max_lon"] <= 180
+        or not -90 <= out["min_lat"] < out["max_lat"] <= 90
+    ):
         raise ValueError(
             f"Invalid bbox_wgs84 for common area {area_name_value!r}: {out}"
         )
@@ -89,7 +94,11 @@ def bbox_from_config(
     if missing:
         raise ValueError(f"bbox mapping is missing {missing}.")
     out = {key: float(bbox[key]) for key in required}
-    if out["min_lon"] >= out["max_lon"] or out["min_lat"] >= out["max_lat"]:
+    if (
+        not all(math.isfinite(value) for value in out.values())
+        or not -180 <= out["min_lon"] < out["max_lon"] <= 180
+        or not -90 <= out["min_lat"] < out["max_lat"] <= 90
+    ):
         raise ValueError(f"Invalid bbox mapping: {out}")
     return out
 

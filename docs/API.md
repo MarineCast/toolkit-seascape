@@ -29,6 +29,10 @@ source inputs and other workflows' caches are never swept. `Data/Seascape` conta
 current flat products/catalog, separately keyed `research/` tables and preserved
 user `.txt`/`.md` review notes. The legacy `audit_root` argument remains accepted for call compatibility but is not
 used to create or read audit files by the normal writer.
+The metrics-profile exporter validates its staged delivery and source identities
+inside this transaction before replacement; failed validation preserves the prior
+delivery. Its staging callback is an internal integration hook, not a supported
+consumer extension API. See [metric rebuild](metric-rebuild.md#publication-hardening).
 
 ## Read a current table
 

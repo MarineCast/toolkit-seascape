@@ -101,6 +101,14 @@ seascape --workspace "$SEASCAPE_WORKSPACE" demo
 
 The CLI prints `Synthetic software acceptance: PASS (not a regional release)` after validating the production bathymetry transform on synthetic inputs. It reports paths to Parquet, manifest, JSON report, and figures under `$SEASCAPE_WORKSPACE/.seascape/demo/`. Missing depth stays null; this is a software check, not a regional accuracy claim. See the [full quick start](https://marinecast.github.io/toolkit-seascape/getting-started/quick-start/) and [demo guide](docs/demo.md).
 
+## Local settings
+
+The repository's ignored `.env` supplies region corners and optional HTTP-source
+credentials. Start from [.env.example](.env.example); existing geographic defaults
+are preserved. Process environment values take precedence. See the
+[configuration guide](docs/CONFIGURATION.md#repo-local-env) for the three region
+extents, token handling and use with a separate workspace.
+
 ## What to read next
 
 | Goal | Documentation |

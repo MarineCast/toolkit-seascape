@@ -30,12 +30,16 @@ seascape --workspace /absolute/temporary-workspace build \
   --output-dir /absolute/temporary-workspace/Data/Seascape
 ```
 
-The final command checks the packaged 29-file metric-name/column-order contract,
+Before replacing the delivery, the final command checks the staged packaged
+29-file metric-name/column-order contract,
 unique sorted native H3/date keys, finite-or-null values and embedded provenance.
 Coverage/quality diagnostics stay out of public columns. Null does not become zero.
-Source identities are checked again before success. The verification receipt and
-bounded logs stay outside `Data/Seascape`; only 29 Parquets and `catalog.json` are
-written there. Schema verification does not assert historical numerical or grid
+Source identities and producer source receipts are checked again under the
+delivery writer lock before replacement. A schema, source-pin or receipt failure
+leaves the previous delivery and catalog unchanged. The verification receipt and
+bounded logs stay outside `Data/Seascape`; the profile writes 29 Parquets and `catalog.json` there. Existing supported
+`research/` objects and user `.txt`/`.md` review notes are preserved and permitted
+by verification; unexpected files and unsafe research symlinks still fail. Schema verification does not assert historical numerical or grid
 parity, source completeness, ecological absence or model readiness. The existing
 configuration-driven general build remains available with `--profile default`.
 
@@ -90,7 +94,7 @@ provenance, not falsely reported as repeated downloads or fresh classification.
 `--dry-run --check-inputs --json` performs read-only path-level inspection for this
 profile. It does not hash large datasets or certify sources. The acquisition stage
 checks every declared SHA256 before any scientific builder, and the final stage
-checks those identities again before success. Newly acquired OSM inputs retain their
+checks those identities again before publication. Newly acquired OSM inputs retain their
 own original extraction and retrieval receipt. Resume remains an explicit option;
 the full regional test below uses neither resume nor skipped stages.
 
@@ -171,3 +175,81 @@ Small replay evidence is retained at
 `.seascape/work/cli-rebuild-20261101/summary.json`. No manual deletion, canonical
 Data overwrite, research-table rebuild, external publication, commit or push was
 performed.
+
+
+<a id="publication-hardening"></a>
+## Publication and source-registration hardening — 2026-11-03
+
+The final schema/row checks now run on the staged delivery inside the existing
+writer transaction, followed by source verification, before any delivery replacement.
+The 29-table set is checked against the validated catalog; supported research
+objects and review notes are not counted as H3 products. Their preservation does
+not certify their scientific content.
+
+Every direct metrics-profile habitat inventory, qualification context, reporting
+key file, additional CRIMS page, mapped-substrate source and configured reef
+source must be registered. Acquisition checks registration after verifying pins;
+workers check it before dispatch. A source can be an exact registered file or a
+member of a registered directory whose tree checksum is verified. Directory pins
+reject symbolic-link members and apply the same schema admission rules to every
+nested `.parquet`/`.geoparquet` file. Computed H3 measurements are rejected even
+when nested or labeled `reporting_keys`; that role permits H3 identity columns only.
+
+Before publication, local external `sources` and `upstream_artifacts` recorded
+in producer manifests are also required to belong to the registry. Recorded
+producer checksums, when present, must still match. Generated candidate dependencies
+require an exact checksum-bearing artifact record in a producer manifest under
+a declared metrics output directory, plus a matching consumer receipt and current
+bytes. A producer manifest with artifact records can itself be an upstream
+dependency when its consumer checksum matches. Conflicting records, escaped
+output paths and missing consumer checksums fail. Merely residing under the work
+root never exempts raw inputs from registration or receipt checks. The generated
+reef inventory is now explicitly recorded as an artifact. URL-only attribution records are
+not treated as local files. This relies on producers recording their consumed
+inputs and is not a filesystem-access sandbox. Unregistered inputs fail closed;
+add their reviewed pins rather than suppressing the check.
+
+Metrics path preflight resolves relative paths against the selected workspace,
+matching execution, and expands `~`. It remains a path-only check, not a checksum
+or regional validation. The portable validation notebook remains unchanged: it
+exercises bathymetry/demo APIs, not this publication gate. Dedicated offline
+regressions cover publication rollback, companion preservation, source registration,
+receipt checks and workspace-relative preflight. No regional rebuild or canonical
+`Data/Seascape` update is implied by those tests.
+
+Current local checks: 776 tests passed with three expected absent-materialized-data
+skips; Ruff lint/355-file formatting, mypy's 21 configured modules, documentation
+checks and strict MkDocs passed. A wheel built from the updated sdist passed
+distribution inspection and 221 installed-module imports with OrcaCast blocked.
+The installed check uses a task-owned virtual environment with inherited existing
+dependencies; it is not a fresh runtime-only dependency installation. The copied
+installed-wheel notebook passed 22 notebook and 15 production checks with no
+external network/acquisition attempts. The captured test/quality dependency closure
+had no known vulnerabilities in the strict audit. Hosted CI,
+regional acquisition/rebuilding and the native/platform acceptance matrix were
+not run for this change.
+
+
+<a id="source-validation-closure"></a>
+### Second-review source-validation closure — 2026-11-03
+
+Both remaining source-admission findings are fixed: candidate-root placement no
+longer grants an exemption, and directory pins no longer bypass H3 schema checks.
+Regression fixtures cover raw sources inside/outside declared output folders,
+registered inputs with incorrect receipts, legitimate generated outputs and
+manifest dependencies, changed/missing/conflicting generated receipts, nested
+Parquet/GeoParquet measurements, identity-only reporting grids, directory changes,
+symlink members and failed publication preserving the prior delivery. Generated
+receipts establish producer lineage within this workflow, not a security sandbox
+against forged manifests or scientific source completeness. These checks do not
+run regional acquisition or authorize a change to existing delivery.
+
+Closure validation: 815 source tests passed, with three expected missing-regional-
+artifact skips and two existing pandas deprecation warnings. The metric regression
+module passed all 40 tests both from source and against the installed wheel outside
+the checkout. Ruff lint/357-file formatting, mypy (21 configured modules), docs
+checks, strict MkDocs, distribution inspection, 222 installed imports and the
+copied notebook (22 notebook/15 production checks) passed. The consumer reused
+existing dependencies. No regional rebuild, live acquisition, fresh dependency
+installation or hosted/platform CI run was performed. SHA-256 comparison verified
+all 44 existing delivery files, including research and catalog, were unchanged.

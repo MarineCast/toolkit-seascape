@@ -9,7 +9,7 @@ import shutil
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 import h3
 import pyarrow as pa
@@ -268,6 +268,7 @@ def write_areas(
     _preserve_existing_variants: bool = False,
     retire_areas: tuple[str, ...] = (),
     audit_root: str | Path | None = None,
+    _validate_staged: Callable[[Path], None] | None = None,
 ) -> dict[str, Any]:
     """Replace selected areas and update one small catalog in a recoverable transaction.
 
@@ -389,6 +390,8 @@ def write_areas(
         (staged / "catalog.json").write_text(
             json.dumps(catalog, indent=2, sort_keys=True) + "\n"
         )
+        if _validate_staged is not None:
+            _validate_staged(staged)
         writer.publish()
     return catalog
 
@@ -443,6 +446,7 @@ def export_domain_parquets(
     output: str | Path | None = None,
     catalog_path: str | Path | None = None,
     additional_areas: Mapping[str, AreaTables] | None = None,
+    _validate_staged: Callable[[Path], None] | None = None,
 ) -> dict[str, Any]:
     """Join generated producer tables by native keys and export each area once."""
     from seascape.metric_matrix import _validated_table
@@ -604,4 +608,9 @@ def export_domain_parquets(
     # An undated producer snapshot is not a replacement for an existing annual
     # series. Replace only generated variants; retain a dated variant until its
     # own source is supplied, with its embedded update/source context unchanged.
-    return write_areas(pairs, output=destination, _preserve_existing_variants=True)
+    return write_areas(
+        pairs,
+        output=destination,
+        _preserve_existing_variants=True,
+        _validate_staged=_validate_staged,
+    )

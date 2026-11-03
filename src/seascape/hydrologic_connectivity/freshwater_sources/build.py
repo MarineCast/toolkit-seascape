@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
-from shapely.geometry import Point, box
+from shapely.geometry import Point
 
 from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.data import load_data_config
@@ -235,21 +235,6 @@ def _hydrorivers_path(config: RiverMouthBuildConfig) -> Path:
             f"{config.hydrorivers_extract_dir}; found {len(paths)}."
         )
     return paths[0]
-
-
-def _clip_context(frame: Any, bbox_value: Mapping[str, float]):
-    import geopandas as gpd
-
-    context = box(
-        bbox_value["min_lon"],
-        bbox_value["min_lat"],
-        bbox_value["max_lon"],
-        bbox_value["max_lat"],
-    )
-    valid = frame.loc[frame.geometry.notna() & ~frame.geometry.is_empty].copy()
-    if valid.empty:
-        return valid
-    return gpd.clip(valid, context, keep_geom_type=True).reset_index(drop=True)
 
 
 def _load_water(config: RiverMouthBuildConfig):
