@@ -1274,6 +1274,9 @@ def run_domain_layer_build(
     _failure_reporter: Callable[[str, float, Exception], None] | None = None,
     **context_kwargs: Any,
 ) -> list[StageResult]:
+    from seascape.study import require_study_execution
+
+    require_study_execution(planning=dry_run)
     only, skip = tuple(only), tuple(skip)
     plan = plan_domain_layer_build(
         config_path=config_path,

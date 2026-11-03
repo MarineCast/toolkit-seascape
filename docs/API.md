@@ -230,7 +230,7 @@ application consumers should use the product facade rather than assembling or mu
 
 ## Explicit shared-study selection
 
-`load_study_config(path, planning=False)` reads the portable v1 request. The optional environment
+`seascape.load_study_config(path, planning=False)` reads the portable v1 request. The optional environment
 variable `MARINECAST_STUDY_CONFIG` is used only when no explicit path is given. Each installed
 toolkit carries its own schema; Seascape imports no workspace or sibling Python module.
 `load_study_membership(path, resolution=6, role="water_reporting")` additionally verifies the exact
@@ -302,3 +302,16 @@ areas. `freshwater_sources.build.build_river_mouths(config_path)` reads source
 vectors in batches and streams the complete river-system inventory independently
 of terminal mouth selection. Public H3 layout and null semantics are unchanged.
 See [configuration, source semantics and measured recovery](source-rebuild-recovery.md).
+
+The published-product selection facade lives in `seascape.study_selection` and remains
+exported from `seascape`. Separately, `seascape.study.load_study_config` returns the
+immutable `StudyConfig` used by CLI planning and synthetic core acceptance. Its study
+context continues to block production, even with an approved domain; reading verified
+existing products does not lift that hold. See [study routing](shared-study-routing.md).
+
+## Pinned regional operators
+
+`seascape.regional.runner.run_spec` and `seascape regional --spec` execute explicit cached-source
+operator candidates. They preserve native supports and source qualifications without automatic
+acquisition or publication. See the [regional contract](regional-processing.md) for inputs,
+resource limits, supported methods and acceptance boundaries.

@@ -1,0 +1,520 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:marinecast:study-config:1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "study_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved"
+          ]
+        },
+        "crs": {
+          "const": "EPSG:4326"
+        },
+        "bbox_wgs84": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "boundary_semantics": {
+          "const": "longitude_latitude_rectangle"
+        },
+        "offshore_minimum_nm": {
+          "type": "number",
+          "minimum": 12
+        },
+        "nautical_mile_m": {
+          "const": 1852
+        },
+        "water_membership": {
+          "enum": [
+            "positive_area_intersection_with_validated_marine_mask",
+            "positive_area_intersection_with_validated_coastal_plus_inland_water_mask"
+          ]
+        },
+        "land_sources": {
+          "type": "string"
+        },
+        "geometry_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "approval": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "approved_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "source_message_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scope": {
+              "const": "rectangular_selection_only"
+            },
+            "statement": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "approved_at",
+            "source_message_id",
+            "scope",
+            "statement"
+          ],
+          "additionalProperties": false
+        },
+        "revision_note": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bbox_role": {
+          "const": "acquisition_planning_envelope_only"
+        },
+        "geometry_status": {
+          "enum": [
+            "pending_qualified_coastline_validation",
+            "source_relative_validated"
+          ]
+        },
+        "selection_policy": {
+          "type": "object",
+          "properties": {
+            "revision": {
+              "const": "coastal-water-plus-inland-v1"
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "approved"
+              ]
+            },
+            "offshore_distance_m": {
+              "const": 22224
+            },
+            "distance_method": {
+              "const": "WGS84_ellipsoidal_geodesic"
+            },
+            "offshore_side": {
+              "const": "ocean_side_of_qualified_intended_coastal_reach"
+            },
+            "coastal_reach": {
+              "const": "northern_Vancouver_Island_through_outer_island_and_relevant_offshore_island_shores_to_outer_Washington_and_Columbia_ocean_outlet"
+            },
+            "inland_waters": {
+              "const": "include_requested_inland_waters_straits_bays_inlets_and_estuaries_with_explicit_waterbody_types"
+            },
+            "reporting_support": {
+              "const": "positive_area_intersection_with_materialized_coastal_plus_inland_water_mask"
+            },
+            "far_offshore_reporting": {
+              "const": "exclude_outside_coastal_distance_support"
+            },
+            "land_source_policy": {
+              "const": "retain_land_mixed_cells_and_native_terrain_canopy_needed_for_viewshed"
+            },
+            "mask_status": {
+              "enum": [
+                "pending_source_qualified_build",
+                "source_relative_validated"
+              ]
+            },
+            "approval": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "approved_at": {
+                  "type": "string",
+                  "minLength": 1,
+                  "format": "date-time"
+                },
+                "source_message_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "scope": {
+                  "const": "coastal_collection_policy"
+                },
+                "statement": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "confirmed_question_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "approved_at",
+                "source_message_id",
+                "scope",
+                "statement",
+                "confirmed_question_id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "revision",
+            "status",
+            "offshore_distance_m",
+            "distance_method",
+            "offshore_side",
+            "coastal_reach",
+            "inland_waters",
+            "reporting_support",
+            "far_offshore_reporting",
+            "land_source_policy",
+            "mask_status",
+            "approval"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "revision",
+        "status",
+        "crs",
+        "bbox_wgs84",
+        "boundary_semantics",
+        "offshore_minimum_nm",
+        "nautical_mile_m",
+        "water_membership",
+        "land_sources",
+        "geometry_sha256",
+        "bbox_role",
+        "geometry_status",
+        "selection_policy"
+      ],
+      "additionalProperties": false
+    },
+    "time": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end_exclusive": {
+          "type": "string",
+          "format": "date"
+        },
+        "timezone": {
+          "const": "UTC"
+        },
+        "daily_interval": {
+          "const": "[start,end)"
+        },
+        "availability_policy": {
+          "const": "retain_requested_window_report_actual_source_coverage_and_as_of"
+        }
+      },
+      "required": [
+        "start",
+        "end_exclusive",
+        "timezone",
+        "daily_interval",
+        "availability_policy"
+      ],
+      "additionalProperties": false
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "data_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "data_root"
+      ],
+      "additionalProperties": false
+    },
+    "products": {
+      "type": "object",
+      "properties": {
+        "seascape": {
+          "type": "object",
+          "properties": {
+            "h3_resolution": {
+              "const": 6
+            },
+            "retain_native": {
+              "const": true
+            }
+          },
+          "required": [
+            "h3_resolution",
+            "retain_native"
+          ],
+          "additionalProperties": false
+        },
+        "viewshed": {
+          "type": "object",
+          "properties": {
+            "h3_resolution": {
+              "const": 7
+            },
+            "retain_native": {
+              "const": true
+            }
+          },
+          "required": [
+            "h3_resolution",
+            "retain_native"
+          ],
+          "additionalProperties": false
+        },
+        "meteorology": {
+          "type": "object",
+          "properties": {
+            "h3_resolution": {
+              "const": 5
+            },
+            "retain_native": {
+              "const": true
+            }
+          },
+          "required": [
+            "h3_resolution",
+            "retain_native"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "seascape",
+        "viewshed",
+        "meteorology"
+      ],
+      "additionalProperties": false
+    },
+    "producer_buffers": {
+      "type": "object",
+      "properties": {
+        "seascape": {
+          "type": "object",
+          "properties": {
+            "water_geometry_m": {
+              "type": "number",
+              "minimum": 0
+            },
+            "coastal_network_m": {
+              "type": "number",
+              "minimum": 0
+            },
+            "freshwater_context_m": {
+              "type": "number",
+              "minimum": 0
+            },
+            "river_source_context_m": {
+              "type": "object",
+              "properties": {
+                "bc": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "us": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "bc",
+                "us"
+              ],
+              "additionalProperties": false
+            },
+            "catchment_context_m": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "water_geometry_m",
+            "coastal_network_m",
+            "freshwater_context_m",
+            "river_source_context_m",
+            "catchment_context_m"
+          ],
+          "additionalProperties": false
+        },
+        "viewshed": {
+          "type": "object",
+          "properties": {
+            "line_of_sight_m": {
+              "type": "number",
+              "minimum": 0
+            },
+            "aoi_margin_m": {
+              "type": "number",
+              "minimum": 0
+            },
+            "source_policy": {
+              "type": "string"
+            },
+            "native_raster_policy": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "line_of_sight_m",
+            "aoi_margin_m",
+            "source_policy",
+            "native_raster_policy"
+          ],
+          "additionalProperties": false
+        },
+        "meteorology": {
+          "type": "object",
+          "properties": {
+            "native_grid_policy": {
+              "type": "string"
+            },
+            "legacy_bbox_padding_degrees": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "native_grid_policy",
+            "legacy_bbox_padding_degrees"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "seascape",
+        "viewshed",
+        "meteorology"
+      ],
+      "additionalProperties": false
+    },
+    "grid_registry": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "pending_validated_marine_mask",
+            "validated"
+          ]
+        },
+        "h3_resolutions": {
+          "const": [
+            5,
+            6,
+            7
+          ]
+        },
+        "membership_policy": {
+          "const": "positive_area_intersection"
+        },
+        "cell_id_type": {
+          "const": "lowercase_h3_string"
+        },
+        "mask_revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mask_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "memberships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resolution": {
+                "enum": [
+                  5,
+                  6,
+                  7
+                ]
+              },
+              "role": {
+                "enum": [
+                  "rectangle",
+                  "water_reporting",
+                  "land_source",
+                  "water_source"
+                ]
+              },
+              "relative_path": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "resolution",
+              "role",
+              "relative_path",
+              "count",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "status",
+        "h3_resolutions",
+        "membership_policy",
+        "cell_id_type",
+        "mask_revision",
+        "mask_sha256",
+        "memberships"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "study_id",
+    "domain",
+    "time",
+    "storage",
+    "products",
+    "producer_buffers",
+    "grid_registry"
+  ],
+  "additionalProperties": false
+}

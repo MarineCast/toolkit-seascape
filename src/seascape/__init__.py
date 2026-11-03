@@ -3,7 +3,7 @@
 from importlib.metadata import version
 
 from .products import AreaTables, list_areas, output_root, read_area, write_areas
-from .study import (
+from .study_selection import (
     load_study_config,
     load_study_membership,
     read_study_area,

@@ -24,3 +24,18 @@ def validate_positive_depth(values: pd.Series) -> None:
         raise ValueError(
             "Terrain and sill products require nonnegative positive-down bathymetry."
         )
+
+
+def validate_native_metre_band_units(units: Any) -> None:
+    """Reject explicit nonmetre/unknown band units; no numerical conversion.
+
+    An absent band label needs the caller's source interpretation contract and does not
+    itself certify units or vertical datum.
+    """
+    if units is not None and (
+        not isinstance(units, str)
+        or units.strip().casefold() not in {"m", "metre", "metres", "meter", "meters"}
+    ):
+        raise ValueError(
+            "Explicit native band units conflict with metre interpretation or are unknown; no conversion is supported."
+        )

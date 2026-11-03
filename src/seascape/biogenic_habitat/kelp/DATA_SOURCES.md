@@ -28,3 +28,13 @@ historical water-level surface is reconstructed. Processing-era changes in 1994
 and 2010 limit comparisons of raw annual mapped areas. Source rights, retrieval
 vintage, exact date qualifications and the scoped 2026-10-20 CRIMS acquisition
 are documented in the canonical contract and embedded provenance.
+
+Floating canopy is not all kelp habitat. This product never relabels modeled
+potential kelp habitat as observed kelp. DNR processing was vector/CAD in
+1989–1992; 1993 was not surveyed. Raster processing used approximately 20 m cells
+in 1994–2009 and approximately 4 m cells in 2010–2024. These processing labels
+are not physical accuracy claims. Annual raw polygon area is not assumed
+perfectly comparable across these methodological breaks. The current source
+normalizers do not register separate complete survey-footprint geometries or
+availability dates; survey completeness therefore remains unknown and a
+historical as-of export is retrospective rather than an operational replay.

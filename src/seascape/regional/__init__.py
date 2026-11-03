@@ -1,1 +1,1 @@
-"""Explicit source-bound scientific candidates, separate from delivery."""
+"""Pinned cached-source regional operators; no automatic source acquisition."""

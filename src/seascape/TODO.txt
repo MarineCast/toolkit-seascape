@@ -45,3 +45,39 @@ Blocked
 
 [ ] Estuarine polygon membership and class: BLOCKED until a defensible cross-border
     polygon ontology supports a consistent ecological definition and provenance.
+
+Coarse-first regional scope (completed 2026-10-08)
+------------------------------------------------
+Plan and acceptance contract: ../../docs/methodology/coarse-v1-plan.md
+Historical full-family gates above apply to the completeness claimed by a release;
+scoped delivery does not certify the whole catalog.
+
+[x] Retain verified static core, default R6 and supported native R8 companions.
+[x] Qualify cached seagrass and dbSEABED exact source rights/units/support;
+    retain model composites, unknown observation dates and missingness explicitly.
+[x] Publish reviewed native R6 positive-only seagrass with source-rectangle,
+    survey/absence and projected-edge qualifications; native R8 remains deferred.
+[x] Publish direct R6 coarse modeled substrate with separate rock/sediment bases,
+    point masks/availability, conditional entropy and NULL unsupported metrics.
+[x] Publish context-gated native R8 terrain-form proxies with explicit heuristic
+    thresholds and NULL reasons; preserve Arrow-native source QC missingness.
+[x] Publish reviewed static v5 exact joins, all prior values/types/NULLs/order,
+    dictionaries, source bindings, sidecars and checksums; no annual duplicates.
+
+Later upgrades and dependencies
+-------------------------------
+[ ] Consume qualified Hydrology mouth/proximity evidence. River topology,
+    drainage, discharge and barriers belong to Hydrology; no Seascape R5 network.
+[ ] Native R8 seagrass and native R8 substrate need separate support/method/cost
+    qualification; no upsampling. Native R6 terrain classification unsupported.
+[ ] Fine coast/islands, observed habitat surveys, measured hardness, passage/sill
+    methods and expanded coverage; not gates for the qualified coarse release.
+[ ] Qualify DNR SVMP/DFO NETForce/PMEP/DFO Bottom Patches exact rights, vintage,
+    measured-versus-modeled support and survey opportunity before acquisition.
+[ ] Qualify exact public DFO sponge layer before replacing configured access-only
+    source gate; missing ingestion never establishes habitat absence.
+[ ] Bounded NOAA rocky HAPC subset and targeted OSM checks after source/ID review;
+    no whole-package bulk acquisition or unqualified licensed/absence claims.
+[ ] Complete independent installed-wheel and immutable-v5 parity acceptance of
+    explicit regional commands before promoting the integrated processing route.
+    Legacy family defaults remain separate; no implicit source acquisition.

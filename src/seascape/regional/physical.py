@@ -207,3 +207,176 @@ def anthropogenic(job):
         "network_metrics": "unqualified_null",
         "armoring_method": "maximum_available_dataset_cell_fraction_v1",
     }
+
+
+def kelp(job):
+    from seascape.biogenic_habitat.kelp.build import annual_spatial_processing
+
+    keys = job.keys()
+    layers = job.settings.get("annual_layers", [])
+    if not layers or len({item["year"] for item in layers}) != len(layers):
+        raise RegionalError("Explicit distinct annual source layers required")
+    native_cells = cells(keys).to_crs(6933).geometry.to_numpy()
+    water, evidence = projected(job, "water", crs=6933, subdivide=True)
+    tree = shapely.STRtree(water)
+    schema = pa.schema(
+        [
+            ("H3_INDEX", pa.string()),
+            ("H3_RESOLUTION", pa.int64()),
+            ("SOURCE_DATASET", pa.string()),
+            ("OBSERVATION_YEAR", pa.int16()),
+            ("MAPPED_BED_EXTENT_IN_FULL_H3_M2", pa.float64()),
+            ("MAPPED_BED_EXTENT_IN_CURRENT_WATER_M2", pa.float64()),
+            ("CURRENT_MAPPED_WATER_AREA_M2", pa.float64()),
+            ("POSITIVE_MAPPED_BED_EXTENT_WATER_FRAC", pa.float64()),
+            ("MAPPED_POSITIVE_BED_EVIDENCE", pa.bool_()),
+            ("ANNUAL_SURVEY_ABSENCE", pa.bool_()),
+            ("QC", pa.string()),
+            ("SPATIAL_PROCESSING", pa.string()),
+        ]
+    )
+    years = [[] for _ in keys]
+    qualification = []
+    with pq.ParquetWriter(
+        job.output / "annual.parquet", schema, compression="zstd"
+    ) as writer:
+        for item in sorted(layers, key=lambda x: x["year"]):
+            year = item["year"]
+            if type(year) is not int or year == 1993 or not 1989 <= year <= 2024:
+                raise RegionalError(
+                    "Source year must match supported annual inventory; 1993 unsurveyed"
+                )
+            from .projection import qualify_projected_geometries
+
+            native = inventory(
+                job, item["input"], allow_invalid=True, layer=item.get("layer")
+            )
+            native_repairs = []
+            factor = native.crs.axis_info[0].unit_conversion_factor
+            for index in native.index[~native.geometry.is_valid]:
+                original = native.geometry.loc[index]
+                fixed = shapely.make_valid(original)
+                delta = abs(fixed.area - original.area)
+                if (
+                    native.crs.is_geographic
+                    or delta * factor * factor > 0.01
+                    or delta / max(abs(original.area), 1) > 1e-10
+                    or not fixed.is_valid
+                ):
+                    raise RegionalError(
+                        "Annual native ring normalization exceeds reviewed precision guard"
+                    )
+                native_repairs.append(
+                    {
+                        "row": str(index),
+                        "absolute_area_change_m2": delta * factor * factor,
+                        "relative_area_change": delta / max(abs(original.area), 1),
+                    }
+                )
+                native.loc[index, "geometry"] = fixed
+            source = native.to_crs(6933)
+            values, repairs = qualify_projected_geometries(
+                native.geometry.to_numpy(), source.geometry.to_numpy()
+            )
+            source = source.set_geometry(values)
+            proof = {
+                "native_precision_normalization": native_repairs,
+                "projected_precision_normalization": repairs,
+            }
+            year_column = item.get("year_column", "OBSERVATION_YEAR")
+            if year_column != "OBSERVATION_YEAR" and year_column in source:
+                source["OBSERVATION_YEAR"] = source[year_column]
+            if (
+                "OBSERVATION_YEAR" not in source
+                or not source.OBSERVATION_YEAR.eq(year).all()
+            ):
+                raise RegionalError("Annual source observation year differs")
+            source_parts = source.geometry.to_numpy()
+            source_tree = shapely.STRtree(source_parts)
+            qualification.append(
+                {"year": year, "projection": proof, "source_rows": len(source)}
+            )
+            for first in range(0, len(keys), min(1024, job.limits["batch_rows"])):
+                rows = []
+                for i in range(
+                    first, min(first + min(1024, job.limits["batch_rows"]), len(keys))
+                ):
+                    cell = native_cells[i]
+                    hits = tree.query(cell, predicate="intersects")
+                    wet = shapely.union_all(shapely.intersection(water[hits], cell))
+                    if wet.area <= 0:
+                        raise RegionalError(
+                            "Mapped reporting water area must be positive"
+                        )
+                    ids = source_tree.query(cell, predicate="intersects")
+                    # Centroid translation preserves EPSG6933 metre geometry while
+                    # reducing cancellation in exact overlay, as in the reviewed caller.
+                    origin = np.array([cell.centroid.x, cell.centroid.y])
+                    local = lambda g: shapely.transform(g, lambda xy: xy - origin)
+                    bed = shapely.union_all(
+                        shapely.intersection(local(source_parts[ids]), local(cell))
+                    )
+                    area = bed.area
+                    mapped = bed.intersection(local(wet)).area
+                    reference = shapely.union_all(
+                        [g.intersection(local(wet)) for g in local(source_parts[ids])]
+                    ).area
+                    if not np.isclose(mapped, reference, rtol=1e-9, atol=1e-5):
+                        raise RegionalError("Kelp union/clip independent parity failed")
+                    if area > 0:
+                        years[i].append(year)
+                    rows.append(
+                        dict(
+                            H3_INDEX=keys[i],
+                            H3_RESOLUTION=job.resolution,
+                            SOURCE_DATASET=item.get(
+                                "source_dataset", f"WA_DNR_FLOATING_KELP_{year}"
+                            ),
+                            OBSERVATION_YEAR=year,
+                            MAPPED_BED_EXTENT_IN_FULL_H3_M2=area,
+                            MAPPED_BED_EXTENT_IN_CURRENT_WATER_M2=mapped,
+                            CURRENT_MAPPED_WATER_AREA_M2=wet.area,
+                            POSITIVE_MAPPED_BED_EXTENT_WATER_FRAC=mapped / wet.area
+                            if mapped > 0
+                            else None,
+                            MAPPED_POSITIVE_BED_EVIDENCE=True if area > 0 else None,
+                            ANNUAL_SURVEY_ABSENCE=None,
+                            QC="positive_mapped_bed_extent_not_pure_canopy"
+                            if area > 0
+                            else "no_mapped_bed_record_unknown_survey_absence",
+                            SPATIAL_PROCESSING=annual_spatial_processing(year),
+                        )
+                    )
+                writer.write_table(pa.Table.from_pylist(rows, schema=schema))
+                job.guard()
+    pq.write_table(
+        pa.table(
+            {
+                "H3_INDEX": keys,
+                "H3_RESOLUTION": [job.resolution] * len(keys),
+                "YEARS_WITH_MAPPED_BED_INTERSECTION_JSON": [
+                    json.dumps(v) for v in years
+                ],
+                "FIRST_MAPPED_POSITIVE_SURVEY_YEAR": pa.array(
+                    [min(v) if v else None for v in years], type=pa.int16()
+                ),
+                "LAST_MAPPED_POSITIVE_SURVEY_YEAR": pa.array(
+                    [max(v) if v else None for v in years], type=pa.int16()
+                ),
+                "STATIC_SUMMARY_SEMANTICS": [
+                    "historical_positive_dates_no_forward_fill_or_persistence"
+                ]
+                * len(keys),
+            }
+        ),
+        job.output / "static.parquet",
+        compression="zstd",
+    )
+    return "annual_mapped_bed_extent_native_full_h3_current_water_v3", {
+        "rows": len(keys) * len(layers),
+        "annual_layers": qualification,
+        "water_qualification": evidence,
+        "generalized_persistence": "not_computed_source_blocked",
+        "survey_absence_qualified": False,
+        "pure_canopy_fraction_qualified": False,
+    }

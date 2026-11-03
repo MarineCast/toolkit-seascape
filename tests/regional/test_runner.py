@@ -104,7 +104,7 @@ def verify_candidate(path):
 
 
 def test_preflight_cli_tamper_and_existing_output(setup_job, tmp_path, capsys):
-    _, spec, _, save = setup_job("estuary")
+    _, spec, _, save = setup_job("freshwater")
     path = save()
     assert main(["regional", "--spec", str(path), "--preflight"]) == 0
     assert json.loads(capsys.readouterr().out)["network_bytes"] == 0
@@ -114,7 +114,7 @@ def test_preflight_cli_tamper_and_existing_output(setup_job, tmp_path, capsys):
         run_spec(path, preflight=True)
 
 
-@pytest.mark.parametrize("operator", ["estuary"])
+@pytest.mark.parametrize("operator", ["freshwater", "estuary"])
 def test_point_proximity_bound_inventory(setup_job, tmp_path, operator):
     keys, spec, pin, save = setup_job(operator, 8)
     x, y = Transformer.from_crs(4326, 32610, always_xy=True).transform(-123.2, 48.2)
@@ -133,10 +133,94 @@ def test_point_proximity_bound_inventory(setup_job, tmp_path, operator):
         run_spec(tmp_path / "spec.json")
 
 
-@pytest.mark.parametrize("operator", ["anthropogenic", "shoreline"])
+def test_terrain_null_qc_streaming_and_no_r6(setup_job, tmp_path):
+    keys, spec, pin, save = setup_job("terrain-form", 8)
+    path = tmp_path / "terrain.parquet"
+    pq.write_table(
+        pa.table(
+            {
+                "H3_INDEX": keys,
+                "BATHYMETRY": [100.0] * len(keys),
+                "SLOPE_MEAN_NATIVE_RASTER": [10.0] * len(keys),
+                "TERRAIN_POSITION_RING_4_Z": [2.0] * len(keys),
+                "FOCAL_NATIVE_MARINE_DEPTH_PRESENT": [True] * len(keys),
+                "CONTEXT_HOP4_COMPLETE": [True] * (len(keys) - 1) + [False],
+                "TERRAIN_POSITION_RING_4_Z_QC_REASON": pa.nulls(
+                    len(keys), type=pa.string()
+                ),
+            }
+        ),
+        path,
+    )
+    pin("terrain", path)
+    run_spec(save())
+    result = pq.read_table(tmp_path / "candidate/metrics.parquet").to_pydict()
+    assert result["TERRAIN_FORM_PROXY"][:-1] == ["ELEVATED_TERRAIN_PROXY"] * (
+        len(keys) - 1
+    )
+    assert result["TERRAIN_FORM_PROXY"][-1] is None
+    assert result["INPUT__TERRAIN_POSITION_RING_4_Z_QC_REASON"] == [None] * len(keys)
+    verify_candidate(tmp_path / "candidate")
+    spec["output"] = "rejected"
+    spec["resolution"] = 6
+    with pytest.raises(RegionalError, match="native R8"):
+        run_spec(save())
+    assert (tmp_path / "rejected/FAILED.json").exists()
+    assert not (tmp_path / "rejected/MANIFEST.json").exists()
+
+
+def test_consolidation_preserves_old_metadata_types_and_nulls(setup_job, tmp_path):
+    keys, spec, pin, save = setup_job(
+        "consolidate",
+        settings={
+            "append": [
+                {
+                    "input": "source",
+                    "prefix": "NEW__",
+                    "immutable_release_id": "fixture-v1",
+                }
+            ]
+        },
+    )
+    old = pa.table(
+        {
+            "H3_INDEX": keys,
+            "value": pa.array([None] + list(range(len(keys) - 1)), type=pa.int16()),
+        }
+    ).replace_schema_metadata({b"identity": b"old"})
+    new = pa.table(
+        {
+            "H3_INDEX": keys,
+            "flag": pa.array([None] + [True] * (len(keys) - 1), type=pa.bool_()),
+        }
+    )
+    for name, table in [("base", old), ("source", new)]:
+        path = tmp_path / (name + ".parquet")
+        pq.write_table(table, path)
+        pin(name, path)
+    run_spec(save())
+    out = pq.read_table(tmp_path / "candidate/metrics.parquet")
+    assert out.schema.metadata == old.schema.metadata and out.select(
+        old.column_names
+    ).equals(old)
+    assert out["NEW__flag"].equals(new["flag"])
+    verify_candidate(tmp_path / "candidate")
+    spec["output"] = "bad"
+    path = tmp_path / "source.parquet"
+    pq.write_table(new.take(pa.array(list(reversed(range(len(keys)))))), path)
+    pin("source", path)
+    with pytest.raises(RegionalError, match="H3 order"):
+        run_spec(save())
+
+
+@pytest.mark.parametrize(
+    "operator", ["coastal", "bivalve", "kelp", "anthropogenic", "shoreline"]
+)
 def test_direct_polygon_and_physical_commands(setup_job, tmp_path, operator):
     settings = {"bearings_degrees": [0, 90], "maximum_distance_m": 100}
-    keys, _, pin, save = setup_job(operator, 6, settings=settings)
+    keys, _, pin, save = setup_job(
+        operator, 8 if operator == "coastal" else 6, settings=settings
+    )
     polygon = shapely.union_all(cells(keys).geometry.to_numpy()).buffer(0.01)
     water = tmp_path / "water.parquet"
     gpd.GeoDataFrame({"name": ["water"]}, geometry=[polygon], crs=4326).to_parquet(
@@ -144,8 +228,42 @@ def test_direct_polygon_and_physical_commands(setup_job, tmp_path, operator):
     )
     pin("water", water)
     pin("extent", water)
+    if operator == "coastal":
+        import pandas as pd
+
+        from seascape.regional.coastal_origin import origin_record
+
+        locations = np.asarray([h3.cell_to_latlng(key) for key in keys])
+        support = pd.DataFrame(
+            {
+                "H3_INDEX": keys,
+                "GRAPH_NODE_ELIGIBLE": [True] * len(keys),
+                "CONNECTOR_TARGET_H3_INDEX": [None] * len(keys),
+                "REPRESENTATIVE_POINT_LONGITUDE": locations[:, 1],
+                "REPRESENTATIVE_POINT_LATITUDE": locations[:, 0],
+                "FULL_H3_WITHIN_SOURCE_RECTANGLE": [True] * len(keys),
+            }
+        ).set_index("H3_INDEX")
+        origin_path = tmp_path / "origins.parquet"
+        pq.write_table(
+            pa.Table.from_pylist([origin_record(key, support) for key in keys]),
+            origin_path,
+        )
+        pin("origins", origin_path)
     source = tmp_path / "source.parquet"
-    if operator == "anthropogenic":
+    if operator == "bivalve":
+        frame = gpd.GeoDataFrame(
+            {"EVIDENCE_CLASS": ["WA_bed"]},
+            geometry=[cells(keys).geometry.iloc[0]],
+            crs=4326,
+        )
+    elif operator == "kelp":
+        frame = gpd.GeoDataFrame(
+            {"OBSERVATION_YEAR": [2009]},
+            geometry=[cells(keys).geometry.iloc[0]],
+            crs=4326,
+        )
+    elif operator == "anthropogenic":
         frame = gpd.GeoDataFrame(
             {
                 "FEATURE_CLASS": ["aquaculture"],
@@ -177,52 +295,238 @@ def test_direct_polygon_and_physical_commands(setup_job, tmp_path, operator):
         )
     frame.to_parquet(source)
     pin("inventory", source)
+    if operator == "kelp":
+        # The returned settings dict is retained by the specification.
+        settings["annual_layers"] = [{"year": 2009, "input": "inventory"}]
     run_spec(save())
     manifest = verify_candidate(tmp_path / "candidate")
     assert manifest["details"]["rows"] >= len(keys)
 
 
-def test_regional_armoring_uses_maximum_available_dataset(setup_job, tmp_path):
-    from seascape.domain_parquets import AreaTables, read_area, write_areas
-
-    keys, _, pin, save = setup_job("anthropogenic", 6)
-    polygon = shapely.union_all(cells(keys).geometry.to_numpy()).buffer(0.01)
-    water = tmp_path / "water.parquet"
-    gpd.GeoDataFrame(geometry=[polygon], crs=4326).to_parquet(water)
-    pin("water", water)
-    lat, lon = h3.cell_to_latlng(keys[0])
-    line = shapely.LineString([(lon - 0.001, lat), (lon + 0.001, lat)])
-    inventory = gpd.GeoDataFrame(
-        {
-            "FEATURE_CLASS": ["shoreline_survey"] * 3,
-            "IS_CANONICAL": [True] * 3,
-            "SUPPORTS_AREA": [False] * 3,
-            "SUPPORTS_SHORELINE_DENOMINATOR": [True] * 3,
-            "ARMORING_FRACTION_ESTIMATE": [0.0, 1.0, np.nan],
-            "SOURCE_DATASET": ["zero", "one", "missing"],
-        },
-        geometry=[line] * 3,
+def test_block_streamed_positive_footprints(setup_job, tmp_path):
+    keys, _, pin, save = setup_job("seagrass")
+    bounds = cells(keys).total_bounds
+    dx = (bounds[2] - bounds[0]) / 64
+    dy = (bounds[3] - bounds[1]) / 64
+    raster = tmp_path / "tile.tif"
+    with rasterio.open(
+        raster,
+        "w",
+        driver="GTiff",
+        height=64,
+        width=64,
+        count=1,
+        dtype="uint8",
         crs=4326,
-    )
-    path = tmp_path / "inventory.parquet"
-    inventory.to_parquet(path)
-    pin("inventory", path)
+        transform=from_origin(bounds[0], bounds[3], dx, dy),
+        tiled=True,
+        blockxsize=16,
+        blockysize=16,
+    ) as source:
+        source.write(np.ones((64, 64), dtype=np.uint8), 1)
+    pin("tile_1", raster)
     run_spec(save())
-    native = pq.read_table(tmp_path / "candidate/metrics.parquet")
-    values = native.to_pandas().set_index("H3_INDEX")
-    assert values.loc[keys[0], "SHORELINE_ARMORING_FRAC"] == 1
-    assert values.SHORELINE_ARMORING_FRAC.isna().sum() == len(keys) - 1
-    write_areas({"anthropogenic": AreaTables(native)}, output=tmp_path / "public")
-    result = read_area("anthropogenic", output=tmp_path / "public")
-    assert result.num_columns == 6
-    assert result["shoreline_armoring_fraction"].to_pylist()[0] == 1
-    assert not any("qc" in name or "coverage" in name for name in result.column_names)
+    table = pq.read_table(tmp_path / "candidate/metrics.parquet").to_pydict()
+    assert sum(table["POSITIVE_PIXEL_CENTER_COUNT"]) > 0
+    assert all(
+        a == b
+        for a, b in zip(
+            table["EXPECTED_SOURCE_BLOCKS"], table["COMPLETED_SOURCE_BLOCKS"]
+        )
+    )
+    verify_candidate(tmp_path / "candidate")
+
+
+def native_fixture(keys, tmp_path, pin):
+    from importlib.resources import files
+
+    for name, relative in [
+        ("config", "config/data/environment_seascape.yaml"),
+        ("common", "config/common.yaml"),
+    ]:
+        destination = tmp_path / (name + ".yaml")
+        destination.write_bytes(
+            files("seascape").joinpath("resources", relative).read_bytes()
+        )
+        pin(name, destination)
+
+    from seascape.seafloor_physiography.bathymetry.build import (
+        _latlngs_to_h3,
+        _pixel_centers,
+    )
+
+    west, south, east, north = cells(keys).total_bounds
+    step = 1 / 240
+    width = int(np.ceil((east - west) / step)) + 6
+    height = int(np.ceil((north - south) / step)) + 6
+    raster = tmp_path / "native.tif"
+    affine = from_origin(west - 3 * step, north + 3 * step, step, step)
+    with rasterio.open(
+        raster,
+        "w",
+        driver="GTiff",
+        height=height,
+        width=width,
+        count=1,
+        dtype="int16",
+        crs=4326,
+        transform=affine,
+        nodata=-32767,
+    ) as source:
+        source.write(-np.full((height, width), 100, dtype=np.int16), 1)
+        source.set_band_unit(1, "m")
+    pin("raster", raster)
+    compute = tmp_path / "compute.txt"
+    compute.write_text("\n".join(keys) + "\n")
+    pin("compute", compute)
+    latitude, longitude = _pixel_centers(affine, (height, width))
+    pixels = _latlngs_to_h3(
+        latitude.ravel(), longitude.ravel(), h3.get_resolution(keys[0])
+    )
+    counts = [int(np.sum(np.asarray(pixels, dtype=object) == key)) for key in keys]
+    depth = tmp_path / "depth.parquet"
+    pq.write_table(
+        pa.table(
+            {
+                "H3_INDEX": keys,
+                "BATHYMETRY": [100.0] * len(keys),
+                "NATIVE_EXPECTED_PIXEL_COUNT": counts,
+                "NATIVE_VALID_MARINE_SAMPLE_COUNT": counts,
+                "NATIVE_FULL_H3_SOURCE_COVERAGE": [True] * len(keys),
+                "NATIVE_NODATA_PIXEL_COUNT": [0] * len(keys),
+            }
+        ),
+        depth,
+    )
+    pin("depth", depth)
+
+
+@pytest.mark.parametrize(
+    "operator", ["bathymetry", "distance", "watergraph", "native-terrain"]
+)
+def test_native_commands_keep_compute_support_and_censoring(
+    setup_job, tmp_path, operator
+):
+    keys, spec, pin, save = setup_job(operator, 8)
+    native_fixture(keys, tmp_path, pin)
+    cols = {"H3_INDEX": keys}
+    for field in (
+        "REGULAR_NEIGHBOR_CENSUS_COMPLETE",
+        "INCOMING_CONNECTOR_CANDIDATE_CENSUS_COMPLETE",
+        "OUTGOING_CONNECTOR_GLOBAL16_SEARCH_COMPLETE",
+        "FULL_H3_WITHIN_SOURCE_RECTANGLE",
+        "GENERALIZED_FALLBACK",
+        "NATIVE_LAND_FOOTPRINT_UNKNOWN",
+        "POLICY_EDGE_REVIEW",
+    ):
+        cols[field] = [field == "FULL_H3_WITHIN_SOURCE_RECTANGLE"] * len(keys)
+    context = tmp_path / "context.parquet"
+    pq.write_table(pa.table(cols), context)
+    pin("context", context)
+    if operator == "native-terrain":
+        pin("support", context)
+        edges = tmp_path / "edges.parquet"
+        pq.write_table(
+            pa.table(
+                {
+                    "SOURCE_H3_INDEX": keys[:-1],
+                    "TARGET_H3_INDEX": keys[1:],
+                    "EDGE_IS_WATER_PASSABLE": [True] * (len(keys) - 1),
+                }
+            ),
+            edges,
+        )
+        pin("edges", edges)
+        conn = tmp_path / "connectors.parquet"
+        pq.write_table(
+            pa.table(
+                {
+                    "H3_INDEX": pa.array([], type=pa.string()),
+                    "TARGET_H3_INDEX": pa.array([], type=pa.string()),
+                    "CONNECTOR_IS_WATER_PASSABLE": pa.array([], type=pa.bool_()),
+                }
+            ),
+            conn,
+        )
+        pin("connectors", conn)
+    if operator == "watergraph":
+        water = tmp_path / "water.gpkg"
+        polygon = shapely.union_all(cells(keys).geometry.to_numpy()).buffer(0.01)
+        gpd.GeoDataFrame({"kind": ["water"]}, geometry=[polygon], crs=4326).to_file(
+            water, layer="water_area", driver="GPKG"
+        )
+        pin("water", water)
+        pin("extent", water)
+    if operator == "bathymetry":
+        graph = tmp_path / "neighbors.parquet"
+        pq.write_table(
+            pa.table(
+                {
+                    "SOURCE_H3_INDEX": keys,
+                    "TARGET_H3_INDEX": keys,
+                    "MINIMUM_HOP_COUNT": [0] * len(keys),
+                    "NETWORK_DISTANCE_M": [0.0] * len(keys),
+                }
+            ),
+            graph,
+        )
+        pin("neighborhoods", graph)
+    if operator == "distance":
+        extent_path = tmp_path / "extent.parquet"
+        gpd.GeoDataFrame(
+            {"source": ["fixture"]},
+            geometry=[shapely.union_all(cells(keys).geometry.to_numpy()).buffer(0.01)],
+            crs=4326,
+        ).to_parquet(extent_path)
+        pin("extent", extent_path)
+        lines = tmp_path / "lines.parquet"
+        gpd.GeoDataFrame(
+            {"id": ["a"]},
+            geometry=[shapely.LineString([(-123.3, 48.2), (-123.1, 48.2)])],
+            crs=4326,
+        ).to_parquet(lines)
+        pin("shoreline", lines)
+    if operator in ("watergraph", "native-terrain"):
+        certificate = "context" if operator == "watergraph" else "support"
+        dependencies = (
+            ("compute", "water", "extent", "config", "common")
+            if operator == "watergraph"
+            else ("compute", "edges", "connectors", "raster", "config", "common")
+        )
+        from seascape.regional.contract import Job
+        from seascape.regional.native import _certificate_binding
+
+        with pytest.raises(RegionalError, match="certificate binding"):
+            _certificate_binding(Job.load(save()), certificate, dependencies)
+        binding = {name: spec["inputs"][name]["sha256"] for name in dependencies}
+        spec["inputs"][certificate]["qualification"]["certificate_input_sha256"] = (
+            binding
+        )
+        _certificate_binding(Job.load(save()), certificate, dependencies)
+        spec["inputs"][certificate]["qualification"]["certificate_input_sha256"] = dict(
+            binding, compute="0" * 64
+        )
+        with pytest.raises(RegionalError, match="certificate binding"):
+            _certificate_binding(Job.load(save()), certificate, dependencies)
+        spec["inputs"][certificate]["qualification"]["certificate_input_sha256"] = (
+            binding
+        )
+    run_spec(save())
+    verify_candidate(tmp_path / "candidate")
+    output = pq.read_table(tmp_path / "candidate/metrics.parquet")
+    assert output["H3_INDEX"].to_pylist() == keys
+    if operator == "watergraph":
+        assert output["BATHYMETRY_LOCAL_ANOMALY"].null_count == len(keys)
+        assert all(
+            value == "context_incomplete_primary_anomaly_null"
+            for value in output["LOCAL_ANOMALY_STATUS"].to_pylist()
+        )
 
 
 def test_directory_pin_and_changed_spec_rejected(setup_job, tmp_path):
     from seascape.regional.contract import Job
 
-    _, spec, pin, save = setup_job("estuary")
+    _, spec, pin, save = setup_job("freshwater")
     directory = tmp_path / "source-directory"
     directory.mkdir()
     (directory / "component").write_text("retained")
@@ -274,6 +578,34 @@ def test_substrate_installed_contract_all_four_sources(setup_job, tmp_path):
     verify_candidate(tmp_path / "candidate")
 
 
+def test_archive_block_processing_without_extraction(setup_job, tmp_path):
+    from zipfile import ZipFile
+
+    settings = {"raster_tiles": [{"input": "archive", "member": "native/tile.tif"}]}
+    keys, _, pin, save = setup_job("seagrass", settings=settings)
+    west, south, east, north = cells(keys).total_bounds
+    path = tmp_path / "tile.tif"
+    with rasterio.open(
+        path,
+        "w",
+        driver="GTiff",
+        height=16,
+        width=16,
+        count=1,
+        dtype="uint8",
+        crs=4326,
+        transform=from_origin(west, north, (east - west) / 16, (north - south) / 16),
+    ) as source:
+        source.write(np.ones((16, 16), dtype=np.uint8), 1)
+    archive = tmp_path / "source.zip"
+    with ZipFile(archive, "w") as output:
+        output.write(path, "native/tile.tif")
+    pin("archive", archive)
+    run_spec(save())
+    verify_candidate(tmp_path / "candidate")
+    assert not (tmp_path / "native").exists()
+
+
 def test_resource_alarm_restores_handler_and_preserves_failed_candidate(
     setup_job, tmp_path, monkeypatch
 ):
@@ -282,7 +614,7 @@ def test_resource_alarm_restores_handler_and_preserves_failed_candidate(
 
     from seascape.regional import point_products
 
-    _, spec, _, save = setup_job("estuary", 8)
+    _, spec, _, save = setup_job("freshwater", 8)
     spec["limits"]["seconds"] = 1
     before = signal.getsignal(signal.SIGALRM)
 
@@ -309,3 +641,40 @@ def test_candidate_cannot_modify_input_directory(setup_job, tmp_path):
     with pytest.raises(RegionalError, match="overlaps"):
         run_spec(save())
     assert not (source / "nested-output").exists()
+
+
+def test_regional_armoring_uses_maximum_available_dataset(setup_job, tmp_path):
+    from seascape.domain_parquets import AreaTables, read_area, write_areas
+
+    keys, _, pin, save = setup_job("anthropogenic", 6)
+    polygon = shapely.union_all(cells(keys).geometry.to_numpy()).buffer(0.01)
+    water = tmp_path / "water.parquet"
+    gpd.GeoDataFrame(geometry=[polygon], crs=4326).to_parquet(water)
+    pin("water", water)
+    lat, lon = h3.cell_to_latlng(keys[0])
+    line = shapely.LineString([(lon - 0.001, lat), (lon + 0.001, lat)])
+    inventory = gpd.GeoDataFrame(
+        {
+            "FEATURE_CLASS": ["shoreline_survey"] * 3,
+            "IS_CANONICAL": [True] * 3,
+            "SUPPORTS_AREA": [False] * 3,
+            "SUPPORTS_SHORELINE_DENOMINATOR": [True] * 3,
+            "ARMORING_FRACTION_ESTIMATE": [0.0, 1.0, np.nan],
+            "SOURCE_DATASET": ["zero", "one", "missing"],
+        },
+        geometry=[line] * 3,
+        crs=4326,
+    )
+    path = tmp_path / "inventory.parquet"
+    inventory.to_parquet(path)
+    pin("inventory", path)
+    run_spec(save())
+    native = pq.read_table(tmp_path / "candidate/metrics.parquet")
+    values = native.to_pandas().set_index("H3_INDEX")
+    assert values.loc[keys[0], "SHORELINE_ARMORING_FRAC"] == 1
+    assert values.SHORELINE_ARMORING_FRAC.isna().sum() == len(keys) - 1
+    write_areas({"anthropogenic": AreaTables(native)}, output=tmp_path / "public")
+    result = read_area("anthropogenic", output=tmp_path / "public")
+    assert result.num_columns == 6
+    assert result["shoreline_armoring_fraction"].to_pylist()[0] == 1
+    assert not any("qc" in name or "coverage" in name for name in result.column_names)

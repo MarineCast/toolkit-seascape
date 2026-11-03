@@ -20,6 +20,21 @@ and may sum above one. Coverage is published separately. Straight distances use 
 configured projected CRS; ecological distances use the canonical water graph and
 retain null values plus QC reasons when disconnected.
 
+Physical lengths use cell-local geometric unions, independent of source-record
+multiplicity. Total mapped length is the union of all retained line evidence;
+classified length is the union where at least one source record has an accepted
+physical classification. Each class numerator is its own accepted-evidence union.
+No snapping or first-record selection is used. Raw source records and IDs remain
+unchanged. The legacy `SHORELINE_CLASSIFIED_COVERAGE_FRAC` describes classification
+share of unique mapped shoreline, not independent survey coverage.
+
+Optional evidence diagnostics measure overlap between classified and unclassified
+records and overlap between differing accepted class-membership sets. These
+disagreements do not discard accepted evidence or impose exclusive classes;
+multiple class labels remain possible. An unclassified placeholder coincident with
+classified evidence does not erase that classification. Regions with no accepted
+classification retain null class fractions.
+
 ## Collection
 
 Run `python -m seascape.coastal_configuration.shoreline_characterization.download --config config/data/environment_seascape.yaml`

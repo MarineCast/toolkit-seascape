@@ -3,12 +3,8 @@
 ## Tested platforms
 
 The current package requires Python 3.14 (`>=3.14,<3.15`). Current CI is configured for Linux
-x86_64 and macOS ARM64 on 3.14. Earlier 3.11 results below document historical revisions; 3.11 is no
+x86_64 and macOS ARM64 (`macos-15`) on 3.14. Earlier 3.11 results below document historical revisions; 3.11 is no
 longer a supported installation target.
-
-The two ARM64 macOS jobs select `macos-15`; their explicit job names retain the
-existing required `macos-14` check contexts. The runner label and recorded environment
-identify the actual OS. This migration preserves the constrained dependency/native checks.
 
 The [SS-09 implementation run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36327449869)
 passed all nine jobs on `3022ace`, including the documented source-install quickstart on all three
@@ -25,10 +21,17 @@ not a guarantee for all dependency lower bounds, OS versions or architectures.
 | Local macOS 26.6.2 ARM64, CPython 3.14.6 | SS-09 full suite/clean consumer/source quickstart; GDAL 3.12.4, PROJ 9.8.1, GEOS 3.13.1 |
 | Native Windows | Not supported for the existing POSIX publication locks; no Windows acceptance claimed |
 
-The earlier macOS 14 runner required the Rasterio 1.5.1 wheel because 1.5.2
-requires macOS 15 for its Python 3.14 ARM wheel. The migration to macOS 15 retains
-`rasterio>=1.4,<1.5.2` and the recorded 1.5.1 baseline/native stack. Updating that
-scientific dependency is separate work. The tagged `v0.1.0` metadata has no such limit.
+CI uses the supported `macos-15` ARM64 runner following the
+[macOS 14 retirement notice](https://github.blog/changelog/2026-10-01-github-actions-macos-14-runner-image-retirement/)
+(October 5 brownout; retirement November 2, 2026). Python 3.14, the explicit ARM64 setup and
+native/dependency baseline assertions remain unchanged. The macOS job display names deliberately
+retain `macos-14` to satisfy the existing required check contexts; runner selection and artifact
+names use `macos-15`. No branch rules need changing.
+
+The source metadata still limits Rasterio to versions below 1.5.2 and the quality baseline pins
+1.5.1. Its Python 3.14 macOS ARM64 wheel remains compatible with macOS 15; this runner migration
+does not change package versions or regenerate the recorded baseline. The already tagged
+`v0.1.0` package metadata does not contain this limit.
 
 In SS-09, Linux 3.11.16/3.14.7 each ran 368 tests with three absent-regional-artifact skips. All three
 hosted consumer cases completed 16 expected-exit wheel steps and the documented source quickstart

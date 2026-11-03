@@ -77,7 +77,7 @@ package code identity and can invalidate recorded resume state; retain those exi
 ## Clean consumer acceptance
 
 The `consumer-install` CI job targets Linux Python 3.14 (x86_64) and macOS Python 3.14
-(arm64, `macos-14`). It asserts the observed interpreter/system/architecture and saves native
+(arm64, `macos-15`). It asserts the observed interpreter/system/architecture and saves native
 library versions. Runner labels follow the [GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners);
 the saved environment, rather than the label alone, identifies what actually ran. The first
 [hosted acceptance run](https://github.com/MarineCast/toolkit-seascape/actions/runs/36322829881)

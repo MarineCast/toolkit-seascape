@@ -8,6 +8,7 @@ import json
 import os
 import sys
 import traceback
+from contextlib import ExitStack
 from importlib.resources import files
 from importlib.resources.abc import Traversable
 from pathlib import Path
@@ -18,6 +19,7 @@ from seascape._cli_diagnostics import (
     identify_failure,
     safe_detail,
 )
+from seascape.study import StudyConfigError, load_study_config, study_context
 
 FAMILIES = {
     "water-geometry": "spatial_support.water_geometry",
@@ -97,6 +99,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Data/config/output root (default: current directory)",
     )
     parser.add_argument(
+        "--study-config",
+        type=Path,
+        help="Explicit MarineCast study-v1 JSON (optional MARINECAST_STUDY_CONFIG fallback); planning or synthetic core only",
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="Print chained tracebacks for identified failures; place before the command",
@@ -116,6 +123,18 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Replace only known artifacts in an owned demo directory",
     )
+    regional = commands.add_parser(
+        "regional", help="Execute a pinned cached-source regional operator"
+    )
+    regional.add_argument("--spec", type=Path, required=True)
+    regional.add_argument(
+        "--preflight", action="store_true", help="Verify byte pins without execution"
+    )
+    core_fixture = commands.add_parser(
+        "study-core-fixture",
+        help="Run pinned synthetic study core through a byte-bound software release",
+    )
+    core_fixture.add_argument("--input-manifest", type=Path, required=True)
     build = commands.add_parser(
         "build", help="Build flat per-area Parquets from local source data"
     )
@@ -200,11 +219,6 @@ def main(argv: list[str] | None = None) -> int:
         "mapped-substrate", help="Build source-bound mapped substrate metrics"
     )
     add_mapped_arguments(mapped)
-    regional = commands.add_parser(
-        "regional", help="Run a source-bound scientific candidate"
-    )
-    regional.add_argument("--spec", type=Path, required=True)
-    regional.add_argument("--preflight", action="store_true")
     args = parser.parse_args(argv)
     if (
         args.command == "build"
@@ -213,20 +227,30 @@ def main(argv: list[str] | None = None) -> int:
     ):
         parser.error("build --check-inputs and --json require --dry-run")
     previous = os.environ.get("SEASCAPE_WORKSPACE")
+    study_stack = ExitStack()
     if args.workspace is not None:
         os.environ["SEASCAPE_WORKSPACE"] = str(args.workspace.expanduser().resolve())
     try:
+        if args.command == "regional":
+            from seascape.regional.contract import RegionalError
+            from seascape.regional.runner import run_spec
+
+            try:
+                print(
+                    json.dumps(run_spec(args.spec, preflight=args.preflight), indent=2)
+                )
+                return 0
+            except (RegionalError, ValueError, OSError) as exc:
+                if args.debug:
+                    traceback.print_exception(exc, file=sys.stderr)
+                print(f"regional: {safe_detail(exc)}", file=sys.stderr)
+                return 1
         from seascape.core.config.paths import project_root
 
         if args.command == "mapped-substrate":
             from seascape.benthic_substrate.areal_stream import run as mapped_main
 
             return mapped_main(args)
-        if args.command == "regional":
-            from seascape.regional.runner import run_spec
-
-            print(json.dumps(run_spec(args.spec, preflight=args.preflight), indent=2))
-            return 0
         if args.command == "compact-reviewed":
             from seascape.reviewed_delivery import compact_existing
 
@@ -236,6 +260,27 @@ def main(argv: list[str] | None = None) -> int:
                     indent=2,
                 )
             )
+            return 0
+        if args.command == "history":
+            from seascape.historical import run_history_cli
+
+            return run_history_cli(args)
+        study_planning = (
+            args.command == "build" and args.dry_run
+        ) or args.command == "study-core-fixture"
+        study = load_study_config(args.study_config, planning=study_planning)
+        study_stack.enter_context(study_context(study, planning=study_planning))
+        if study is not None and args.workspace is None:
+            os.environ["SEASCAPE_WORKSPACE"] = str(study.data_root / "seascape")
+        if args.command == "study-core-fixture":
+            from seascape.study_core import run_core_fixture
+
+            if study is None or args.workspace is None:
+                raise StudyConfigError(
+                    "study-core-fixture requires an explicit workspace and selected study config."
+                )
+            result = run_core_fixture(study, args.input_manifest, args.workspace)
+            print(json.dumps(result, indent=2))
             return 0
         if args.command == "init":
             initialize_workspace(project_root())
@@ -263,10 +308,6 @@ def main(argv: list[str] | None = None) -> int:
             ):
                 print(path)
             return 0
-        if args.command == "history":
-            from seascape.historical import run_history_cli
-
-            return run_history_cli(args)
         if args.command in {"download", "inspect"}:
             module = f"seascape.{FAMILIES[args.family]}.{args.command}"
             old_argv = sys.argv
@@ -344,10 +385,22 @@ def main(argv: list[str] | None = None) -> int:
                 check_inputs=args.check_inputs,
                 _failure_reporter=report_failure if args.debug else None,
             )
+            if study is not None:
+                report["marinecast_study"] = study.provenance()
+                report["study_production_ready"] = False
+                report["study_support_warning"] = (
+                    "Reporting membership requires validated coastal plus inland water support. "
+                    "The bbox is only an acquisition envelope when selection_policy is present. "
+                    "Compute halos and territorial-mask replacement remain pending."
+                )
             if args.json:
                 print(json.dumps(report, indent=2))
             else:
                 print_preflight(report)
+                if study is not None:
+                    print(
+                        json.dumps({"marinecast_study": study.provenance()}, indent=2)
+                    )
             for check in report["checks"]:
                 if check["required"] and check["status"] in {
                     "missing_external",
@@ -362,6 +415,8 @@ def main(argv: list[str] | None = None) -> int:
                         file=sys.stderr,
                     )
             return int(report["status"] == "failed")
+        if study is not None:
+            print(json.dumps({"marinecast_study": study.provenance()}, indent=2))
         results = run_domain_layer_build(
             config_path=args.config,
             only=args.only,
@@ -395,6 +450,11 @@ def main(argv: list[str] | None = None) -> int:
         return int(
             any(result.status in {"failed", "blocked_dependency"} for result in results)
         )
+    except StudyConfigError as exc:
+        if args.debug:
+            traceback.print_exception(exc, file=sys.stderr)
+        print(f"study configuration: {safe_detail(exc)}", file=sys.stderr)
+        return 1
     except EXPECTED_TYPES as exc:
         diagnostic = identify_failure(exc)
         if diagnostic is None:
@@ -417,6 +477,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
     finally:
+        study_stack.close()
         if previous is None:
             os.environ.pop("SEASCAPE_WORKSPACE", None)
         else:

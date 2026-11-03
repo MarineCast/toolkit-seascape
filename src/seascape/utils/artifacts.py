@@ -369,6 +369,20 @@ def build_manifest(
             "max_lon": max(item["max_lon"] for item in bounds),
             "max_lat": max(item["max_lat"] for item in bounds),
         }
+    from seascape.study import current_study
+
+    study = current_study()
+    if study is not None:
+        metadata = dict(metadata or {})
+        expected_study = study.provenance()
+        if (
+            "marinecast_study" in metadata
+            and metadata["marinecast_study"] != expected_study
+        ):
+            raise ValueError(
+                "Manifest study identity conflicts with the selected study."
+            )
+        metadata["marinecast_study"] = expected_study
     if metadata:
         if "product_contract" in metadata:
             raise ValueError(
