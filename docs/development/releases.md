@@ -9,12 +9,11 @@ but they are not interchangeable.
 | --- | --- | --- |
 | Software version | `toolkit-seascape 0.1.0` | Code, Python API, CLI, schemas, algorithms, and packaging. |
 | Scientific method version | `geomorphometry_curvature_tpi_v2` | The exact scientific interpretation implemented by a producer or transformation. |
-| Data release | An immutable release ID or dated generation | Exact inputs, configuration, checksums, method versions, and materialized outputs. |
+| Current data | Stable per-area Parquets and catalog.json | Current materialized inputs with embedded source/method definitions. |
 
-A rebuild with changed source inputs can create a new data release without changing the package,
-Git tag, GitHub Release, or PyPI version. Conversely, a package-only fix need not change a
-method identity or data-release identity. A change in scientific meaning **must** receive an explicit
-new method identity—even if it ships alongside an independently chosen software version.
+Rebuilding data replaces the current flat area files and updates `catalog.json`.
+It does not create a data release, Git tag, GitHub Release or Python package version.
+Scientific method identities still record changes in interpretation.
 
 ## Software releases
 
@@ -111,37 +110,8 @@ threshold, support neighborhood, missingness rule, classification meaning, or ot
 change requires review and a new method identity. Behavior-preserving implementation fixes need a
 software patch but should not fabricate a new scientific method.
 
-## Data releases
+## Current data outputs
 
-Materialized datasets have separate immutable identities. Their manifest should record the release
-ID and timestamp/date, software version, all method versions, source datasets and versions, source
-checksums, configuration, region/AOI, horizontal CRS and vertical datum, units and sign conventions,
-nodata semantics, and output checksums.
-
-Data publication is intentionally outside the software release workflow. A data rebuild does not
-trigger PyPI publishing, a Git tag, or a GitHub software release. The tag workflow neither downloads
-scientific sources nor builds, uploads, or assigns identities to regional products.
-
-## Immutability
-
-Never overwrite a Git tag, replace an existing GitHub Release artifact, republish the same PyPI
-version, or silently replace a scientific data release. Correct a problem by issuing a new software,
-method, or data identity as appropriate, and preserve the superseded record.
-
-## Maintainer procedure
-
-1. Complete the [release checklist](release-checklist.md) on the exact commit intended for release.
-2. Update the static project version and move reviewed changelog entries out of `Unreleased`.
-3. Merge to `main` and confirm required CI for that exact commit.
-4. Create and push an annotated `vX.Y.Z` tag. Do not move or reuse an existing tag.
-5. The tag workflow checks the clean checkout and version, builds wheel and sdist once, runs Twine
-   and installed-consumer validation, uploads the validated files, and creates the GitHub Release.
-6. Approve the `pypi` environment deployment. The dependent job publishes the uploaded files
-   with PyPI Trusted Publishing after confirming the version is not already on PyPI.
-7. Review the PyPI files, GitHub Release assets, and notes. Do not attach regional or generated
-   scientific data.
-
-The workflow uses `gh release create` for new tags; it fails if that release already exists.
-For the existing `v0.1.0` release, use `gh workflow run release.yml --ref main -f tag=v0.1.0`
-only after the GitHub and PyPI configuration above is complete. This dispatch does not create
-a new Git tag or GitHub Release.
+Seascape data have no release IDs or dated/versioned filenames. The output contract
+is [flat per-area Parquets](../metric-matrix.md) plus one `catalog.json`. Software
+releases and scientific method identities remain separate from these updates.

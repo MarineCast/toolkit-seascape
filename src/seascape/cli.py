@@ -77,12 +77,16 @@ def initialize_workspace(root: Path) -> None:
 
 
 def _config_selection(args: argparse.Namespace) -> str:
+    if getattr(args, "command", None) == "history":
+        return str(args.study_config)
     if hasattr(args, "config"):
         return args.config
     for index, argument in enumerate(getattr(args, "arguments", [])):
-        if argument.startswith("--config="):
+        if argument.startswith(("--config=", "--study-config=")):
             return argument.split("=", 1)[1]
-        if argument == "--config" and index + 1 < len(args.arguments):
+        if argument in {"--config", "--study-config"} and index + 1 < len(
+            args.arguments
+        ):
             return args.arguments[index + 1]
     return "family default (see --help) / release metadata"
 
@@ -108,7 +112,8 @@ def main(argv: list[str] | None = None) -> int:
     commands.add_parser(
         "init", help="Create editable configuration from packaged templates"
     )
-    commands.add_parser("stages", help="List dependency-ordered build stages")
+    stages = commands.add_parser("stages", help="List dependency-ordered build stages")
+    stages.add_argument("--profile", choices=("default", "metrics"), default="default")
     demo = commands.add_parser(
         "demo",
         help="Run synthetic offline software acceptance (not a regional release)",
@@ -131,12 +136,24 @@ def main(argv: list[str] | None = None) -> int:
     )
     core_fixture.add_argument("--input-manifest", type=Path, required=True)
     build = commands.add_parser(
-        "build", help="Build an isolated candidate from local source data"
+        "build", help="Build flat per-area Parquets from local source data"
     )
     build.add_argument("--config", default="config/data/project.yaml")
+    build.add_argument(
+        "--profile",
+        choices=("default", "metrics"),
+        default="default",
+        help="metrics rebuilds and verifies the complete current 29-table delivery",
+    )
     build.add_argument("--only", action="append", default=[])
     build.add_argument("--skip", action="append", default=[])
-    build.add_argument("--candidate-root", type=Path)
+    build.add_argument(
+        "--work-root",
+        "--candidate-root",
+        dest="candidate_root",
+        type=Path,
+        help="Optional scratch directory for processing/resume",
+    )
     build.add_argument("--dry-run", action="store_true")
     build.add_argument(
         "--check-inputs",
@@ -148,22 +165,44 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Emit machine-readable planning/preflight output; requires --dry-run",
     )
+    build.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Flat output directory (default: Data/Seascape in the workspace)",
+    )
     build.add_argument("--resume", action="store_true")
     build.add_argument("--overwrite", action="store_true")
     build.add_argument(
         "--publish",
         action="store_true",
-        help="Promote candidate after the release audit passes",
+        help=argparse.SUPPRESS,
     )
     export = commands.add_parser(
         "export-metric-matrix",
-        help="Write one H3 cell by metric Parquet from a Seascape release",
+        help="Legacy release migration helper (use export for current per-area outputs)",
     )
     export.add_argument("--output", type=Path, required=True)
     export.add_argument("--resolution", type=int, action="append", choices=(6, 8))
     export.add_argument("--catalog", type=Path)
     export.add_argument("--legacy-unverified", action="store_true")
     export.add_argument("--overwrite", action="store_true")
+    export_current = commands.add_parser(
+        "export", help="Write flat per-area Parquets from existing producer tables"
+    )
+    export_current.add_argument("--output-dir", type=Path)
+    export_current.add_argument("--catalog", type=Path)
+    compact = commands.add_parser(
+        "compact-reviewed",
+        help="Apply approved static delivery schemas; retain native audit externally",
+    )
+    compact.add_argument("--output-dir", type=Path, required=True)
+    compact.add_argument("--audit-root", type=Path)
+    from seascape.historical import add_history_arguments
+
+    history = commands.add_parser(
+        "history", help="Extract native historical evidence and report source gaps"
+    )
+    add_history_arguments(history)
     for action in ("download", "inspect"):
         sub = commands.add_parser(
             action, help=f"Run a family's {action} command", add_help=False
@@ -172,6 +211,14 @@ def main(argv: list[str] | None = None) -> int:
             "family", choices=DOWNLOAD_FAMILIES if action == "download" else FAMILIES
         )
         sub.add_argument("arguments", nargs=argparse.REMAINDER)
+    from seascape.benthic_substrate.areal_stream import (
+        add_arguments as add_mapped_arguments,
+    )
+
+    mapped = commands.add_parser(
+        "mapped-substrate", help="Build source-bound mapped substrate metrics"
+    )
+    add_mapped_arguments(mapped)
     args = parser.parse_args(argv)
     if (
         args.command == "build"
@@ -200,6 +247,24 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
         from seascape.core.config.paths import project_root
 
+        if args.command == "mapped-substrate":
+            from seascape.benthic_substrate.areal_stream import run as mapped_main
+
+            return mapped_main(args)
+        if args.command == "compact-reviewed":
+            from seascape.reviewed_delivery import compact_existing
+
+            print(
+                json.dumps(
+                    compact_existing(args.output_dir, audit_root=args.audit_root),
+                    indent=2,
+                )
+            )
+            return 0
+        if args.command == "history":
+            from seascape.historical import run_history_cli
+
+            return run_history_cli(args)
         study_planning = (
             args.command == "build" and args.dry_run
         ) or args.command == "study-core-fixture"
@@ -252,6 +317,16 @@ def main(argv: list[str] | None = None) -> int:
                 return int(result or 0)
             finally:
                 sys.argv = old_argv
+        if args.command == "export":
+            from seascape.domain_parquets import export_domain_parquets
+
+            catalog = export_domain_parquets(
+                workspace=project_root(),
+                output=args.output_dir,
+                catalog_path=args.catalog,
+            )
+            print(json.dumps(catalog, indent=2))
+            return 0
         if args.command == "export-metric-matrix":
             from seascape.metric_matrix import build_metric_matrix
 
@@ -270,11 +345,29 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         from seascape.workflow import DOMAIN_LAYER_STAGES, run_domain_layer_build
 
+        stage_definitions = None
+        if args.profile == "metrics":
+            from seascape.metric_rebuild import metric_stages
+
+            stage_definitions = metric_stages()
+
         if args.command == "stages":
-            for stage in DOMAIN_LAYER_STAGES:
+            for stage in stage_definitions or DOMAIN_LAYER_STAGES:
                 print(f"{stage.name}: {stage.description}")
             return 0
         if args.check_inputs or args.json:
+            if args.profile == "metrics":
+                from seascape.metric_rebuild import preflight_metrics
+
+                metric_report = preflight_metrics(
+                    config_path=args.config,
+                    only=args.only,
+                    skip=args.skip,
+                    candidate_root=args.candidate_root,
+                    check_inputs=args.check_inputs,
+                )
+                print(json.dumps(metric_report, indent=2))
+                return int(metric_report["status"] == "failed")
             from seascape.preflight import preflight_build, print_preflight
 
             def report_failure(stage: str, exc: BaseException) -> None:
@@ -333,6 +426,12 @@ def main(argv: list[str] | None = None) -> int:
             resume=args.resume,
             overwrite=args.overwrite,
             publish=args.publish,
+            output_dir=args.output_dir,
+            **(
+                {"stage_definitions": stage_definitions}
+                if stage_definitions is not None
+                else {}
+            ),
             _failure_reporter=lambda name, elapsed, exc: print(
                 f"build / {name}: failed ({elapsed:.1f}s; {type(exc).__name__})",
                 file=sys.stderr,

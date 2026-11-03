@@ -12,8 +12,13 @@ from seascape.biogenic_habitat.mosaic import (
     normalize_vector_provider,
     pivot_selected_habitats,
 )
-from seascape.biogenic_habitat.mosaic_build import _radius_area
+from seascape.biogenic_habitat.mosaic_build import (
+    _operator_mapped_area,
+    _radius_area,
+    _validate_tidal_support,
+)
 from seascape.spatial_support.water_network.graph import WaterGraph
+from seascape.spatial_support.water_network.radius_operator import RadiusSumOperator
 
 
 def _raw(rows):
@@ -133,6 +138,31 @@ def test_valid_empty_map_stays_empty_evidence() -> None:
     assert normalized.empty
 
 
+def test_intertidal_support_rejects_unknown_datum_and_shared_habitat_footprint():
+    support = gpd.GeoDataFrame(
+        {
+            "H3_INDEX": ["fixture"],
+            "H3_RESOLUTION": [8],
+            "TIDAL_FRAME": ["MLLW to MHHW"],
+            "VERTICAL_DATUM": ["fixture local tidal datum"],
+            "SOURCE_RIGHTS": ["synthetic"],
+            "SOURCE_ID": ["independent tidal survey"],
+            "SOURCE_VERSION": ["1"],
+            "INDEPENDENT_TIDAL_SUPPORT": [True],
+        },
+        geometry=[box(0, 0, 10, 10)],
+        crs=6933,
+    )
+    _validate_tidal_support(support)
+    support["VERTICAL_DATUM"] = "unknown"
+    with pytest.raises(ValueError, match="VERTICAL_DATUM is unqualified"):
+        _validate_tidal_support(support)
+    support["VERTICAL_DATUM"] = "fixture local tidal datum"
+    support["INDEPENDENT_TIDAL_SUPPORT"] = False
+    with pytest.raises(ValueError, match="independent tidal source"):
+        _validate_tidal_support(support)
+
+
 def test_radius_area_counts_terminal_mapped_habitat_once() -> None:
     graph = WaterGraph(
         8,
@@ -157,6 +187,15 @@ def test_radius_area_counts_terminal_mapped_habitat_once() -> None:
     assert _radius_area(graph, "node", sources, 5000) == 50
     assert _radius_area(graph, "terminal", sources, 5000) == 50
     assert _radius_area(graph, "node", sources, 99) == 0
+    operator = RadiusSumOperator.build(
+        graph, ["node", "terminal"], radius_m=5000, graph_checksum="fixture"
+    )
+    result = _operator_mapped_area(
+        operator, pd.Series({"node": np.nan, "terminal": 50.0}), ["terminal", "node"]
+    )
+    assert result.tolist() == [50.0, 50.0]
+    result[0] = np.nan
+    assert np.isnan(result[0])
 
 
 def test_habitat_pivot_requires_selected_type_on_requested_support() -> None:

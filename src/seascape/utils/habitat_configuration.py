@@ -16,6 +16,7 @@ from seascape.spatial_support.water_network.config import (
 )
 
 from .config import require_mapping, resolve_project_path
+from .geometry_quality import GeometryPolicy
 
 
 @dataclass(frozen=True)
@@ -37,6 +38,7 @@ class HabitatSurfaceConfig:
     manifest_path: Path
     clipped_geometry_path: Path
     parent_child_path: Path
+    invalid_geometry_policy: GeometryPolicy = "reject"
 
     def feature_path(self, resolution: int) -> Path:
         return self.processed_dir / self.feature_filename_template.format(
@@ -81,6 +83,11 @@ def load_habitat_surface_config(
             "Habitat reference year and marine buffer must be positive and valid."
         )
     processed_dir = resolve_project_path(processing["processed_directory"], base_dir)
+    geometry_policy = processing.get("invalid_geometry_policy", "reject")
+    if geometry_policy not in {"reject", "quarantine", "make_valid"}:
+        raise ValueError(
+            "Habitat invalid_geometry_policy must be reject, quarantine or make_valid"
+        )
     network = load_water_network_config(path)
     return HabitatSurfaceConfig(
         section_name=section_name,
@@ -98,6 +105,7 @@ def load_habitat_surface_config(
         manifest_path=processed_dir / str(processing["manifest_filename"]),
         clipped_geometry_path=network.clipped_geometry_path(native_resolution),
         parent_child_path=network.parent_child_path,
+        invalid_geometry_policy=geometry_policy,
     )
 
 

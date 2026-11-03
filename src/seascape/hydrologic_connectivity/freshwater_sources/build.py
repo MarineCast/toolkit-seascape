@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
-from shapely.geometry import Point, box
+from shapely.geometry import Point
 
 from seascape.core.artifacts.checksums import checksum_path
 from seascape.core.config.data import load_data_config
@@ -36,7 +36,7 @@ from seascape.utils.values import clean_optional_text
 from .download import DEFAULT_CONFIG_PATH, load_freshwater_download_config
 from .h3_publication import river_mouth_pressure as _river_mouth_pressure
 from .mouth_morphometry import apply_mouth_widths as _apply_mouth_widths
-from .river_system_aggregation import build_river_systems as _build_river_systems
+from .river_system_aggregation import StreamedRiverSystems
 from .source_classification import bc_stream_mask as _bc_stream_mask
 from .source_classification import nhd_flowline_mask as _nhd_flowline_mask
 from .source_classification import source_classification as _source_classification
@@ -74,6 +74,8 @@ class RiverMouthBuildConfig:
     mouth_width_polygon_match_distance_m: float
     default_stream_mouth_width_m: float
     river_mouth_pressure_decay_km: int
+    us_flowline_source: str = "US_NHD_SMALL_SCALE"
+    us_polygon_source: str = "US_NHDPLUS_HR_NHDAREA"
 
 
 def load_river_mouth_build_config(
@@ -138,6 +140,19 @@ def load_river_mouth_build_config(
         )
 
     raw_paths = {source.name: source.raw_path for source in download.arcgis_sources}
+    overrides = processing.get("source_paths", {})
+    if not isinstance(overrides, dict) or set(overrides) - set(raw_paths):
+        raise ValueError("Freshwater source_paths must use configured source names")
+    raw_paths.update(
+        {name: _resolve(value, base_dir) for name, value in overrides.items()}
+    )
+    flowline_source = str(processing.get("us_flowline_source", "US_NHD_SMALL_SCALE"))
+    polygon_source = str(processing.get("us_polygon_source", "US_NHDPLUS_HR_NHDAREA"))
+    if flowline_source not in {
+        "US_NHD_SMALL_SCALE",
+        "US_NHD_HR_LEGACY",
+    } or polygon_source not in {"US_NHDPLUS_HR_NHDAREA", "US_NHD_HR_LEGACY_NHDAREA"}:
+        raise ValueError("Unknown freshwater U.S. source identity")
     return RiverMouthBuildConfig(
         bbox=download.bbox,
         context_bbox=download.context_bbox,
@@ -161,6 +176,8 @@ def load_river_mouth_build_config(
         ],
         default_stream_mouth_width_m=positive["default_stream_mouth_width_m"],
         river_mouth_pressure_decay_km=int(pressure_decay_km),
+        us_flowline_source=flowline_source,
+        us_polygon_source=polygon_source,
     )
 
 
@@ -180,22 +197,27 @@ def output_columns(config: RiverMouthBuildConfig) -> list[str]:
     return [*H3_BASE_OUTPUT_COLUMNS, *pressure_columns(config)]
 
 
-def _read_vector(path: Path, *, bbox_value: Mapping[str, float] | None = None):
-    import geopandas as gpd
+def _read_vector(
+    path: Path, *, bbox_value: Mapping[str, float] | None = None, select=None
+):
+    from seascape.utils.vector_source import read_vector_source
 
     if not path.exists():
         raise FileNotFoundError(
             f"River source not found: {path}. Run download.py first."
         )
-    read_bbox = None
-    if bbox_value is not None:
-        read_bbox = tuple(
-            bbox_value[key] for key in ("min_lon", "min_lat", "max_lon", "max_lat")
-        )
-    frame = gpd.read_file(path, bbox=read_bbox)
-    if frame.crs is None:
-        raise ValueError(f"River source has no CRS: {path}")
-    frame = frame.to_crs("EPSG:4326")
+    LOGGER.info("Reading river source in bounded batches: %s", path)
+
+    def select_batch(frame):
+        frame.columns = [
+            c if c == frame.geometry.name else str(c).upper() for c in frame
+        ]
+        return select(frame) if select is not None else frame
+
+    frame = read_vector_source(
+        path, bbox=bbox_value, clip=bbox_value is not None, select=select_batch
+    )
+    LOGGER.info("Selected %d river source features: %s", len(frame), path)
     frame.columns = [
         str(column).upper() if column != frame.geometry.name else column
         for column in frame
@@ -215,21 +237,6 @@ def _hydrorivers_path(config: RiverMouthBuildConfig) -> Path:
     return paths[0]
 
 
-def _clip_context(frame: Any, bbox_value: Mapping[str, float]):
-    import geopandas as gpd
-
-    context = box(
-        bbox_value["min_lon"],
-        bbox_value["min_lat"],
-        bbox_value["max_lon"],
-        bbox_value["max_lat"],
-    )
-    valid = frame.loc[frame.geometry.notna() & ~frame.geometry.is_empty].copy()
-    if valid.empty:
-        return valid
-    return gpd.clip(valid, context, keep_geom_type=True).reset_index(drop=True)
-
-
 def _load_water(config: RiverMouthBuildConfig):
     import geopandas as gpd
 
@@ -242,13 +249,9 @@ def _load_water(config: RiverMouthBuildConfig):
         raise ValueError(
             f"Canonical marine-water geometry has no CRS: {config.water_polygon_path}"
         )
-    model_box = box(
-        config.bbox["min_lon"],
-        config.bbox["min_lat"],
-        config.bbox["max_lon"],
-        config.bbox["max_lat"],
-    )
-    target = safe_polygonal_union(water.to_crs("EPSG:4326"), clip_geometry=model_box)
+    # Use complete acquired water context for source-coast tests. The planning
+    # rectangle must not introduce artificial river-mouth shoreline candidates.
+    target = safe_polygonal_union(water.to_crs("EPSG:4326"))
     if target.is_empty:
         raise ValueError("Canonical marine-water geometry is empty in the model area.")
     projected = (
@@ -388,7 +391,7 @@ def _build_mouths(
     terminal = pd.to_numeric(us_flowlines.get("TERMINALFL"), errors="coerce").eq(1)
     us = _mouth_frame(
         us_flowlines.loc[_nhd_flowline_mask(us_flowlines) & terminal],
-        dataset="US_NHD_SMALL_SCALE",
+        dataset=config.us_flowline_source,
         id_column="COMID",
         name_column="GNIS_NAME",
         width_key_column=None,
@@ -500,13 +503,49 @@ def _build_h3_features(
 
 
 def _load_source_frames(config: RiverMouthBuildConfig):
+    terminal_availability = {}
+    source_counts = {}
+
+    def select_source(name, frame):
+        source_counts[name] = source_counts.get(name, 0) + len(frame)
+        if name == "us_network_flowlines":
+            return terminal_us(frame)
+        if name == "hydrorivers":
+            return frame.loc[
+                pd.to_numeric(frame.get("NEXT_DOWN"), errors="coerce").eq(0)
+                & pd.to_numeric(frame.get("ENDORHEIC"), errors="coerce").fillna(0).eq(0)
+            ]
+        return frame
+
+    def terminal_us(frame):
+        for key, count in (
+            frame.get("TERMINAL_QC", pd.Series(dtype="string"))
+            .value_counts(dropna=False)
+            .items()
+        ):
+            terminal_availability[str(key)] = terminal_availability.get(
+                str(key), 0
+            ) + int(count)
+        return frame.loc[
+            _nhd_flowline_mask(frame)
+            & pd.to_numeric(frame.get("TERMINALFL"), errors="coerce").eq(1)
+        ]
+
     frames = {
-        name: _clip_context(_read_vector(path), config.context_bbox)
+        name: _read_vector(
+            path,
+            bbox_value=config.context_bbox,
+            select=lambda frame, name=name: select_source(name, frame),
+        )
         for name, path in config.raw_paths.items()
     }
-    frames["hydrorivers"] = _clip_context(
-        _read_vector(_hydrorivers_path(config), bbox_value=config.context_bbox),
-        config.context_bbox,
+    frames["hydrorivers"] = _read_vector(
+        _hydrorivers_path(config),
+        bbox_value=config.context_bbox,
+        select=lambda frame: select_source("hydrorivers", frame),
+    )
+    frames["us_network_flowlines"].attrs["terminal_availability"] = (
+        terminal_availability
     )
     required = (
         "bc_stream_network",
@@ -514,7 +553,8 @@ def _load_source_frames(config: RiverMouthBuildConfig):
         "us_network_flowlines",
         "hydrorivers",
     )
-    empty = [name for name in required if frames[name].empty]
+    # A nonempty source with no qualified terminals is available, not missing.
+    empty = [name for name in required if source_counts.get(name, 0) == 0]
     if empty:
         raise ValueError(f"Required river source extracts are empty: {empty}")
     return frames
@@ -544,9 +584,33 @@ def build_river_mouths(
     target_water, projected_water = _load_water(config)
     frames = _load_source_frames(config)
     mouths = _build_mouths(frames, projected_water, config)
-    systems = _build_river_systems(frames)
+    systems = StreamedRiverSystems(
+        [
+            (
+                config.raw_paths["bc_stream_network"],
+                "BC_FWA_STREAM_NETWORK",
+                "LINEAR_FEATURE_ID",
+                "GNIS_NAME",
+            ),
+            (
+                config.raw_paths["us_network_flowlines"],
+                config.us_flowline_source,
+                "COMID",
+                "GNIS_NAME",
+            ),
+            (_hydrorivers_path(config), "HYDRORIVERS_V10", "HYRIV_ID", None),
+        ],
+        config.context_bbox,
+    )
     support = load_model_area_support(config.h3_resolution, config_path)
     features = _build_h3_features(target_water, mouths, config, support)
+    terminal_availability = frames["us_network_flowlines"].attrs[
+        "terminal_availability"
+    ]
+    del frames
+    import gc
+
+    gc.collect()
 
     private_columns = [column for column in mouths.columns if column.startswith("_")]
     mouths = mouths.drop(columns=private_columns).to_crs("EPSG:4326")
@@ -620,7 +684,7 @@ def build_river_mouths(
             "United States Government work",
         ),
         "us_river_polygons": (
-            "United States Geological Survey NHDPlus HR",
+            f"United States Geological Survey {config.us_polygon_source}",
             "United States Government work",
         ),
         "hydrorivers": ("HydroRIVERS v1.0", "HydroSHEDS licence terms"),
@@ -651,8 +715,15 @@ def build_river_mouths(
             {"text": attribution, "license": license_name}
             for attribution, license_name in source_attribution.values()
         ],
-        source_completeness="complete",
-        metadata=detailed_metadata,
+        source_completeness="partial",
+        metadata={
+            **detailed_metadata,
+            "us_flowline_source": config.us_flowline_source,
+            "us_polygon_source": config.us_polygon_source,
+            "us_terminal_availability": terminal_availability,
+            "source_loading": "bounded batches; only qualified terminal flowlines retained for mouth construction; full river-system inventory streamed independently",
+            "coverage_warning": "Static mapped mouth inventory; unknown terminals and unmapped geometry are not observed absence. Configured default widths are explicitly estimated, not measured.",
+        },
     )
     publisher.publish_manifest(manifest_path, manifest)
     LOGGER.info(

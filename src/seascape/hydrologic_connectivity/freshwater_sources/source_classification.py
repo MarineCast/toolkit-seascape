@@ -51,10 +51,13 @@ def source_classification(dataset: str, row: Mapping[str, Any]) -> dict[str, Any
     permanence = "unknown"
     permanence_field = None
     permanence_code = None
-    if dataset == "US_NHD_SMALL_SCALE":
+    if dataset in {"US_NHD_SMALL_SCALE", "US_NHD_HR_LEGACY"}:
         source_type_field = "FTYPE"
         source_type_code = clean_optional_text(row.get("FTYPE"))
-        if source_type_code == "StreamRiver":
+        if (
+            source_type_code == "StreamRiver"
+            or nhd_feature_type(row.get("FTYPE")) == 460
+        ):
             source_type = "natural_channel"
         elif source_type_code == "CanalDitch":
             source_type = "artificial_channel"

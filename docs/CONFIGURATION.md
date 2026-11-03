@@ -24,6 +24,78 @@ python -m seascape.maintenance.update_seascape_docs --help
 Use absolute paths for `--candidate-root`, comparison roots and explicit input/output overrides.
 Those arguments are not uniformly rebased against the workspace by every command.
 
+## Repo-local `.env`
+
+Use the repository as the selected workspace to read its `.env` automatically.
+The checked-in [.env.example](../.env.example) contains the existing geographic
+defaults and an empty optional token. Copy it to `.env` when setting up a new
+clone; the local `.env` is ignored by Git and excluded from source distributions.
+The local file created on 2026-11-03 preserves the existing region corners.
+
+```sh
+cp .env.example .env
+seascape --workspace "$PWD" build --dry-run
+```
+
+Do not overwrite an existing `.env` containing local settings. When using a separate
+workspace, select the repository file explicitly with the process variable
+`SEASCAPE_ENV_FILE=/absolute/path/to/toolkit-seascape/.env`. Relative file selectors
+resolve against the selected workspace. A missing explicit file fails; an absent
+default `.env` uses YAML defaults. The loader never searches parent directories,
+mutates `os.environ`, or changes which workspace is selected.
+
+Precedence is **process environment → selected `.env` → YAML fallback**. Both CLI
+and direct Python config loaders use it. Values support `KEY=value`, optional
+`export`, single/double quotes and `#` comments. Quote values containing spaces
+or `#`. Duplicate keys and malformed assignments fail without echoing values.
+Shell execution, variable interpolation and multiline values are not supported.
+Fallbacks apply to missing variables; an explicitly empty value stays empty. Restart a running build after changing settings;
+workflow preparation freezes the effective region, and changed region values
+invalidate resume configuration identity.
+
+| Prefix (four variables each) | Named area | Southwest (longitude, latitude) | Northeast (longitude, latitude) |
+| --- | --- | --- | --- |
+| `SEASCAPE_MODEL_` | `model_area` | −125.80, 46.85 | −121.60, 50.00 |
+| `SEASCAPE_EXTENDED_` | `extended_area` | −132.00, 44.00 | −121.00, 52.00 |
+| `SEASCAPE_SOURCE_` | `regional_source_area` | −180.00, 32.00 | −109.00, 72.00 |
+
+Each prefix uses `MIN_LON`, `MIN_LAT`, `MAX_LON`, `MAX_LAT`, in WGS84 decimal degrees.
+Bounds must be finite, within longitude ±180/latitude ±90, and strictly ordered.
+Antimeridian-crossing boxes are not supported. These settings override the named
+areas used by existing producers; explicitly supplied per-source boxes, pinned
+reporting memberships, source coverage and shared-study geometry are not rewritten.
+Changing corners does not acquire data or certify a new reporting grid.
+
+Current configured providers use public access and require no user API tokens.
+For an optional protected **HTTP-file** source, put its bearer token in `.env` and
+reference the variable name in that source's YAML entry:
+
+```yaml
+kind: http
+url: https://provider.example/input.tif
+bearer_token_env: SEASCAPE_HTTP_BEARER_TOKEN
+```
+
+`SEASCAPE_HTTP_BEARER_TOKEN` is blank in the example. Configure it only for a
+provider that supports bearer authentication. Separate providers may use separate
+variable names. Credentials are resolved at request time, require HTTPS, and are
+attached to that request only, not to a shared session. Missing/blank credentials
+fail before a request. Authenticated request/stream exceptions suppress provider
+error text. Configuration snapshots and source receipts retain the variable name,
+not the token; token rotation does not change scientific input identity. This
+option does not add authentication to ArcGIS/WFS/GEBCO-specific downloaders.
+Do not put tokens in URLs or `${env:...}` YAML substitutions: those substitutions
+are for ordinary configuration values and may be frozen into workflow files.
+
+Local validation on 2026-11-03: 797 tests passed with three absent-regional-artifact
+skips; lint, formatting, mypy, documentation checks and strict MkDocs passed.
+The source archive excluded `.env` and included `.env.example`. An installed wheel
+passed 222 module imports, a workspace `.env` override check, and the copied
+notebook's 22 notebook/15 production checks. That consumer reused existing
+dependencies; no fresh dependency installation, live authenticated-provider call,
+regional acquisition/build or hosted CI run was performed. All 44 existing
+`Data/Seascape` file hashes remained unchanged.
+
 ## Configuration files
 
 | File | Purpose |
@@ -48,7 +120,7 @@ paths resolve from the workspace; include resolution can fall back to the contai
 directory. Absolute paths remain absolute.
 
 The shared `ConfigDocument` resolves `extends`, deep mapping merges, list replacement,
-`${env:NAME}` and `${section.key}` references for both direct APIs and workflow preparation.
+`${env:NAME}`, `${env:NAME:-fallback}` and `${section.key}` references for both direct APIs and workflow preparation.
 Reference cycles fail explicitly. Workflow preparation freezes the resolved domain and named-area
 configuration before rebasing output paths; source inputs can remain outside the candidate.
 

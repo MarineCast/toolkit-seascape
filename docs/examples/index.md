@@ -22,3 +22,8 @@ The [validation notebook](https://github.com/MarineCast/toolkit-seascape/blob/ma
 ![GEBCO 2026 mean depth around the San Juan Islands, with unavailable cells shown in gray. This is an exploratory family result, not a regional release or navigation chart.](../assets/san-juan-bathymetry.png)
 
 The [San Juan pilot](../pilots/san-juan.md) documents two bounded, cached-input bathymetry/support runs and their acceptance limits. The map is geographic context for that family result; it is not produced by the synthetic quick start. See [map sources and reproduction](../readme-map.md) for attribution and rendering details.
+
+See the [delivered-layer review and map gallery](../reproducibility-review.md)
+for eight current layer examples and a retained-input bivalve replay.
+
+- [Installed real-source producer validation and maps](../installed-producer-closeout.md) — current metric-only terrain/substrate acceptance.

@@ -25,11 +25,9 @@ from seascape.core.geo.geometry import (
     normalize_polygonal_geometry,
     safe_polygonal_union,
 )
+from seascape.spatial_support.provenance import water_geometry_provenance
 from seascape.spatial_support.water_network.config import (
     load_water_network_config,
-)
-from seascape.spatial_support.water_network.geometry import (
-    directional_water_fraction,
 )
 from seascape.spatial_support.water_network.graph import (
     target_graph_mapping,
@@ -41,6 +39,7 @@ from seascape.spatial_support.water_network.load import (
     multi_source_shortest_paths,
     nullable_string_values,
 )
+from seascape.spatial_support.water_network.rays import directional_distances
 from seascape.utils.artifacts import (
     build_manifest,
     checksum_artifact,
@@ -200,25 +199,11 @@ def _directional_fetch_matrix(
 ) -> np.ndarray:
     """Calculate uninterrupted non-land fetch along 16 compass bearings."""
 
-    bearings = np.linspace(0.0, 360.0, len(BEARING_LABELS), endpoint=False)
-    maximum_fetch_m = float(maximum_fetch_km) * 1_000.0
-    output = np.empty((len(cells), len(BEARING_LABELS)), dtype="float64")
-    for index, (_cell, latitude, longitude) in enumerate(
-        zip(cells, latitudes, longitudes, strict=True)
-    ):
-        for bearing_index, bearing in enumerate(bearings):
-            output[index, bearing_index] = maximum_fetch_m * directional_water_fraction(
-                float(longitude),
-                float(latitude),
-                float(bearing),
-                maximum_fetch_m,
-                water_geometry,
-            )
-        if (index + 1) % 10_000 == 0:
-            LOGGER.info(
-                "Calculated directional fetch for %d/%d cells", index + 1, len(cells)
-            )
-    return np.clip(output, 0.0, maximum_fetch_m)
+    if len(cells) != len(latitudes) or len(cells) != len(longitudes):
+        raise ValueError("Ray cells and coordinates must have equal lengths")
+    return directional_distances(
+        longitudes, latitudes, float(maximum_fetch_km) * 1_000.0, water_geometry
+    )
 
 
 def _open_water_seed_positions(openness: np.ndarray, threshold: float) -> np.ndarray:
@@ -295,6 +280,7 @@ def _build_output(
             pl.col("NETWORK_CONNECTOR_METHOD").cast(pl.String),
             pl.col("NETWORK_DISTANCE_QC_REASON").cast(pl.String),
         )
+        .with_columns(pl.col(pl.Float64).fill_nan(None))
         .select(OUTPUT_COLUMNS)
         .sort("H3_INDEX")
     )
@@ -419,17 +405,22 @@ def build_exposure_and_enclosure(
         ((output, config.output_path),),
     )
     network = load_water_network_config(config_path)
+    geometry_lineage = water_geometry_provenance(
+        config.water_polygon_path, project_root()
+    )
     manifest = build_manifest(
         dataset_family="environment.seascape.exposure_and_enclosure",
         run_id=publisher.run_id,
         resolved_config=asdict(config),
         artifacts=publisher.artifacts,
         project_root=project_root(),
-        sources=[
+        sources=geometry_lineage["sources"]
+        if geometry_lineage
+        else [
             {
-                "name": "Natural Earth land and marine polygons",
-                "license": "Public domain",
-                "observation_period": "generalized cartographic source; not observational",
+                "name": "Configured land and water geometry",
+                "license": "Unverified; consult configured source terms",
+                "observation_period": "Static source reference; source dates unverified",
             }
         ],
         upstream_artifacts=[
@@ -440,13 +431,15 @@ def build_exposure_and_enclosure(
                 network.manifest_path,
             )
         ],
-        attribution=[
+        attribution=geometry_lineage["attribution"]
+        if geometry_lineage
+        else [
             {
-                "text": "Natural Earth; derived exposure metrics by Seascape Toolkit",
-                "license": "Public domain",
+                "text": "Configured geometry sources; derived exposure metrics by Seascape Toolkit",
+                "license": "Unverified; consult configured source terms",
             }
         ],
-        source_completeness="complete",
+        source_completeness="partial",
         metadata={
             "algorithm_semantics": (
                 "Directional exposure and line-of-sight use geometric ray casting; distance "

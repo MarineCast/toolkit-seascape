@@ -8,23 +8,23 @@ areas:
   model_area:
     description: Canonical Seascape Toolkit model area.
     bbox_wgs84:
-      min_lon: -125.80
-      min_lat: 46.85
-      max_lon: -121.60
-      max_lat: 50.00
+      min_lon: ${env:SEASCAPE_MODEL_MIN_LON:--125.80}
+      min_lat: ${env:SEASCAPE_MODEL_MIN_LAT:-46.85}
+      max_lon: ${env:SEASCAPE_MODEL_MAX_LON:--121.60}
+      max_lat: ${env:SEASCAPE_MODEL_MAX_LAT:-50.00}
 
   extended_area:
     description: Broader download and processing area.
     bbox_wgs84:
-      min_lon: -132.00
-      min_lat: 44.00
-      max_lon: -121.00
-      max_lat: 52.00
+      min_lon: ${env:SEASCAPE_EXTENDED_MIN_LON:--132.00}
+      min_lat: ${env:SEASCAPE_EXTENDED_MIN_LAT:-44.00}
+      max_lon: ${env:SEASCAPE_EXTENDED_MAX_LON:--121.00}
+      max_lat: ${env:SEASCAPE_EXTENDED_MAX_LAT:-52.00}
 
   regional_source_area:
     description: Broad Northeast Pacific source-acquisition extent.
     bbox_wgs84:
-      min_lon: -180.00
-      min_lat: 32.00
-      max_lon: -109.00
-      max_lat: 72.00
+      min_lon: ${env:SEASCAPE_SOURCE_MIN_LON:--180.00}
+      min_lat: ${env:SEASCAPE_SOURCE_MIN_LAT:-32.00}
+      max_lon: ${env:SEASCAPE_SOURCE_MAX_LON:--109.00}
+      max_lat: ${env:SEASCAPE_SOURCE_MAX_LAT:-72.00}

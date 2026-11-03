@@ -117,10 +117,12 @@ class Job:
         if output.exists():
             raise RegionalError(f"Output must be new: {output}")
         if any(
-            output == item.path or output in item.path.parents
+            output == item.path
+            or output in item.path.parents
+            or item.path in output.parents
             for item in inputs.values()
         ):
-            raise RegionalError("Output contains an input")
+            raise RegionalError("Output overlaps an input")
         limits = spec.get("limits", {})
         ceilings = {
             "memory_bytes": 1536 * 1024**2,
@@ -224,7 +226,7 @@ class Job:
         from seascape import __version__
         from seascape.core.code_identity import package_code_identity
 
-        code_identity = package_code_identity(Path(__file__).resolve().parent)
+        code_identity = package_code_identity(Path(__file__).resolve().parents[1])
 
         manifest = {
             "schema": 3,

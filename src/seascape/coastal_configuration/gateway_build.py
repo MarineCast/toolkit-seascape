@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 from pyproj import Transformer
 from shapely.geometry import Point
@@ -30,6 +31,87 @@ from .gateways import (
     corridor_coordinates,
     gateway_relationships,
 )
+
+
+def reporting_gateway_relationships(
+    cells,
+    attachments,
+    graph,
+    *,
+    max_pairs,
+    max_distance_m=None,
+    unavailable_reasons=None,
+):
+    """Retain every reporting key, including targets without a canonical connector."""
+    from seascape.spatial_support.water_network.graph import target_graph_mapping
+
+    unavailable_reasons = dict(unavailable_reasons or {})
+    available_ids = sorted(attachments.GATEWAY_ID.astype(str).unique())
+    if set(available_ids) & set(unavailable_reasons):
+        raise ValueError("Gateway cannot be both attached and declared unavailable")
+    gateway_ids = sorted(set(available_ids) | set(unavailable_reasons))
+    if not gateway_ids or len(cells) * len(gateway_ids) > max_pairs:
+        raise ValueError(
+            "Gateway reporting pair budget exceeded or no gateways selected"
+        )
+    if cells.duplicated(["H3_INDEX", "H3_RESOLUTION"]).any():
+        raise ValueError("Duplicate reporting gateway target")
+    positions, connectors, reasons = target_graph_mapping(
+        graph, cells.H3_INDEX.astype(str).tolist()
+    )
+    mapped = positions >= 0
+    ready = cells.loc[mapped].copy()
+    ready["GRAPH_H3_INDEX"] = [str(graph.cells[int(p)]) for p in positions[mapped]]
+    ready["TARGET_CONNECTOR_DISTANCE_M"] = connectors[mapped]
+    result = (
+        gateway_relationships(
+            ready,
+            attachments,
+            graph,
+            max_pairs=max_pairs,
+            max_distance_m=max_distance_m,
+        )
+        if available_ids
+        else pd.DataFrame(columns=["H3_INDEX", "H3_RESOLUTION", "GATEWAY_ID"])
+    )
+    result["QC_REASON"] = result.H3_INDEX.map(
+        dict(zip(cells.H3_INDEX.astype(str), reasons, strict=True))
+    )
+    parts = [result]
+    missing = cells.loc[~mapped, ["H3_INDEX", "H3_RESOLUTION"]].copy()
+    missing["QC_REASON"] = [
+        str(reason) if reason is not None else "no_canonical_graph_connector"
+        for reason in reasons[~mapped]
+    ]
+    for gateway_id in available_ids:
+        rows = missing.copy()
+        rows["GATEWAY_ID"] = gateway_id
+        rows["WATER_NETWORK_DISTANCE_M"] = np.nan
+        rows["REACHABILITY_STATUS"] = "unmapped_canonical_target"
+        rows["TARGET_CONNECTOR_DISTANCE_M"] = np.nan
+        rows["GRAPH_COMPONENT_ID"] = None
+        parts.append(rows)
+    for gateway_id, reason in sorted(unavailable_reasons.items()):
+        if not reason or not isinstance(reason, str):
+            raise ValueError(
+                "Unavailable gateway requires an explicit source QC reason"
+            )
+        rows = cells[["H3_INDEX", "H3_RESOLUTION"]].copy()
+        rows["GATEWAY_ID"] = gateway_id
+        rows["WATER_NETWORK_DISTANCE_M"] = np.nan
+        rows["REACHABILITY_STATUS"] = "source_attachment_unavailable"
+        rows["TARGET_CONNECTOR_DISTANCE_M"] = np.nan
+        rows["GRAPH_COMPONENT_ID"] = None
+        rows["QC_REASON"] = reason
+        parts.append(rows)
+    combined = (
+        pd.concat(parts, ignore_index=True)
+        .sort_values(["H3_INDEX", "GATEWAY_ID"])
+        .reset_index(drop=True)
+    )
+    if len(combined) != len(cells) * len(gateway_ids):
+        raise ValueError("Gateway reporting cardinality mismatch")
+    return combined
 
 
 @dataclass(frozen=True)
@@ -192,9 +274,20 @@ def build_geographic_gateways(config_path: str | Path) -> tuple[Path, ...]:
                 f"Gateway R{resolution} cell count exceeds bound {config.max_cells}"
             )
         local = attachment.loc[attachment.H3_RESOLUTION.eq(resolution)]
-        if set(gateways.GATEWAY_ID) - set(local.GATEWAY_ID):
-            raise ValueError(
-                f"Every gateway needs at least one R{resolution} attachment"
+        missing_gateways = set(gateways.GATEWAY_ID) - set(local.GATEWAY_ID)
+        unavailable = {}
+        for gateway_id in missing_gateways:
+            field = f"ATTACHMENT_STATUS_R{resolution}"
+            row = gateways.set_index("GATEWAY_ID").loc[gateway_id]
+            if (
+                field not in gateways
+                or row[field] != "unresolved_source_water_connector"
+            ):
+                raise ValueError(
+                    f"Every gateway needs an R{resolution} attachment or explicit unresolved source status"
+                )
+            unavailable[str(gateway_id)] = (
+                "unresolved_source_water_connector_at_native_resolution"
             )
         transformer = Transformer.from_crs(
             "EPSG:4326", config.projected_crs, always_xy=True
@@ -226,26 +319,13 @@ def build_geographic_gateways(config_path: str | Path) -> tuple[Path, ...]:
                 ).to_numpy(),
             }
         )
-        # Terminal mappings are supplied by canonical support; never add them as edges.
-        from seascape.spatial_support.water_network.graph import target_graph_mapping
-
-        positions, connectors, _qc = target_graph_mapping(
-            graph, local_cells.H3_INDEX.tolist()
-        )
-        if (positions < 0).any():
-            raise ValueError(
-                "Selected gateway support includes unmapped terminal cells"
-            )
-        local_cells["GRAPH_H3_INDEX"] = [
-            str(graph.cells[int(position)]) for position in positions
-        ]
-        local_cells["TARGET_CONNECTOR_DISTANCE_M"] = connectors
-        result = gateway_relationships(
+        result = reporting_gateway_relationships(
             local_cells,
             local,
             graph,
             max_pairs=config.max_pairs,
             max_distance_m=config.max_distance_m,
+            unavailable_reasons=unavailable,
         )
         x_values, y_values = transformer.transform(
             support.REPRESENTATIVE_POINT_LONGITUDE.to_numpy(),
@@ -316,13 +396,23 @@ def build_geographic_gateways(config_path: str | Path) -> tuple[Path, ...]:
                 if route.GATEWAY_ID not in set(gateways.GATEWAY_ID):
                     raise ValueError("Route references unknown gateway")
                 edges = json.loads(route.GATEWAY_EDGE_SET_JSON)
-                diagnostic = alternate_route_after_gateway_removal(
-                    graph,
-                    str(route.SOURCE_GRAPH_H3_INDEX),
-                    str(route.TARGET_GRAPH_H3_INDEX),
-                    [(str(a), str(b)) for a, b in edges],
-                    max_search_m=config.max_distance_m,
-                )
+                status = getattr(route, "ROUTE_STATUS", "ready")
+                if status not in {"ready", "unresolved_at_native_resolution"}:
+                    raise ValueError("Unknown source route qualification status")
+                if status == "unresolved_at_native_resolution":
+                    diagnostic = {
+                        "PRIMARY_ROUTE_LENGTH_M": None,
+                        "ALTERNATE_ROUTE_LENGTH_AFTER_GATEWAY_REMOVAL_M": None,
+                        "ALTERNATE_ROUTE_STATUS": status,
+                    }
+                else:
+                    diagnostic = alternate_route_after_gateway_removal(
+                        graph,
+                        str(route.SOURCE_GRAPH_H3_INDEX),
+                        str(route.TARGET_GRAPH_H3_INDEX),
+                        [(str(a), str(b)) for a, b in edges],
+                        max_search_m=config.max_distance_m,
+                    )
                 route_rows.append(
                     {
                         "ROUTE_ID": route.ROUTE_ID,
@@ -374,7 +464,14 @@ def build_geographic_gateways(config_path: str | Path) -> tuple[Path, ...]:
             for path in source_paths
         ],
         upstream_artifacts=[],
-        attribution=[],
+        attribution=[
+            {"text": f"{source_id}, version {version}", "license": str(rights)}
+            for source_id, version, rights in gateways[
+                ["SOURCE_ID", "SOURCE_VERSION", "RIGHTS"]
+            ]
+            .drop_duplicates()
+            .itertuples(index=False, name=None)
+        ],
         source_completeness="partial",
         metadata={
             "scientific_method_version": "reviewed_gateway_graph_distance_v1",

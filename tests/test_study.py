@@ -523,3 +523,19 @@ def test_omitted_policy_entrypoints_fail_before_writes(tmp_path, command, capsys
     assert "missing=" in error
     assert "production integration is not enabled" not in error
     assert not destination.exists()
+
+
+def test_product_reader_and_planning_adapter_keep_distinct_contracts(study_file):
+    from seascape import load_study_config as load_product_selection
+    from seascape.study import StudyConfig, load_study_membership
+    from seascape.study_selection import load_study_membership as read_membership
+
+    selection = load_product_selection(study_file, planning=True)
+    plan = load_study_config(study_file, planning=True)
+    assert isinstance(plan, StudyConfig)
+    assert selection["config_sha256"] == plan.config_sha256
+    assert selection["study_config"] == plan.payload
+    assert load_study_membership is read_membership
+    with pytest.raises(StudyConfigError):
+        with study_context(plan):
+            pytest.fail("Product selection must not lift the production hold")

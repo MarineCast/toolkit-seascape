@@ -2,25 +2,37 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
-from shapely.ops import substring, unary_union
+import shapely
+from shapely.geometry import LineString
+from shapely.ops import unary_union
 
 from seascape.core.config.data import load_data_config
 from seascape.core.config.paths import project_root
 from seascape.core.geo.h3 import cell_to_parent
 from seascape.spatial_support.water_network.config import load_water_network_config
+from seascape.spatial_support.water_network.load import load_model_area_geometry
 from seascape.utils.artifacts import (
     build_manifest,
     checksum_artifact,
     stage_parquet_family,
 )
 
-from .coast_complexity import headland_candidates, shoreline_sinuosity, summarize_coast
+from .coast_complexity import (
+    headland_candidates,
+    sample_line_positions,
+    shoreline_sinuosity,
+    summarize_coast,
+)
 from .shoreline_characterization.build import load_shoreline_config
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -100,7 +112,9 @@ def load_coast_complexity_config(config_path: str | Path) -> CoastComplexityConf
     if min(bounds.values()) < 1:
         raise ValueError("Coast resource bounds must be positive")
     return CoastComplexityConfig(
-        shoreline.inventory_path,
+        root / str(section["shoreline_path"])
+        if section.get("shoreline_path")
+        else shoreline.inventory_path,
         root / str(section["land_components_path"]),
         root / str(section["source_context_path"]),
         network.water_polygon_path,
@@ -119,13 +133,27 @@ def load_coast_complexity_config(config_path: str | Path) -> CoastComplexityConf
 def _local_sinuosity(line, scale_m: float) -> float | None:
     if line.length < scale_m:
         return shoreline_sinuosity(line)
-    distances = [scale_m * index for index in range(int(line.length // scale_m))]
-    values = [
-        shoreline_sinuosity(substring(line, start, min(start + scale_m, line.length)))
-        for start in distances
-    ]
-    values = [value for value in values if value is not None]
+    distances = np.arange(int(line.length // scale_m) + 1) * scale_m
+    points = sample_line_positions(line, distances)
+    chords = np.array(
+        [a.distance(b) for a, b in zip(points[:-1], points[1:], strict=True)]
+    )
+    values = (scale_m / chords[chords > max(1e-9, scale_m * 1e-9)]).tolist()
     return sum(values) / len(values) if values else None
+
+
+def _coast_chunks(shore):
+    """Index short source-line pieces while retaining their original scale identity."""
+    rows = []
+    for index, line in shore.geometry.items():
+        coordinates = np.asarray(line.coords)
+        for start in range(0, len(coordinates) - 1, 64):
+            piece = LineString(coordinates[start : start + 65])
+            if piece.length > 0:
+                rows.append({"SOURCE_COAST_INDEX": index, "geometry": piece})
+            if len(rows) > 200000:
+                raise ValueError("Coast source-chunk budget exceeded")
+    return gpd.GeoDataFrame(rows, geometry="geometry", crs=shore.crs)
 
 
 def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
@@ -137,7 +165,7 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
         or shore.SEGMENT_ID.duplicated().any()
     ):
         raise ValueError("Source coastline requires unique SEGMENT_ID")
-    cells = gpd.read_parquet(config.clipped_r8_path).to_crs(config.projected_crs)
+    cells = load_model_area_geometry(8, config_path).to_crs(config.projected_crs)
     if config.selected_h3_indices:
         missing = set(config.selected_h3_indices) - set(cells.H3_INDEX.astype(str))
         if missing:
@@ -147,7 +175,8 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
         cells = cells.loc[cells.H3_INDEX.isin(config.selected_h3_indices)]
     if cells.empty or len(cells) > config.max_cells:
         raise ValueError("Coast cell bound exceeded or no source-coast support")
-    land = gpd.read_parquet(config.land_components_path).to_crs(config.projected_crs)
+    source_land = gpd.read_parquet(config.land_components_path)
+    land = source_land.to_crs(config.projected_crs)
     required_land = {
         "LAND_COMPONENT_ID",
         "IS_ISLAND_CANDIDATE",
@@ -175,22 +204,33 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
         .geometry.union_all()
     )
     cells = cells.sort_values("H3_INDEX")
-    shore = shore.loc[
-        shore.geometry.intersects(
-            unary_union(list(cells.geometry)).buffer(config.headland_smoothing_m)
-        )
-    ]
+    # Headland candidates retain full source context. Reporting-cell clipping
+    # below selects local coast summaries without truncating nearest candidates.
     if len(shore) > config.max_coast_segments:
         raise ValueError("Coast segment bound exceeded")
     if not shore.geometry.geom_type.eq("LineString").all():
         raise ValueError("Source coastline segments must be individual lines")
+    LOGGER.info(
+        "Coast context: %d source segments, %d reporting cells", len(shore), len(cells)
+    )
     islands = {
         str(row.LAND_COMPONENT_ID): row.geometry
         for row in land.itertuples(index=False)
         if bool(row.IS_ISLAND_CANDIDATE)
     }
     headland_rows = []
-    land_union = land.geometry.union_all()
+    # Clip only the working land-side test, before projection. Complete source
+    # components remain retained for identity, size and censoring diagnostics.
+    source_context = (
+        gpd.read_parquet(config.source_context_path)
+        .to_crs(source_land.crs)
+        .geometry.union_all()
+    )
+    working_land = source_land.copy()
+    working_land.geometry = working_land.geometry.intersection(source_context)
+    land_union = working_land.to_crs(config.projected_crs).geometry.union_all()
+    shapely.prepare(land_union)
+    shapely.prepare(water)
     for segment in shore.itertuples(index=False):
         headland_rows.extend(
             headland_candidates(
@@ -223,6 +263,7 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
             geometry="GEOMETRY",
             crs=config.projected_crs,
         )
+    LOGGER.info("Derived %d source-context headland candidates", len(headland_rows))
     supports = {8: cells}
     supports[6] = gpd.GeoDataFrame(
         [
@@ -234,19 +275,55 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
         geometry="geometry",
         crs=cells.crs,
     )
+    source_land["SOURCE_CONTEXT_CENSORED"] = ~source_land.geometry.within(
+        source_context
+    )
     outputs = [
-        (land, config.output_dir / "LAND_COMPONENT_INVENTORY.parquet"),
+        (source_land, config.output_dir / "LAND_COMPONENT_INVENTORY.parquet"),
         (headlands, config.output_dir / "HEADLAND_CANDIDATES.parquet"),
     ]
+    sinuosity = {
+        (index, scale): _local_sinuosity(line, scale)
+        for index, line in shore.geometry.items()
+        for scale in config.sinuosity_scales_m
+    }
+    chunks = _coast_chunks(shore)
+    shore_index = chunks.sindex
+    island_frame = gpd.GeoDataFrame(
+        {"LAND_COMPONENT_ID": list(islands)},
+        geometry=list(islands.values()),
+        crs=land.crs,
+    )
+    island_index = island_frame.sindex
     for resolution, frame in supports.items():
         rows = []
-        for cell in frame.itertuples(index=False):
-            local = shore.loc[shore.geometry.intersects(cell.geometry)]
+        for cell_number, cell in enumerate(frame.itertuples(index=False), start=1):
+            local = chunks.iloc[
+                shore_index.query(cell.geometry, predicate="intersects")
+            ]
+            fragments = []
+            for geometry in local.geometry.intersection(cell.geometry):
+                fragments.extend(
+                    [
+                        part
+                        for part in shapely.get_parts(geometry)
+                        if part.geom_type == "LineString"
+                    ]
+                )
+            local_islands = island_frame.iloc[
+                island_index.query(cell.geometry, predicate="intersects")
+            ]
             summary = summarize_coast(
-                list(local.geometry),
+                fragments,
                 cell.geometry,
                 water,
-                islands,
+                dict(
+                    zip(
+                        local_islands.LAND_COMPONENT_ID,
+                        local_islands.geometry,
+                        strict=True,
+                    )
+                ),
                 context.boundary,
                 minimum_island_area_m2=config.minimum_island_area_m2,
                 normal_probe_m=config.orientation_probe_m,
@@ -254,10 +331,14 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
             nearest = None
             nearest_distance = None
             if not headlands.empty:
-                distances = headlands.geometry.distance(cell.geometry)
-                index = distances.idxmin()
+                position = int(
+                    headlands.sindex.nearest(cell.geometry, return_all=False)[1, 0]
+                )
+                index = headlands.index[position]
                 nearest = str(headlands.loc[index, "HEADLAND_CANDIDATE_ID"])
-                nearest_distance = float(distances.loc[index])
+                nearest_distance = float(
+                    headlands.geometry.loc[index].distance(cell.geometry)
+                )
             row = {
                 "H3_INDEX": str(cell.H3_INDEX),
                 "H3_RESOLUTION": resolution,
@@ -285,9 +366,9 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
                 values = [
                     (
                         line.intersection(cell.geometry).length,
-                        _local_sinuosity(line, scale),
+                        sinuosity[(local.loc[index, "SOURCE_COAST_INDEX"], scale)],
                     )
-                    for line in local.geometry
+                    for index, line in local.geometry.items()
                 ]
                 usable = [
                     (weight, value)
@@ -306,6 +387,13 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
                     else None
                 )
             rows.append(row)
+            if cell_number % 10000 == 0:
+                LOGGER.info(
+                    "Summarized coast R%d cells: %d/%d",
+                    resolution,
+                    cell_number,
+                    len(frame),
+                )
         outputs.append(
             (
                 pd.DataFrame(rows),
@@ -337,7 +425,14 @@ def build_coast_complexity(config_path: str | Path) -> tuple[Path, ...]:
             {"path": str(path), "checksum": checksum_artifact(path)}
             for path in (config.water_path, config.clipped_r8_path)
         ],
-        attribution=[],
+        attribution=[
+            {"text": f"{source_id}, version {version}", "license": str(rights)}
+            for source_id, version, rights in shore[
+                ["SOURCE_ID", "SOURCE_VERSION", "RIGHTS"]
+            ]
+            .drop_duplicates()
+            .itertuples(index=False, name=None)
+        ],
         source_completeness="partial",
         metadata={
             "scientific_method_version": "source_coast_complexity_v1",

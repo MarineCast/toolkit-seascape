@@ -1,0 +1,689 @@
+{
+  "anthropogenic": {
+    "metrics": [
+      {
+        "source_column": "ANTHROPOGENIC__AQUACULTURE_MAPPED_POSITIVE_EVIDENCE",
+        "proposed_column": "has_mapped_aquaculture",
+        "units": "0/1",
+        "description": "Qualified mapped aquaculture evidence",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "ANTHROPOGENIC__ARTIFICIAL_REEF_MAPPED_POSITIVE_EVIDENCE",
+        "proposed_column": "has_mapped_artificial_reef",
+        "units": "0/1",
+        "description": "Mapped artificial reef evidence from retained qualified location inventories",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "ANTHROPOGENIC__DISPOSAL_SITE_MAPPED_POSITIVE_EVIDENCE",
+        "proposed_column": "has_mapped_disposal_site",
+        "units": "0/1",
+        "description": "Mapped disposal-site evidence",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "ANTHROPOGENIC__DREDGED_CHANNEL_MAPPED_POSITIVE_EVIDENCE",
+        "proposed_column": "has_mapped_dredged_channel",
+        "units": "0/1",
+        "description": "Mapped dredged-channel evidence",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "ANTHROPOGENIC__SHORELINE_ARMORING_FRAC",
+        "proposed_column": "shoreline_armoring_fraction",
+        "units": "fraction",
+        "description": "Source-qualified shoreline armoring fraction; preserve unknowns",
+        "resolutions": [
+          6,
+          8
+        ]
+      }
+    ],
+    "limitations": "Mapped positive evidence does not establish current activity or complete inventory coverage. The four presence flags retain the previously approved unknown-to-zero policy; zero is not confirmed absence. Unknown shoreline armoring remains null."
+  },
+  "coast-complexity": {
+    "metrics": [
+      {
+        "source_column": "SHORELINE_LENGTH_DENSITY_M_PER_KM2",
+        "proposed_column": "shoreline_density_m_per_km2",
+        "units": "m/km\u00b2",
+        "description": "Mapped shoreline length per support area",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE_AXIAL_SIN_2THETA",
+        "proposed_column": "shoreline_orientation_sin_2theta",
+        "units": "1",
+        "description": "Cyclic encoding of shoreline axial orientation",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE_AXIAL_COS_2THETA",
+        "proposed_column": "shoreline_orientation_cos_2theta",
+        "units": "1",
+        "description": "Paired cyclic encoding; retain with sine",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE_ORIENTATION_CONCENTRATION",
+        "proposed_column": "shoreline_orientation_concentration",
+        "units": "1",
+        "description": "Agreement among segment axial orientations",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE_SINUOSITY_500M",
+        "proposed_column": "shoreline_sinuosity_500m",
+        "units": "1",
+        "description": "Shoreline sinuosity at the declared 500 m scale",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE_SINUOSITY_2000M",
+        "proposed_column": "shoreline_sinuosity_2000m",
+        "units": "1",
+        "description": "Shoreline sinuosity at the declared 2,000 m scale",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "ISLAND_COUNT",
+        "proposed_column": "island_count",
+        "units": "count",
+        "description": "Mapped islands intersecting the source support; not abundance",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "ISLAND_FRACTION_OF_SUPPORT",
+        "proposed_column": "island_fraction",
+        "units": "fraction",
+        "description": "Island area fraction on this product support",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "DISTANCE_TO_HEADLAND_CANDIDATE_M",
+        "proposed_column": "distance_to_headland_candidate_m",
+        "units": "m",
+        "description": "Distance to a geometry-derived headland candidate",
+        "resolutions": [
+          6,
+          8
+        ]
+      }
+    ],
+    "limitations": "Measures retain this product's native spatial support and declared neighborhood scales. Axial orientation uses paired sine/cosine of twice the angle. Unknown orientations remain null. Headlands are geometry-derived candidates."
+  },
+  "coastal-bounds": {
+    "metrics": [
+      {
+        "source_column": "exposure_and_enclosure__DISTANCE_TO_OPEN_WATER_M",
+        "proposed_column": "distance_to_open_water_m",
+        "units": "m",
+        "description": "Distance to configured open-water graph seeds",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "exposure_and_enclosure__OPENNESS_TO_OCEAN_INDEX",
+        "proposed_column": "ocean_openness_index",
+        "units": "1",
+        "description": "Mean geometric fetch normalized by maximum search",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "exposure_and_enclosure__EMBAYMENT_INDEX",
+        "proposed_column": "embayment_index",
+        "units": "1",
+        "description": "Difference between maximum and mean normalized fetch",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "exposure_and_enclosure__OPEN_WATER_ANGULAR_APERTURE_DEG",
+        "proposed_column": "open_water_aperture_deg",
+        "units": "degrees",
+        "description": "Angular width of sufficiently open fetch bearings",
+        "resolutions": [
+          8
+        ]
+      }
+    ],
+    "limitations": "Geometric openness and embayment use configured fetch/search limits and open-water graph seeds. They do not establish physical wave exposure or current ocean conditions. Unreachable distances remain null."
+  },
+  "estuary": {
+    "metrics": [
+      {
+        "source_column": "ESTUARY__DISTANCE_TO_QUALIFIED_NORMALIZED_MAPPED_ESTUARY_POINT_M",
+        "proposed_column": "distance_to_mapped_estuary_point_m",
+        "units": "m",
+        "description": "Proximity to qualified normalized mapped representative points",
+        "resolutions": [
+          8
+        ]
+      }
+    ],
+    "limitations": "Distance is to a qualified mapped representative point, not a physical estuary boundary, salinity front, tidal connection or estuary membership. Source inventory coverage remains partial."
+  },
+  "fluvial-connectivity": {
+    "metrics": [
+      {
+        "source_column": "fluvial_connectivity__WATER_NETWORK_DISTANCE_TO_FLUVIAL_MOUTH_M",
+        "proposed_column": "water_network_distance_to_river_mouth_m",
+        "units": "m",
+        "description": "Distance along the qualified marine network",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "fluvial_connectivity__CONNECTED_UPSTREAM_DRAINAGE_AREA_KM2",
+        "proposed_column": "connected_drainage_area_km2",
+        "units": "km\u00b2",
+        "description": "Connected upstream drainage area",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "fluvial_connectivity__CONNECTED_UPSTREAM_NETWORK_LENGTH_KM",
+        "proposed_column": "connected_river_network_length_km",
+        "units": "km",
+        "description": "Connected upstream network length",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "fluvial_connectivity__CONNECTED_UPSTREAM_DISTANCE_KM",
+        "proposed_column": "connected_upstream_distance_km",
+        "units": "km",
+        "description": "Connected upstream distance metric",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "fluvial_connectivity__CONNECTED_STRAHLER_ORDER",
+        "proposed_column": "connected_strahler_order",
+        "units": "order",
+        "description": "Connected river network order",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "fluvial_connectivity__CONNECTED_HEADWATER_COUNT",
+        "proposed_column": "connected_headwater_count",
+        "units": "count",
+        "description": "Connected source headwaters",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "fluvial_connectivity__CONNECTED_TRIBUTARY_JUNCTION_COUNT",
+        "proposed_column": "connected_tributary_junction_count",
+        "units": "count",
+        "description": "Connected tributary junctions",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "fluvial_connectivity__FLUVIAL_MOUTH_REACHABLE",
+        "proposed_column": "has_reachable_river_mouth",
+        "units": "0/1",
+        "description": "Reachable under this graph and source context",
+        "resolutions": [
+          8
+        ]
+      }
+    ],
+    "limitations": "Metrics describe connectivity under the retained river/marine network and its topology qualifications. Unreachable or unsupported distances and upstream quantities remain null. No zero fill is applied; source count/order storage types are preserved."
+  },
+  "mapped-substrate-classes": {
+    "metrics": [
+      {
+        "source_column": "HARD_CLASS_FRAC_OF_MAPPED_AREA",
+        "proposed_column": "mapped_hard_substrate_fraction",
+        "units": "fraction of mapped area",
+        "description": "Hard class conditional on usable mapped area",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "MIXED_CLASS_FRAC_OF_MAPPED_AREA",
+        "proposed_column": "mapped_mixed_substrate_fraction",
+        "units": "fraction of mapped area",
+        "description": "Mixed class conditional on usable mapped area",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SOFT_CLASS_FRAC_OF_MAPPED_AREA",
+        "proposed_column": "mapped_soft_substrate_fraction",
+        "units": "fraction of mapped area",
+        "description": "Soft class conditional on usable mapped area",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "MAPPED_SOURCE_COVERAGE_FRAC",
+        "proposed_column": "mapped_substrate_coverage_fraction",
+        "units": "fraction",
+        "description": "Mapped source coverage of reporting-water support",
+        "resolutions": [
+          6,
+          8
+        ]
+      }
+    ],
+    "limitations": "Class fractions are conditional on usable mapped substrate area, not full-cell area or physical hardness. Coverage uses reporting-water support. Unmapped/conflicting class fractions remain null; fractions require appropriate downstream model encoding."
+  },
+  "nearshore-transitions": {
+    "metrics": [
+      {
+        "source_column": "NEARSHORE_DEEP_WATER_FRAC_OF_VALID",
+        "proposed_column": "nearshore_deep_water_fraction",
+        "units": "fraction of valid area",
+        "description": "Deep-water share of valid bathymetry in the nearshore band",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "DISTANCE_TO_CONNECTED_DEEP_WATER_M",
+        "proposed_column": "distance_to_connected_deep_water_m",
+        "units": "m",
+        "description": "Distance to qualified connected deep-water target",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "NEARSHORE_BATHYMETRY_COVERAGE_FRAC",
+        "proposed_column": "nearshore_bathymetry_coverage_fraction",
+        "units": "fraction",
+        "description": "Valid bathymetry coverage of eligible nearshore support",
+        "resolutions": [
+          6,
+          8
+        ]
+      }
+    ],
+    "limitations": "The deep-water fraction is conditional on valid bathymetry within the configured nearshore band. Threshold/band parameters remain explicit in metadata. Coverage and graph qualifications matter; null distance is not zero distance."
+  },
+  "shoreline": {
+    "metrics": [
+      {
+        "source_column": "SHORELINE__SHORELINE_TOTAL_MAPPED_LENGTH_M",
+        "proposed_column": "mapped_shoreline_length_m",
+        "units": "m",
+        "description": "Total mapped shoreline length on this native support",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE__SHORELINE_CLASSIFIED_COVERAGE_FRAC",
+        "proposed_column": "shoreline_classified_coverage_fraction",
+        "units": "fraction",
+        "description": "Source-defined classified shoreline coverage",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE__ROCKY_SHORE_FRAC",
+        "proposed_column": "rocky_shore_fraction",
+        "units": "fraction",
+        "description": "Source-defined rocky shoreline class fraction",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE__SANDY_SHORE_FRAC",
+        "proposed_column": "sandy_shore_fraction",
+        "units": "fraction",
+        "description": "Source-defined sandy shoreline class fraction",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE__GRAVEL_SHORE_FRAC",
+        "proposed_column": "gravel_shore_fraction",
+        "units": "fraction",
+        "description": "Source-defined gravel shoreline class fraction",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE__CLIFF_SHORE_FRAC",
+        "proposed_column": "cliff_shore_fraction",
+        "units": "fraction",
+        "description": "Source-defined cliff shoreline class fraction",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE__BLUFF_SHORE_FRAC",
+        "proposed_column": "bluff_shore_fraction",
+        "units": "fraction",
+        "description": "Source-defined bluff shoreline class fraction",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE__DELTAIC_SHORE_FRAC",
+        "proposed_column": "deltaic_shore_fraction",
+        "units": "fraction",
+        "description": "Source-defined deltaic shoreline class fraction",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORELINE__ESTUARINE_SHORE_FRAC",
+        "proposed_column": "estuarine_shore_fraction",
+        "units": "fraction",
+        "description": "Source-defined estuarine shoreline class fraction",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "SHORE_DISTANCE__SHORELINE_DISTANCE_M",
+        "proposed_column": "distance_to_mapped_shoreline_m",
+        "units": "m",
+        "description": "Existing mapped shoreline distance; R8 only",
+        "resolutions": [
+          8
+        ]
+      }
+    ],
+    "limitations": "Class fractions retain their source denominators and overlap policy; classes need not be exclusive. Overall shoreline distance is currently available only at R8. Source coverage, distance/projection qualifications and unknowns remain in the required audit."
+  },
+  "spatial-support": {
+    "metrics": [
+      {
+        "source_column": "h3_marine_support__WATER_AREA_M2",
+        "proposed_column": "water_area_m2",
+        "units": "m\u00b2",
+        "description": "Mapped water area on this product support",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "h3_marine_support__WATER_FRACTION",
+        "proposed_column": "water_fraction",
+        "units": "fraction",
+        "description": "Mapped water share of cell",
+        "resolutions": [
+          6,
+          8
+        ]
+      },
+      {
+        "source_column": "h3_marine_support__INTERSECTS_SHORELINE",
+        "proposed_column": "intersects_shoreline",
+        "units": "0/1",
+        "description": "Intersection with configured shoreline",
+        "resolutions": [
+          6,
+          8
+        ]
+      }
+    ],
+    "limitations": "Water area/fraction and shoreline intersection describe the configured mapped support, not independently qualified physical water coverage. Source mask/support versions remain explicit; H3 centroids do not replace native representative points."
+  },
+  "substrate": {
+    "metrics": [
+      {
+        "source_column": "SUBSTRATE_MODEL__MODELED_ROCK_PRESENCE_SCORE",
+        "proposed_column": "modeled_rock_presence_score",
+        "units": "score",
+        "description": "Interpolated rock-presence score, not physical hardness",
+        "resolutions": [
+          6
+        ]
+      },
+      {
+        "source_column": "SUBSTRATE_MODEL__MODELED_SEDIMENT_GRAVEL_FRACTION",
+        "proposed_column": "modeled_gravel_fraction",
+        "units": "fraction",
+        "description": "Modeled sediment composition",
+        "resolutions": [
+          6
+        ]
+      },
+      {
+        "source_column": "SUBSTRATE_MODEL__MODELED_SEDIMENT_SAND_FRACTION",
+        "proposed_column": "modeled_sand_fraction",
+        "units": "fraction",
+        "description": "Modeled sediment composition",
+        "resolutions": [
+          6
+        ]
+      },
+      {
+        "source_column": "SUBSTRATE_MODEL__MODELED_SEDIMENT_MUD_FRACTION",
+        "proposed_column": "modeled_mud_fraction",
+        "units": "fraction",
+        "description": "Modeled sediment composition",
+        "resolutions": [
+          6
+        ]
+      }
+    ],
+    "limitations": "These are modeled rock-presence scores and sediment fractions with retained interpolation and point-support qualifications. They are not measured physical hardness and are distinct from mapped substrate classes. Unknown modeled values remain null."
+  },
+  "terrain": {
+    "metrics": [
+      {
+        "source_column": "geomorphometry__SLOPE_MEAN_NATIVE_RASTER",
+        "proposed_column": "seafloor_slope_mean_deg",
+        "units": "degrees",
+        "description": "Mean marine native-raster slope",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "geomorphometry__NORTHNESS",
+        "proposed_column": "seafloor_northness",
+        "units": "1",
+        "description": "Cosine of source aspect",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "geomorphometry__EASTNESS",
+        "proposed_column": "seafloor_eastness",
+        "units": "1",
+        "description": "Sine of source aspect; keep paired with northness",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "geomorphometry__TERRAIN_POSITION_RING_2_Z",
+        "proposed_column": "terrain_position_ring_2_z",
+        "units": "standardized",
+        "description": "Terrain position at H3 ring 2",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "geomorphometry__DEPTH_STD_RING_2_M",
+        "proposed_column": "depth_std_ring_2_m",
+        "units": "m",
+        "description": "Depth standard deviation at H3 ring 2",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "geomorphometry__VECTOR_RUGGEDNESS_RING_2",
+        "proposed_column": "vector_ruggedness_ring_2",
+        "units": "1",
+        "description": "Orientation-based ruggedness at H3 ring 2",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "geomorphometry__POSITIVE_OPENNESS_DEG",
+        "proposed_column": "positive_terrain_openness_deg",
+        "units": "degrees",
+        "description": "Positive terrain openness on source scale",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "geomorphometry__NEGATIVE_OPENNESS_DEG",
+        "proposed_column": "negative_terrain_openness_deg",
+        "units": "degrees",
+        "description": "Negative terrain openness on source scale",
+        "resolutions": [
+          8
+        ]
+      }
+    ],
+    "limitations": "Ring 2 denotes the native H3 neighborhood, not a fixed metre radius or a demonstrated optimal predictive scale. Native-raster slope differs from neighborhood slopes. Preserve bathymetry sign, marine/nodata masking and unknown aspect/slope."
+  },
+  "waterbody-morphometry": {
+    "metrics": [
+      {
+        "source_column": "waterbody_morphometry__LOCAL_WATERBODY_WIDTH_M",
+        "proposed_column": "local_waterbody_min_width_m",
+        "units": "m",
+        "description": "Minimum source directional waterbody width",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "waterbody_morphometry__WATERBODY_WIDTH_MEAN_M",
+        "proposed_column": "waterbody_mean_width_m",
+        "units": "m",
+        "description": "Mean source directional waterbody width",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "waterbody_morphometry__CONSTRICTION_INDEX",
+        "proposed_column": "constriction_index",
+        "units": "1",
+        "description": "Source geometric constriction index",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "waterbody_morphometry__DISTANCE_TO_CONSTRICTED_PASSAGE_M",
+        "proposed_column": "distance_to_constricted_passage_m",
+        "units": "m",
+        "description": "Distance to geometry-derived constricted passage",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "waterbody_morphometry__DISTANCE_TO_SILL_CANDIDATE_M",
+        "proposed_column": "distance_to_sill_candidate_m",
+        "units": "m",
+        "description": "Distance to geometry-derived sill candidate",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "waterbody_morphometry__LOCAL_WATERSPACE_AREA_KM2",
+        "proposed_column": "local_waterspace_area_km2",
+        "units": "km\u00b2",
+        "description": "Source local waterspace area on configured neighborhood",
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "source_column": "waterbody_morphometry__WATERBODY_WIDTH_CENSORED_FRACTION",
+        "proposed_column": "waterbody_width_censored_fraction",
+        "units": "fraction",
+        "description": "Width directions reaching the configured search limit",
+        "resolutions": [
+          8
+        ]
+      }
+    ],
+    "limitations": "Widths use configured directional searches; censored widths are bounds rather than exact cross-channel widths. Local waterspace area has a configured neighborhood. Passage/sill targets are geometric candidates, not navigational certification."
+  }
+}

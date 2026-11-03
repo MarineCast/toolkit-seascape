@@ -28,4 +28,4 @@ The fixture includes constant depth, gradient, sea-level, and nodata controls. M
 1. Read [seascape concepts](../concepts/index.md) to distinguish cells, source evidence, and products.
 2. Use the [variable catalog](../variables/index.md) to find fields and source limitations.
 3. For real inputs, follow [bounded real-data processing](../WORKFLOWS.md#bounded-real-data-processing). Initializing a workspace and passing preflight do not by themselves create or validate a regional product.
-4. For an existing audited schema-3 release, use the [public product API](../api/index.md) to freeze an exact release ID and resolution.
+4. Use the [public product API](../api/index.md) to read current flat area tables from `Data/Seascape`.

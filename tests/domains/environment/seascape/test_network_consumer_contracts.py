@@ -243,7 +243,7 @@ def test_dataset_catalog_registers_reproducible_seascape_dependencies():
     }
     assert "environment.seascape.bathymetry_r8" in reef_dependencies
     assert "environment.seascape.geomorphometry_r8" in reef_dependencies
-    for name in ("seagrass_habitat", "kelp_habitat", "reef_habitat"):
+    for name in ("reef_habitat",):
         for resolution in (6, 8):
             dependencies = {
                 str(value)
@@ -256,3 +256,26 @@ def test_dataset_catalog_registers_reproducible_seascape_dependencies():
             if resolution == 6:
                 assert "environment.seascape.h3_marine_support_r6" in dependencies
                 assert "environment.seascape.h3_parent_child_r8_to_r6" in dependencies
+
+
+@pytest.mark.parametrize("family", ["kelp"])
+def test_extent_registry_uses_independent_native_geometry_and_annual_grain(family):
+    for resolution in (6, 8):
+        static = DATASETS.get(f"environment.seascape.{family}_habitat_r{resolution}")
+        annual = DATASETS.get(
+            f"environment.seascape.{family}_habitat_annual_r{resolution}"
+        )
+        expected = {f"environment.seascape.h3_marine_full_geometry_r{resolution}"}
+        assert {str(value) for value in static.dependencies} == expected
+        assert {str(value) for value in annual.dependencies} == expected
+        assert annual.primary_key == ("H3_INDEX", "date")
+
+
+def test_seagrass_registry_is_static_all_time_only_with_native_geometry():
+    for resolution in (6, 8):
+        static = DATASETS.get(f"environment.seascape.seagrass_habitat_r{resolution}")
+        assert {str(value) for value in static.dependencies} == {
+            f"environment.seascape.h3_marine_full_geometry_r{resolution}"
+        }
+        with pytest.raises(KeyError):
+            DATASETS.get(f"environment.seascape.seagrass_habitat_annual_r{resolution}")

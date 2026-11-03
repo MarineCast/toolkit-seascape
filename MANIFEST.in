@@ -1,2 +1,7 @@
+# Credentials are never source-distribution inputs.
+exclude .env
+exclude .env.*
+include .env.example
+
 include docs/regional-processing.md
 recursive-include tests/regional *.py

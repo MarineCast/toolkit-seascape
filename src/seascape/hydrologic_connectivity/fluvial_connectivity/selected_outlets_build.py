@@ -79,7 +79,9 @@ def load_selected_outlet_config(
     if not output_dir.resolve().is_relative_to(project_root().resolve()):
         raise ValueError("Selected outlet output must stay inside the workspace")
     return SelectedOutletConfig(
-        fluvial.network_mouths_path,
+        project_root() / str(section["inventory_path"])
+        if section.get("inventory_path")
+        else fluvial.network_mouths_path,
         fluvial.water_polygon_path,
         output_dir,
         selected,
@@ -92,6 +94,48 @@ def load_selected_outlet_config(
     )
 
 
+def select_outlet_inventory(inventory, selected_ids):
+    """Select exact basin IDs while retaining reviewed coordinate-source provenance."""
+    required = {"FLUVIAL_MOUTH_ID", "RIVER_BASIN_ID", "geometry"}
+    if required - set(inventory) or inventory.crs is None:
+        raise ValueError("Outlet inventory requires basin identity, geometry and CRS")
+    if (
+        inventory.FLUVIAL_MOUTH_ID.isna().any()
+        or inventory.FLUVIAL_MOUTH_ID.duplicated().any()
+    ):
+        raise ValueError("Normalized outlet IDs must be nonnull and unique")
+    missing_ids = set(selected_ids) - set(inventory.FLUVIAL_MOUTH_ID.astype(str))
+    if missing_ids:
+        raise KeyError(
+            f"Selected outlet IDs absent from inventory: {sorted(missing_ids)}"
+        )
+    selected = inventory.loc[inventory.FLUVIAL_MOUTH_ID.isin(selected_ids)].copy()
+    selected = selected.sort_values("FLUVIAL_MOUTH_ID").reset_index(drop=True)
+    selected["OUTLET_ID"] = selected.FLUVIAL_MOUTH_ID.astype(str)
+    source_fields = {"SOURCE_ID", "SOURCE_VERSION", "SOURCE_FEATURE_ID", "RIGHTS"}
+    supplied = source_fields & set(selected)
+    if supplied and supplied != source_fields:
+        raise ValueError(
+            "Reviewed inventory requires complete coordinate source provenance"
+        )
+    if not supplied:
+        selected["SOURCE_ID"] = "HydroRIVERS"
+        selected["SOURCE_VERSION"] = "v1.0"
+        selected["SOURCE_FEATURE_ID"] = selected.FLUVIAL_MOUTH_ID.astype(str)
+        selected["RIGHTS"] = "HydroSHEDS licence terms"
+    if selected[list(source_fields)].isna().any().any() or any(
+        selected[field].astype(str).str.strip().eq("").any() for field in source_fields
+    ):
+        raise ValueError("Outlet coordinate source provenance must be nonempty")
+    if not selected.geometry.geom_type.eq("Point").all() or (
+        selected.geometry.is_empty.any() or not selected.geometry.is_valid.all()
+    ):
+        raise ValueError("Outlet coordinates must be valid, nonempty points")
+    selected["SELECTION_PROVENANCE"] = "explicit_selected_outlets_configuration"
+    selected["MULTIPLE_MOUTH_GROUP_ID"] = selected.RIVER_BASIN_ID.astype("string")
+    return selected
+
+
 def build_selected_outlets(
     config_path: str | Path = DEFAULT_CONFIG_PATH,
 ) -> tuple[Path, ...]:
@@ -100,27 +144,9 @@ def build_selected_outlets(
         raise FileNotFoundError(
             f"Normalized fluvial mouth inventory missing: {config.inventory_path}"
         )
-    inventory = gpd.read_parquet(config.inventory_path)
-    if (
-        inventory.FLUVIAL_MOUTH_ID.isna().any()
-        or inventory.FLUVIAL_MOUTH_ID.duplicated().any()
-    ):
-        raise ValueError("Normalized outlet IDs must be nonnull and unique")
-    missing_ids = set(config.selected_ids) - set(inventory.FLUVIAL_MOUTH_ID.astype(str))
-    if missing_ids:
-        raise KeyError(
-            f"Selected outlet IDs absent from inventory: {sorted(missing_ids)}"
-        )
-    selected = inventory.loc[
-        inventory.FLUVIAL_MOUTH_ID.isin(config.selected_ids)
-    ].copy()
-    selected = selected.sort_values("FLUVIAL_MOUTH_ID").reset_index(drop=True)
-    selected["OUTLET_ID"] = selected.FLUVIAL_MOUTH_ID.astype(str)
-    selected["SOURCE_ID"] = "HydroRIVERS"
-    selected["SOURCE_VERSION"] = "v1.0"
-    selected["SOURCE_FEATURE_ID"] = selected.FLUVIAL_MOUTH_ID.astype(str)
-    selected["SELECTION_PROVENANCE"] = "explicit_selected_outlets_configuration"
-    selected["MULTIPLE_MOUTH_GROUP_ID"] = selected.RIVER_BASIN_ID.astype("string")
+    selected = select_outlet_inventory(
+        gpd.read_parquet(config.inventory_path), config.selected_ids
+    )
     water = (
         gpd.read_parquet(config.water_polygon_path)
         .to_crs("EPSG:4326")
@@ -133,6 +159,8 @@ def build_selected_outlets(
     )
     selected_wgs = selected.to_crs("EPSG:4326")
     x, y = transformer.transform(selected_wgs.geometry.x, selected_wgs.geometry.y)
+    selected["OUTLET_LONGITUDE"] = selected_wgs.geometry.x.to_numpy()
+    selected["OUTLET_LATITUDE"] = selected_wgs.geometry.y.to_numpy()
     selected["OUTLET_X_M"] = x
     selected["OUTLET_Y_M"] = y
     artifacts: list[tuple[object, Path]] = []
@@ -153,6 +181,20 @@ def build_selected_outlets(
             water,
             source_water_max_distance_m=config.source_water_max_distance_m,
             graph_connector_max_distance_m=config.graph_connector_max_distance_m,
+        )
+        selected[f"SOURCE_TO_WATER_DISTANCE_RES_{resolution}_M"] = (
+            attachment.SOURCE_TO_WATER_DISTANCE_M.to_numpy(dtype=float)
+        )
+        selected[f"SOURCE_GRAPH_CONNECTOR_DISTANCE_RES_{resolution}_M"] = (
+            attachment.GRAPH_CONNECTOR_DISTANCE_M.to_numpy(dtype=float)
+        )
+        selected[f"ATTACHED_GRAPH_H3_RES_{resolution}"] = (
+            attachment.GRAPH_H3_INDEX.to_numpy()
+        )
+        selected[f"ATTACHMENT_STATUS_RES_{resolution}"] = np.where(
+            attachment.IS_CONNECTED.to_numpy(dtype=bool),
+            "connected_with_recorded_source_registration_gap",
+            attachment.QC_REASON.to_numpy(),
         )
         outlet_rows = selected.drop(columns="geometry").copy()
         outlet_rows["GRAPH_H3_INDEX"] = attachment.GRAPH_H3_INDEX.to_numpy()
@@ -175,6 +217,12 @@ def build_selected_outlets(
             {
                 "H3_INDEX": support.H3_INDEX.astype(str),
                 "H3_RESOLUTION": resolution,
+                "REPRESENTATIVE_LONGITUDE": support.REPRESENTATIVE_POINT_LONGITUDE.to_numpy(
+                    dtype=float
+                ),
+                "REPRESENTATIVE_LATITUDE": support.REPRESENTATIVE_POINT_LATITUDE.to_numpy(
+                    dtype=float
+                ),
                 "REPRESENTATIVE_X_M": target_x,
                 "REPRESENTATIVE_Y_M": target_y,
                 "GRAPH_H3_INDEX": target_node,
@@ -248,6 +296,20 @@ def build_selected_outlets(
         relationships = pd.concat(parts, ignore_index=True).sort_values(
             ["H3_INDEX", "OUTLET_ID"]
         )
+        source_offsets = pd.DataFrame(
+            {
+                "OUTLET_ID": selected.OUTLET_ID.to_numpy(),
+                "SOURCE_TO_WATER_DISTANCE_M": attachment.SOURCE_TO_WATER_DISTANCE_M.to_numpy(
+                    dtype=float
+                ),
+                "SOURCE_GRAPH_CONNECTOR_DISTANCE_M": attachment.GRAPH_CONNECTOR_DISTANCE_M.to_numpy(
+                    dtype=float
+                ),
+            }
+        )
+        relationships = relationships.merge(
+            source_offsets, on="OUTLET_ID", how="left", validate="many_to_one"
+        )
         if (
             len(relationships) != len(cells) * len(selected)
             or relationships.duplicated(
@@ -270,10 +332,10 @@ def build_selected_outlets(
         project_root=project_root(),
         sources=[
             {
-                "name": "HydroRIVERS v1.0 selected normalized outlets",
+                "name": "Explicit selected basin outlets; coordinate sources retained per row",
                 "path": str(config.inventory_path),
                 "checksum": checksum_artifact(config.inventory_path),
-                "license": "HydroSHEDS licence terms",
+                "license": "Per-row RIGHTS; HydroSHEDS terms for network attributes",
             }
         ],
         upstream_artifacts=[
@@ -290,8 +352,12 @@ def build_selected_outlets(
         ],
         source_completeness="partial",
         metadata={
-            "scientific_method_version": "selected_outlet_sparse_search_v1",
+            "scientific_method_version": "selected_outlet_geodesic_detour_v2",
             "sample_support": "canonical R8/R6 representative point; terminal connectors",
+            "detour_reference": "WGS84 geodesic straight-line distance, consistent with canonical graph weights; projected Euclidean distance retained separately",
+            "coordinate_sources": selected[["SOURCE_ID", "SOURCE_VERSION", "RIGHTS"]]
+            .drop_duplicates()
+            .to_dict(orient="records"),
         },
     )
     publisher.publish_manifest(

@@ -1,0 +1,684 @@
+{
+  "substrate-r6": {
+    "schema": 3,
+    "operator": "substrate",
+    "method_version": "direct_native_R6_representative_point_bilinear_percent_v1",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "1be3c60bf57395f0a90c5cea86b5ba9a51a667bdff7f5c28644b106ae7e484e1"
+    },
+    "resolution": 6,
+    "domain": {
+      "id": "puget-sound-bounded-acceptance",
+      "revision": "2026-10-29-new-source",
+      "support": "native H3",
+      "coverage_status": "bounded sample; no historical parity assumed"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/substrate-r6/reporting.txt",
+        "sha256": "171712147a9b9ab69e19c93765a12102cc2d3954df126ccbbccacca7a7c4f9cd",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/substrate-r6/support.parquet",
+        "sha256": "aaedb7bab3b6b83ad1a9090bc9662904182711fdb8b9515872abf363a2245d6b",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "Historical audited sample coordinates; current overlap flags; upstream support not replayed",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "historical_coordinate_source": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Data/Seascape/substrate-r6-static.parquet",
+        "sha256": "3bf925ba817047600683e906f332aa616a2210dae4ad7af8fe6ab5fbc2f360f0",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "Only historical coordinate columns consumed from restored native audit",
+          "observation_period": null
+        }
+      },
+      "rock": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/DBSEABED_ROCK_PERCENT.tif",
+        "sha256": "17f5a1bb5dc1618f2a304e4b7d878e1bf067802771789977931918445ac6d4fa",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "dbSEABED/HUB Ocean ver202512 CC-BY-4.0",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "global 0.1 degree model; point support",
+          "observation_period": null
+        }
+      },
+      "gravel": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/DBSEABED_GRAVEL_PERCENT.tif",
+        "sha256": "4572edc909d8c81180681d08aeee542b48bb69836b6c1e5adfc171a6f7defd34",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "dbSEABED/HUB Ocean ver202512 CC-BY-4.0",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "global 0.1 degree model; point support",
+          "observation_period": null
+        }
+      },
+      "sand": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/DBSEABED_SAND_PERCENT.tif",
+        "sha256": "4a92890e741fe569f9181ccc34d9668f8baf0137e772c9843bcdcb78a3896ca7",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "dbSEABED/HUB Ocean ver202512 CC-BY-4.0",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "global 0.1 degree model; point support",
+          "observation_period": null
+        }
+      },
+      "mud": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/DBSEABED_MUD_PERCENT.tif",
+        "sha256": "e4cbefa11284082e0f4b4f186353e7c610e351a2b083030ef0e95959522b8315",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "dbSEABED/HUB Ocean ver202512 CC-BY-4.0",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "global 0.1 degree model; point support",
+          "observation_period": null
+        }
+      },
+      "source_rights": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/HUB_SUBSTRATE_STAC.json",
+        "sha256": "d6aa41d4de65dd18272dc6b735edcef737453f059ea7b3b98f38ac87008dada7",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "HUB Ocean public metadata",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "983842a14db59fa23fcc1424abb29c1c619833be199bc2cb2c478d92778be1e0",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 208191488,
+      "elapsed_seconds": 0.7976205830054823,
+      "staging_bytes": 12741
+    },
+    "details": {
+      "rows": 16,
+      "available_by_variable": {
+        "ROCK": 16,
+        "GRAVEL": 16,
+        "SAND": 16,
+        "MUD": 16
+      },
+      "support": "point_not_areal",
+      "observation_dates": "unknown"
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "c56618b12e8d98ca6f9a86c132663b6cb13b13606f028b4a70b6ed1bd9b80bd9",
+        "bytes": 12741
+      }
+    }
+  },
+  "shoreline-r8": {
+    "schema": 3,
+    "operator": "shoreline",
+    "method_version": "native_full_h3_physical_shoreline_unique_union_v2",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "1be3c60bf57395f0a90c5cea86b5ba9a51a667bdff7f5c28644b106ae7e484e1"
+    },
+    "resolution": 8,
+    "domain": {
+      "id": "puget-sound-bounded-acceptance",
+      "revision": "2026-10-29-new-source",
+      "support": "native H3",
+      "coverage_status": "bounded sample; no historical parity assumed"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/shoreline-r8/reporting.txt",
+        "sha256": "aa2dfbcdbb5dfd70811ffde8ebf5f26b70a8bd8c27b1c2485170fb66a2441f24",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/shoreline-r8/support.parquet",
+        "sha256": "236a74cb233f6661dc64f86ba44a982adecf5011a7f4a867a3aa76c7ec9f5d3f",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "inventory": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/shoreline-r8/inventory.parquet",
+        "sha256": "3e6c666538665928267ed3220ca770ba3930179b1f3bc08fd9049218d8b45b4c",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "NOAA NWFSC SHSTMP 2018; US Government public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "WA physical shoreline only; BC excluded",
+          "observation_period": null
+        }
+      },
+      "raw_source": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/NOAA_SHORELINES_2018.zip",
+        "sha256": "c3604ac7b87f43e8cca32307b223965fa3855b3afe541e166874aba535ec68e4",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "NOAA NWFSC; US Government public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "4fa186afd24628eb3c32cf4d873aeffbe27de5158a17c122fb4d3003ebf9557e",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 273678336,
+      "elapsed_seconds": 1.107839750009589,
+      "staging_bytes": 27791
+    },
+    "details": {
+      "rows": 40,
+      "classification": "nonexclusive_evidence_union_no_survey_absence"
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "110973f8ff0ce5382637f32dae06698036216f9a3888c7449faecfbd326444be",
+        "bytes": 27791
+      }
+    }
+  },
+  "shoreline-r6": {
+    "schema": 3,
+    "operator": "shoreline",
+    "method_version": "native_full_h3_physical_shoreline_unique_union_v2",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "1be3c60bf57395f0a90c5cea86b5ba9a51a667bdff7f5c28644b106ae7e484e1"
+    },
+    "resolution": 6,
+    "domain": {
+      "id": "puget-sound-bounded-acceptance",
+      "revision": "2026-10-29-new-source",
+      "support": "native H3",
+      "coverage_status": "bounded sample; no historical parity assumed"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/shoreline-r6/reporting.txt",
+        "sha256": "171712147a9b9ab69e19c93765a12102cc2d3954df126ccbbccacca7a7c4f9cd",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/shoreline-r6/support.parquet",
+        "sha256": "6c6716710805c8af04351b4268f8b25c8f7c21ca3f12381cd972eb8fbeb82b90",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "inventory": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/shoreline-r6/inventory.parquet",
+        "sha256": "3e6c666538665928267ed3220ca770ba3930179b1f3bc08fd9049218d8b45b4c",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "NOAA NWFSC SHSTMP 2018; US Government public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "WA physical shoreline only; BC excluded",
+          "observation_period": null
+        }
+      },
+      "raw_source": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/NOAA_SHORELINES_2018.zip",
+        "sha256": "c3604ac7b87f43e8cca32307b223965fa3855b3afe541e166874aba535ec68e4",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "NOAA NWFSC; US Government public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "9e2f00f8e4fb311dc37a878e7737ee11539cab1e2a4d18f41c9ab4700ad74020",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 249020416,
+      "elapsed_seconds": 0.7883385829918552,
+      "staging_bytes": 17730
+    },
+    "details": {
+      "rows": 16,
+      "classification": "nonexclusive_evidence_union_no_survey_absence"
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "e1f27218829f7fc4052f0a7f9c55941fd2a6c21ea7abb5a4638f8597dda0f681",
+        "bytes": 17730
+      }
+    }
+  },
+  "estuary-r8": {
+    "schema": 3,
+    "operator": "estuary",
+    "method_version": "mapped_estuary_representative_point_euclidean_epsg32610_v2",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "1be3c60bf57395f0a90c5cea86b5ba9a51a667bdff7f5c28644b106ae7e484e1"
+    },
+    "resolution": 8,
+    "domain": {
+      "id": "puget-sound-bounded-acceptance",
+      "revision": "2026-10-29-new-source",
+      "support": "native H3",
+      "coverage_status": "bounded sample; no historical parity assumed"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/estuary-r8/reporting.txt",
+        "sha256": "aa2dfbcdbb5dfd70811ffde8ebf5f26b70a8bd8c27b1c2485170fb66a2441f24",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/estuary-r8/support.parquet",
+        "sha256": "236a74cb233f6661dc64f86ba44a982adecf5011a7f4a867a3aa76c7ec9f5d3f",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "inventory": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/estuary-r8/inventory.parquet",
+        "sha256": "43d6181653b62ba45760054e848624a88f00b19140ec95ab5a61c2cefb3eca56",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Pacific Marine and Estuarine Fish Habitat Partnership public point inventory",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "103 PMEP points in receipt bbox; BC excluded",
+          "observation_period": null
+        }
+      },
+      "raw_source": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/PMEP_ESTUARY.geojson",
+        "sha256": "08094e94227b74d2d3c07509fd5759bd578913f2e72f16f0728526282b2c07bf",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "PMEP public point inventory",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "f44a129765a8b2c55fd2d3766ab1b24e9eadac17d33b2021a57b9804c3335437",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 198656000,
+      "elapsed_seconds": 1.0400982919964008,
+      "staging_bytes": 5065
+    },
+    "details": {
+      "rows": 40,
+      "inventory_rows": 103,
+      "coverage": "finite_source_inventory_not_global",
+      "source_selection": {
+        "rights": "Pacific Marine and Estuarine Fish Habitat Partnership public point inventory",
+        "spatial_support": "native source; see source receipts and candidate method",
+        "coverage_status": "103 PMEP points in receipt bbox; BC excluded",
+        "observation_period": null
+      }
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "ee37c9daa03decaa1786185378556a0234032b97a1ff6a218d309ab3416ba232",
+        "bytes": 5065
+      }
+    }
+  },
+  "anthropogenic-r6": {
+    "schema": 3,
+    "operator": "anthropogenic",
+    "method_version": "native_physical_anthropogenic_union_leaves_v3",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "1be3c60bf57395f0a90c5cea86b5ba9a51a667bdff7f5c28644b106ae7e484e1"
+    },
+    "resolution": 6,
+    "domain": {
+      "id": "puget-sound-bounded-acceptance",
+      "revision": "2026-10-29-new-source",
+      "support": "native H3",
+      "coverage_status": "bounded sample; no historical parity assumed"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/anthropogenic-r6/reporting.txt",
+        "sha256": "171712147a9b9ab69e19c93765a12102cc2d3954df126ccbbccacca7a7c4f9cd",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/anthropogenic-r6/support.parquet",
+        "sha256": "6c6716710805c8af04351b4268f8b25c8f7c21ca3f12381cd972eb8fbeb82b90",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "inventory": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/anthropogenic-r6/inventory.parquet",
+        "sha256": "a0dc6e7723164fa35f874c014bc0d50723fdd230dd65ae1d09288b290f0a4f88",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "WA DNR agency open data; NOAA public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "DNR bounded full extract and NOAA bounded channels; other source families excluded",
+          "observation_period": null
+        }
+      },
+      "water": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/COASTAL_CONTEXT_WATER.parquet",
+        "sha256": "b9e009d96e28cbb845ab1c71ae5b9bb16fc07230e490e572759bf9c7a88eb19a",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "raw_WA_ARMORING_SMALL": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/WA_ARMORING_SMALL.geojson",
+        "sha256": "5005fc6c8c1089fa01347f4e377dce21378ec829f3b1f0df837cb363f2997f3f",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "WA DNR agency open data / NOAA public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "raw_NOAA_DREDGED": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/NOAA_DREDGED.geojson",
+        "sha256": "9ae5795493093bb59d81bc4ef747a79ea7ace7a3bc50649d808654dd1824fa87",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "WA DNR agency open data / NOAA public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "0ab19256fb9e9df38844dd763c1cba134e26bedaef24b4a2ead3bcb2ac171003",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 407207936,
+      "elapsed_seconds": 14.689064999984112,
+      "staging_bytes": 17567
+    },
+    "details": {
+      "rows": 16,
+      "inventory_projection": {
+        "projection": []
+      },
+      "water_projection_subdivision": {
+        "projection": [],
+        "subdivision": [
+          {
+            "source_piece": 0,
+            "subpieces": 1507,
+            "sum_area_difference_m2": 0.000518798828125
+          }
+        ]
+      },
+      "survey_absence_qualified": false,
+      "network_metrics": "unqualified_null"
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "53665bd05805c7a136ff8462678a66ed4ed9713f3cc205198e26c2d336a9316a",
+        "bytes": 17567
+      }
+    }
+  },
+  "anthropogenic-r8": {
+    "schema": 3,
+    "operator": "anthropogenic",
+    "method_version": "native_physical_anthropogenic_union_leaves_v3",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "1be3c60bf57395f0a90c5cea86b5ba9a51a667bdff7f5c28644b106ae7e484e1"
+    },
+    "resolution": 8,
+    "domain": {
+      "id": "puget-sound-bounded-acceptance",
+      "revision": "2026-10-29-new-source",
+      "support": "native H3",
+      "coverage_status": "bounded sample; no historical parity assumed"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/anthropogenic-r8/reporting.txt",
+        "sha256": "aa2dfbcdbb5dfd70811ffde8ebf5f26b70a8bd8c27b1c2485170fb66a2441f24",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/anthropogenic-r8/support.parquet",
+        "sha256": "236a74cb233f6661dc64f86ba44a982adecf5011a7f4a867a3aa76c7ec9f5d3f",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "inventory": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-final/anthropogenic-r8/inventory.parquet",
+        "sha256": "a0dc6e7723164fa35f874c014bc0d50723fdd230dd65ae1d09288b290f0a4f88",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "WA DNR agency open data; NOAA public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "DNR bounded full extract and NOAA bounded channels; other source families excluded",
+          "observation_period": null
+        }
+      },
+      "water": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/COASTAL_CONTEXT_WATER.parquet",
+        "sha256": "b9e009d96e28cbb845ab1c71ae5b9bb16fc07230e490e572759bf9c7a88eb19a",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Retained MarineCast source support; see source manifest",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "raw_WA_ARMORING_SMALL": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/WA_ARMORING_SMALL.geojson",
+        "sha256": "5005fc6c8c1089fa01347f4e377dce21378ec829f3b1f0df837cb363f2997f3f",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "WA DNR agency open data / NOAA public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      },
+      "raw_NOAA_DREDGED": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/NOAA_DREDGED.geojson",
+        "sha256": "9ae5795493093bb59d81bc4ef747a79ea7ace7a3bc50649d808654dd1824fa87",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "WA DNR agency open data / NOAA public domain",
+          "spatial_support": "native source; see source receipts and candidate method",
+          "coverage_status": "bounded real-data sample",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "53a2903bc012b067c3c0ad0df27b7219ae53517619c34e4d39219c9bf048b494",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 333381632,
+      "elapsed_seconds": 15.2421243750141,
+      "staging_bytes": 37989
+    },
+    "details": {
+      "rows": 40,
+      "inventory_projection": {
+        "projection": []
+      },
+      "water_projection_subdivision": {
+        "projection": [],
+        "subdivision": [
+          {
+            "source_piece": 0,
+            "subpieces": 1507,
+            "sum_area_difference_m2": 0.000518798828125
+          }
+        ]
+      },
+      "survey_absence_qualified": false,
+      "network_metrics": "unqualified_null"
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "f44aa070d063b2ab693f740c121b48c5ab812fe22c8a38d33277a8eb51efefda",
+        "bytes": 37989
+      }
+    }
+  }
+}

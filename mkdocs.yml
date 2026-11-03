@@ -70,6 +70,9 @@ nav:
   - Variables:
       - Catalog guide: variables/index.md
       - Product and field index: products.md
+      - Reviewed compact delivery: reviewed-delivery.md
+      - Artificial reef presence: artificial-reefs.md
+      - Simplification assessment: simplification-assessment.md
       - Structural variables: structural-variables.md
       - Capability coverage: capability-coverage.md
   - Examples:
@@ -94,6 +97,9 @@ nav:
       - Release process: development/releases.md
       - Release checklist: development/release-checklist.md
       - Completion review: development/completion-review.md
+      - Full-area rebuild verification: full-rebuild-verification.md
+      - Source rebuild recovery: source-rebuild-recovery.md
+      - Complete metrics CLI rebuild: metric-rebuild.md
 
 validation:
   nav:

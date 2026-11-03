@@ -1,0 +1,538 @@
+{
+  "shoreline-r8": {
+    "rows": 16,
+    "positive_cases": {},
+    "comparisons": {
+      "SHORELINE_TOTAL_MAPPED_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "SHORELINE_CLASSIFIED_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "SHORELINE_CLASSIFIED_COVERAGE_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "ROCKY_SHORE_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 4.547473508864641e-13
+      },
+      "ROCKY_SHORE_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 1.1102230246251565e-16
+      },
+      "SANDY_SHORE_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 1.1368683772161603e-13
+      },
+      "SANDY_SHORE_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "GRAVEL_SHORE_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "GRAVEL_SHORE_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "CLIFF_SHORE_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "CLIFF_SHORE_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "BLUFF_SHORE_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "BLUFF_SHORE_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "DELTAIC_SHORE_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "DELTAIC_SHORE_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "ESTUARINE_SHORE_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "ESTUARINE_SHORE_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "CLASSIFICATION_AVAILABILITY_DISAGREEMENT_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "CLASS_MEMBERSHIP_DISAGREEMENT_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "H3_RESOLUTION": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "SHORELINE_CLASSIFIED_SHARE_OF_MAPPED_LENGTH_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      }
+    },
+    "status": "new-source candidate validated; historical differences retained"
+  },
+  "anthropogenic-r6": {
+    "rows": 24,
+    "positive_cases": {
+      "aquaculture_cells": 12,
+      "disposal_cells": 12,
+      "independent_disposal_max_abs_error_m2": 1.862645149230957e-09,
+      "independent_aquaculture_intersections_agree": true
+    },
+    "comparisons": {
+      "H3_RESOLUTION": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "MAPPED_WATER_AREA_M2": {
+        "null_mismatches": 0,
+        "values_different": 20,
+        "max_abs_error": 7700287.473835371
+      },
+      "MAPPED_WATER_SHARE_OF_FULL_CELL": {
+        "null_mismatches": 0,
+        "values_different": 19,
+        "max_abs_error": 0.2631046393890478
+      },
+      "COMPREHENSIVE_SURVEY_COVERAGE_ESTABLISHED": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "MAPPED_INVENTORY_RECORD_INTERSECTION_COUNT": {
+        "null_mismatches": 0,
+        "values_different": 12,
+        "max_abs_error": 240.0
+      },
+      "GLOBAL_INVENTORY_COMPLETE": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "DISTANCE_TO_SEAWALL_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_BREAKWATER_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_JETTY_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_CAUSEWAY_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_PIER_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_FERRY_TERMINAL_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_MARINA_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_PORT_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_DREDGED_CHANNEL_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_DISPOSAL_SITE_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_ARTIFICIAL_REEF_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_AQUACULTURE_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "OVERWATER_STRUCTURE_DENSITY_PER_KM2": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "OVERWATER_STRUCTURE_COUNT_WITHIN_5KM": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DREDGED_CHANNEL_MAPPED_AREA_M2": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "DREDGED_CHANNEL_POSITIVE_MAPPED_WATER_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISPOSAL_SITE_MAPPED_AREA_M2": {
+        "null_mismatches": 0,
+        "values_different": 1,
+        "max_abs_error": 14436.615872065599
+      },
+      "DISPOSAL_SITE_POSITIVE_MAPPED_WATER_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 8,
+        "max_abs_error": 0.003964039942722958
+      },
+      "AQUACULTURE_MAPPED_AREA_M2": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "AQUACULTURE_POSITIVE_MAPPED_WATER_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "SYSTEMATIC_KNOWN_ARMORING_UNION_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 8,
+        "max_abs_error": 22522.564461067766
+      },
+      "SYSTEMATIC_UNKNOWN_ARMORING_UNION_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 2,
+        "max_abs_error": 12145.837861084729
+      },
+      "ARMORING_ESTIMATE_DISAGREEMENT_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 3,
+        "max_abs_error": 5451.597280624377
+      },
+      "ARMORING_AVAILABILITY_DISAGREEMENT_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "ARMORING_WEIGHTED_UNION_LENGTH_M": {
+        "null_mismatches": 3,
+        "values_different": 1,
+        "max_abs_error": 1912.4746503414715
+      },
+      "SHORELINE_ARMORING_FRAC": {
+        "null_mismatches": 5,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "AQUACULTURE_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 12,
+        "null_mismatches": 12,
+        "candidate_positive": 12,
+        "delivered_positive": 12
+      },
+      "ARTIFICIAL_REEF_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 0,
+        "null_mismatches": 24,
+        "candidate_positive": 0,
+        "delivered_positive": 0
+      }
+    },
+    "status": "new-source candidate validated; historical differences retained",
+    "public_presence_comparisons": {
+      "AQUACULTURE_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 24,
+        "candidate_positive": 12,
+        "source_unknown": 12
+      },
+      "ARTIFICIAL_REEF_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 24,
+        "candidate_positive": 0,
+        "source_unknown": 24
+      },
+      "DISPOSAL_SITE_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 24,
+        "candidate_positive": 12,
+        "source_unknown": 12
+      },
+      "DREDGED_CHANNEL_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 24,
+        "candidate_positive": 0,
+        "source_unknown": 24
+      }
+    }
+  },
+  "anthropogenic-r8": {
+    "rows": 24,
+    "positive_cases": {
+      "aquaculture_cells": 12,
+      "disposal_cells": 12,
+      "independent_disposal_max_abs_error_m2": 5.902256816625595e-08,
+      "independent_aquaculture_intersections_agree": true
+    },
+    "comparisons": {
+      "H3_RESOLUTION": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "MAPPED_WATER_AREA_M2": {
+        "null_mismatches": 0,
+        "values_different": 16,
+        "max_abs_error": 595407.1181608666
+      },
+      "MAPPED_WATER_SHARE_OF_FULL_CELL": {
+        "null_mismatches": 0,
+        "values_different": 16,
+        "max_abs_error": 0.9963233922624685
+      },
+      "COMPREHENSIVE_SURVEY_COVERAGE_ESTABLISHED": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "MAPPED_INVENTORY_RECORD_INTERSECTION_COUNT": {
+        "null_mismatches": 0,
+        "values_different": 6,
+        "max_abs_error": 80.0
+      },
+      "GLOBAL_INVENTORY_COMPLETE": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "DISTANCE_TO_SEAWALL_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_BREAKWATER_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_JETTY_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_CAUSEWAY_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_PIER_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_FERRY_TERMINAL_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_MARINA_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_PORT_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_DREDGED_CHANNEL_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_DISPOSAL_SITE_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_ARTIFICIAL_REEF_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISTANCE_TO_AQUACULTURE_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "OVERWATER_STRUCTURE_DENSITY_PER_KM2": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "OVERWATER_STRUCTURE_COUNT_WITHIN_5KM": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DREDGED_CHANNEL_MAPPED_AREA_M2": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "DREDGED_CHANNEL_POSITIVE_MAPPED_WATER_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "DISPOSAL_SITE_MAPPED_AREA_M2": {
+        "null_mismatches": 0,
+        "values_different": 1,
+        "max_abs_error": 10563.190022114657
+      },
+      "DISPOSAL_SITE_POSITIVE_MAPPED_WATER_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 4,
+        "max_abs_error": 0.01634634283883473
+      },
+      "AQUACULTURE_MAPPED_AREA_M2": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "AQUACULTURE_POSITIVE_MAPPED_WATER_FRAC": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "SYSTEMATIC_KNOWN_ARMORING_UNION_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 4,
+        "max_abs_error": 1467.8466307673825
+      },
+      "SYSTEMATIC_UNKNOWN_ARMORING_UNION_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 2,
+        "max_abs_error": 1144.4919513754078
+      },
+      "ARMORING_ESTIMATE_DISAGREEMENT_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 1,
+        "max_abs_error": 866.9668865017121
+      },
+      "ARMORING_AVAILABILITY_DISAGREEMENT_LENGTH_M": {
+        "null_mismatches": 0,
+        "values_different": 0,
+        "max_abs_error": 0.0
+      },
+      "ARMORING_WEIGHTED_UNION_LENGTH_M": {
+        "null_mismatches": 1,
+        "values_different": 1,
+        "max_abs_error": 133.16561157638387
+      },
+      "SHORELINE_ARMORING_FRAC": {
+        "null_mismatches": 3,
+        "values_different": 0,
+        "max_abs_error": null
+      },
+      "AQUACULTURE_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 12,
+        "null_mismatches": 12,
+        "candidate_positive": 12,
+        "delivered_positive": 12
+      },
+      "ARTIFICIAL_REEF_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 0,
+        "null_mismatches": 24,
+        "candidate_positive": 0,
+        "delivered_positive": 0
+      }
+    },
+    "status": "new-source candidate validated; historical differences retained",
+    "public_presence_comparisons": {
+      "AQUACULTURE_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 24,
+        "candidate_positive": 12,
+        "source_unknown": 12
+      },
+      "ARTIFICIAL_REEF_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 24,
+        "candidate_positive": 0,
+        "source_unknown": 24
+      },
+      "DISPOSAL_SITE_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 24,
+        "candidate_positive": 12,
+        "source_unknown": 12
+      },
+      "DREDGED_CHANNEL_MAPPED_POSITIVE_EVIDENCE": {
+        "rows": 24,
+        "matching": 24,
+        "candidate_positive": 0,
+        "source_unknown": 24
+      }
+    }
+  }
+}

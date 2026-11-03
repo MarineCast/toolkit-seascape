@@ -98,3 +98,27 @@ def test_bound_and_identity_validation() -> None:
         build_outlet_relationships(cells, outlets, graph, max_pairs=19)
     with pytest.raises(ValueError, match="duplicate"):
         build_outlet_relationships(cells, pd.concat([outlets, outlets.iloc[:1]]), graph)
+
+
+def test_production_geodesic_reference_avoids_projection_scale_artifacts():
+    cells, outlets, graph = _fixture()
+    cells = cells.iloc[:2].copy()
+    cells["REPRESENTATIVE_X_M"] = cells["REPRESENTATIVE_X_M"].astype(float)
+    outlets = outlets.iloc[:1].copy()
+    cells.loc[cells.H3_INDEX.eq("b"), "REPRESENTATIVE_X_M"] = 100.05
+    cells["REPRESENTATIVE_LONGITUDE"] = [0.0, 0.0008]
+    cells["REPRESENTATIVE_LATITUDE"] = [0.0, 0.0]
+    outlets["OUTLET_LONGITUDE"] = 0.0
+    outlets["OUTLET_LATITUDE"] = 0.0
+    result = build_outlet_relationships(cells, outlets, graph).set_index("H3_INDEX")
+    assert (
+        result.loc["b", "EUCLIDEAN_DISTANCE_M"]
+        > result.loc["b", "WATER_NETWORK_DISTANCE_M"]
+    )
+    assert (
+        result.loc["b", "GEODESIC_STRAIGHT_LINE_DISTANCE_M"]
+        < result.loc["b", "WATER_NETWORK_DISTANCE_M"]
+    )
+    assert result.loc["b", "REACHABILITY_STATUS"] == "reachable"
+    assert result.loc["b", "DETOUR_DISTANCE_M"] > 0
+    assert result.loc["b", "DETOUR_REFERENCE_METHOD"] == "WGS84_geodesic_straight_line"

@@ -16,7 +16,7 @@ import pyarrow.parquet as pq
 import yaml
 
 from seascape.core.artifacts.checksums import checksum_path
-from seascape.products import resolve_product
+from seascape.legacy_products import resolve_product
 
 _RELEASE_MANIFEST = Path(
     "data/processed/domain/environmental_layer/seascape/seascape_release_manifest.json"

@@ -82,6 +82,63 @@ def test_width_and_constriction_mechanisms_preserve_local_narrows() -> None:
     assert _bounded_adjacency_positions(0, adjacency, 1) == [0, 1]
 
 
+def test_unavailable_exposure_distance_is_arrow_null_with_qc() -> None:
+    output = _build_output(
+        ["cell"],
+        np.full((1, 16), 500.0),
+        np.asarray([np.nan]),
+        SimpleNamespace(maximum_fetch_km=1.0, open_bearing_fetch_fraction=0.9),
+        pd.DataFrame(
+            {
+                "WATER_COMPONENT_ID": ["isolated"],
+                "CONNECTOR_METHOD": ["direct"],
+                "CONNECTOR_DISTANCE_M": [0.0],
+            }
+        ),
+        np.asarray(["no_open_water_seed"], dtype=object),
+    ).to_arrow()
+    assert output["DISTANCE_TO_OPEN_WATER_M"].to_pylist() == [None]
+    assert output["NETWORK_DISTANCE_QC_REASON"].to_pylist() == ["no_open_water_seed"]
+
+
+def test_unavailable_morphometry_distances_are_arrow_null_with_qc() -> None:
+    from seascape.coastal_configuration.waterbody_morphometry.build import (
+        OUTPUT_COLUMNS,
+    )
+    from seascape.coastal_configuration.waterbody_morphometry.build import (
+        _build_output as morphometry_output,
+    )
+
+    strings = {
+        "H3_INDEX",
+        "WATER_COMPONENT_ID",
+        "NETWORK_CONNECTOR_METHOD",
+        "NETWORK_DISTANCE_QC_REASON",
+    }
+    metrics = {
+        name: np.asarray([np.nan]) for name in OUTPUT_COLUMNS if name not in strings
+    }
+    output = morphometry_output(
+        ["cell"],
+        metrics,
+        np.asarray([np.nan]),
+        {},
+        np.asarray([np.nan]),
+        np.asarray([np.nan]),
+        pd.DataFrame(
+            {
+                "WATER_COMPONENT_ID": [None],
+                "CONNECTOR_METHOD": [None],
+                "CONNECTOR_DISTANCE_M": [np.nan],
+            }
+        ),
+        np.asarray(["target_unmapped"], dtype=object),
+    ).to_arrow()
+    for name in set(metrics) | {"NETWORK_CONNECTOR_DISTANCE_M"}:
+        assert output[name].to_pylist() == [None]
+    assert output["NETWORK_DISTANCE_QC_REASON"].to_pylist() == ["target_unmapped"]
+
+
 def test_sill_candidates_require_relief_width_and_constriction(tmp_path) -> None:
     bathymetry_path = tmp_path / "bathymetry.parquet"
     pd.DataFrame(

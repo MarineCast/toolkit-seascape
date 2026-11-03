@@ -7,3 +7,5 @@ This package keeps three concepts separate:
 3. **Deep coral and sponge** — the previously configured B.C. source is access-only, and the current pipeline exports NULL, confidence 0 and `no_public_export_in_current_pipeline`. This is a pipeline-specific gate, not a claim that all public data are unavailable. The [public DFO sponge polygon lead](https://open.canada.ca/data/en/dataset/8ba7bced-b63f-462a-a8a1-7c7c8a7bcfa4) requires exact layer, rights and scope qualification before ingestion; missing ingestion does not imply habitat absence.
 
 See the [coarse-first v1 plan](../../../../docs/methodology/coarse-v1-plan.md) for source qualification and later upgrades.
+
+Bivalve source-footprint compatibility here is separate from the canonical Bivalve producer; it does not replace the native Bivalve inventory.

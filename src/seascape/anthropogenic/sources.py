@@ -874,6 +874,13 @@ def load_anthropogenic_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
     if cross_border.any():
         network = load_water_network_config(config_path)
         territorial = gpd.read_parquet(network.water_polygon_path).to_crs("EPSG:6933")
+        # Coastal source masks describe physical water, and need not carry
+        # political country polygons. Preserve the source's CROSS_BORDER label
+        # when that optional jurisdiction evidence is unavailable.
+        if not {"NAME", "AREA"} <= set(territorial):
+            return deduplicate_inventory(
+                combined, float(processing["deduplication_tolerance_m"])
+            )
         canada = union_all(
             territorial.loc[
                 territorial["NAME"].astype(str).eq("CANADA")
@@ -885,6 +892,10 @@ def load_anthropogenic_inventory(config_path: str | Path = DEFAULT_CONFIG_PATH):
                 & territorial["AREA"].astype(str).eq("CONTIGUOUS")
             ].geometry.to_numpy()
         )
+        if canada.is_empty or united_states.is_empty:
+            return deduplicate_inventory(
+                combined, float(processing["deduplication_tolerance_m"])
+            )
         points = (
             combined.loc[cross_border]
             .to_crs("EPSG:6933")

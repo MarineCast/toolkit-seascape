@@ -611,3 +611,71 @@ def _build_neighborhoods(
         .sort_values(["SOURCE_H3_INDEX", "MINIMUM_HOP_COUNT", "TARGET_H3_INDEX"])
         .reset_index(drop=True)
     )
+
+
+class StreamedNeighborhoods:
+    """Validate and write bounded neighborhood batches inside the graph transaction."""
+
+    def __init__(
+        self, support, edges, connectors, resolution, config, *, batch_size=512
+    ):
+        self.support = support.sort_values("H3_INDEX").reset_index(drop=True)
+        self.edges = edges
+        self.connectors = connectors
+        self.resolution = resolution
+        self.config = config
+        self.batch_size = batch_size
+
+    def to_parquet(self, path, *, index=False, compression="zstd"):
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+
+        from .validation import validate_neighborhoods
+
+        schema = pa.schema(
+            [
+                ("SOURCE_H3_INDEX", pa.string()),
+                ("TARGET_H3_INDEX", pa.string()),
+                ("H3_RESOLUTION", pa.int64()),
+                ("MINIMUM_HOP_COUNT", pa.int64()),
+                ("NETWORK_DISTANCE_M", pa.float64()),
+                ("CONNECTIVITY_STATUS", pa.string()),
+                ("QC_REASON", pa.string()),
+                ("WATER_MASK_VERSION", pa.string()),
+                ("SPATIAL_SUPPORT_VERSION", pa.string()),
+            ]
+        )
+        cells = self.support.H3_INDEX.astype(str).tolist()
+        position = 0
+        writer = None
+        try:
+            for batch in _iter_neighborhood_batches(
+                self.support,
+                self.edges,
+                self.connectors,
+                self.resolution,
+                self.config,
+                batch_sources=self.batch_size,
+            ):
+                selected = cells[position : position + self.batch_size]
+                validate_neighborhoods(
+                    batch,
+                    self.support,
+                    self.resolution,
+                    maximum_hops=self.config.maximum_neighborhood_hops,
+                    source_cells=selected,
+                )
+                position += len(selected)
+                table = pa.Table.from_pandas(batch, schema=schema, preserve_index=False)
+                if writer is None:
+                    writer = pq.ParquetWriter(
+                        path, table.schema, compression=compression
+                    )
+                writer.write_table(table)
+            if writer is None or position != len(cells):
+                raise ValueError(
+                    "Neighborhood stream did not cover every model-support source"
+                )
+        finally:
+            if writer is not None:
+                writer.close()

@@ -18,11 +18,13 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import requests
 
 from seascape.core.config.common_areas import bbox_from_config
 from seascape.core.config.data import load_data_config
+from seascape.core.config.environment import required_environment_value
 from seascape.core.config.paths import project_root, resolve_config_path
 from seascape.utils.artifacts import checksum_artifact as _sha256
 from seascape.utils.config import require_mapping as _mapping
@@ -162,37 +164,80 @@ def _download_http_file(
     *,
     timeout: float,
 ) -> int:
+    limit = int(source.get("maximum_bytes", source.get("expected_bytes", 0)))
+    if limit < 0 or ("maximum_bytes" in source and limit == 0):
+        raise ValueError("HTTP maximum_bytes must be positive when configured")
+    if limit and int(source.get("expected_bytes", 0)) > limit:
+        raise ValueError("Expected source bytes exceed maximum_bytes")
     method = str(source.get("http_method", "GET")).strip().upper()
     if method not in {"GET", "POST"}:
         raise ValueError(f"Unsupported HTTP download method: {method}")
-    response = session.request(method, str(source["url"]), timeout=timeout, stream=True)
+    credential = source.get("bearer_token_env")
+    request_options = {}
+    if credential:
+        url = urlsplit(str(source["url"]))
+        if url.scheme != "https" or not url.hostname or url.username or url.password:
+            raise ValueError(
+                "Authenticated HTTP sources require an HTTPS URL without userinfo"
+            )
+        request_options["headers"] = {
+            "Authorization": "Bearer " + required_environment_value(str(credential))
+        }
     try:
-        response.raise_for_status()
-    except requests.RequestException as exc:
-        raise RuntimeError(f"HTTP download failed for {source['url']}: {exc}") from exc
+        response = session.request(
+            method, str(source["url"]), timeout=timeout, stream=True, **request_options
+        )
+    except requests.RequestException:
+        if credential:
+            raise RuntimeError("Authenticated HTTP download request failed") from None
+        raise
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(destination.suffix + ".part")
     try:
+        try:
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            if credential:
+                raise RuntimeError(
+                    "Authenticated HTTP download request failed"
+                ) from None
+            raise RuntimeError(
+                f"HTTP download failed for {source['url']}: {exc}"
+            ) from exc
+        advertised = getattr(response, "headers", {}).get("Content-Length")
+        if limit and advertised is not None and int(advertised) > limit:
+            raise RuntimeError("HTTP source Content-Length exceeds maximum_bytes")
+        received = 0
         with partial.open("wb") as output:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 if chunk:
+                    received += len(chunk)
+                    if limit and received > limit:
+                        raise RuntimeError("HTTP source exceeds maximum_bytes")
                     output.write(chunk)
+        _validate_expected_file(partial, source)
+        if destination.suffix.lower() == ".zip":
+            try:
+                with zipfile.ZipFile(partial) as archive:
+                    bad_member = archive.testzip()
+                    if bad_member:
+                        raise RuntimeError(
+                            f"Downloaded ZIP has a corrupt member: {bad_member}"
+                        )
+            except zipfile.BadZipFile as exc:
+                raise RuntimeError(
+                    f"Downloaded archive is not a valid ZIP: {destination}"
+                ) from exc
         partial.replace(destination)
+    except requests.RequestException:
+        if credential:
+            raise RuntimeError("Authenticated HTTP download stream failed") from None
+        raise
     finally:
         partial.unlink(missing_ok=True)
-    if destination.suffix.lower() == ".zip":
-        try:
-            with zipfile.ZipFile(destination) as archive:
-                bad_member = archive.testzip()
-                if bad_member:
-                    raise RuntimeError(
-                        f"Downloaded ZIP has a corrupt member: {bad_member}"
-                    )
-        except zipfile.BadZipFile as exc:
-            raise RuntimeError(
-                f"Downloaded archive is not a valid ZIP: {destination}"
-            ) from exc
-    _validate_expected_file(destination, source)
+        close = getattr(response, "close", None)
+        if close is not None:
+            close()
     return int(destination.stat().st_size)
 
 
@@ -334,14 +379,19 @@ def _download_overpass(
                     response = session.post(
                         endpoint, data={"data": query}, timeout=timeout
                     )
-                    tile_document = _response_json(
+                    candidate = _response_json(
                         response, f"Overpass query for {endpoint}"
                     )
-                    elements = tile_document.get("elements")
+                    elements = candidate.get("elements")
                     if not isinstance(elements, list):
                         raise RuntimeError(
                             f"Overpass endpoint returned invalid elements: {endpoint}"
                         )
+                    if candidate.get("remark"):
+                        raise RuntimeError(
+                            f"Overpass returned an incomplete query: {candidate['remark']}"
+                        )
+                    tile_document = candidate
                     endpoints_used.append(endpoint)
                     break
                 except (requests.RequestException, RuntimeError, ValueError) as exc:
@@ -549,12 +599,18 @@ def _extract_zip(archive_path: Path, destination: Path) -> None:
 def _validate_existing(path: Path, kind: str) -> int:
     if not path.exists() or not path.is_file() or path.stat().st_size <= 0:
         raise RuntimeError(f"Existing habitat source is invalid: {path}")
-    if kind in {"arcgis", "wfs", "overpass"}:
+    if kind in {"arcgis", "wfs", "overpass", "osm_pbf"}:
         with path.open(encoding="utf-8") as source:
             document = json.load(source)
-        records = document.get("elements" if kind == "overpass" else "features")
+        records = document.get(
+            "elements" if kind in {"overpass", "osm_pbf"} else "features"
+        )
         if not isinstance(records, list) or not records:
-            label = "OSM elements" if kind == "overpass" else "GeoJSON features"
+            label = (
+                "OSM elements"
+                if kind in {"overpass", "osm_pbf"}
+                else "GeoJSON features"
+            )
             raise RuntimeError(f"Existing habitat source has no {label}: {path}")
         return len(records)
     return int(path.stat().st_size)
@@ -653,6 +709,11 @@ def download_habitat_sources(
                 if kind == "overpass":
                     with destination.open(encoding="utf-8") as input_file:
                         result_metadata = _overpass_metadata(json.load(input_file))
+                elif kind == "osm_pbf":
+                    with destination.open(encoding="utf-8") as input_file:
+                        result_metadata = {
+                            "osm_extract": json.load(input_file)["_orcacast"]
+                        }
                 status = "existing"
             elif kind == "local_raster":
                 if not destination.exists():
@@ -692,6 +753,17 @@ def download_habitat_sources(
                 status = "downloaded"
             elif kind == "overpass":
                 count, result_metadata = _download_overpass(
+                    session,
+                    source,
+                    destination,
+                    bbox=config.bbox,
+                    timeout=config.request_timeout_seconds,
+                )
+                status = "downloaded"
+            elif kind == "osm_pbf":
+                from .osm_extract import download_osm_extract
+
+                count, result_metadata = download_osm_extract(
                     session,
                     source,
                     destination,

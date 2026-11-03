@@ -1,0 +1,1362 @@
+{
+  "schema_version": 1,
+  "status": "source_derived_research_geometry_with_explicit_resolution_limits",
+  "scope": "Local selected channel axes and bank sections; not agency centerlines or entire named waterbody boundaries",
+  "water_mask_version": "gshhg_fwa_iho_source_coast_v3",
+  "geometry_method_source": "seascape.coastal_configuration.research_geometry",
+  "source_water_sha256": "7eec163d0aadaea59ab483e1ebe89a656e6c7598f721be96489448c6c3c859e1",
+  "sources": [
+    "https://charts.gc.ca/charts-cartes/paper-papier/papertable-tablepapier-eng.asp",
+    "https://charts.noaa.gov/ENCs/ENCs.shtml"
+  ],
+  "locations": [
+    {
+      "id": "queen-charlotte-strait",
+      "name": "Queen Charlotte Strait",
+      "route_anchors_epsg32610": [
+        [
+          180000,
+          5640000
+        ],
+        [
+          190000,
+          5640000
+        ],
+        [
+          200000,
+          5640000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -127.54408759942933,
+          50.82310504639849
+        ],
+        [
+          -127.40253962052716,
+          50.828542439511935
+        ],
+        [
+          -127.26094849517395,
+          50.83380848045241
+        ]
+      ],
+      "axis_length_m": 20372.792206135786,
+      "gateway_width_m": 12635.11535935197,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        177000.0,
+        5637000.0,
+        203000.0,
+        5643000.0
+      ],
+      "grid_cells": 62400,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 7887.436867076458,
+      "gateway_station_shift_m": -2500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "johnstone-strait",
+      "name": "Johnstone Strait",
+      "route_anchors_epsg32610": [
+        [
+          260000,
+          5598000
+        ],
+        [
+          270000,
+          5597000
+        ],
+        [
+          280000,
+          5595000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -126.38332849266831,
+          50.48475785002891
+        ],
+        [
+          -126.24198687055929,
+          50.47978851012414
+        ],
+        [
+          -126.10007963297504,
+          50.46566662866748
+        ]
+      ],
+      "axis_length_m": 21262.70442612017,
+      "gateway_width_m": 3268.9805433405563,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        257000.0,
+        5592000.0,
+        283000.0,
+        5601000.0
+      ],
+      "grid_cells": 93600,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 12085.176551095532,
+      "gateway_station_shift_m": 1500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "discovery-passage",
+      "name": "Discovery Passage",
+      "route_anchors_epsg32610": [
+        [
+          327000,
+          5568000
+        ],
+        [
+          332000,
+          5553000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -125.42610935009385,
+          50.238813561935295
+        ],
+        [
+          -125.3494320543131,
+          50.105462845517906
+        ]
+      ],
+      "axis_length_m": 15198.118195221174,
+      "gateway_width_m": 475.5646374016069,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        324000.0,
+        5550000.0,
+        335000.0,
+        5571000.0
+      ],
+      "grid_cells": 92400,
+      "anchor_displacement_m": [
+        1725.1811499086118,
+        1147.2793905583767
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 11540.573063422371,
+      "gateway_station_shift_m": 3000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "strait-of-georgia",
+      "name": "Strait of Georgia",
+      "route_anchors_epsg32610": [
+        [
+          438000,
+          5460000
+        ],
+        [
+          428000,
+          5470000
+        ],
+        [
+          418000,
+          5480000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -123.85261895603321,
+          49.28960230409372
+        ],
+        [
+          -123.99192378608049,
+          49.3784433584783
+        ],
+        [
+          -124.13173117712394,
+          49.46711140264508
+        ]
+      ],
+      "axis_length_m": 28313.560569343248,
+      "gateway_width_m": 25469.997683910082,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        415000.0,
+        5457000.0,
+        441000.0,
+        5483000.0
+      ],
+      "grid_cells": 270400,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 16156.780284671622,
+      "gateway_station_shift_m": 2000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "juan-de-fuca-strait",
+      "name": "Juan de Fuca Strait",
+      "route_anchors_epsg32610": [
+        [
+          415000,
+          5354000
+        ],
+        [
+          425000,
+          5354000
+        ],
+        [
+          435000,
+          5354000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -124.1468981848359,
+          48.33346399171595
+        ],
+        [
+          -124.01199232447757,
+          48.334730110159725
+        ],
+        [
+          -123.87707771387343,
+          48.33583802324444
+        ]
+      ],
+      "axis_length_m": 20000.0,
+      "gateway_width_m": 25291.309795652516,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        412000.0,
+        5351000.0,
+        438000.0,
+        5357000.0
+      ],
+      "grid_cells": 62400,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 12525.0,
+      "gateway_station_shift_m": 2500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "haro-strait",
+      "name": "Haro Strait",
+      "route_anchors_epsg32610": [
+        [
+          484000,
+          5374000
+        ],
+        [
+          484000,
+          5382000
+        ],
+        [
+          482500,
+          5389000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -123.21667195562705,
+          48.518908229290794
+        ],
+        [
+          -123.21697948845039,
+          48.59087823219354
+        ],
+        [
+          -123.23761655039604,
+          48.653811029218424
+        ]
+      ],
+      "axis_length_m": 15662.741699796952,
+      "gateway_width_m": 5243.970764432208,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        479500.0,
+        5371000.0,
+        487000.0,
+        5392000.0
+      ],
+      "grid_cells": 63000,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 10056.066017177982,
+      "gateway_station_shift_m": 2000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "boundary-pass",
+      "name": "Boundary Pass",
+      "route_anchors_epsg32610": [
+        [
+          484000,
+          5394000
+        ],
+        [
+          489000,
+          5399000
+        ],
+        [
+          495000,
+          5402000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -123.21744307063479,
+          48.698831538794835
+        ],
+        [
+          -123.14962576407432,
+          48.74391985697783
+        ],
+        [
+          -123.06804824923928,
+          48.77098489531831
+        ]
+      ],
+      "axis_length_m": 14372.28714274745,
+      "gateway_width_m": 11245.006366040558,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        481000.0,
+        5391000.0,
+        498000.0,
+        5405000.0
+      ],
+      "grid_cells": 95200,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 8075.35713374682,
+      "gateway_station_shift_m": 1000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "active-pass",
+      "name": "Active Pass",
+      "route_anchors_epsg32610": [
+        [
+          474000,
+          5411500
+        ],
+        [
+          476500,
+          5411750
+        ],
+        [
+          477300,
+          5412400
+        ],
+        [
+          477500,
+          5413500
+        ],
+        [
+          479000,
+          5414500
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -123.35444942328813,
+          48.85592130245622
+        ],
+        [
+          -123.32038268630602,
+          48.858269961020845
+        ],
+        [
+          -123.30951226307336,
+          48.86414695732715
+        ],
+        [
+          -123.3068458238374,
+          48.87404950689355
+        ],
+        [
+          -123.28644107260116,
+          48.88309782143705
+        ]
+      ],
+      "axis_length_m": 6876.297991208097,
+      "gateway_width_m": 693.8937442510158,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        471000.0,
+        5408500.0,
+        482000.0,
+        5417500.0
+      ],
+      "grid_cells": 39600,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 2262.70598642227,
+      "gateway_station_shift_m": -1500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "porlier-pass",
+      "name": "Porlier Pass",
+      "route_anchors_epsg32610": [
+        [
+          455000,
+          5426500
+        ],
+        [
+          456800,
+          5429000
+        ],
+        [
+          458000,
+          5430000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -123.61511273912501,
+          48.98976244463345
+        ],
+        [
+          -123.59077555294171,
+          49.012378833862165
+        ],
+        [
+          -123.5744695032376,
+          49.0214568210173
+        ]
+      ],
+      "axis_length_m": 4867.9118576530855,
+      "gateway_width_m": 1176.0058063457043,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        452000.0,
+        5423500.0,
+        461000.0,
+        5433000.0
+      ],
+      "grid_cells": 34200,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 3268.342956220663,
+      "gateway_station_shift_m": 0.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "sansum-narrows",
+      "name": "Sansum Narrows",
+      "route_anchors_epsg32610": [
+        [
+          460000,
+          5399500
+        ],
+        [
+          459500,
+          5403000
+        ],
+        [
+          457000,
+          5405500
+        ],
+        [
+          457000,
+          5408500
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -123.5441304027332,
+          48.74723038436702
+        ],
+        [
+          -123.55127618415675,
+          48.77868256986398
+        ],
+        [
+          -123.58556540665269,
+          48.80100347870009
+        ],
+        [
+          -123.58587978970367,
+          48.827989788958355
+        ]
+      ],
+      "axis_length_m": 11985.374432714403,
+      "gateway_width_m": 996.9388558702348,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        454000.0,
+        5396500.0,
+        463000.0,
+        5411500.0
+      ],
+      "grid_cells": 54000,
+      "anchor_displacement_m": [
+        215.05813167606567,
+        35.35533905932738,
+        506.2114182829147,
+        79.05694150420949
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 11352.531720239784,
+      "gateway_station_shift_m": 2000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "quatsino-sound",
+      "name": "Quatsino Sound",
+      "route_anchors_epsg32610": [
+        [
+          157000,
+          5604000
+        ],
+        [
+          164000,
+          5605500
+        ],
+        [
+          172000,
+          5607000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -127.83616625669012,
+          50.487361625809896
+        ],
+        [
+          -127.7391797573918,
+          50.50485854410947
+        ],
+        [
+          -127.62805573534774,
+          50.522837275485486
+        ]
+      ],
+      "axis_length_m": 17603.764304809472,
+      "gateway_width_m": 1020.817702865361,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        154000.0,
+        5601000.0,
+        175000.0,
+        5610000.0
+      ],
+      "grid_cells": 75600,
+      "anchor_displacement_m": [
+        145.7737973711325,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 5488.351365237941,
+      "gateway_station_shift_m": -3000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary",
+      "endcap_method": "explicit_metric_route_extent_6km_margin_with_physical_banks_and_censoring_checks"
+    },
+    {
+      "id": "nootka-sound",
+      "name": "Nootka Sound",
+      "route_anchors_epsg32610": [
+        [
+          237000,
+          5495000
+        ],
+        [
+          241000,
+          5508000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -126.63633740568761,
+          49.55040929253099
+        ],
+        [
+          -126.58971762454908,
+          49.668834096030686
+        ]
+      ],
+      "axis_length_m": 14656.854249492379,
+      "gateway_width_m": 1903.6815122548142,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        234000.0,
+        5492000.0,
+        244000.0,
+        5511000.0
+      ],
+      "grid_cells": 76000,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 9246.930009000629,
+      "gateway_station_shift_m": 0.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "clayoquot-sound",
+      "name": "Clayoquot Sound",
+      "route_anchors_epsg32610": [
+        [
+          270000,
+          5452000
+        ],
+        [
+          279000,
+          5456000
+        ],
+        [
+          284000,
+          5460000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -126.1560148070269,
+          49.17764600236629
+        ],
+        [
+          -126.03490351402493,
+          49.21688389329423
+        ],
+        [
+          -125.96849275933333,
+          49.254599298073614
+        ]
+      ],
+      "axis_length_m": 19545.31581269536,
+      "gateway_width_m": 2800.1058529820293,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        267000.0,
+        5449000.0,
+        287000.0,
+        5463000.0
+      ],
+      "grid_cells": 112000,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        1961.1858657455189
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 12653.71588958464,
+      "gateway_station_shift_m": 2000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary",
+      "endcap_method": "explicit_metric_route_extent_6km_margin_with_physical_banks_and_censoring_checks"
+    },
+    {
+      "id": "barkley-sound",
+      "name": "Barkley Sound",
+      "route_anchors_epsg32610": [
+        [
+          318000,
+          5412000
+        ],
+        [
+          326000,
+          5419000
+        ],
+        [
+          334000,
+          5425000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -125.48017759828716,
+          48.834279727405644
+        ],
+        [
+          -125.37423507092534,
+          48.89948948858534
+        ],
+        [
+          -125.2676083524664,
+          48.95561663010951
+        ]
+      ],
+      "axis_length_m": 21747.72293682039,
+      "gateway_width_m": 1719.9929229004917,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        315000.0,
+        5409000.0,
+        337000.0,
+        5428000.0
+      ],
+      "grid_cells": 167200,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 11934.850275670993,
+      "gateway_station_shift_m": 1000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "alberni-inlet",
+      "name": "Alberni Inlet",
+      "route_anchors_epsg32610": [
+        [
+          361500,
+          5428500
+        ],
+        [
+          367500,
+          5442000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -124.89337794038312,
+          48.99385597704018
+        ],
+        [
+          -124.81581542984918,
+          49.116551330721535
+        ]
+      ],
+      "axis_length_m": 15787.365278759507,
+      "gateway_width_m": 813.5477664823208,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        358500.0,
+        5425500.0,
+        370500.0,
+        5445000.0
+      ],
+      "grid_cells": 93600,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 11811.769463467874,
+      "gateway_station_shift_m": 3000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "columbia-river",
+      "name": "Columbia River",
+      "route_anchors_epsg32610": [
+        [
+          413000,
+          5125000
+        ],
+        [
+          419000,
+          5125000
+        ],
+        [
+          425000,
+          5121000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -124.1291310774827,
+          46.27300071291301
+        ],
+        [
+          -124.05127377705351,
+          46.27374317384958
+        ],
+        [
+          -123.97277677002651,
+          46.238438068595066
+        ]
+      ],
+      "axis_length_m": 14633.811847111354,
+      "gateway_width_m": 6416.185014158845,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        410000.0,
+        5118000.0,
+        428000.0,
+        5128000.0
+      ],
+      "grid_cells": 72000,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 5998.401871576773,
+      "gateway_station_shift_m": -1000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "rosario-strait",
+      "name": "Rosario Strait",
+      "route_anchors_epsg32610": [
+        [
+          521000,
+          5370000
+        ],
+        [
+          516000,
+          5390000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -122.71582004385357,
+          48.48277572348477
+        ],
+        [
+          -122.78271176218041,
+          48.66284732957884
+        ]
+      ],
+      "axis_length_m": 24477.236292130056,
+      "gateway_width_m": 3084.437774918624,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        513000.0,
+        5367000.0,
+        524000.0,
+        5393000.0
+      ],
+      "grid_cells": 114400,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        1049.4045930907678
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 10468.783914214453,
+      "gateway_station_shift_m": -500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary",
+      "endcap_method": "explicit_metric_route_extent_6km_margin_with_physical_banks_and_censoring_checks"
+    },
+    {
+      "id": "san-juan-channel",
+      "name": "San Juan Channel",
+      "route_anchors_epsg32610": [
+        [
+          501000,
+          5370000
+        ],
+        [
+          499000,
+          5378000
+        ],
+        [
+          496500,
+          5384000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -122.98646753466957,
+          48.48312573841599
+        ],
+        [
+          -123.01355164851189,
+          48.55509670491012
+        ],
+        [
+          -123.04748129196766,
+          48.60906534758187
+        ]
+      ],
+      "axis_length_m": 17587.6938731856,
+      "gateway_width_m": 1683.4081430464444,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        493500.0,
+        5367000.0,
+        504000.0,
+        5387000.0
+      ],
+      "grid_cells": 84000,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        247.48737341529164,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 11139.03969100505,
+      "gateway_station_shift_m": 500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "deception-pass",
+      "name": "Deception Pass",
+      "route_anchors_epsg32610": [
+        [
+          526000,
+          5361700
+        ],
+        [
+          528000,
+          5362000
+        ],
+        [
+          532000,
+          5362700
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -122.64867472493073,
+          48.40791935076431
+        ],
+        [
+          -122.62163027358616,
+          48.410532567552295
+        ],
+        [
+          -122.56752555442272,
+          48.41663953059753
+        ]
+      ],
+      "axis_length_m": 6418.602640198004,
+      "gateway_width_m": 397.58206458204796,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        523000.0,
+        5358700.0,
+        535000.0,
+        5365700.0
+      ],
+      "grid_cells": 33600,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 2677.160188343253,
+      "gateway_station_shift_m": 500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "admiralty-inlet",
+      "name": "Admiralty Inlet",
+      "route_anchors_epsg32610": [
+        [
+          527000,
+          5312000
+        ],
+        [
+          524000,
+          5319000
+        ],
+        [
+          521000,
+          5327000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -122.63832196673266,
+          47.960740500101366
+        ],
+        [
+          -122.67811629050864,
+          48.02383941334532
+        ],
+        [
+          -122.71795834418587,
+          48.095920969139634
+        ]
+      ],
+      "axis_length_m": 20840.30662740799,
+      "gateway_width_m": 4598.651340170298,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        518000.0,
+        5309000.0,
+        530000.0,
+        5330000.0
+      ],
+      "grid_cells": 100800,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        525.594901040716,
+        318.1980515339464
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 9335.533905932738,
+      "gateway_station_shift_m": 1500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary",
+      "endcap_method": "explicit_metric_route_extent_6km_margin_with_physical_banks_and_censoring_checks"
+    },
+    {
+      "id": "tacoma-narrows",
+      "name": "Tacoma Narrows",
+      "route_anchors_epsg32610": [
+        [
+          535000,
+          5233000
+        ],
+        [
+          535000,
+          5238000
+        ],
+        [
+          532000,
+          5243000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -122.53747024250255,
+          47.24954961400041
+        ],
+        [
+          -122.53707808284565,
+          47.29453981745646
+        ],
+        [
+          -122.57639652104247,
+          47.339683308648915
+        ]
+      ],
+      "axis_length_m": 11297.039984272202,
+      "gateway_width_m": 1144.9101571062245,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        529000.0,
+        5230000.0,
+        538000.0,
+        5246000.0
+      ],
+      "grid_cells": 57600,
+      "anchor_displacement_m": [
+        1330.8831654206165,
+        35.35533905932738,
+        459.6194077712559
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 2389.7936129235113,
+      "gateway_station_shift_m": -3000.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "hood-canal",
+      "name": "Hood Canal",
+      "route_anchors_epsg32610": [
+        [
+          505000,
+          5270000
+        ],
+        [
+          510000,
+          5277000
+        ],
+        [
+          513000,
+          5286000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -122.93350541020176,
+          47.583393747514236
+        ],
+        [
+          -122.86685116690472,
+          47.646320316217235
+        ],
+        [
+          -122.82663856138382,
+          47.72724576109578
+        ]
+      ],
+      "axis_length_m": 19397.09087105724,
+      "gateway_width_m": 2059.573846392321,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        502000.0,
+        5267000.0,
+        516000.0,
+        5289000.0
+      ],
+      "grid_cells": 123200,
+      "anchor_displacement_m": [
+        928.0355596635293,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 6741.607175155399,
+      "gateway_station_shift_m": -2500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    },
+    {
+      "id": "grays-harbor",
+      "name": "Grays Harbor",
+      "route_anchors_epsg32610": [
+        [
+          411000,
+          5199500
+        ],
+        [
+          415500,
+          5199500
+        ],
+        [
+          425000,
+          5203000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -124.16942222502988,
+          46.943057372704544
+        ],
+        [
+          -124.11030580108172,
+          46.9436459835711
+        ],
+        [
+          -123.9860770828042,
+          46.97627960576478
+        ]
+      ],
+      "axis_length_m": 18752.364384274173,
+      "gateway_width_m": 3205.266943303972,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        408000.0,
+        5196500.0,
+        428000.0,
+        5206000.0
+      ],
+      "grid_cells": 76000,
+      "anchor_displacement_m": [
+        276.1340254296815,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 5343.376618407357,
+      "gateway_station_shift_m": -2500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary",
+      "endcap_method": "explicit_metric_route_extent_6km_margin_with_physical_banks_and_censoring_checks"
+    },
+    {
+      "id": "willapa-bay",
+      "name": "Willapa Bay",
+      "route_anchors_epsg32610": [
+        [
+          415000,
+          5167000
+        ],
+        [
+          420000,
+          5167000
+        ],
+        [
+          424000,
+          5164000
+        ]
+      ],
+      "route_anchors_wgs84": [
+        [
+          -124.11083964793403,
+          46.651167206982656
+        ],
+        [
+          -124.04550758443287,
+          46.65178290665707
+        ],
+        [
+          -123.99274655924924,
+          46.62525466787073
+        ]
+      ],
+      "axis_length_m": 10263.35136523794,
+      "gateway_width_m": 2564.9756867257734,
+      "bank_endpoints_on_source_shore": true,
+      "grid_m": 50,
+      "processing_bounds": [
+        412000.0,
+        5161000.0,
+        427000.0,
+        5170000.0
+      ],
+      "grid_cells": 54000,
+      "anchor_displacement_m": [
+        35.35533905932738,
+        35.35533905932738,
+        35.35533905932738
+      ],
+      "water_path_valid": true,
+      "method": "source_water_grid_astar_clearance_v1",
+      "gateway_along_axis_m": 5545.710678118655,
+      "gateway_station_shift_m": 500.0,
+      "gateway_selection": "Narrowest complete contiguous bank interval among 500m stations within 3km of the explicit station anchor; excluding route end 5 percent; local research throat, not the entire named boundary"
+    }
+  ],
+  "shared_artifacts_manifest": "Data/Study/vancouver-island-columbia/registry/coastal-source-research-20261016-v3/manifest.json",
+  "physical_full_catalog_qualified": false,
+  "depth_sources": [
+    {
+      "location": "tacoma",
+      "url": "https://www.ngdc.noaa.gov/thredds/wcs/regional/puget_sound_13_navd88_2014.nc?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=Band1&CRS=OGC%3ACRS84&BBOX=-122.62%2C47.24%2C-122.5%2C47.35&WIDTH=1000&HEIGHT=1000&RESX=0.0002777778&RESY=0.0002777778&FORMAT=GeoTIFF_Float",
+      "sha256": "4cffeaacca6c99f2769d3f629e40609b6dcf3a168d575c2fadeb28f3793510b0",
+      "bytes": 6178501,
+      "crs": "EPSG:4326",
+      "bounds": [
+        -122.62004631198002,
+        47.239953713785,
+        -122.49995372275002,
+        47.350046303294995
+      ],
+      "shape": [
+        1189,
+        1297
+      ],
+      "units": "metres from NOAA dataset specification",
+      "vertical_datum": "NAVD88",
+      "elevation_convention": "positive_up",
+      "actual_min": -158.33889770507812,
+      "actual_max": 136.99049377441406,
+      "source_temporal_support": "static 2014 or 2015 integrated DEM; contributing survey dates vary; not annual observations",
+      "resampling": "WCS requested grid recorded in URL; actual grid retained from raster metadata; no local resampling or datum transformation",
+      "rights": "US NOAA public data; attribution required; not for navigation"
+    },
+    {
+      "location": "admiralty",
+      "url": "https://www.ngdc.noaa.gov/thredds/wcs/regional/puget_sound_13_navd88_2014.nc?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=Band1&CRS=OGC%3ACRS84&BBOX=-122.72%2C47.95%2C-122.5%2C48.12&WIDTH=1200&HEIGHT=1200&RESX=0.0002777778&RESY=0.0002777778&FORMAT=GeoTIFF_Float",
+      "sha256": "08a6d4302e2a0294238862fb5524873d6064e0157ca6bd6e95bb98d85f8aeb87",
+      "bytes": 17481347,
+      "crs": "EPSG:4326",
+      "bounds": [
+        -122.72004630918,
+        47.94995369390499,
+        -122.49995372275,
+        48.120046281734986
+      ],
+      "shape": [
+        1837,
+        2377
+      ],
+      "units": "metres from NOAA dataset specification",
+      "vertical_datum": "NAVD88",
+      "elevation_convention": "positive_up",
+      "actual_min": -197.82000732421875,
+      "actual_max": 165.75579833984375,
+      "source_temporal_support": "static 2014 or 2015 integrated DEM; contributing survey dates vary; not annual observations",
+      "resampling": "WCS requested grid recorded in URL; actual grid retained from raster metadata; no local resampling or datum transformation",
+      "rights": "US NOAA public data; attribution required; not for navigation"
+    },
+    {
+      "location": "juan-de-fuca",
+      "url": "https://www.ngdc.noaa.gov/thredds/wcs/regional/strait_of_juan_de_fuca_13_navd88_2015.nc?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=Band1&CRS=OGC%3ACRS84&BBOX=-124.05%2C48.08%2C-123.93%2C48.44&WIDTH=800&HEIGHT=2000&RESX=0.0002777778&RESY=0.0002777778&FORMAT=GeoTIFF_Float",
+      "sha256": "de7136644c8174c1644f87d02edb160f7515d14ea5bf0d002010752835213903",
+      "bytes": 20207699,
+      "crs": "EPSG:4326",
+      "bounds": [
+        -124.05004630694,
+        48.079953702584994,
+        -123.92995371771,
+        48.440046285095
+      ],
+      "shape": [
+        3889,
+        1297
+      ],
+      "units": "metres from NOAA dataset specification",
+      "vertical_datum": "NAVD88",
+      "elevation_convention": "positive_up",
+      "actual_min": -203.13999938964844,
+      "actual_max": 1136.26904296875,
+      "source_temporal_support": "static 2014 or 2015 integrated DEM; contributing survey dates vary; not annual observations",
+      "resampling": "WCS requested grid recorded in URL; actual grid retained from raster metadata; no local resampling or datum transformation",
+      "rights": "US NOAA public data; attribution required; not for navigation"
+    }
+  ],
+  "remaining_depth_source_status": "Ten passage datum references remain unqualified; nominal CHS values do not populate canonical qualified depths."
+}

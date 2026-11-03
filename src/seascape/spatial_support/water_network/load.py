@@ -51,6 +51,17 @@ def _manifest(config: WaterNetworkConfig) -> dict[str, Any]:
         raise ValueError("Configured and manifested water-mask versions disagree.")
     if metadata["spatial_support_version"] != config.spatial_support_version:
         raise ValueError("Configured and manifested spatial-support versions disagree.")
+    bindings = config.source_bindings or {}
+    identities = [str(a["path"]) for a in payload["artifacts"]]
+    if any(identities.count(key) != 1 for key in bindings):
+        raise ValueError(
+            "Source binding must identify exactly one original manifest artifact"
+        )
+    targets = [str(value.resolve()) for value in bindings.values()]
+    if len(set(targets)) != len(targets):
+        raise ValueError("Source bindings must have unique target paths")
+    # Runtime resolution only: preserve original manifest paths and checksums.
+    payload["_source_bindings"] = dict(zip(bindings, targets, strict=True))
     return payload
 
 
@@ -63,7 +74,9 @@ def _verify_artifact(path: Path, payload: dict[str, Any]) -> None:
         artifact
         for artifact in payload["artifacts"]
         if (
-            Path(str(artifact["path"])).resolve()
+            Path(payload["_source_bindings"][str(artifact["path"])]).resolve()
+            if str(artifact["path"]) in payload.get("_source_bindings", {})
+            else Path(str(artifact["path"])).resolve()
             if Path(str(artifact["path"])).is_absolute()
             else (artifact_root / str(artifact["path"])).resolve()
         )
@@ -72,7 +85,7 @@ def _verify_artifact(path: Path, payload: dict[str, Any]) -> None:
     if len(matches) != 1:
         raise ValueError(f"Manifest does not identify exactly one artifact for {path}.")
     expected = str(matches[0]["checksum"])
-    observed = checksum_path(path)
+    observed = checksum_path(path, logical_name=Path(str(matches[0]["path"])).name)
     if observed != expected:
         raise ValueError(
             f"Artifact checksum does not match canonical manifest: {path}; "
@@ -179,6 +192,49 @@ def load_model_area_support(
                 f"missing={missing}, extra={extra}."
             )
     return support.sort_values("H3_INDEX").reset_index(drop=True)
+
+
+def load_model_area_geometry(
+    resolution: int,
+    config_path: str | Path = DEFAULT_CONFIG_PATH,
+    *,
+    water_clipped: bool = True,
+    columns: list[str] | None = None,
+    verify_checksum: bool = True,
+):
+    """Load reporting geometries while retaining graph context in separate products."""
+    import geopandas as gpd
+
+    config = load_water_network_config(config_path)
+    support = load_model_area_support(
+        resolution, config_path, verify_checksum=verify_checksum
+    )
+    path = (
+        config.clipped_geometry_path(resolution)
+        if water_clipped
+        else config.full_geometry_path(resolution)
+    )
+    if verify_checksum:
+        _verify_artifact(path, _manifest(config))
+    # Check the complete identity column before filtering geometry reads.
+    identities = pd.read_parquet(path, columns=["H3_INDEX"])["H3_INDEX"]
+    if identities.isna().any() or identities.duplicated().any():
+        raise ValueError(
+            "Canonical reporting geometry requires unique H3 identity with nonnull keys"
+        )
+    keys = support.H3_INDEX.astype(str).tolist()
+    if set(keys) - set(identities.astype(str)):
+        raise ValueError("Canonical reporting geometry is missing model-support keys")
+    frame = gpd.read_parquet(path, columns=columns, filters=[("H3_INDEX", "in", keys)])
+    if frame.crs is None or frame.H3_INDEX.duplicated().any():
+        raise ValueError(
+            "Canonical reporting geometry requires CRS and unique H3 identity"
+        )
+    indexed = frame.set_index("H3_INDEX")
+    keys = support.H3_INDEX.astype(str).tolist()
+    if set(keys) - set(indexed.index.astype(str)):
+        raise ValueError("Canonical reporting geometry is missing model-support keys")
+    return indexed.loc[keys].reset_index()
 
 
 def load_water_neighborhoods(

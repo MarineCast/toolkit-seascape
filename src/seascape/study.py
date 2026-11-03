@@ -167,3 +167,14 @@ def apply_study_config(config: dict[str, Any]) -> dict[str, Any]:
             buffers["catchment_context_m"] / 1000
         )
     return result
+
+
+# Read-only published-product selection is independent of production planning.
+from .study_selection import (  # noqa: E402, F401
+    load_study_membership,
+    planning_report,
+    read_study_area,
+    read_study_research,
+    reject_study_selection,
+    validate_study_identity,
+)

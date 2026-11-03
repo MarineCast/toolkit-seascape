@@ -11,7 +11,7 @@ from seascape.maintenance.update_seascape_feature_catalog import (
 )
 
 CATALOG_PATH = project_root() / "config/feature_catalog.yaml"
-KEY_COLUMNS = {"H3_INDEX", "H3_RESOLUTION"}
+KEY_COLUMNS = {"H3_INDEX", "H3_RESOLUTION", "date"}
 METRIC_SUBFAMILIES = {
     "anthropogenic",
     "benthic",

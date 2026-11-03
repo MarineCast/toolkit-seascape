@@ -210,12 +210,13 @@ def sample_raster_bilinear(
 
 
 def validate_percentage(values: np.ndarray, variable: str) -> np.ndarray:
-    """Convert a percent raster to a bounded fraction and reject bad units."""
+    """Convert percentages, admitting only endpoint interpolation roundoff."""
 
     finite = values[np.isfinite(values)]
-    if finite.size and (finite.min() < 0.0 or finite.max() > 100.0):
+    tolerance = 8 * np.spacing(100.0)
+    if finite.size and (finite.min() < -tolerance or finite.max() > 100.0 + tolerance):
         raise ValueError(
             f"dbSEABED {variable} raster must use percent values in [0, 100]; "
             f"observed [{finite.min()}, {finite.max()}]."
         )
-    return values / 100.0
+    return np.where(np.isfinite(values), np.clip(values, 0.0, 100.0), values) / 100.0

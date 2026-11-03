@@ -6,6 +6,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+import numpy as np
 from shapely.geometry import LineString, Point
 from shapely.geometry.base import BaseGeometry
 
@@ -138,6 +139,29 @@ def summarize_coast(
     )
 
 
+def sample_line_positions(line: LineString, positions: Sequence[float]) -> list[Point]:
+    """Sample a metric source line using one cumulative-length traversal."""
+    if len(positions) == 0:
+        return []
+    coordinates = np.asarray(line.coords, dtype=float)[:, :2]
+    lengths = np.linalg.norm(np.diff(coordinates, axis=0), axis=1)
+    cumulative = np.concatenate(([0.0], np.cumsum(lengths)))
+    distance = np.clip(np.asarray(positions, dtype=float), 0, cumulative[-1])
+    indices = np.minimum(
+        np.searchsorted(cumulative, distance, side="right") - 1, len(lengths) - 1
+    )
+    fraction = np.divide(
+        distance - cumulative[indices],
+        lengths[indices],
+        out=np.zeros_like(distance),
+        where=lengths[indices] > 0,
+    )
+    values = coordinates[indices] + fraction[:, None] * (
+        coordinates[indices + 1] - coordinates[indices]
+    )
+    return [Point(value) for value in values]
+
+
 def headland_candidates(
     source_id: str,
     coast: LineString,
@@ -155,11 +179,15 @@ def headland_candidates(
     if not 0 < minimum_turn_degrees < 180:
         raise ValueError("Turn threshold must be between zero and 180 degrees")
     output = []
-    position = smoothing_distance_m
-    while position + smoothing_distance_m < coast.length:
-        before = coast.interpolate(position - smoothing_distance_m)
-        center = coast.interpolate(position)
-        after = coast.interpolate(position + smoothing_distance_m)
+    positions = np.arange(
+        smoothing_distance_m, coast.length - smoothing_distance_m, station_spacing_m
+    )
+    before_points = sample_line_positions(coast, positions - smoothing_distance_m)
+    centers = sample_line_positions(coast, positions)
+    after_points = sample_line_positions(coast, positions + smoothing_distance_m)
+    for position, before, center, after in zip(
+        positions, before_points, centers, after_points, strict=True
+    ):
         ax, ay = center.x - before.x, center.y - before.y
         bx, by = after.x - center.x, after.y - center.y
         turn = math.degrees(math.atan2(ax * by - ay * bx, ax * bx + ay * by))
@@ -191,5 +219,4 @@ def headland_candidates(
                         "METHOD": "land_sided_curvature_candidate_v1",
                     }
                 )
-        position += station_spacing_m
     return output

@@ -4,6 +4,7 @@ from .config import WaterNetworkConfig, load_water_network_config
 from .graph import WaterGraph, target_graph_mapping
 from .load import (
     attach_points_to_graph,
+    load_model_area_geometry,
     load_model_area_support,
     load_radius_sum_operator,
     load_reachable_water_area,
@@ -20,6 +21,7 @@ __all__ = [
     "WaterNetworkConfig",
     "RadiusSumOperator",
     "attach_points_to_graph",
+    "load_model_area_geometry",
     "load_model_area_support",
     "load_radius_sum_operator",
     "load_reachable_water_area",

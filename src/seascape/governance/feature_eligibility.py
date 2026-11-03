@@ -25,6 +25,18 @@ DETERMINISTIC_EXCLUSIONS = {
     "SURFACE_AREA_RATIO_FROM_SLOPE": "deterministic_transform_of_slope",
 }
 PRODUCT_FIELD_EXCLUSIONS = {
+    (
+        "seagrass",
+        "SEAGRASS_EXTENT_ALL_TIME_M2",
+    ): "source_qualified_all_history_extent_requires_downstream_review",
+    (
+        "kelp",
+        "KELP_EXTENT_ALL_TIME_M2",
+    ): "source_qualified_all_history_extent_requires_downstream_review",
+    (
+        "kelp_annual",
+        "ANNUAL_KELP_EXTENT_M2",
+    ): "source_qualified_annual_extent_requires_temporal_review",
     ("bathymetry", "BATHYMETRY_LOCAL_ANOMALY"): (
         "signed_duplicate_of_geomorphometry_terrain_position_ring_2"
     ),

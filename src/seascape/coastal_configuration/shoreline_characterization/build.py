@@ -690,7 +690,8 @@ def build_shoreline_characterization(
             ],
             source_completeness="partial",
             metadata={
-                "fraction_denominator": "physically_classified_shoreline_length_m",
+                "fraction_denominator": "unique_physically_classified_shoreline_length_m",
+                "shoreline_length_method": "physical_line_union_v2",
                 "overlapping_classes_may_sum_above_one": True,
                 "distance_semantics": ["straight_projected", "water_network"],
                 "h3_resolutions": list(config.resolutions),

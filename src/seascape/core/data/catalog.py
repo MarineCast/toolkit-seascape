@@ -642,8 +642,10 @@ def register_builtin_datasets():
                     f"environment.seascape.kelp_habitat_r{resolution}",
                     f"environment.seascape.reef_habitat_r{resolution}",
                 )
-            elif name in {"seagrass_habitat", "kelp_habitat"}:
-                dependencies = (*native_graph_dependencies, *aggregation_dependencies)
+            elif name in {"kelp_habitat", "seagrass_habitat"}:
+                dependencies = (
+                    f"environment.seascape.h3_marine_full_geometry_r{resolution}",
+                )
             else:
                 dependencies = (
                     f"environment.seascape.h3_marine_support_r{resolution}",
@@ -657,17 +659,35 @@ def register_builtin_datasets():
                 dependencies=dependencies,
                 primary_key=("H3_INDEX",),
                 schema_version=(
-                    "2"
+                    "3"
+                    if name == "seagrass_habitat"
+                    else "2"
                     if name
                     in {
                         "benthic_substrate_classification",
                         "bottom_hardness",
                         "reef_habitat",
                         "benthic_habitat",
+                        "kelp_habitat",
+                        "seagrass_habitat",
                     }
                     else "1"
                 ),
             )
+            if name == "seagrass_habitat":
+                continue
+            if name == "kelp_habitat":
+                _register(
+                    f"environment.seascape.{name}_annual_r{resolution}",
+                    DatasetLayer.DOMAIN,
+                    DatasetFormat.PARQUET,
+                    f"{{data_root}}/processed/domain/environmental_layer/seascape/{relative_directory}/{filename}_ANNUAL_RES_{resolution}.parquet",
+                    producer,
+                    dependencies=dependencies,
+                    primary_key=("H3_INDEX", "date"),
+                    schema_version="2",
+                )
+                continue
             confidence_id = f"environment.seascape.{name}_confidence_r{resolution}"
             confidence_filename = (
                 "BENTHIC_SUBSTRATE_CONFIDENCE"

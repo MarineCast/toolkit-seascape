@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,9 +10,10 @@ from typing import Any, Collection, Mapping, TypeVar
 import yaml
 from pydantic import BaseModel
 
+from .environment import environment_values
 from .paths import project_root, resolve_config_path
 
-_ENV_PATTERN = re.compile(r"^\$\{env:([A-Z][A-Z0-9_]*)\}$")
+_ENV_PATTERN = re.compile(r"^\$\{env:([A-Z][A-Z0-9_]*)(?::-([^}]*))?\}$")
 _REF_PATTERN = re.compile(r"^\$\{([a-zA-Z_][a-zA-Z0-9_.-]*)\}$")
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -40,19 +40,32 @@ def _lookup(mapping: Mapping[str, Any], dotted: str) -> Any:
 
 
 def _resolve_values(
-    value: Any, root: Mapping[str, Any], stack: tuple[str, ...] = ()
+    value: Any,
+    root: Mapping[str, Any],
+    stack: tuple[str, ...] = (),
+    *,
+    environment: Mapping[str, str] | None = None,
 ) -> Any:
+    if environment is None:
+        environment = environment_values()
     if isinstance(value, Mapping):
-        return {key: _resolve_values(item, root, stack) for key, item in value.items()}
+        return {
+            key: _resolve_values(item, root, stack, environment=environment)
+            for key, item in value.items()
+        }
     if isinstance(value, list):
-        return [_resolve_values(item, root, stack) for item in value]
+        return [
+            _resolve_values(item, root, stack, environment=environment)
+            for item in value
+        ]
     if isinstance(value, str):
         env_match = _ENV_PATTERN.match(value)
         if env_match:
             name = env_match.group(1)
-            if name not in os.environ:
+            result = environment.get(name, env_match.group(2))
+            if result is None:
                 raise ValueError(f"Required environment variable is not set: {name}")
-            return os.environ[name]
+            return result
         ref_match = _REF_PATTERN.match(value)
         if ref_match:
             reference = ref_match.group(1)
@@ -60,7 +73,12 @@ def _resolve_values(
                 raise ValueError(
                     f"Configuration reference cycle: {' -> '.join((*stack, reference))}"
                 )
-            return _resolve_values(_lookup(root, reference), root, (*stack, reference))
+            return _resolve_values(
+                _lookup(root, reference),
+                root,
+                (*stack, reference),
+                environment=environment,
+            )
     return value
 
 

@@ -23,6 +23,8 @@ The live explorer is a separate research path with explicit acquisition and expl
 | Document | Purpose |
 | --- | --- |
 | [Workflow and operation effects](WORKFLOWS.md) | Planning, processing, inspection, promotion and failure guidance |
+| [Historical data](historical-data.md) | Modeling-window extraction, native annual/composite support, geometry QC and explicit source gaps |
+| [Regional completion](regional-completion.md) | Source-identified coastal policy, native memberships, wider graph context and bounded regional execution |
 | [Bounded San Juan pilot](pilots/san-juan.md) | Executed exploratory R6/R8 family pilot, measurements and limits; not a complete regional release |
 | [Scientific hardening evidence](scientific-hardening.md) | Development-branch issue results, migrations and blockers |
 | [Capability coverage](capability-coverage.md) | Existing, unmaterialized, data-blocked and deferred physical capabilities |
@@ -33,6 +35,9 @@ The live explorer is a separate research path with explicit acquisition and expl
 | [Stage input reference](stage-inputs.md) | Default prerequisites generated from the existing planner/preflight metadata |
 | [Python API](API.md) | Supported producers/readers, exceptions and a release-frozen consumer example |
 | [Matrix export](metric-matrix.md) | Key alignment, field provenance, source units/types and legacy limits |
+| [Reviewed compact delivery](reviewed-delivery.md) | Approved static schemas, external audit, missingness policy and migration |
+| [Artificial reef mapped presence](artificial-reefs.md) | ARSBC/WDFW/NOAA reconciliation, Boolean semantics and native support limits |
+| [Simplification assessment](simplification-assessment.md) | Adopted compact schemas for twelve families, with source meaning and limits |
 | [Scientific/source contracts](CONTRACTS.md) | Grain, support, CRS, depth sign, missingness and source rights |
 | [Reference product index](products.md) | Family guides and the checked-in historical catalog, not a certified current release |
 | [Architecture](ARCHITECTURE.md) | Producer ownership and repository map |
@@ -49,3 +54,12 @@ The live explorer is a separate research path with explicit acquisition and expl
 [transfer inventory](migration-inventory.json) record historical work. Their test counts,
 consumer/release statements and paths are not current-run evidence. Follow current guides and
 the progress record when deciding what has been verified.
+
+- [Metric-only final exports](metric-only-exports.md) — current schema and audit independence.
+- [Full-area rebuild verification](full-rebuild-verification.md) — producer execution, metric-format checks and source limitations.
+- [Source rebuild recovery](source-rebuild-recovery.md) — OSM acquisition, bounded river processing and the thirteen reporting-grid differences.
+- [Complete metrics CLI rebuild](metric-rebuild.md) — one command for source verification, fresh support, all current producers and 29-table validation.
+
+- [Packaged source reproduction](packaged-source-reproduction.md) — bindings and bounded producers.
+
+- [Installed real-source producer validation and maps](installed-producer-closeout.md) — current metric-only terrain/substrate acceptance.

@@ -60,8 +60,9 @@ def main() -> int:
     check_resources(location.parent)
     from seascape.core.data.registry import DATASETS
 
-    assert len(tuple(DATASETS)) == 105
-    dataset_ids = {dataset.dataset_id for dataset in DATASETS}
+    datasets = tuple(DATASETS)
+    dataset_ids = {dataset.dataset_id for dataset in datasets}
+    assert len(dataset_ids) == len(datasets), "Duplicate installed dataset IDs"
     assert {
         "environment.seascape.gebco_tid_r6",
         "environment.seascape.gebco_tid_r8",
@@ -91,6 +92,7 @@ def main() -> int:
                     "prefix": sys.prefix,
                     "package": str(location),
                     "modules": count,
+                    "datasets": len(datasets),
                     "system": platform.system(),
                     "release": platform.release(),
                     "machine": platform.machine(),

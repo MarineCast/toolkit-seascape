@@ -1,0 +1,149 @@
+{
+  "bathymetry-r8": {
+    "rows": 40,
+    "columns": [
+      "BATHYMETRY",
+      "BATHYMETRY_MEDIAN",
+      "BATHYMETRY_MIN",
+      "BATHYMETRY_MAX",
+      "BATHYMETRY_STD",
+      "BATHYMETRY_RANGE",
+      "BATHYMETRY_LOCAL_ANOMALY",
+      "BATHYMETRY_Q10",
+      "BATHYMETRY_Q25",
+      "BATHYMETRY_Q75",
+      "BATHYMETRY_Q90",
+      "BATHYMETRY_PIXEL_COUNT_0_10_M",
+      "BATHYMETRY_FRAC_0_10_M",
+      "BATHYMETRY_PIXEL_COUNT_10_30_M",
+      "BATHYMETRY_FRAC_10_30_M",
+      "BATHYMETRY_PIXEL_COUNT_30_50_M",
+      "BATHYMETRY_FRAC_30_50_M",
+      "BATHYMETRY_PIXEL_COUNT_50_100_M",
+      "BATHYMETRY_FRAC_50_100_M",
+      "BATHYMETRY_PIXEL_COUNT_100_200_M",
+      "BATHYMETRY_FRAC_100_200_M",
+      "BATHYMETRY_PIXEL_COUNT_OVER_200_M",
+      "BATHYMETRY_FRAC_OVER_200_M",
+      "BATHYMETRY_PIXEL_COUNT"
+    ],
+    "max_absolute_errors": {
+      "BATHYMETRY": 0.0,
+      "BATHYMETRY_MEDIAN": 0.0,
+      "BATHYMETRY_MIN": 0.0,
+      "BATHYMETRY_MAX": 0.0,
+      "BATHYMETRY_STD": 0.0,
+      "BATHYMETRY_RANGE": 0.0,
+      "BATHYMETRY_LOCAL_ANOMALY": 0.0,
+      "BATHYMETRY_Q10": 0.0,
+      "BATHYMETRY_Q25": 0.0,
+      "BATHYMETRY_Q75": 0.0,
+      "BATHYMETRY_Q90": 0.0,
+      "BATHYMETRY_PIXEL_COUNT_0_10_M": 0.0,
+      "BATHYMETRY_FRAC_0_10_M": 0.0,
+      "BATHYMETRY_PIXEL_COUNT_10_30_M": 0.0,
+      "BATHYMETRY_FRAC_10_30_M": 0.0,
+      "BATHYMETRY_PIXEL_COUNT_30_50_M": 0.0,
+      "BATHYMETRY_FRAC_30_50_M": 0.0,
+      "BATHYMETRY_PIXEL_COUNT_50_100_M": 0.0,
+      "BATHYMETRY_FRAC_50_100_M": 0.0,
+      "BATHYMETRY_PIXEL_COUNT_100_200_M": 0.0,
+      "BATHYMETRY_FRAC_100_200_M": 0.0,
+      "BATHYMETRY_PIXEL_COUNT_OVER_200_M": 0.0,
+      "BATHYMETRY_FRAC_OVER_200_M": 0.0,
+      "BATHYMETRY_PIXEL_COUNT": 0.0
+    },
+    "status": "matched"
+  },
+  "terrain-native-slope-r8": {
+    "rows": 32,
+    "columns": [
+      "SLOPE_MEAN_NATIVE_RASTER",
+      "SLOPE_Q90_NATIVE_RASTER"
+    ],
+    "max_absolute_errors": {
+      "SLOPE_MEAN_NATIVE_RASTER": 0.0,
+      "SLOPE_Q90_NATIVE_RASTER": 0.0
+    },
+    "status": "matched"
+  },
+  "mapped-substrate-classes-r6": {
+    "rows": 10,
+    "columns": [
+      "REPORTING_WATER_AREA_M2",
+      "MAPPED_SUBSTRATE_AREA_M2",
+      "MAPPED_SOURCE_COVERAGE_FRAC",
+      "SOURCE_RECORD_COUNT",
+      "CLASS_OVERLAP_EXCESS_AREA_M2",
+      "AREAL_CLASS_QC",
+      "HARD_CLASS_AREA_M2",
+      "HARD_CLASS_FRAC_OF_MAPPED_AREA",
+      "MIXED_CLASS_AREA_M2",
+      "MIXED_CLASS_FRAC_OF_MAPPED_AREA",
+      "SOFT_CLASS_AREA_M2",
+      "SOFT_CLASS_FRAC_OF_MAPPED_AREA"
+    ],
+    "max_absolute_errors": {
+      "REPORTING_WATER_AREA_M2": 0.0,
+      "MAPPED_SUBSTRATE_AREA_M2": 0.0,
+      "MAPPED_SOURCE_COVERAGE_FRAC": 0.0,
+      "SOURCE_RECORD_COUNT": 0.0,
+      "CLASS_OVERLAP_EXCESS_AREA_M2": 0.0,
+      "HARD_CLASS_AREA_M2": 0.0,
+      "HARD_CLASS_FRAC_OF_MAPPED_AREA": 0.0,
+      "MIXED_CLASS_AREA_M2": 0.0,
+      "MIXED_CLASS_FRAC_OF_MAPPED_AREA": 0.0,
+      "SOFT_CLASS_AREA_M2": 0.0,
+      "SOFT_CLASS_FRAC_OF_MAPPED_AREA": 0.0
+    },
+    "status": "matched"
+  },
+  "mapped-substrate-classes-r8": {
+    "rows": 10,
+    "columns": [
+      "REPORTING_WATER_AREA_M2",
+      "MAPPED_SUBSTRATE_AREA_M2",
+      "MAPPED_SOURCE_COVERAGE_FRAC",
+      "SOURCE_RECORD_COUNT",
+      "CLASS_OVERLAP_EXCESS_AREA_M2",
+      "AREAL_CLASS_QC",
+      "HARD_CLASS_AREA_M2",
+      "HARD_CLASS_FRAC_OF_MAPPED_AREA",
+      "MIXED_CLASS_AREA_M2",
+      "MIXED_CLASS_FRAC_OF_MAPPED_AREA",
+      "SOFT_CLASS_AREA_M2",
+      "SOFT_CLASS_FRAC_OF_MAPPED_AREA"
+    ],
+    "max_absolute_errors": {
+      "REPORTING_WATER_AREA_M2": 0.0,
+      "MAPPED_SUBSTRATE_AREA_M2": 0.0,
+      "MAPPED_SOURCE_COVERAGE_FRAC": 0.0,
+      "SOURCE_RECORD_COUNT": 0.0,
+      "CLASS_OVERLAP_EXCESS_AREA_M2": 0.0,
+      "HARD_CLASS_AREA_M2": 0.0,
+      "HARD_CLASS_FRAC_OF_MAPPED_AREA": 0.0,
+      "MIXED_CLASS_AREA_M2": 0.0,
+      "MIXED_CLASS_FRAC_OF_MAPPED_AREA": 0.0,
+      "SOFT_CLASS_AREA_M2": 0.0,
+      "SOFT_CLASS_FRAC_OF_MAPPED_AREA": 0.0
+    },
+    "status": "matched"
+  },
+  "freshwater-r8": {
+    "rows": 40,
+    "columns": [
+      "DISTANCE_TO_RIVER_MOUTH_M",
+      "NEAREST_RIVER_MOUTH_ID",
+      "NEAREST_RIVER_MOUTH_WIDTH_M",
+      "MAPPED_RIVER_MOUTH_PRESSURE_5KM",
+      "MAPPED_WIDTH_WEIGHTED_RIVER_MOUTH_PRESSURE_5KM"
+    ],
+    "max_absolute_errors": {
+      "DISTANCE_TO_RIVER_MOUTH_M": 2.5938788894563913e-09,
+      "NEAREST_RIVER_MOUTH_WIDTH_M": 0.0,
+      "MAPPED_RIVER_MOUTH_PRESSURE_5KM": 4.945377440890297e-12,
+      "MAPPED_WIDTH_WEIGHTED_RIVER_MOUTH_PRESSURE_5KM": 5.329070518200751e-12
+    },
+    "status": "matched"
+  }
+}

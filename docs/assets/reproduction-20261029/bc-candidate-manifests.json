@@ -1,0 +1,372 @@
+{
+  "bc-shoreline-r8": {
+    "schema": 3,
+    "operator": "shoreline",
+    "method_version": "native_full_h3_physical_shoreline_unique_union_v2",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "649ed88bac8a9cb61193b4f879699fd54b6b60e478affa7647efcc977e2087d7"
+    },
+    "resolution": 8,
+    "domain": {
+      "id": "bounded-bc-positive-source-acceptance",
+      "revision": "2026-10-29",
+      "support": "native H3",
+      "coverage_status": "source-relative not complete"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-shoreline-r8/reporting.txt",
+        "sha256": "c1b5df58d57eb0b0c976bfd5b16b03e4bc5a21d9f552e8cd43ccaab9cc3ed0b0",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "MarineCast support",
+          "coverage_status": "bounded reporting sample",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-shoreline-r8/support.parquet",
+        "sha256": "b9c4c27a8b3fcba353e606e8d52231487f85a4be383ef4013cbc97a2b51bd80d",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "MarineCast support",
+          "coverage_status": "current retained support",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "inventory": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-physical-inventory.parquet",
+        "sha256": "beab418e99ab9c329b0896b802f8db5ad08cf35b507d228e754c986bcfdab5f5",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "bounded source inventories; no global absence",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "raw_BC_SHOREZONE_COMPLETE.geojson": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/BC_SHOREZONE_COMPLETE.geojson",
+        "sha256": "24f6debb33385f491e011f3eb058eb0ee9922c645f757981f05b8fe627bf5093",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "provider record extent; see receipt",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "ec6bf7af90b7f766fae5d17d38b4b7ac0a5cf5e9f477ff2c63bf4bfd8f969241",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 195723264,
+      "elapsed_seconds": 0.6040577499952633,
+      "staging_bytes": 18207
+    },
+    "details": {
+      "rows": 16,
+      "classification": "nonexclusive_evidence_union_no_survey_absence"
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "da1fc8fef91d73285483af15f4a8f617c25f42b77fef6a9339e543259a242fcb",
+        "bytes": 18207
+      }
+    }
+  },
+  "bc-anthropogenic-r8": {
+    "schema": 3,
+    "operator": "anthropogenic",
+    "method_version": "native_physical_anthropogenic_union_leaves_v3",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "649ed88bac8a9cb61193b4f879699fd54b6b60e478affa7647efcc977e2087d7"
+    },
+    "resolution": 8,
+    "domain": {
+      "id": "bounded-bc-positive-source-acceptance",
+      "revision": "2026-10-29",
+      "support": "native H3",
+      "coverage_status": "source-relative not complete"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-anthropogenic-r8/reporting.txt",
+        "sha256": "0211fe0606489f6392073ca50c0ea5c0e951ff8d81cb25ebf9080751adf46190",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "MarineCast support",
+          "coverage_status": "bounded reporting sample",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-anthropogenic-r8/support.parquet",
+        "sha256": "a534b49b0becc644ba208aa50e5d54e60f2b8ae79acf27cf7d00a10f1d56114b",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "MarineCast support",
+          "coverage_status": "current retained support",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "inventory": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-combined-inventory.parquet",
+        "sha256": "d679b8abc1b3db88114c2ca76e7ac7da70f92d3e6582f04f8a345c2158f4ff60",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "bounded source inventories; no global absence",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "raw_BC_SHOREZONE_COMPLETE.geojson": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/BC_SHOREZONE_COMPLETE.geojson",
+        "sha256": "24f6debb33385f491e011f3eb058eb0ee9922c645f757981f05b8fe627bf5093",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "provider record extent; see receipt",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "raw_BC_DFO_SHELLFISH_LICENCES.csv": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/BC_DFO_SHELLFISH_LICENCES.csv",
+        "sha256": "47eec38e5323bee7ba2fc2cf0cc23e61d702bd70644a5d6dac86ffc718aa327c",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "provider record extent; see receipt",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "raw_CA_DISPOSAL_SMALL.geojson": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/CA_DISPOSAL_SMALL.geojson",
+        "sha256": "be7021c8770e6240025ec03ff9766c54ab27f8f99bbd476f86cba220a4df4509",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "provider record extent; see receipt",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "water": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/COASTAL_CONTEXT_WATER.parquet",
+        "sha256": "b9e009d96e28cbb845ab1c71ae5b9bb16fc07230e490e572759bf9c7a88eb19a",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "MarineCast qualified water context",
+          "coverage_status": "current support vintage",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "d7d0a239547336f3ae186c76c4e58d64f4bdd2d2e506ae46c5147d68aa5daa46",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 324272128,
+      "elapsed_seconds": 12.914417833992047,
+      "staging_bytes": 27458
+    },
+    "details": {
+      "rows": 24,
+      "inventory_projection": {
+        "projection": []
+      },
+      "water_projection_subdivision": {
+        "projection": [],
+        "subdivision": [
+          {
+            "source_piece": 0,
+            "subpieces": 1507,
+            "sum_area_difference_m2": 0.000518798828125
+          }
+        ]
+      },
+      "survey_absence_qualified": false,
+      "network_metrics": "unqualified_null"
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "7cb681aa1c01df2e73e809e502da96e82ef24605c301b75a7f4a66cf6ee2c198",
+        "bytes": 27458
+      }
+    }
+  },
+  "bc-anthropogenic-r6": {
+    "schema": 3,
+    "operator": "anthropogenic",
+    "method_version": "native_physical_anthropogenic_union_leaves_v3",
+    "toolkit_version": "0.1.1",
+    "code_identity": {
+      "git_revision": null,
+      "dirty": true,
+      "source_tree_sha256": "649ed88bac8a9cb61193b4f879699fd54b6b60e478affa7647efcc977e2087d7"
+    },
+    "resolution": 6,
+    "domain": {
+      "id": "bounded-bc-positive-source-acceptance",
+      "revision": "2026-10-29",
+      "support": "native H3",
+      "coverage_status": "source-relative not complete"
+    },
+    "status": "source_scoped_operator_candidate",
+    "complete_toolkit": false,
+    "published": false,
+    "source_acquisition_bytes": 0,
+    "inputs": {
+      "reporting": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-anthropogenic-r6/reporting.txt",
+        "sha256": "6a5c8759befc5a425e86866fe21076fa59a5c5b7cb38bc1e0d632f86470f7d3b",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "MarineCast support",
+          "coverage_status": "bounded reporting sample",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "support": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-anthropogenic-r6/support.parquet",
+        "sha256": "11c2d464cd0f3a39ece1ddf533c70687a0ee7685905dbf39cd1d279c60406594",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "MarineCast support",
+          "coverage_status": "current retained support",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "inventory": {
+        "path": "/Users/tylerstevenson/Documents/Codex/2026-10-29/task-6/repair-extension/bc-combined-inventory.parquet",
+        "sha256": "d679b8abc1b3db88114c2ca76e7ac7da70f92d3e6582f04f8a345c2158f4ff60",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "bounded source inventories; no global absence",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "raw_BC_SHOREZONE_COMPLETE.geojson": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/BC_SHOREZONE_COMPLETE.geojson",
+        "sha256": "24f6debb33385f491e011f3eb058eb0ee9922c645f757981f05b8fe627bf5093",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "provider record extent; see receipt",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "raw_BC_DFO_SHELLFISH_LICENCES.csv": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/BC_DFO_SHELLFISH_LICENCES.csv",
+        "sha256": "47eec38e5323bee7ba2fc2cf0cc23e61d702bd70644a5d6dac86ffc718aa327c",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "provider record extent; see receipt",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "raw_CA_DISPOSAL_SMALL.geojson": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/cache/reproduction-20261029/CA_DISPOSAL_SMALL.geojson",
+        "sha256": "be7021c8770e6240025ec03ff9766c54ab27f8f99bbd476f86cba220a4df4509",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "Open Government Licence BC / Canada",
+          "coverage_status": "provider record extent; see receipt",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      },
+      "water": {
+        "path": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/COASTAL_CONTEXT_WATER.parquet",
+        "sha256": "b9e009d96e28cbb845ab1c71ae5b9bb16fc07230e490e572759bf9c7a88eb19a",
+        "hash_kind": "raw_file_sha256",
+        "qualification": {
+          "rights": "MarineCast qualified water context",
+          "coverage_status": "current support vintage",
+          "spatial_support": "Native source geometry; source-relative mapped evidence",
+          "observation_period": null
+        }
+      }
+    },
+    "spec_raw_sha256": "e9d74e6d59013cc83e5fbcb1fdf2ec7af8d6b6b74071fd2c8ec4cb9d97deaa93",
+    "settings": {},
+    "limits": {
+      "seconds": 180,
+      "memory_bytes": 1610612736,
+      "staging_bytes": 33554432,
+      "batch_rows": 16,
+      "input_bytes": 1099511627776
+    },
+    "measurements": {
+      "peak_rss_bytes": 324747264,
+      "elapsed_seconds": 12.454617041978054,
+      "staging_bytes": 27480
+    },
+    "details": {
+      "rows": 24,
+      "inventory_projection": {
+        "projection": []
+      },
+      "water_projection_subdivision": {
+        "projection": [],
+        "subdivision": [
+          {
+            "source_piece": 0,
+            "subpieces": 1507,
+            "sum_area_difference_m2": 0.000518798828125
+          }
+        ]
+      },
+      "survey_absence_qualified": false,
+      "network_metrics": "unqualified_null"
+    },
+    "files": {
+      "metrics.parquet": {
+        "raw_content_sha256": "664bd3eb72a2e01956355209ee1309a7990dcd98d1bab34b50508f5b723f5fe9",
+        "bytes": 27480
+      }
+    }
+  }
+}

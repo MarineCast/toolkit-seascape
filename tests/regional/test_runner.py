@@ -629,3 +629,52 @@ def test_resource_alarm_restores_handler_and_preserves_failed_candidate(
     assert signal.getitimer(signal.ITIMER_REAL) == (0.0, 0.0)
     assert (tmp_path / "candidate/FAILED.json").is_file()
     assert not (tmp_path / "candidate/MANIFEST.json").exists()
+
+
+def test_candidate_cannot_modify_input_directory(setup_job, tmp_path):
+    _, spec, pin, save = setup_job("estuary", 8)
+    source = tmp_path / "input-directory"
+    source.mkdir()
+    (source / "retained.txt").write_text("unique source")
+    pin("directory", source)
+    spec["output"] = str(source / "nested-output")
+    with pytest.raises(RegionalError, match="overlaps"):
+        run_spec(save())
+    assert not (source / "nested-output").exists()
+
+
+def test_regional_armoring_uses_maximum_available_dataset(setup_job, tmp_path):
+    from seascape.domain_parquets import AreaTables, read_area, write_areas
+
+    keys, _, pin, save = setup_job("anthropogenic", 6)
+    polygon = shapely.union_all(cells(keys).geometry.to_numpy()).buffer(0.01)
+    water = tmp_path / "water.parquet"
+    gpd.GeoDataFrame(geometry=[polygon], crs=4326).to_parquet(water)
+    pin("water", water)
+    lat, lon = h3.cell_to_latlng(keys[0])
+    line = shapely.LineString([(lon - 0.001, lat), (lon + 0.001, lat)])
+    inventory = gpd.GeoDataFrame(
+        {
+            "FEATURE_CLASS": ["shoreline_survey"] * 3,
+            "IS_CANONICAL": [True] * 3,
+            "SUPPORTS_AREA": [False] * 3,
+            "SUPPORTS_SHORELINE_DENOMINATOR": [True] * 3,
+            "ARMORING_FRACTION_ESTIMATE": [0.0, 1.0, np.nan],
+            "SOURCE_DATASET": ["zero", "one", "missing"],
+        },
+        geometry=[line] * 3,
+        crs=4326,
+    )
+    path = tmp_path / "inventory.parquet"
+    inventory.to_parquet(path)
+    pin("inventory", path)
+    run_spec(save())
+    native = pq.read_table(tmp_path / "candidate/metrics.parquet")
+    values = native.to_pandas().set_index("H3_INDEX")
+    assert values.loc[keys[0], "SHORELINE_ARMORING_FRAC"] == 1
+    assert values.SHORELINE_ARMORING_FRAC.isna().sum() == len(keys) - 1
+    write_areas({"anthropogenic": AreaTables(native)}, output=tmp_path / "public")
+    result = read_area("anthropogenic", output=tmp_path / "public")
+    assert result.num_columns == 6
+    assert result["shoreline_armoring_fraction"].to_pylist()[0] == 1
+    assert not any("qc" in name or "coverage" in name for name in result.column_names)

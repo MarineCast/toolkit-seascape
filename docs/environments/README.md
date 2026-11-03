@@ -41,18 +41,28 @@ downstream integration and unfamiliar-human onboarding are separate, unrun gates
 
 ## Reproducibility baseline
 
-`quality-python314-macos-arm64.txt` is the SS-07 reproducibility baseline for the installed
-runtime/test/quality closure. Its JSON records CPython 3.14.6, macOS 26.6.2 ARM64, GDAL 3.12.4,
-PROJ 9.8.1 and GEOS 3.13.1. Fresh isolated constrained and unconstrained wheel installations
-were exercised locally. The constrained closure/native versions matched; the unconstrained
-solve selected platformdirs 4.12.0 instead of the pinned 4.11.15, with the same native versions.
-Ruff 0.16.9,
-mypy 2.3.1, pip-audit 2.10.1 and pip 26.2.1 are part of this baseline.
-The quality extra requires pip >=26.2 after its expanded closure audit identified
-PYSEC-2026-3721 in bootstrap pip 26.1.2; the fixed version is audited, not ignored. This is tested compatibility on
-that platform, not proof that every declared lower bound or another OS works. Package metadata
-retains dependency ranges. The earlier `python314-macos-arm64.{txt,json}` is historical
-runtime/test evidence and is preserved, rather than silently replaced.
+`quality-python314-macos-arm64.{txt,json}` is the current 2026-11-03
+runtime/test/quality baseline, captured on CPython 3.14.0, macOS 27.0.1 ARM64,
+GDAL 3.12.4, PROJ 9.8.1 and GEOS 3.13.1. The previous SS-07 baseline is preserved
+as `quality-python314-macos-arm64-ss07.{txt,json}` with its original metadata.
+The earlier `python314-macos-arm64.{txt,json}` remains historical runtime/test evidence.
+
+The failed [macOS snapshot](https://github.com/MarineCast/toolkit-seascape/actions/runs/41443432254)
+contained exactly two newly required runtime packages absent from SS-07:
+`ijson==3.6.0` and `psutil==7.2.2`. After including them, the audit identified
+vulnerable older baseline pins. The current baseline updates only those affected
+pins: Certifi 2026.10.18, Filelock 4.2.1, Msgpack 1.2.3 and Pillow 13.0.0.
+All other SS-07 dependency versions and GDAL/PROJ/GEOS remain unchanged.
+Ruff 0.16.9, mypy 2.3.1, pip-audit 2.10.1 and pip 26.2.1 remain in this baseline.
+The quality extra still requires pip >=26.2; audits do not ignore vulnerable pins.
+
+Both the extended constrained solve and a fresh unconstrained solve passed locally
+on 2026-11-03: 766 tests, three expected absent-regional-artifact skips, lint,
+formatting, configured types, `pip check` and strict closure audits with no known
+vulnerabilities. The constrained dependency/native snapshot matched exactly.
+This is tested compatibility on that platform, not proof for every declared lower
+bound or OS. The macOS 15 hosted job independently checks and audits this baseline;
+a configured job alone does not establish execution evidence.
 
 To reproduce on a compatible Python 3.14 ARM64 macOS platform (use an explicit wheel path):
 
@@ -60,7 +70,7 @@ To reproduce on a compatible Python 3.14 ARM64 macOS platform (use an explicit w
 python3.14 -m venv /tmp/seascape-quality
 /tmp/seascape-quality/bin/python -m pip install \
   -c docs/environments/quality-python314-macos-arm64.txt \
-  '/absolute/path/toolkit_seascape-0.1.0-py3-none-any.whl[test,quality]'
+  '/absolute/path/toolkit_seascape-0.1.1-py3-none-any.whl[test,quality]'
 /tmp/seascape-quality/bin/python -m pip check
 /tmp/seascape-quality/bin/ruff check src tests scripts
 /tmp/seascape-quality/bin/ruff format --check src tests scripts
@@ -92,11 +102,15 @@ Ruff checks all Python under `src/`, `tests/` and `scripts/`: syntax/control-flo
 `F811,F601,F602`, mutable defaults `B006`, and import order `I001`. Formatting uses the existing
 defaults/Python 3.14 target. No new per-file exclusions or rule suppressions were added.
 
-Mypy checks these **12 modules**, with annotated functions, checked bodies and unused-ignore warnings:
+Mypy checks these **21 modules**, with annotated functions, checked bodies and unused-ignore warnings:
 
-- `products.py`, `core/geo/crs.py`, `core/artifacts/confinement.py`, `seafloor_physiography/depth.py`
+- `products.py`, `domain_parquets.py`, `legacy_products.py`, `core/geo/crs.py`, `core/artifacts/confinement.py`, `seafloor_physiography/depth.py`
 - `demo.py`, `cli.py`, `_cli_diagnostics.py`, `preflight.py`
 - `core/config/document.py`, `core/config/data.py`, `core/config/paths.py`, `metric_matrix.py`
+- `historical.py`, `biogenic_habitat/seagrass/native.py`, `utils/geometry_quality.py`
+- `spatial_support/coastal_policy.py`, `spatial_support/coastal_policy_build.py`
+- `biogenic_habitat/kelp/native.py`
+- `benthic_substrate/areal.py`
 
 The project syntax/type target is Python 3.14. Existing skipped imports/missing external
 stubs remain explicit limits; this is not strict typing of the whole scientific implementation.

@@ -1,0 +1,684 @@
+{
+  "review_date": "2026-10-29",
+  "scope": "Static projection verification; 40-cell R6 bivalve scientific replay; delivered maps, not full regional reconstruction",
+  "products": {
+    "anthropogenic-r6-static.parquet": {
+      "sha256": "f49e6277c3c0f6f5160d4a39fcd28aee344565f955038d175b8d9cd22baceaa5",
+      "rows": 2621,
+      "columns": [
+        "h3_index",
+        "has_mapped_aquaculture",
+        "has_mapped_artificial_reef",
+        "has_mapped_disposal_site",
+        "has_mapped_dredged_channel",
+        "shoreline_armoring_fraction"
+      ],
+      "native_columns": 57,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "has_mapped_aquaculture": 0,
+        "has_mapped_artificial_reef": 0,
+        "has_mapped_disposal_site": 0,
+        "has_mapped_dredged_channel": 0,
+        "shoreline_armoring_fraction": 1910
+      }
+    },
+    "anthropogenic-r8-static.parquet": {
+      "sha256": "6a3f7bb01e99e7fa34d083a9fc68f703c7c99aa9d4e15367d7afa3e8238525a1",
+      "rows": 88243,
+      "columns": [
+        "h3_index",
+        "has_mapped_aquaculture",
+        "has_mapped_artificial_reef",
+        "has_mapped_disposal_site",
+        "has_mapped_dredged_channel",
+        "shoreline_armoring_fraction"
+      ],
+      "native_columns": 57,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "has_mapped_aquaculture": 0,
+        "has_mapped_artificial_reef": 0,
+        "has_mapped_disposal_site": 0,
+        "has_mapped_dredged_channel": 0,
+        "shoreline_armoring_fraction": 78273
+      }
+    },
+    "bathymetry-r6-static.parquet": {
+      "sha256": "12e6bfee5333628009c0ff9554f5c80e31158dfb635508706512f8e5d0db66f8",
+      "rows": 2445,
+      "columns": [
+        "H3_INDEX",
+        "bathymetry__BATHYMETRY",
+        "bathymetry__BATHYMETRY_FRAC_0_10_M",
+        "bathymetry__BATHYMETRY_FRAC_100_200_M",
+        "bathymetry__BATHYMETRY_FRAC_10_30_M",
+        "bathymetry__BATHYMETRY_FRAC_30_50_M",
+        "bathymetry__BATHYMETRY_FRAC_50_100_M",
+        "bathymetry__BATHYMETRY_FRAC_OVER_200_M",
+        "bathymetry__BATHYMETRY_LOCAL_ANOMALY",
+        "bathymetry__BATHYMETRY_MAX",
+        "bathymetry__BATHYMETRY_MEDIAN",
+        "bathymetry__BATHYMETRY_MIN",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_0_10_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_100_200_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_10_30_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_30_50_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_50_100_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_OVER_200_M",
+        "bathymetry__BATHYMETRY_Q10",
+        "bathymetry__BATHYMETRY_Q25",
+        "bathymetry__BATHYMETRY_Q75",
+        "bathymetry__BATHYMETRY_Q90",
+        "bathymetry__BATHYMETRY_RANGE",
+        "bathymetry__BATHYMETRY_STD",
+        "bathymetry__DISTANCE_TO_ISOBATH_100_M",
+        "bathymetry__DISTANCE_TO_ISOBATH_200_M",
+        "bathymetry__DISTANCE_TO_ISOBATH_50_M",
+        "bathymetry__DISTANCE_TO_ISOBATH_6_1_M"
+      ],
+      "native_columns": 30,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "bathymetry__BATHYMETRY": 80,
+        "bathymetry__BATHYMETRY_FRAC_0_10_M": 80,
+        "bathymetry__BATHYMETRY_FRAC_100_200_M": 80,
+        "bathymetry__BATHYMETRY_FRAC_10_30_M": 80,
+        "bathymetry__BATHYMETRY_FRAC_30_50_M": 80,
+        "bathymetry__BATHYMETRY_FRAC_50_100_M": 80,
+        "bathymetry__BATHYMETRY_FRAC_OVER_200_M": 80,
+        "bathymetry__BATHYMETRY_LOCAL_ANOMALY": 243,
+        "bathymetry__BATHYMETRY_MAX": 80,
+        "bathymetry__BATHYMETRY_MEDIAN": 80,
+        "bathymetry__BATHYMETRY_MIN": 80,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT": 80,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_0_10_M": 80,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_100_200_M": 80,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_10_30_M": 80,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_30_50_M": 80,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_50_100_M": 80,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_OVER_200_M": 80,
+        "bathymetry__BATHYMETRY_Q10": 80,
+        "bathymetry__BATHYMETRY_Q25": 80,
+        "bathymetry__BATHYMETRY_Q75": 80,
+        "bathymetry__BATHYMETRY_Q90": 80,
+        "bathymetry__BATHYMETRY_RANGE": 80,
+        "bathymetry__BATHYMETRY_STD": 80,
+        "bathymetry__DISTANCE_TO_ISOBATH_100_M": 0,
+        "bathymetry__DISTANCE_TO_ISOBATH_200_M": 0,
+        "bathymetry__DISTANCE_TO_ISOBATH_50_M": 0,
+        "bathymetry__DISTANCE_TO_ISOBATH_6_1_M": 0
+      }
+    },
+    "bathymetry-r8-static.parquet": {
+      "sha256": "b17b6892446831e03199ccd71bd3df361284bd3f9d8fb20db9f2b316861f926c",
+      "rows": 81380,
+      "columns": [
+        "H3_INDEX",
+        "bathymetry__BATHYMETRY",
+        "bathymetry__BATHYMETRY_FRAC_0_10_M",
+        "bathymetry__BATHYMETRY_FRAC_100_200_M",
+        "bathymetry__BATHYMETRY_FRAC_10_30_M",
+        "bathymetry__BATHYMETRY_FRAC_30_50_M",
+        "bathymetry__BATHYMETRY_FRAC_50_100_M",
+        "bathymetry__BATHYMETRY_FRAC_OVER_200_M",
+        "bathymetry__BATHYMETRY_LOCAL_ANOMALY",
+        "bathymetry__BATHYMETRY_MAX",
+        "bathymetry__BATHYMETRY_MEDIAN",
+        "bathymetry__BATHYMETRY_MIN",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_0_10_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_100_200_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_10_30_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_30_50_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_50_100_M",
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_OVER_200_M",
+        "bathymetry__BATHYMETRY_Q10",
+        "bathymetry__BATHYMETRY_Q25",
+        "bathymetry__BATHYMETRY_Q75",
+        "bathymetry__BATHYMETRY_Q90",
+        "bathymetry__BATHYMETRY_RANGE",
+        "bathymetry__BATHYMETRY_STD",
+        "bathymetry__DISTANCE_TO_ISOBATH_100_M",
+        "bathymetry__DISTANCE_TO_ISOBATH_200_M",
+        "bathymetry__DISTANCE_TO_ISOBATH_50_M",
+        "bathymetry__DISTANCE_TO_ISOBATH_6_1_M"
+      ],
+      "native_columns": 30,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "bathymetry__BATHYMETRY": 4346,
+        "bathymetry__BATHYMETRY_FRAC_0_10_M": 4346,
+        "bathymetry__BATHYMETRY_FRAC_100_200_M": 4346,
+        "bathymetry__BATHYMETRY_FRAC_10_30_M": 4346,
+        "bathymetry__BATHYMETRY_FRAC_30_50_M": 4346,
+        "bathymetry__BATHYMETRY_FRAC_50_100_M": 4346,
+        "bathymetry__BATHYMETRY_FRAC_OVER_200_M": 4346,
+        "bathymetry__BATHYMETRY_LOCAL_ANOMALY": 4475,
+        "bathymetry__BATHYMETRY_MAX": 4346,
+        "bathymetry__BATHYMETRY_MEDIAN": 4346,
+        "bathymetry__BATHYMETRY_MIN": 4346,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT": 4346,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_0_10_M": 4346,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_100_200_M": 4346,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_10_30_M": 4346,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_30_50_M": 4346,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_50_100_M": 4346,
+        "bathymetry__BATHYMETRY_PIXEL_COUNT_OVER_200_M": 4346,
+        "bathymetry__BATHYMETRY_Q10": 4346,
+        "bathymetry__BATHYMETRY_Q25": 4346,
+        "bathymetry__BATHYMETRY_Q75": 4346,
+        "bathymetry__BATHYMETRY_Q90": 4346,
+        "bathymetry__BATHYMETRY_RANGE": 4346,
+        "bathymetry__BATHYMETRY_STD": 4346,
+        "bathymetry__DISTANCE_TO_ISOBATH_100_M": 0,
+        "bathymetry__DISTANCE_TO_ISOBATH_200_M": 0,
+        "bathymetry__DISTANCE_TO_ISOBATH_50_M": 0,
+        "bathymetry__DISTANCE_TO_ISOBATH_6_1_M": 0
+      }
+    },
+    "bivalve-r6-static.parquet": {
+      "sha256": "cf8edd510d2d29f5c24ffc526a0303934648b2f86e88d6243a225100d2583163",
+      "rows": 2621,
+      "columns": [
+        "H3_INDEX",
+        "BIVALVE_EXTENT_ALL_TIME_M2",
+        "BIVALVE_EXTENT_BOOL"
+      ],
+      "native_columns": 14,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "BIVALVE_EXTENT_ALL_TIME_M2": 0,
+        "BIVALVE_EXTENT_BOOL": 0
+      }
+    },
+    "bivalve-r8-static.parquet": {
+      "sha256": "72b60eb1ef69ad1e78ea67ec791f24eea6f9ea64ac484af91781dd4da55e5ec6",
+      "rows": 88243,
+      "columns": [
+        "H3_INDEX",
+        "BIVALVE_EXTENT_ALL_TIME_M2",
+        "BIVALVE_EXTENT_BOOL"
+      ],
+      "native_columns": 14,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "BIVALVE_EXTENT_ALL_TIME_M2": 0,
+        "BIVALVE_EXTENT_BOOL": 0
+      }
+    },
+    "coast-complexity-r6-static.parquet": {
+      "sha256": "1d80c73edfc7f263ba4f9e3d354ec159bff1a51da40d926ced23fab17bbfd4de",
+      "rows": 2445,
+      "columns": [
+        "h3_index",
+        "shoreline_density_m_per_km2",
+        "shoreline_orientation_sin_2theta",
+        "shoreline_orientation_cos_2theta",
+        "shoreline_orientation_concentration",
+        "shoreline_sinuosity_500m",
+        "shoreline_sinuosity_2000m",
+        "island_count",
+        "island_fraction",
+        "distance_to_headland_candidate_m"
+      ],
+      "native_columns": 19,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "shoreline_density_m_per_km2": 0,
+        "shoreline_orientation_sin_2theta": 986,
+        "shoreline_orientation_cos_2theta": 986,
+        "shoreline_orientation_concentration": 903,
+        "shoreline_sinuosity_500m": 903,
+        "shoreline_sinuosity_2000m": 919,
+        "island_count": 0,
+        "island_fraction": 0,
+        "distance_to_headland_candidate_m": 0
+      }
+    },
+    "coast-complexity-r8-static.parquet": {
+      "sha256": "b73880d5912edb05e63207e8e20a8ed0e10ba767c6cd02eb279cb849c96d856d",
+      "rows": 81380,
+      "columns": [
+        "h3_index",
+        "shoreline_density_m_per_km2",
+        "shoreline_orientation_sin_2theta",
+        "shoreline_orientation_cos_2theta",
+        "shoreline_orientation_concentration",
+        "shoreline_sinuosity_500m",
+        "shoreline_sinuosity_2000m",
+        "island_count",
+        "island_fraction",
+        "distance_to_headland_candidate_m"
+      ],
+      "native_columns": 19,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "shoreline_density_m_per_km2": 0,
+        "shoreline_orientation_sin_2theta": 63035,
+        "shoreline_orientation_cos_2theta": 63035,
+        "shoreline_orientation_concentration": 62744,
+        "shoreline_sinuosity_500m": 62778,
+        "shoreline_sinuosity_2000m": 63378,
+        "island_count": 0,
+        "island_fraction": 0,
+        "distance_to_headland_candidate_m": 0
+      }
+    },
+    "coastal-bounds-r8-static.parquet": {
+      "sha256": "66e377f72255a93060ca9a1215057f9a30c542d2d1eb041ec6b85c317e5c66ae",
+      "rows": 81380,
+      "columns": [
+        "h3_index",
+        "distance_to_open_water_m",
+        "ocean_openness_index",
+        "embayment_index",
+        "open_water_aperture_deg"
+      ],
+      "native_columns": 11,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "distance_to_open_water_m": 1673,
+        "ocean_openness_index": 0,
+        "embayment_index": 0,
+        "open_water_aperture_deg": 0
+      }
+    },
+    "estuary-r8-static.parquet": {
+      "sha256": "0d93d2f26a36907c2b6a4231b8419f1624e0b039dee96d896d61965b809df665",
+      "rows": 88243,
+      "columns": [
+        "h3_index",
+        "distance_to_mapped_estuary_point_m"
+      ],
+      "native_columns": 25,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "distance_to_mapped_estuary_point_m": 0
+      }
+    },
+    "fluvial-connectivity-r8-static.parquet": {
+      "sha256": "77ff2f5dcab61bb9059d4431e660f7b05709cc6fef77414dfd4abdd88a9dc26c",
+      "rows": 81380,
+      "columns": [
+        "h3_index",
+        "water_network_distance_to_river_mouth_m",
+        "connected_drainage_area_km2",
+        "connected_river_network_length_km",
+        "connected_upstream_distance_km",
+        "connected_strahler_order",
+        "connected_headwater_count",
+        "connected_tributary_junction_count",
+        "has_reachable_river_mouth"
+      ],
+      "native_columns": 24,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "water_network_distance_to_river_mouth_m": 569,
+        "connected_drainage_area_km2": 569,
+        "connected_river_network_length_km": 569,
+        "connected_upstream_distance_km": 569,
+        "connected_strahler_order": 569,
+        "connected_headwater_count": 569,
+        "connected_tributary_junction_count": 569,
+        "has_reachable_river_mouth": 0
+      }
+    },
+    "freshwater-r8-static.parquet": {
+      "sha256": "4a94a4fc926d67965087517d64de8437c33b6a48ff70446021f4a52b83d933ee",
+      "rows": 81380,
+      "columns": [
+        "H3_INDEX",
+        "freshwater_sources__DISTANCE_TO_RIVER_MOUTH_M",
+        "freshwater_sources__MAPPED_RIVER_MOUTH_PRESSURE_5KM",
+        "freshwater_sources__MAPPED_WIDTH_WEIGHTED_RIVER_MOUTH_PRESSURE_5KM",
+        "freshwater_sources__NEAREST_RIVER_MOUTH_ID",
+        "freshwater_sources__NEAREST_RIVER_MOUTH_WIDTH_M"
+      ],
+      "native_columns": 7,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "freshwater_sources__DISTANCE_TO_RIVER_MOUTH_M": 0,
+        "freshwater_sources__MAPPED_RIVER_MOUTH_PRESSURE_5KM": 0,
+        "freshwater_sources__MAPPED_WIDTH_WEIGHTED_RIVER_MOUTH_PRESSURE_5KM": 0,
+        "freshwater_sources__NEAREST_RIVER_MOUTH_ID": 0,
+        "freshwater_sources__NEAREST_RIVER_MOUTH_WIDTH_M": 0
+      }
+    },
+    "kelp-r6-static.parquet": {
+      "sha256": "9b5e287cf6dad0afebcbe2e4f80ea6c670e889211ae9feb05a78cf21b7a3bf80",
+      "rows": 2628,
+      "columns": [
+        "H3_INDEX",
+        "KELP_EXTENT_ALL_TIME_M2",
+        "KELP_EXTENT_BOOL"
+      ],
+      "native_columns": 9,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "KELP_EXTENT_ALL_TIME_M2": 0,
+        "KELP_EXTENT_BOOL": 0
+      }
+    },
+    "kelp-r8-static.parquet": {
+      "sha256": "6ba87025b51082cff45af6ab914cf4a55ba078e6167d6011ba01d6c20d823011",
+      "rows": 88743,
+      "columns": [
+        "H3_INDEX",
+        "KELP_EXTENT_ALL_TIME_M2",
+        "KELP_EXTENT_BOOL"
+      ],
+      "native_columns": 9,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "KELP_EXTENT_ALL_TIME_M2": 0,
+        "KELP_EXTENT_BOOL": 0
+      }
+    },
+    "mapped-substrate-classes-r6-static.parquet": {
+      "sha256": "53e93c45a4433c22ff2951dba70ed4627525350ebdd00f11247e055e6c8319a9",
+      "rows": 2427,
+      "columns": [
+        "h3_index",
+        "mapped_hard_substrate_fraction",
+        "mapped_mixed_substrate_fraction",
+        "mapped_soft_substrate_fraction",
+        "mapped_substrate_coverage_fraction"
+      ],
+      "native_columns": 14,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "mapped_hard_substrate_fraction": 1361,
+        "mapped_mixed_substrate_fraction": 1361,
+        "mapped_soft_substrate_fraction": 1361,
+        "mapped_substrate_coverage_fraction": 1130
+      }
+    },
+    "mapped-substrate-classes-r8-static.parquet": {
+      "sha256": "fd28bda28cdbc64c068db8d88169908f472f30b276ae5366f686a948a7d7d236",
+      "rows": 81380,
+      "columns": [
+        "h3_index",
+        "mapped_hard_substrate_fraction",
+        "mapped_mixed_substrate_fraction",
+        "mapped_soft_substrate_fraction",
+        "mapped_substrate_coverage_fraction"
+      ],
+      "native_columns": 14,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "mapped_hard_substrate_fraction": 56833,
+        "mapped_mixed_substrate_fraction": 56833,
+        "mapped_soft_substrate_fraction": 56833,
+        "mapped_substrate_coverage_fraction": 56299
+      }
+    },
+    "nearshore-transitions-r6-static.parquet": {
+      "sha256": "a2e1ad34f0c01bc9d6f1b58614e0e66c3211e33685e0da7de41ae1b9d736c747",
+      "rows": 2445,
+      "columns": [
+        "h3_index",
+        "nearshore_deep_water_fraction",
+        "distance_to_connected_deep_water_m",
+        "nearshore_bathymetry_coverage_fraction"
+      ],
+      "native_columns": 16,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "nearshore_deep_water_fraction": 841,
+        "distance_to_connected_deep_water_m": 275,
+        "nearshore_bathymetry_coverage_fraction": 807
+      }
+    },
+    "nearshore-transitions-r8-static.parquet": {
+      "sha256": "ed0766aa09fb6654d6b87d964ad7dfafb031a9895577b154071f4dfa9a74400f",
+      "rows": 81380,
+      "columns": [
+        "h3_index",
+        "nearshore_deep_water_fraction",
+        "distance_to_connected_deep_water_m",
+        "nearshore_bathymetry_coverage_fraction"
+      ],
+      "native_columns": 16,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "nearshore_deep_water_fraction": 51635,
+        "distance_to_connected_deep_water_m": 823,
+        "nearshore_bathymetry_coverage_fraction": 49639
+      }
+    },
+    "seagrass-r6-static.parquet": {
+      "sha256": "04fc86c2ecdc19bdcb1fdb41f28f921dee77467f04036e4043d657c2a3691952",
+      "rows": 2448,
+      "columns": [
+        "H3_INDEX",
+        "SEAGRASS_EXTENT_ALL_TIME_M2",
+        "SEAGRASS_EXTENT_BOOL"
+      ],
+      "native_columns": 14,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "SEAGRASS_EXTENT_ALL_TIME_M2": 0,
+        "SEAGRASS_EXTENT_BOOL": 0
+      }
+    },
+    "seagrass-r8-static.parquet": {
+      "sha256": "281a2746b9d277dc3b4458823fecc5ffc44fd18e5f0dc20c1516ad0a824b916e",
+      "rows": 81380,
+      "columns": [
+        "H3_INDEX",
+        "SEAGRASS_EXTENT_ALL_TIME_M2",
+        "SEAGRASS_EXTENT_BOOL"
+      ],
+      "native_columns": 14,
+      "audit_projection_verified": true,
+      "nulls": {
+        "H3_INDEX": 0,
+        "SEAGRASS_EXTENT_ALL_TIME_M2": 0,
+        "SEAGRASS_EXTENT_BOOL": 0
+      }
+    },
+    "shoreline-r6-static.parquet": {
+      "sha256": "999defd78f6fb27f4592f64c8ec16eb42dc0b03fc8d98f9dad33c98a5da2481d",
+      "rows": 2621,
+      "columns": [
+        "h3_index",
+        "mapped_shoreline_length_m",
+        "shoreline_classified_coverage_fraction",
+        "rocky_shore_fraction",
+        "sandy_shore_fraction",
+        "gravel_shore_fraction",
+        "cliff_shore_fraction",
+        "bluff_shore_fraction",
+        "deltaic_shore_fraction",
+        "estuarine_shore_fraction"
+      ],
+      "native_columns": 71,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "mapped_shoreline_length_m": 0,
+        "shoreline_classified_coverage_fraction": 1843,
+        "rocky_shore_fraction": 1863,
+        "sandy_shore_fraction": 1863,
+        "gravel_shore_fraction": 1863,
+        "cliff_shore_fraction": 1863,
+        "bluff_shore_fraction": 1863,
+        "deltaic_shore_fraction": 1863,
+        "estuarine_shore_fraction": 1863
+      }
+    },
+    "shoreline-r8-static.parquet": {
+      "sha256": "03ae1561a79af9ae7d4850e193b77dbb696de46842b180d77ab0a40bd9298ed4",
+      "rows": 88243,
+      "columns": [
+        "h3_index",
+        "mapped_shoreline_length_m",
+        "shoreline_classified_coverage_fraction",
+        "rocky_shore_fraction",
+        "sandy_shore_fraction",
+        "gravel_shore_fraction",
+        "cliff_shore_fraction",
+        "bluff_shore_fraction",
+        "deltaic_shore_fraction",
+        "estuarine_shore_fraction",
+        "distance_to_mapped_shoreline_m"
+      ],
+      "native_columns": 88,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "mapped_shoreline_length_m": 0,
+        "shoreline_classified_coverage_fraction": 78012,
+        "rocky_shore_fraction": 78610,
+        "sandy_shore_fraction": 78610,
+        "gravel_shore_fraction": 78610,
+        "cliff_shore_fraction": 78610,
+        "bluff_shore_fraction": 78610,
+        "deltaic_shore_fraction": 78610,
+        "estuarine_shore_fraction": 78610,
+        "distance_to_mapped_shoreline_m": 0
+      }
+    },
+    "spatial-support-r6-static.parquet": {
+      "sha256": "a1978d79a7aea4fc09dd1d53b45e367e97b6785d3653c744aba7db57d49a788c",
+      "rows": 2445,
+      "columns": [
+        "h3_index",
+        "water_area_m2",
+        "water_fraction",
+        "intersects_shoreline"
+      ],
+      "native_columns": 17,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "water_area_m2": 0,
+        "water_fraction": 0,
+        "intersects_shoreline": 0
+      }
+    },
+    "spatial-support-r8-static.parquet": {
+      "sha256": "b74112c74d97fe148a16a5cd040761ac461413eed33373ab9b5dd036fc1e4427",
+      "rows": 81380,
+      "columns": [
+        "h3_index",
+        "water_area_m2",
+        "water_fraction",
+        "intersects_shoreline"
+      ],
+      "native_columns": 17,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "water_area_m2": 0,
+        "water_fraction": 0,
+        "intersects_shoreline": 0
+      }
+    },
+    "substrate-r6-static.parquet": {
+      "sha256": "3bf925ba817047600683e906f332aa616a2210dae4ad7af8fe6ab5fbc2f360f0",
+      "rows": 2621,
+      "columns": [
+        "h3_index",
+        "modeled_rock_presence_score",
+        "modeled_gravel_fraction",
+        "modeled_sand_fraction",
+        "modeled_mud_fraction"
+      ],
+      "native_columns": 27,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "modeled_rock_presence_score": 316,
+        "modeled_gravel_fraction": 316,
+        "modeled_sand_fraction": 316,
+        "modeled_mud_fraction": 316
+      }
+    },
+    "terrain-r8-static.parquet": {
+      "sha256": "3d8a207ea510c78414c44a96f66146c343c42b38fe109da308bfda94d3674dfc",
+      "rows": 81380,
+      "columns": [
+        "h3_index",
+        "seafloor_slope_mean_deg",
+        "seafloor_northness",
+        "seafloor_eastness",
+        "terrain_position_ring_2_z",
+        "depth_std_ring_2_m",
+        "vector_ruggedness_ring_2",
+        "positive_terrain_openness_deg",
+        "negative_terrain_openness_deg"
+      ],
+      "native_columns": 60,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "seafloor_slope_mean_deg": 10979,
+        "seafloor_northness": 7212,
+        "seafloor_eastness": 7212,
+        "terrain_position_ring_2_z": 4536,
+        "depth_std_ring_2_m": 4475,
+        "vector_ruggedness_ring_2": 4657,
+        "positive_terrain_openness_deg": 4468,
+        "negative_terrain_openness_deg": 4468
+      }
+    },
+    "waterbody-morphometry-r8-static.parquet": {
+      "sha256": "aec294fd265f694c0c8d220072984af5836c898dd89beca97883bc63847d6e56",
+      "rows": 81380,
+      "columns": [
+        "h3_index",
+        "local_waterbody_min_width_m",
+        "waterbody_mean_width_m",
+        "constriction_index",
+        "distance_to_constricted_passage_m",
+        "distance_to_sill_candidate_m",
+        "local_waterspace_area_km2",
+        "waterbody_width_censored_fraction"
+      ],
+      "native_columns": 20,
+      "audit_projection_verified": true,
+      "nulls": {
+        "h3_index": 0,
+        "local_waterbody_min_width_m": 206,
+        "waterbody_mean_width_m": 206,
+        "constriction_index": 206,
+        "distance_to_constricted_passage_m": 270,
+        "distance_to_sill_candidate_m": 639,
+        "local_waterspace_area_km2": 206,
+        "waterbody_width_censored_fraction": 206
+      }
+    }
+  },
+  "replay": {
+    "cells": 40,
+    "positive": 20,
+    "null": 20,
+    "max_absolute_error_m2": 0.0,
+    "source_inventory_sha256": "c69dc619180ac0490708a1145f813438b0830d67d067bdeb133f993324d3de7a",
+    "comparison": "H3 keys, native area and null masks; not byte identity or all provenance fields"
+  },
+  "sill_research_rows": 0,
+  "waterbody_sill_distance_nonnull": 80741
+}

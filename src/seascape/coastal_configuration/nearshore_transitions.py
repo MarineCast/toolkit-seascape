@@ -8,16 +8,19 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from functools import lru_cache
 
 import numpy as np
 import rasterio
+import shapely
 from pyproj import CRS
 from rasterio.features import geometry_mask
 from rasterio.windows import from_bounds
-from scipy.ndimage import label
+from scipy.ndimage import find_objects, label
 from shapely.geometry import LineString, Point, box
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import unary_union
+from shapely.strtree import STRtree
 
 
 @dataclass(frozen=True)
@@ -76,6 +79,16 @@ def nearshore_depth_areas(
     if depth_threshold_m < 0 or band_width_m <= 0:
         raise ValueError("Threshold must be nonnegative and band width positive")
     eligible = support.intersection(water).intersection(shoreline.buffer(band_width_m))
+    return _depth_areas(
+        eligible,
+        raster,
+        depth_threshold_m=depth_threshold_m,
+        raster_depth_convention=raster_depth_convention,
+    )
+
+
+def _depth_areas(eligible, raster, *, depth_threshold_m, raster_depth_convention):
+    """Measure a previously intersected support using the same raster footprints."""
     eligible_area = float(eligible.area)
     if eligible_area <= 1e-9:
         return NearshoreArea(0.0, 0.0, None, None, None, "empty_nearshore_support")
@@ -133,6 +146,67 @@ def nearshore_depth_areas(
     )
 
 
+def _eligible_supports(cells, water, shoreline, band_width_m):
+    # Preserve the original full-context collar and intact line segmentation.
+    # Cutting lines before buffering changes GEOS buffer geometry even with a collar.
+    source = shoreline.intersection(box(*water.bounds).buffer(band_width_m + 1))
+    parts = list(shapely.get_parts(source))
+    tree = STRtree(parts)
+    step = 20000.0
+    tile_keys = set()
+    cell_tiles = {}
+    for name, geometry in cells:
+        if geometry.is_empty:
+            cell_tiles[name] = []
+            continue
+        xmin, ymin, xmax, ymax = geometry.bounds
+        keys = [
+            (x, y)
+            for x in range(math.floor(xmin / step), math.floor(xmax / step) + 1)
+            for y in range(math.floor(ymin / step), math.floor(ymax / step) + 1)
+        ]
+        cell_tiles[name] = keys
+        tile_keys.update(keys)
+    if len(tile_keys) > 4096:
+        raise ValueError("Nearshore context tile budget exceeded")
+
+    @lru_cache(maxsize=32)
+    def part_buffer(index):
+        return parts[index].buffer(band_width_m)
+
+    bands = {}
+    for x, y in sorted(tile_keys):
+        tile = box(x * step, y * step, (x + 1) * step, (y + 1) * step)
+        collar = tile.buffer(band_width_m + 1)
+        # Buffer each intact source part once; clip only the resulting polygon.
+        local = unary_union(
+            [
+                part_buffer(int(i)).intersection(tile)
+                for i in tree.query(collar, predicate="intersects")
+            ]
+        )
+        bands[(x, y)] = local.intersection(water)
+    return {
+        name: unary_union(
+            [geometry.intersection(bands[key]) for key in cell_tiles[name]]
+        )
+        for name, geometry in cells
+    }
+
+
+def _shoreline_near_water_mask(geometries, water, distance_m):
+    import numpy as np
+
+    shapely.prepare(water)
+    result = np.asarray(shapely.intersects(water, geometries), dtype=bool)
+    for index in np.flatnonzero(~result):
+        geometry = geometries[index]
+        collar = box(*geometry.bounds).buffer(distance_m + 1)
+        local_water = water.intersection(collar)
+        result[index] = local_water.buffer(distance_m).intersects(geometry)
+    return result
+
+
 def bounded_deep_target_components(
     cells: list[tuple[str, BaseGeometry]],
     water: BaseGeometry,
@@ -159,11 +233,7 @@ def bounded_deep_target_components(
         or not source_identity
     ):
         raise ValueError("Invalid bounded deep-component settings")
-    band = shoreline.buffer(band_width_m)
-    eligible = {
-        cell_id: geometry.intersection(water).intersection(band)
-        for cell_id, geometry in cells
-    }
+    eligible = _eligible_supports(cells, water, shoreline, band_width_m)
     support = unary_union(
         [geometry for geometry in eligible.values() if not geometry.is_empty]
     )
@@ -216,8 +286,12 @@ def bounded_deep_target_components(
     component_ids: dict[int, str] = {}
     components: list[dict[str, object]] = []
     pixel_area = abs(transform.a * transform.e)
-    for number in range(1, count + 1):
-        rows, cols = np.where(labels == number)
+    for number, slices in enumerate(find_objects(labels, max_label=count), start=1):
+        if slices is None:
+            continue
+        rows, cols = np.where(labels[slices] == number)
+        rows += slices[0].start
+        cols += slices[1].start
         if not len(rows):
             continue
         component_id = (
@@ -241,10 +315,26 @@ def bounded_deep_target_components(
         if geometry.is_empty:
             by_cell[cell_id] = ()
             continue
+        floating_cell = from_bounds(*geometry.bounds, transform=transform)
+        left = max(0, math.floor(floating_cell.col_off))
+        top = max(0, math.floor(floating_cell.row_off))
+        right = min(
+            labels.shape[1], math.ceil(floating_cell.col_off + floating_cell.width)
+        )
+        bottom = min(
+            labels.shape[0], math.ceil(floating_cell.row_off + floating_cell.height)
+        )
+        if left >= right or top >= bottom:
+            by_cell[cell_id] = ()
+            continue
+        local_labels = labels[top:bottom, left:right]
         cell_mask = geometry_mask(
             [geometry],
-            out_shape=values.shape,
-            transform=transform,
+            out_shape=local_labels.shape,
+            transform=rasterio.windows.transform(
+                rasterio.windows.Window(left, top, right - left, bottom - top),
+                transform,
+            ),
             invert=True,
             all_touched=False,
         )
@@ -252,7 +342,7 @@ def bounded_deep_target_components(
             sorted(
                 {
                     component_ids[int(number)]
-                    for number in np.unique(labels[cell_mask])
+                    for number in np.unique(local_labels[cell_mask])
                     if int(number) in component_ids
                 }
             )
@@ -271,11 +361,14 @@ def first_water_facing_contour(
     max_distance_m: float,
     orientation_probe_m: float | None = None,
     raster_depth_convention: str = "positive_down",
+    path_water: BaseGeometry | None = None,
 ) -> TransectCrossing:
     """First interpolated crossing along the contiguous seaward transect.
 
     Samples preserve nonmonotonic profiles. A station with ambiguous water side
     is unresolved; the routine never silently chooses one normal.
+    ``path_water`` optionally reuses exactly ``water.buffer(1e-7)`` across
+    stations; it is a numerical path guard, not a different physical mask.
     """
 
     _require_metric_raster(raster)
@@ -294,14 +387,13 @@ def first_water_facing_contour(
     if sides.count(True) != 1:
         return TransectCrossing(None, None, "ambiguous_water_side", ())
     nx, ny = normals[sides.index(True)]
+    path_water = water.buffer(1e-7) if path_water is None else path_water
     samples: list[tuple[float, float]] = []
     previous_point = station
     distance = 0.0
     while distance <= max_distance_m + 1e-9:
         point = Point(station.x + nx * distance, station.y + ny * distance)
-        if distance > 0 and not water.buffer(1e-7).covers(
-            LineString([previous_point, point])
-        ):
+        if distance > 0 and not path_water.covers(LineString([previous_point, point])):
             return TransectCrossing(None, None, "land_censored", tuple(samples))
         value = next(raster.sample([(point.x, point.y)], masked=True))[0]
         if (
@@ -331,3 +423,30 @@ def first_water_facing_contour(
         previous_point = point
         distance += step_m
     return TransectCrossing(None, None, "search_limited", tuple(samples))
+
+
+class BufferedInterest:
+    """Station membership using cached buffers of intact polygon parts."""
+
+    def __init__(self, geometry, distance):
+        self.parts = list(shapely.get_parts(geometry))
+        self.tree = STRtree(self.parts)
+        self.distance = distance
+        self._buffer = lru_cache(maxsize=8)(
+            lambda index: self.parts[index].buffer(distance)
+        )
+
+    def covers(self, point):
+        x, y = point.x, point.y
+        bounds = box(
+            x - self.distance, y - self.distance, x + self.distance, y + self.distance
+        )
+        for index in self.tree.query(bounds):
+            part = self.parts[int(index)]
+            if part.covers(point):
+                return True
+            if part.distance(point) > self.distance:
+                continue
+            if self._buffer(int(index)).covers(point):
+                return True
+        return False

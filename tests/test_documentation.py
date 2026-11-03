@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import importlib.util
 import io
 import tarfile
 from pathlib import Path
 
 import pyarrow as pa
-import pyarrow.parquet as pq
 import pytest
 
 ROOT = Path(__file__).parents[1]
@@ -138,43 +136,25 @@ def test_quickstart_refuses_existing_or_checkout_output(docs, tmp_path):
             run(tmp_path / "not-read.tar.gz", ROOT, ROOT, output)
 
 
-def test_consumer_example_reads_exact_retained_product_and_preserves_null_zero(
+def test_consumer_example_reads_current_area_and_preserves_null_zero(
     docs, tmp_path, monkeypatch
 ):
-    from seascape.core.artifacts import checksum_path
-    from seascape.release import publish_candidate_release
+    from seascape import AreaTables, write_areas
 
-    # Reuse the existing publisher-boundary fixture. Its audit flag is a fixture,
-    # not regional scientific certification; no source or release gate is relaxed.
-    spec = importlib.util.spec_from_file_location(
-        "product_fixture", ROOT / "tests/test_products.py"
+    workspace = tmp_path / "workspace"
+    output = workspace / "Data/Seascape"
+    table = pa.table(
+        {
+            "H3_INDEX": ["86283082fffffff", "862830877ffffff"],
+            "H3_RESOLUTION": [6, 6],
+            "depth_m": [0.0, None],
+        }
     )
-    fixture = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(fixture)
-    candidate, workspace = tmp_path / "candidate", tmp_path / "workspace"
-    path = fixture._candidate_fixture(candidate, b"")
-    pq.write_table(
-        pa.table(
-            {"H3_INDEX": ["86283082fffffff", "862830877ffffff"], "depth_m": [0.0, None]}
-        ),
-        path,
-    )
-    before = checksum_path(path)
-    fixture._refresh_candidate_audit(candidate)
-    publish_candidate_release(
-        canonical_project_root=workspace, candidate_project_root=candidate
-    )
+    write_areas({"bathymetry": AreaTables(table)}, output=output)
     monkeypatch.setenv("SEASCAPE_WORKSPACE", str(workspace))
     example = docs.fenced_example(
         (ROOT / "docs/API.md").read_text(), "CONSUMER EXAMPLE", "python"
     )
     namespace = {}
     exec(compile(example, "docs/API.md:consumer-example", "exec"), namespace)
-    artifact = namespace["artifact"]
-    assert artifact.release_id == namespace["release_id"]
-    assert artifact.resolution == 6
-    assert artifact.path.is_relative_to(
-        workspace / ".seascape/releases" / artifact.release_id
-    )
     assert namespace["table"].to_pydict()["depth_m"] == [0.0, None]
-    assert checksum_path(artifact.path) == before

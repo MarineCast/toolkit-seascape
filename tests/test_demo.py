@@ -15,7 +15,7 @@ import yaml
 from seascape import demo
 from seascape.cli import main
 from seascape.core.artifacts.checksums import checksum_path
-from seascape.products import resolve_product
+from seascape.legacy_products import resolve_product
 from seascape.release import publish_candidate_release
 from seascape.seafloor_physiography.bathymetry import pipeline
 from tests.test_products import _candidate_fixture, _refresh_candidate_audit

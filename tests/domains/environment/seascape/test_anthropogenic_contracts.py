@@ -430,6 +430,9 @@ def test_feature_aware_r8_to_r6_aggregation():
             "SHORELINE_ARMORING_LENGTH_M": armor,
             "SHORELINE_SURVEYED_LENGTH_M": surveyed,
             "SHORELINE_ARMORING_FRAC": armor / surveyed,
+            "ARMORING_SOURCE_ESTIMATES_JSON": json.dumps(
+                {"source": {"weighted_length_m": armor, "surveyed_length_m": surveyed}}
+            ),
             "DREDGED_AREA_M2": dredged,
             "DREDGED_AREA_FRAC": dredged / 100,
             "DISPOSAL_SITE_AREA_M2": 0.0,
@@ -486,6 +489,29 @@ def test_feature_aware_r8_to_r6_aggregation():
     assert parent["ARTIFICIAL_REEF_PRESENCE"] == 1
     assert parent["AQUACULTURE_PRESENCE"] == 1
     assert output_confidence.iloc[0]["ANTHROPOGENIC_UNMAPPED_AREA"]
+    features["ARMORING_SOURCE_ESTIMATES_JSON"] = [
+        json.dumps(
+            {
+                "a": {"weighted_length_m": 10, "surveyed_length_m": 10},
+                "b": {"weighted_length_m": 0, "surveyed_length_m": 10},
+            }
+        ),
+        json.dumps(
+            {
+                "a": {"weighted_length_m": 0, "surveyed_length_m": 10},
+                "b": {"weighted_length_m": 7.5, "surveyed_length_m": 10},
+            }
+        ),
+    ]
+    combined, _ = aggregate_r8_to_r6(features, confidence, crosswalk, support)
+    assert combined.iloc[0].SHORELINE_ARMORING_FRAC == 0.5
+    with pytest.raises(ValueError, match="per-dataset"):
+        aggregate_r8_to_r6(
+            features.drop(columns="ARMORING_SOURCE_ESTIMATES_JSON"),
+            confidence,
+            crosswalk,
+            support,
+        )
 
 
 def test_inspector_routes_to_shared_anthropogenic_output(monkeypatch, tmp_path):

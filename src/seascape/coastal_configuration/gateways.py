@@ -12,7 +12,7 @@ import pandas as pd
 from shapely.geometry import Point
 from shapely.geometry.base import BaseGeometry
 
-from seascape.products import resolve_product
+from seascape.legacy_products import resolve_product
 from seascape.spatial_support.water_network.graph import WaterGraph
 
 

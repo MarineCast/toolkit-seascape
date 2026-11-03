@@ -7,6 +7,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import shapely
 
+from seascape.anthropogenic.armoring import dataset_estimates, maximum_estimate
+
 from .contract import RegionalError
 from .geometry import cells, inventory, projected
 
@@ -90,6 +92,9 @@ def anthropogenic(job):
                         shapely.union_all([pieces[i] for i in eligible]), wet
                     ).area
                     row[f"{cls.upper()}_MAPPED_AREA_M2"] = covered
+                    row[f"{cls.upper()}_MAPPED_POSITIVE_EVIDENCE"] = (
+                        True if covered > 0 else None
+                    )
                     row[f"{cls.upper()}_POSITIVE_MAPPED_WATER_FRAC"] = (
                         covered / wet_area if covered > 0 and wet_area > 0 else None
                     )
@@ -129,7 +134,6 @@ def anthropogenic(job):
                         for b in values[pos + 1 :]
                     ]
                 ).length
-                weighted = sum(f * g.length for f, g in unions.items())
                 unknown = [
                     int(i)
                     for i in ids
@@ -139,22 +143,26 @@ def anthropogenic(job):
                 unknown_union = shapely.union_all([pieces[i] for i in unknown])
                 known_union = shapely.union_all(values)
                 availability_conflict = unknown_union.intersection(known_union).length
+                estimates = dataset_estimates(
+                    (pieces[i], fraction_values[i], datasets[i]) for i in known
+                )
+                selected_weighted, selected_surveyed, maximum_fraction = (
+                    maximum_estimate(estimates)
+                )
                 row.update(
                     SYSTEMATIC_KNOWN_ARMORING_UNION_LENGTH_M=denominator,
                     SYSTEMATIC_UNKNOWN_ARMORING_UNION_LENGTH_M=unknown_union.length,
                     ARMORING_ESTIMATE_DISAGREEMENT_LENGTH_M=conflict,
                     ARMORING_AVAILABILITY_DISAGREEMENT_LENGTH_M=availability_conflict,
-                    ARMORING_WEIGHTED_UNION_LENGTH_M=weighted
-                    if conflict <= 1e-8
+                    ARMORING_WEIGHTED_UNION_LENGTH_M=selected_weighted
+                    if selected_surveyed > 0
                     else None,
-                    SHORELINE_ARMORING_FRAC=weighted / denominator
-                    if denominator > 0 and conflict <= 1e-8
+                    SHORELINE_ARMORING_FRAC=maximum_fraction
+                    if selected_surveyed > 0
                     else None,
-                    ARMORING_QC="conflicting_fraction_estimates_primary_null"
-                    if conflict > 1e-8
-                    else "no_known_systematic_length"
-                    if denominator == 0
-                    else "unique_length_fraction_estimates_source_relative",
+                    ARMORING_QC="maximum_available_dataset_cell_fraction"
+                    if estimates
+                    else "no_known_systematic_length",
                 )
                 rows.append(row)
             table = pa.Table.from_pylist(rows)
@@ -172,6 +180,8 @@ def anthropogenic(job):
                     "OBSERVATION_PERIOD": pa.string(),
                     "AQUACULTURE_MAPPED_POSITIVE_EVIDENCE": pa.bool_(),
                     "ARTIFICIAL_REEF_MAPPED_POSITIVE_EVIDENCE": pa.bool_(),
+                    "DREDGED_CHANNEL_MAPPED_POSITIVE_EVIDENCE": pa.bool_(),
+                    "DISPOSAL_SITE_MAPPED_POSITIVE_EVIDENCE": pa.bool_(),
                 }
             )
             for column, typ in types.items():
@@ -189,12 +199,13 @@ def anthropogenic(job):
     finally:
         if writer:
             writer.close()
-    return "native_physical_anthropogenic_union_leaves_v3", {
+    return "native_physical_anthropogenic_maximum_dataset_v4", {
         "rows": len(keys),
         "inventory_projection": inv_evidence,
         "water_projection_subdivision": water_evidence,
         "survey_absence_qualified": False,
         "network_metrics": "unqualified_null",
+        "armoring_method": "maximum_available_dataset_cell_fraction_v1",
     }
 
 

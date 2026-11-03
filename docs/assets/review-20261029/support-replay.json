@@ -1,0 +1,16 @@
+{
+  "rows": 20,
+  "source": "/Users/tylerstevenson/Documents/Code_Repos/MarineCast/Toolkits/toolkit-seascape/.seascape/work/source-closure-20261016/workspace/data/processed/domain/environmental_layer/seascape/spatial_support/water_geometry/COASTAL_CONTEXT_WATER.parquet",
+  "producer": "water_network.build._build_geometry_and_base_support",
+  "fields": {
+    "WATER_AREA_M2": {
+      "max_abs_error": 2.384185791015625e-05
+    },
+    "WATER_FRACTION": {
+      "max_abs_error": 3.2558178375552416e-11
+    },
+    "INTERSECTS_SHORELINE": {
+      "max_abs_error": 0.0
+    }
+  }
+}

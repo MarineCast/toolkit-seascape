@@ -294,7 +294,11 @@ def test_resume_tracks_common_extends_and_environment(workspace, monkeypatch):
     assert run() == "reused"
     common = workspace / "config/common.yaml"
     raw = yaml.safe_load(common.read_text())
-    raw["areas"]["model_area"]["bbox_wgs84"]["max_lon"] -= 0.01
+    from seascape.core.config.common_areas import bbox_for_area
+
+    raw["areas"]["model_area"]["bbox_wgs84"]["max_lon"] = (
+        bbox_for_area("model_area")["max_lon"] - 0.01
+    )
     common.write_text(yaml.safe_dump(raw))
     assert run() == "complete"
     monkeypatch.setenv("SEASCAPE_TEST_VALUE", "second")
@@ -389,3 +393,35 @@ def test_candidate_preserves_custom_input_base(workspace):
     assert load_data_config(rendered)["source"] == str(
         workspace / "inputs/data/raw/test.tif"
     )
+
+
+def test_canonical_all_time_kelp_does_not_become_current_fraction_or_survey_coverage(
+    tmp_path,
+):
+    configs, paths = _composite_inputs(tmp_path)
+    path = configs["kelp"].feature_path(8)
+    pd.DataFrame(
+        {
+            "H3_INDEX": ["A", "B"],
+            "H3_RESOLUTION": [8, 8],
+            "KELP_EXTENT_ALL_TIME_M2": [100.0, None],
+        }
+    ).to_parquet(path)
+    configs["kelp"].confidence_path(8).unlink()
+    values, confidence = _build_resolution(configs, 8)
+    assert (
+        values[
+            [
+                "KELP_FRAC",
+                "KELP_DISTANCE_M",
+                "KELP_PERSISTENCE_RATIO",
+                "BENTHIC_HABITAT_RICHNESS",
+                "BENTHIC_EDGE_DENSITY_M_PER_KM2",
+            ]
+        ]
+        .isna()
+        .all()
+        .all()
+    )
+    assert confidence["KELP_SURVEY_COVERAGE"].isna().all()
+    assert confidence["BENTHIC_HABITAT_UNMAPPED_AREA"].all()
